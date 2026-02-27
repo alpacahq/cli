@@ -94,10 +94,8 @@ var authLoginCmd = &cobra.Command{
 		}
 
 		globalCfg := loadOrCreateGlobal()
-		if globalCfg.DefaultProfile == "" {
-			globalCfg.DefaultProfile = profile
-			config.SaveGlobalConfig(globalCfg)
-		}
+		globalCfg.DefaultProfile = profile
+		config.SaveGlobalConfig(globalCfg)
 
 		color.Green("✓ Logged in to %s profile (%s)", profile, baseURL)
 		return nil
