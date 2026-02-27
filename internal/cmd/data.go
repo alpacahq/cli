@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/alpacahq/cli/internal/cmdutil"
 	"github.com/alpacahq/cli/internal/output"
 	"github.com/spf13/cobra"
 )
@@ -22,31 +23,19 @@ var dataBarsCmd = &cobra.Command{
   alpaca data bars --symbol BTC/USD --start 2025-01-01 --timeframe 1Hour
   alpaca data bars --symbol AAPL --start 2025-01-01 --end 2025-06-01 --limit 100`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbol, _ := cmd.Flags().GetString("symbol")
+		symbol := cmdutil.Str(cmd, "symbol")
 		if symbol == "" {
 			return fmt.Errorf("--symbol is required")
 		}
 
 		params := dataParams(cmd)
-
 		path, p := stockOrCryptoPath(symbol, "/bars", params)
 		data, err := apiClient.GetData(path, p)
 		if err != nil {
 			return err
 		}
 
-		bars := extractBars(data, symbol)
-		columns := []output.Column{
-			{Header: "TIMESTAMP", Field: "t"},
-			{Header: "OPEN", Field: "o"},
-			{Header: "HIGH", Field: "h"},
-			{Header: "LOW", Field: "l"},
-			{Header: "CLOSE", Field: "c"},
-			{Header: "VOLUME", Field: "v"},
-			{Header: "VWAP", Field: "vw"},
-		}
-
-		return output.Render(getOutput(), columns, bars)
+		return output.Render(getOutput(), barColumns(), extractBars(data, symbol))
 	},
 }
 
@@ -54,7 +43,7 @@ var dataQuotesCmd = &cobra.Command{
 	Use:   "quotes",
 	Short: "Get historical quotes",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbol, _ := cmd.Flags().GetString("symbol")
+		symbol := cmdutil.Str(cmd, "symbol")
 		if symbol == "" {
 			return fmt.Errorf("--symbol is required")
 		}
@@ -66,16 +55,7 @@ var dataQuotesCmd = &cobra.Command{
 			return err
 		}
 
-		quotes := extractArray(data, symbol, "quotes")
-		columns := []output.Column{
-			{Header: "TIMESTAMP", Field: "t"},
-			{Header: "BID", Field: "bp"},
-			{Header: "BID SIZE", Field: "bs"},
-			{Header: "ASK", Field: "ap"},
-			{Header: "ASK SIZE", Field: "as"},
-		}
-
-		return output.Render(getOutput(), columns, quotes)
+		return output.Render(getOutput(), quoteColumns(), extractArray(data, symbol, "quotes"))
 	},
 }
 
@@ -83,7 +63,7 @@ var dataTradesCmd = &cobra.Command{
 	Use:   "trades",
 	Short: "Get historical trades",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbol, _ := cmd.Flags().GetString("symbol")
+		symbol := cmdutil.Str(cmd, "symbol")
 		if symbol == "" {
 			return fmt.Errorf("--symbol is required")
 		}
@@ -95,15 +75,7 @@ var dataTradesCmd = &cobra.Command{
 			return err
 		}
 
-		trades := extractArray(data, symbol, "trades")
-		columns := []output.Column{
-			{Header: "TIMESTAMP", Field: "t"},
-			{Header: "PRICE", Field: "p"},
-			{Header: "SIZE", Field: "s"},
-			{Header: "EXCHANGE", Field: "x"},
-		}
-
-		return output.Render(getOutput(), columns, trades)
+		return output.Render(getOutput(), tradeColumns(), extractArray(data, symbol, "trades"))
 	},
 }
 
@@ -282,37 +254,10 @@ func stockOrCryptoPath(symbol, endpoint string, params url.Values) (string, url.
 
 func dataParams(cmd *cobra.Command) url.Values {
 	params := url.Values{}
-	start, _ := cmd.Flags().GetString("start")
-	if start != "" {
-		params.Set("start", start)
-	}
-	end, _ := cmd.Flags().GetString("end")
-	if end != "" {
-		params.Set("end", end)
-	}
-	limit, _ := cmd.Flags().GetString("limit")
-	if limit != "" {
-		params.Set("limit", limit)
-	}
-	tf, _ := cmd.Flags().GetString("timeframe")
-	if tf != "" {
-		params.Set("timeframe", tf)
-	}
-	feed, _ := cmd.Flags().GetString("feed")
-	if feed != "" {
-		params.Set("feed", feed)
-	}
-	currency, _ := cmd.Flags().GetString("currency")
-	if currency != "" {
-		params.Set("currency", currency)
-	}
-	sort, _ := cmd.Flags().GetString("sort")
-	if sort != "" {
-		params.Set("sort", sort)
-	}
-	adjustment, _ := cmd.Flags().GetString("adjustment")
-	if adjustment != "" {
-		params.Set("adjustment", adjustment)
+	for _, key := range []string{"start", "end", "limit", "timeframe", "feed", "currency", "sort", "adjustment"} {
+		if v := cmdutil.Str(cmd, key); v != "" {
+			params.Set(key, v)
+		}
 	}
 	return params
 }
@@ -323,9 +268,7 @@ func extractBars(data json.RawMessage, symbol string) json.RawMessage {
 		return data
 	}
 
-	// Stock single-symbol: {"bars": [...]}
 	if bars, ok := m["bars"]; ok {
-		// Multi-symbol: {"bars": {"AAPL": [...]}}
 		var multi map[string]json.RawMessage
 		if json.Unmarshal(bars, &multi) == nil {
 			if symBars, ok := multi[symbol]; ok {
@@ -378,4 +321,3 @@ func extractQuote(m map[string]any, symbol string) map[string]any {
 	}
 	return m
 }
-

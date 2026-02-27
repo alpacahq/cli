@@ -195,6 +195,9 @@ func extractEndpoints(spec map[string]any) []*endpointInfo {
 		if !ok {
 			continue
 		}
+		// Path-level parameters (shared by all methods on this path)
+		pathLevelParams, _ := methodMap["parameters"].([]any)
+
 		for method, opRaw := range methodMap {
 			if method == "parameters" {
 				continue
@@ -217,8 +220,13 @@ func extractEndpoints(spec map[string]any) []*endpointInfo {
 				goName:      toGoName(opID),
 			}
 
-			params, _ := op["parameters"].([]any)
-			for _, pRaw := range params {
+			// Merge path-level + operation-level parameters
+			var allParams []any
+			allParams = append(allParams, pathLevelParams...)
+			opParams, _ := op["parameters"].([]any)
+			allParams = append(allParams, opParams...)
+
+			for _, pRaw := range allParams {
 				p, ok := pRaw.(map[string]any)
 				if !ok {
 					continue

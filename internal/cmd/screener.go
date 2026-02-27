@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"encoding/json"
-	"net/url"
 
+	"github.com/alpacahq/cli/internal/api"
+	"github.com/alpacahq/cli/internal/cmdutil"
 	"github.com/alpacahq/cli/internal/output"
 	"github.com/spf13/cobra"
 )
@@ -19,35 +20,17 @@ var screenerMostActivesCmd = &cobra.Command{
 	Example: `  alpaca screener most-actives
   alpaca screener most-actives --by trades --top 10`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		params := url.Values{}
-		by, _ := cmd.Flags().GetString("by")
-		if by != "" {
-			params.Set("by", by)
-		}
-		top, _ := cmd.Flags().GetString("top")
-		if top != "" {
-			params.Set("top", top)
+		params := &api.MostActivesParams{
+			By:  cmdutil.Str(cmd, "by"),
+			Top: cmdutil.Int(cmd, "top"),
 		}
 
-		data, err := apiClient.GetData("/v1beta1/screener/stocks/most-actives", params)
+		resp, err := dataClient.MostActives(params)
 		if err != nil {
 			return err
 		}
 
-		var resp map[string]json.RawMessage
-		if json.Unmarshal(data, &resp) == nil {
-			if actives, ok := resp["most_actives"]; ok {
-				data = actives
-			}
-		}
-
-		columns := []output.Column{
-			{Header: "SYMBOL", Field: "symbol"},
-			{Header: "VOLUME", Field: "volume"},
-			{Header: "TRADE COUNT", Field: "trade_count"},
-		}
-
-		return output.Render(getOutput(), columns, data)
+		return output.Render(getOutput(), screenerMostActivesColumns(), resp.MostActives)
 	},
 }
 
@@ -57,57 +40,40 @@ var screenerMoversCmd = &cobra.Command{
 	Example: `  alpaca screener movers
   alpaca screener movers --market crypto --top 5`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		market, _ := cmd.Flags().GetString("market")
+		market := cmdutil.Str(cmd, "market")
 		if market == "" {
 			market = "stocks"
 		}
 
-		params := url.Values{}
-		top, _ := cmd.Flags().GetString("top")
-		if top != "" {
-			params.Set("top", top)
+		params := &api.MoversParams{
+			Top: cmdutil.Int(cmd, "top"),
 		}
 
-		data, err := apiClient.GetData("/v1beta1/screener/"+market+"/movers", params)
+		resp, err := dataClient.Movers(market, params)
 		if err != nil {
 			return err
 		}
 
 		if getOutput() == "json" || getOutput() == "csv" {
-			return output.JSON(cmd.OutOrStdout(), data)
-		}
-
-		var resp struct {
-			Gainers []json.RawMessage `json:"gainers"`
-			Losers  []json.RawMessage `json:"losers"`
-		}
-		if err := json.Unmarshal(data, &resp); err != nil {
-			return output.JSON(cmd.OutOrStdout(), data)
-		}
-
-		moverColumns := []output.Column{
-			{Header: "SYMBOL", Field: "symbol"},
-			{Header: "CHANGE %", Field: "percent_change"},
-			{Header: "CHANGE", Field: "change"},
-			{Header: "PRICE", Field: "price"},
+			return output.JSON(cmd.OutOrStdout(), resp)
 		}
 
 		cmd.Println("GAINERS")
 		gainersJSON, _ := json.Marshal(resp.Gainers)
-		output.Render("table", moverColumns, gainersJSON)
+		output.Render("table", screenerMoverColumns(), json.RawMessage(gainersJSON))
 
 		cmd.Println("\nLOSERS")
 		losersJSON, _ := json.Marshal(resp.Losers)
-		return output.Render("table", moverColumns, losersJSON)
+		return output.Render("table", screenerMoverColumns(), json.RawMessage(losersJSON))
 	},
 }
 
 func init() {
 	screenerMostActivesCmd.Flags().String("by", "", "Sort by: volume or trades (default: volume)")
-	screenerMostActivesCmd.Flags().String("top", "", "Number of results (default: 10)")
+	screenerMostActivesCmd.Flags().Int("top", 0, "Number of results (default: 10)")
 
 	screenerMoversCmd.Flags().String("market", "", "Market: stocks or crypto (default: stocks)")
-	screenerMoversCmd.Flags().String("top", "", "Number of results per direction (default: 10)")
+	screenerMoversCmd.Flags().Int("top", 0, "Number of results per direction (default: 10)")
 
 	screenerCmd.AddCommand(screenerMostActivesCmd)
 	screenerCmd.AddCommand(screenerMoversCmd)

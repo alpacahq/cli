@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"net/url"
 
+	"github.com/alpacahq/cli/internal/api"
+	"github.com/alpacahq/cli/internal/cmdutil"
 	"github.com/alpacahq/cli/internal/output"
 	"github.com/spf13/cobra"
 )
@@ -20,51 +21,33 @@ var corporateActionListCmd = &cobra.Command{
 	Example: `  alpaca corporate-action list --types reverse_split --since 2025-01-01 --until 2025-12-31
   alpaca corporate-action list --types cash_dividend --symbol AAPL --since 2025-01-01 --until 2025-06-30`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		params := url.Values{}
-
-		types, _ := cmd.Flags().GetString("types")
+		types := cmdutil.Str(cmd, "types")
 		if types == "" {
 			return fmt.Errorf("--types is required (e.g. reverse_split, forward_split, cash_dividend, stock_dividend, spin_off, cash_merger, stock_merger)")
 		}
-		params.Set("ca_types", types)
-
-		since, _ := cmd.Flags().GetString("since")
+		since := cmdutil.Str(cmd, "since")
 		if since == "" {
 			return fmt.Errorf("--since is required (YYYY-MM-DD)")
 		}
-		params.Set("since", since)
-
-		until, _ := cmd.Flags().GetString("until")
+		until := cmdutil.Str(cmd, "until")
 		if until == "" {
 			return fmt.Errorf("--until is required (YYYY-MM-DD)")
 		}
-		params.Set("until", until)
 
-		symbol, _ := cmd.Flags().GetString("symbol")
-		if symbol != "" {
-			params.Set("symbol", symbol)
-		}
-		dateType, _ := cmd.Flags().GetString("date-type")
-		if dateType != "" {
-			params.Set("date_type", dateType)
+		params := &api.GetV2CorporateActionsAnnouncementsParams{
+			CaTypes:  types,
+			Since:    since,
+			Until:    until,
+			Symbol:   cmdutil.Str(cmd, "symbol"),
+			DateType: cmdutil.Str(cmd, "date-type"),
 		}
 
-		data, err := apiClient.Get("/v2/corporate_actions/announcements", params)
+		data, err := tradingClient.GetV2CorporateActionsAnnouncements(params)
 		if err != nil {
 			return err
 		}
 
-		columns := []output.Column{
-			{Header: "ID", Field: "id"},
-			{Header: "TYPE", Field: "ca_type"},
-			{Header: "SUB TYPE", Field: "ca_sub_type"},
-			{Header: "SYMBOL", Field: "symbol"},
-			{Header: "EX DATE", Field: "ex_date"},
-			{Header: "RECORD DATE", Field: "record_date"},
-			{Header: "PAYABLE DATE", Field: "payable_date"},
-		}
-
-		return output.Render(getOutput(), columns, data)
+		return output.Render(getOutput(), corporateActionColumns(), data)
 	},
 }
 
@@ -73,7 +56,7 @@ var corporateActionGetCmd = &cobra.Command{
 	Short: "Get a specific corporate action announcement",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		data, err := apiClient.Get("/v2/corporate_actions/announcements/"+args[0], nil)
+		data, err := tradingClient.GetV2CorporateActionsAnnouncementsID(args[0])
 		if err != nil {
 			return err
 		}

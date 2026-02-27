@@ -1,18 +1,21 @@
 package cmd
 
 import (
+	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/client"
 	"github.com/alpacahq/cli/internal/config"
 	"github.com/spf13/cobra"
 )
 
 var (
-	version     = "dev"
-	cfg         *config.Resolved
-	apiClient   *client.Client
-	jsonFlag    bool
-	csvFlag     bool
-	profileFlag string
+	version       = "dev"
+	cfg           *config.Resolved
+	apiClient     *client.Client
+	tradingClient *api.TradingClient
+	dataClient    *api.MarketDataClient
+	jsonFlag      bool
+	csvFlag       bool
+	profileFlag   string
 )
 
 func SetVersion(v string) {
@@ -49,6 +52,8 @@ var rootCmd = &cobra.Command{
 				return err
 			}
 			apiClient = client.New(cfg)
+			tradingClient = api.NewTradingClient(apiClient)
+			dataClient = api.NewMarketDataClient(apiClient)
 		}
 
 		return nil

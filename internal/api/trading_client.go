@@ -119,8 +119,8 @@ func (p *GetAccountActivitiesByActivityTypeParams) Values() url.Values {
 }
 
 // GetAccountActivitiesByActivityType — Retrieve Account Activities of Specific Type
-func (c *TradingClient) GetAccountActivitiesByActivityType(params *GetAccountActivitiesByActivityTypeParams) (json.RawMessage, error) {
-	path := "/v2/account/activities/{activity_type}"
+func (c *TradingClient) GetAccountActivitiesByActivityType(ActivityType string, params *GetAccountActivitiesByActivityTypeParams) (json.RawMessage, error) {
+	path := fmt.Sprintf("/v2/account/activities/%s", ActivityType)
 	data, err := c.Raw.Get(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -319,8 +319,8 @@ func (c *TradingClient) UsTreasuries(params *UsTreasuriesParams) (*UsTreasuriesR
 }
 
 // GetV2AssetsSymbolOrAssetID — Get an Asset by ID or Symbol
-func (c *TradingClient) GetV2AssetsSymbolOrAssetID() (*Assets, error) {
-	path := "/v2/assets/{symbol_or_asset_id}"
+func (c *TradingClient) GetV2AssetsSymbolOrAssetID(SymbolOrAssetID string) (*Assets, error) {
+	path := fmt.Sprintf("/v2/assets/%s", SymbolOrAssetID)
 	data, err := c.Raw.Get(path, nil)
 	if err != nil {
 		return nil, err
@@ -419,8 +419,8 @@ func (c *TradingClient) GetV2CorporateActionsAnnouncements(params *GetV2Corporat
 }
 
 // GetV2CorporateActionsAnnouncementsID — Retrieve a Specific Announcement
-func (c *TradingClient) GetV2CorporateActionsAnnouncementsID() (json.RawMessage, error) {
-	path := "/v2/corporate_actions/announcements/{id}"
+func (c *TradingClient) GetV2CorporateActionsAnnouncementsID(ID string) (json.RawMessage, error) {
+	path := fmt.Sprintf("/v2/corporate_actions/announcements/%s", ID)
 	data, err := c.Raw.Get(path, nil)
 	if err != nil {
 		return nil, err
@@ -506,8 +506,8 @@ func (c *TradingClient) GetOptionsContracts(params *GetOptionsContractsParams) (
 }
 
 // GetOptionContractSymbolOrID — Get an option contract by ID or Symbol
-func (c *TradingClient) GetOptionContractSymbolOrID() (*OptionContract, error) {
-	path := "/v2/options/contracts/{symbol_or_id}"
+func (c *TradingClient) GetOptionContractSymbolOrID(SymbolOrID string) (*OptionContract, error) {
+	path := fmt.Sprintf("/v2/options/contracts/%s", SymbolOrID)
 	data, err := c.Raw.Get(path, nil)
 	if err != nil {
 		return nil, err
@@ -641,8 +641,8 @@ func (p *GetOrderByOrderIDParams) Values() url.Values {
 }
 
 // GetOrderByOrderID — Get Order by ID
-func (c *TradingClient) GetOrderByOrderID(params *GetOrderByOrderIDParams) (*Order, error) {
-	path := "/v2/orders/{order_id}"
+func (c *TradingClient) GetOrderByOrderID(OrderID string, params *GetOrderByOrderIDParams) (*Order, error) {
+	path := fmt.Sprintf("/v2/orders/%s", OrderID)
 	data, err := c.Raw.Get(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -652,8 +652,8 @@ func (c *TradingClient) GetOrderByOrderID(params *GetOrderByOrderIDParams) (*Ord
 }
 
 // PatchOrderByOrderID — Replace Order by ID
-func (c *TradingClient) PatchOrderByOrderID(body *PatchOrderRequest) (*Order, error) {
-	path := "/v2/orders/{order_id}"
+func (c *TradingClient) PatchOrderByOrderID(OrderID string, body *PatchOrderRequest) (*Order, error) {
+	path := fmt.Sprintf("/v2/orders/%s", OrderID)
 	data, err := c.Raw.Patch(path, body)
 	if err != nil {
 		return nil, err
@@ -663,8 +663,8 @@ func (c *TradingClient) PatchOrderByOrderID(body *PatchOrderRequest) (*Order, er
 }
 
 // DeleteOrderByOrderID — Delete Order by ID
-func (c *TradingClient) DeleteOrderByOrderID() (json.RawMessage, error) {
-	path := "/v2/orders/{order_id}"
+func (c *TradingClient) DeleteOrderByOrderID(OrderID string) (json.RawMessage, error) {
+	path := fmt.Sprintf("/v2/orders/%s", OrderID)
 	data, err := c.Raw.Delete(path, nil)
 	if err != nil {
 		return nil, err
@@ -762,10 +762,25 @@ func (c *TradingClient) SetCryptoPerpAccountLeverage(params *SetCryptoPerpAccoun
 	return data, nil
 }
 
+type ListCryptoPerpFundingWalletsParams struct {
+	Asset string
+}
+
+func (p *ListCryptoPerpFundingWalletsParams) Values() url.Values {
+	if p == nil {
+		return nil
+	}
+	v := url.Values{}
+	if p.Asset != "" {
+		v.Set("asset", p.Asset)
+	}
+	return v
+}
+
 // ListCryptoPerpFundingWallets — Retrieve Crypto Funding Wallets
-func (c *TradingClient) ListCryptoPerpFundingWallets() (*CryptoWallet, error) {
+func (c *TradingClient) ListCryptoPerpFundingWallets(params *ListCryptoPerpFundingWalletsParams) (*CryptoWallet, error) {
 	path := "/v2/perpetuals/wallets"
-	data, err := c.Raw.Get(path, nil)
+	data, err := c.Raw.Get(path, params.Values())
 	if err != nil {
 		return nil, err
 	}
@@ -833,8 +848,8 @@ func (c *TradingClient) CreateCryptoPerpTransferForAccount(body *CreateCryptoTra
 }
 
 // GetCryptoPerpFundingTransfer — Retrieve a Crypto Funding Transfer
-func (c *TradingClient) GetCryptoPerpFundingTransfer() (*CryptoTransfer, error) {
-	path := "/v2/perpetuals/wallets/transfers/{transfer_id}"
+func (c *TradingClient) GetCryptoPerpFundingTransfer(TransferID string) (*CryptoTransfer, error) {
+	path := fmt.Sprintf("/v2/perpetuals/wallets/transfers/%s", TransferID)
 	data, err := c.Raw.Get(path, nil)
 	if err != nil {
 		return nil, err
@@ -871,8 +886,8 @@ func (c *TradingClient) CreateWhitelistedPerpAddress(body *CreateWhitelistedPerp
 }
 
 // DeleteWhitelistedPerpAddress — Delete a whitelisted address
-func (c *TradingClient) DeleteWhitelistedPerpAddress() (json.RawMessage, error) {
-	path := "/v2/perpetuals/wallets/whitelists/{whitelisted_address_id}"
+func (c *TradingClient) DeleteWhitelistedPerpAddress(WhitelistedAddressID string) (json.RawMessage, error) {
+	path := fmt.Sprintf("/v2/perpetuals/wallets/whitelists/%s", WhitelistedAddressID)
 	data, err := c.Raw.Delete(path, nil)
 	if err != nil {
 		return nil, err
@@ -918,8 +933,8 @@ func (c *TradingClient) DeleteAllOpenPositions(params *DeleteAllOpenPositionsPar
 }
 
 // GetOpenPosition — Get an Open Position
-func (c *TradingClient) GetOpenPosition() (*Position, error) {
-	path := "/v2/positions/{symbol_or_asset_id}"
+func (c *TradingClient) GetOpenPosition(SymbolOrAssetID string) (*Position, error) {
+	path := fmt.Sprintf("/v2/positions/%s", SymbolOrAssetID)
 	data, err := c.Raw.Get(path, nil)
 	if err != nil {
 		return nil, err
@@ -948,8 +963,8 @@ func (p *DeleteOpenPositionParams) Values() url.Values {
 }
 
 // DeleteOpenPosition — Close a Position
-func (c *TradingClient) DeleteOpenPosition(params *DeleteOpenPositionParams) (*Order, error) {
-	path := "/v2/positions/{symbol_or_asset_id}"
+func (c *TradingClient) DeleteOpenPosition(SymbolOrAssetID string, params *DeleteOpenPositionParams) (*Order, error) {
+	path := fmt.Sprintf("/v2/positions/%s", SymbolOrAssetID)
 	data, err := c.Raw.Delete(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -978,10 +993,29 @@ func (c *TradingClient) OptionExercise(SymbolOrContractID string) (json.RawMessa
 	return data, nil
 }
 
+type ListCryptoFundingWalletsParams struct {
+	Asset   string
+	Network string
+}
+
+func (p *ListCryptoFundingWalletsParams) Values() url.Values {
+	if p == nil {
+		return nil
+	}
+	v := url.Values{}
+	if p.Asset != "" {
+		v.Set("asset", p.Asset)
+	}
+	if p.Network != "" {
+		v.Set("network", p.Network)
+	}
+	return v
+}
+
 // ListCryptoFundingWallets — Retrieve Crypto Funding Wallets
-func (c *TradingClient) ListCryptoFundingWallets() (*CryptoWallet, error) {
+func (c *TradingClient) ListCryptoFundingWallets(params *ListCryptoFundingWalletsParams) (*CryptoWallet, error) {
 	path := "/v2/wallets"
-	data, err := c.Raw.Get(path, nil)
+	data, err := c.Raw.Get(path, params.Values())
 	if err != nil {
 		return nil, err
 	}
@@ -1049,8 +1083,8 @@ func (c *TradingClient) CreateCryptoTransferForAccount(body *CreateCryptoTransfe
 }
 
 // GetCryptoFundingTransfer — Retrieve a Crypto Funding Transfer
-func (c *TradingClient) GetCryptoFundingTransfer() (*CryptoTransfer, error) {
-	path := "/v2/wallets/transfers/{transfer_id}"
+func (c *TradingClient) GetCryptoFundingTransfer(TransferID string) (*CryptoTransfer, error) {
+	path := fmt.Sprintf("/v2/wallets/transfers/%s", TransferID)
 	data, err := c.Raw.Get(path, nil)
 	if err != nil {
 		return nil, err
@@ -1087,8 +1121,8 @@ func (c *TradingClient) CreateWhitelistedAddress(body *CreateWhitelistedAddressR
 }
 
 // DeleteWhitelistedAddress — Delete a whitelisted address
-func (c *TradingClient) DeleteWhitelistedAddress() (json.RawMessage, error) {
-	path := "/v2/wallets/whitelists/{whitelisted_address_id}"
+func (c *TradingClient) DeleteWhitelistedAddress(WhitelistedAddressID string) (json.RawMessage, error) {
+	path := fmt.Sprintf("/v2/wallets/whitelists/%s", WhitelistedAddressID)
 	data, err := c.Raw.Delete(path, nil)
 	if err != nil {
 		return nil, err
@@ -1119,8 +1153,8 @@ func (c *TradingClient) PostWatchlist(body *UpdateWatchlistRequest) (*Watchlist,
 }
 
 // GetWatchlistByID — Get Watchlist by ID
-func (c *TradingClient) GetWatchlistByID() (*Watchlist, error) {
-	path := "/v2/watchlists/{watchlist_id}"
+func (c *TradingClient) GetWatchlistByID(WatchlistID string) (*Watchlist, error) {
+	path := fmt.Sprintf("/v2/watchlists/%s", WatchlistID)
 	data, err := c.Raw.Get(path, nil)
 	if err != nil {
 		return nil, err
@@ -1130,8 +1164,8 @@ func (c *TradingClient) GetWatchlistByID() (*Watchlist, error) {
 }
 
 // AddAssetToWatchlist — Add Asset to Watchlist
-func (c *TradingClient) AddAssetToWatchlist(body *AddAssetToWatchlistRequest) (*Watchlist, error) {
-	path := "/v2/watchlists/{watchlist_id}"
+func (c *TradingClient) AddAssetToWatchlist(WatchlistID string, body *AddAssetToWatchlistRequest) (*Watchlist, error) {
+	path := fmt.Sprintf("/v2/watchlists/%s", WatchlistID)
 	data, err := c.Raw.Post(path, body)
 	if err != nil {
 		return nil, err
@@ -1141,8 +1175,8 @@ func (c *TradingClient) AddAssetToWatchlist(body *AddAssetToWatchlistRequest) (*
 }
 
 // UpdateWatchlistByID — Update Watchlist By Id
-func (c *TradingClient) UpdateWatchlistByID(body *UpdateWatchlistRequest) (*Watchlist, error) {
-	path := "/v2/watchlists/{watchlist_id}"
+func (c *TradingClient) UpdateWatchlistByID(WatchlistID string, body *UpdateWatchlistRequest) (*Watchlist, error) {
+	path := fmt.Sprintf("/v2/watchlists/%s", WatchlistID)
 	data, err := c.Raw.Put(path, body)
 	if err != nil {
 		return nil, err
@@ -1152,8 +1186,8 @@ func (c *TradingClient) UpdateWatchlistByID(body *UpdateWatchlistRequest) (*Watc
 }
 
 // DeleteWatchlistByID — Delete Watchlist By Id
-func (c *TradingClient) DeleteWatchlistByID() (json.RawMessage, error) {
-	path := "/v2/watchlists/{watchlist_id}"
+func (c *TradingClient) DeleteWatchlistByID(WatchlistID string) (json.RawMessage, error) {
+	path := fmt.Sprintf("/v2/watchlists/%s", WatchlistID)
 	data, err := c.Raw.Delete(path, nil)
 	if err != nil {
 		return nil, err
@@ -1162,8 +1196,8 @@ func (c *TradingClient) DeleteWatchlistByID() (json.RawMessage, error) {
 }
 
 // RemoveAssetFromWatchlist — Delete Symbol from Watchlist
-func (c *TradingClient) RemoveAssetFromWatchlist() (*Watchlist, error) {
-	path := "/v2/watchlists/{watchlist_id}/{symbol}"
+func (c *TradingClient) RemoveAssetFromWatchlist(WatchlistID string, Symbol string) (*Watchlist, error) {
+	path := fmt.Sprintf("/v2/watchlists/%s/%s", WatchlistID, Symbol)
 	data, err := c.Raw.Delete(path, nil)
 	if err != nil {
 		return nil, err

@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
-	"net/url"
 
+	"github.com/alpacahq/cli/internal/api"
+	"github.com/alpacahq/cli/internal/cmdutil"
 	"github.com/alpacahq/cli/internal/output"
 	"github.com/spf13/cobra"
 )
@@ -22,92 +22,53 @@ var orderSubmitCmd = &cobra.Command{
   alpaca order submit --symbol AAPL --qty 10 --side sell --type stop --stop-price 175.00
   alpaca order submit --symbol AAPL --notional 1000 --side buy --type market`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbol, _ := cmd.Flags().GetString("symbol")
-		qty, _ := cmd.Flags().GetString("qty")
-		notional, _ := cmd.Flags().GetString("notional")
-		side, _ := cmd.Flags().GetString("side")
-		orderType, _ := cmd.Flags().GetString("type")
-		tif, _ := cmd.Flags().GetString("tif")
-		limitPrice, _ := cmd.Flags().GetString("limit-price")
-		stopPrice, _ := cmd.Flags().GetString("stop-price")
-		trailPercent, _ := cmd.Flags().GetString("trail-percent")
-		trailPrice, _ := cmd.Flags().GetString("trail-price")
-		extendedHours, _ := cmd.Flags().GetBool("extended-hours")
-		takeProfit, _ := cmd.Flags().GetString("take-profit")
-		stopLoss, _ := cmd.Flags().GetString("stop-loss")
-		clientOrderID, _ := cmd.Flags().GetString("client-order-id")
+		body := &api.PostOrderRequest{
+			Symbol:        cmdutil.Str(cmd, "symbol"),
+			Qty:           cmdutil.Str(cmd, "qty"),
+			Notional:      cmdutil.Str(cmd, "notional"),
+			Side:          api.OrderSide(cmdutil.Str(cmd, "side")),
+			Type:          api.OrderType(cmdutil.Str(cmd, "type")),
+			TimeInForce:   api.TimeInForce(cmdutil.Str(cmd, "tif")),
+			LimitPrice:    cmdutil.Str(cmd, "limit-price"),
+			StopPrice:     cmdutil.Str(cmd, "stop-price"),
+			TrailPercent:  cmdutil.Str(cmd, "trail-percent"),
+			TrailPrice:    cmdutil.Str(cmd, "trail-price"),
+			ExtendedHours: cmdutil.Bool(cmd, "extended-hours"),
+			ClientOrderID: cmdutil.Str(cmd, "client-order-id"),
+			OrderClass:    api.OrderClass(cmdutil.Str(cmd, "order-class")),
+			PositionIntent: api.PositionIntent(cmdutil.Str(cmd, "position-intent")),
+		}
 
-		if symbol == "" {
+		if body.Symbol == "" {
 			return fmt.Errorf("--symbol is required")
 		}
-		if side == "" {
+		if body.Side == "" {
 			return fmt.Errorf("--side is required (buy or sell)")
 		}
-		if qty == "" && notional == "" {
+		if body.Qty == "" && body.Notional == "" {
 			return fmt.Errorf("either --qty or --notional is required")
 		}
-
-		body := map[string]any{
-			"symbol": symbol,
-			"side":   side,
-			"type":   orderType,
+		if body.TimeInForce == "" {
+			body.TimeInForce = "day"
 		}
 
-		if qty != "" {
-			body["qty"] = qty
-		}
-		if notional != "" {
-			body["notional"] = notional
-		}
-		if tif != "" {
-			body["time_in_force"] = tif
-		} else {
-			body["time_in_force"] = "day"
-		}
-		if limitPrice != "" {
-			body["limit_price"] = limitPrice
-		}
-		if stopPrice != "" {
-			body["stop_price"] = stopPrice
-		}
-		if trailPercent != "" {
-			body["trail_percent"] = trailPercent
-		}
-		if trailPrice != "" {
-			body["trail_price"] = trailPrice
-		}
-		if extendedHours {
-			body["extended_hours"] = true
-		}
-		if clientOrderID != "" {
-			body["client_order_id"] = clientOrderID
-		}
-
-		orderClass, _ := cmd.Flags().GetString("order-class")
-		if orderClass != "" {
-			body["order_class"] = orderClass
-		}
-		positionIntent, _ := cmd.Flags().GetString("position-intent")
-		if positionIntent != "" {
-			body["position_intent"] = positionIntent
-		}
-
+		takeProfit := cmdutil.Str(cmd, "take-profit")
+		stopLoss := cmdutil.Str(cmd, "stop-loss")
 		if takeProfit != "" || stopLoss != "" {
-			body["order_class"] = "bracket"
+			body.OrderClass = "bracket"
 			if takeProfit != "" {
-				body["take_profit"] = map[string]any{"limit_price": takeProfit}
+				body.TakeProfit = map[string]any{"limit_price": takeProfit}
 			}
 			if stopLoss != "" {
-				body["stop_loss"] = map[string]any{"stop_price": stopLoss}
+				body.StopLoss = map[string]any{"stop_price": stopLoss}
 			}
 		}
 
-		data, err := apiClient.Post("/v2/orders", body)
+		order, err := tradingClient.PostOrder(body)
 		if err != nil {
 			return err
 		}
-
-		return output.PrintSingle(getOutput(), orderColumns(), data)
+		return output.PrintSingle(getOutput(), orderColumns(), order)
 	},
 }
 
@@ -118,69 +79,26 @@ var orderListCmd = &cobra.Command{
   alpaca order list --status closed --limit 20
   alpaca order list --symbols AAPL,MSFT --after 2025-01-01`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		params := url.Values{}
-
-		status, _ := cmd.Flags().GetString("status")
-		if status != "" {
-			params.Set("status", status)
-		} else {
-			params.Set("status", "open")
+		params := &api.GetAllOrdersParams{
+			Status:     cmdutil.Str(cmd, "status"),
+			Symbols:    cmdutil.Str(cmd, "symbols"),
+			After:      cmdutil.Str(cmd, "after"),
+			Until:      cmdutil.Str(cmd, "until"),
+			Limit:      cmdutil.Int(cmd, "limit"),
+			Direction:  cmdutil.Str(cmd, "direction"),
+			Nested:     cmdutil.Bool(cmd, "nested"),
+			Side:       cmdutil.Str(cmd, "side"),
+			AssetClass: cmdutil.Str(cmd, "asset-class"),
+		}
+		if params.Status == "" {
+			params.Status = "open"
 		}
 
-		symbols, _ := cmd.Flags().GetString("symbols")
-		if symbols != "" {
-			params.Set("symbols", symbols)
-		}
-		after, _ := cmd.Flags().GetString("after")
-		if after != "" {
-			params.Set("after", after)
-		}
-		until, _ := cmd.Flags().GetString("until")
-		if until != "" {
-			params.Set("until", until)
-		}
-		limit, _ := cmd.Flags().GetString("limit")
-		if limit != "" {
-			params.Set("limit", limit)
-		}
-		direction, _ := cmd.Flags().GetString("direction")
-		if direction != "" {
-			params.Set("direction", direction)
-		}
-
-		nested, _ := cmd.Flags().GetBool("nested")
-		if nested {
-			params.Set("nested", "true")
-		}
-		side, _ := cmd.Flags().GetString("side")
-		if side != "" {
-			params.Set("side", side)
-		}
-		assetClass, _ := cmd.Flags().GetString("asset-class")
-		if assetClass != "" {
-			params.Set("asset_class", assetClass)
-		}
-
-		data, err := apiClient.Get("/v2/orders", params)
+		orders, err := tradingClient.GetAllOrders(params)
 		if err != nil {
 			return err
 		}
-
-		columns := []output.Column{
-			{Header: "ID", Field: "id"},
-			{Header: "SYMBOL", Field: "symbol"},
-			{Header: "SIDE", Field: "side"},
-			{Header: "QTY", Field: "qty"},
-			{Header: "TYPE", Field: "type"},
-			{Header: "STATUS", Field: "status"},
-			{Header: "LIMIT", Field: "limit_price"},
-			{Header: "STOP", Field: "stop_price"},
-			{Header: "FILLED QTY", Field: "filled_qty"},
-			{Header: "FILLED AVG", Field: "filled_avg_price"},
-			{Header: "SUBMITTED", Field: "submitted_at"},
-		}
-
-		return output.Render(getOutput(), columns, data)
+		return output.Render(getOutput(), orderColumns(), orders)
 	},
 }
 
@@ -191,26 +109,26 @@ var orderGetCmd = &cobra.Command{
   alpaca order get --client-id my-order-123`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		clientID, _ := cmd.Flags().GetString("client-id")
+		clientID := cmdutil.Str(cmd, "client-id")
 
 		if len(args) == 0 && clientID == "" {
 			return fmt.Errorf("either <order-id> argument or --client-id flag is required")
 		}
 
-		var data json.RawMessage
+		var order *api.Order
 		var err error
 
 		if clientID != "" {
-			params := url.Values{}
-			params.Set("client_order_id", clientID)
-			data, err = apiClient.Get("/v2/orders:by_client_order_id", params)
+			order, err = tradingClient.GetOrderByClientOrderID(&api.GetOrderByClientOrderIDParams{
+				ClientOrderID: clientID,
+			})
 		} else {
-			data, err = apiClient.Get("/v2/orders/"+args[0], nil)
+			order, err = tradingClient.GetOrderByOrderID(args[0], nil)
 		}
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(getOutput(), orderColumns(), data)
+		return output.PrintSingle(getOutput(), orderColumns(), order)
 	},
 }
 
@@ -219,7 +137,7 @@ var orderCancelCmd = &cobra.Command{
 	Short: "Cancel an order",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		_, err := apiClient.Delete("/v2/orders/"+args[0], nil)
+		_, err := tradingClient.DeleteOrderByOrderID(args[0])
 		if err != nil {
 			return err
 		}
@@ -232,11 +150,11 @@ var orderCancelAllCmd = &cobra.Command{
 	Use:   "cancel-all",
 	Short: "Cancel all open orders",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		data, err := apiClient.Delete("/v2/orders", nil)
+		cancelled, err := tradingClient.DeleteAllOrders()
 		if err != nil {
 			return err
 		}
-		return output.JSON(cmd.OutOrStdout(), data)
+		return output.JSON(cmd.OutOrStdout(), cancelled)
 	},
 }
 
@@ -246,43 +164,32 @@ var orderReplaceCmd = &cobra.Command{
 	Example: `  alpaca order replace <order-id> --qty 20 --limit-price 190.00`,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		body := map[string]any{}
+		body := &api.PatchOrderRequest{}
 
-		if cmd.Flags().Changed("qty") {
-			v, _ := cmd.Flags().GetString("qty")
-			body["qty"] = v
+		if cmdutil.Changed(cmd, "qty") {
+			body.Qty = cmdutil.Str(cmd, "qty")
 		}
-		if cmd.Flags().Changed("limit-price") {
-			v, _ := cmd.Flags().GetString("limit-price")
-			body["limit_price"] = v
+		if cmdutil.Changed(cmd, "limit-price") {
+			body.LimitPrice = cmdutil.Str(cmd, "limit-price")
 		}
-		if cmd.Flags().Changed("stop-price") {
-			v, _ := cmd.Flags().GetString("stop-price")
-			body["stop_price"] = v
+		if cmdutil.Changed(cmd, "stop-price") {
+			body.StopPrice = cmdutil.Str(cmd, "stop-price")
 		}
-		if cmd.Flags().Changed("tif") {
-			v, _ := cmd.Flags().GetString("tif")
-			body["time_in_force"] = v
+		if cmdutil.Changed(cmd, "tif") {
+			body.TimeInForce = api.TimeInForce(cmdutil.Str(cmd, "tif"))
 		}
-		if cmd.Flags().Changed("trail") {
-			v, _ := cmd.Flags().GetString("trail")
-			body["trail"] = v
+		if cmdutil.Changed(cmd, "trail") {
+			body.Trail = cmdutil.Str(cmd, "trail")
 		}
-		if cmd.Flags().Changed("client-order-id") {
-			v, _ := cmd.Flags().GetString("client-order-id")
-			body["client_order_id"] = v
+		if cmdutil.Changed(cmd, "client-order-id") {
+			body.ClientOrderID = cmdutil.Str(cmd, "client-order-id")
 		}
 
-		if len(body) == 0 {
-			return fmt.Errorf("at least one field to update is required")
-		}
-
-		data, err := apiClient.Patch("/v2/orders/"+args[0], body)
+		order, err := tradingClient.PatchOrderByOrderID(args[0], body)
 		if err != nil {
 			return err
 		}
-
-		return output.PrintSingle(getOutput(), orderColumns(), data)
+		return output.PrintSingle(getOutput(), orderColumns(), order)
 	},
 }
 
@@ -308,7 +215,7 @@ func init() {
 	orderListCmd.Flags().String("symbols", "", "Filter by symbols (comma-separated)")
 	orderListCmd.Flags().String("after", "", "Filter: orders after this date")
 	orderListCmd.Flags().String("until", "", "Filter: orders until this date")
-	orderListCmd.Flags().String("limit", "", "Max number of orders to return")
+	orderListCmd.Flags().Int("limit", 0, "Max number of orders to return")
 	orderListCmd.Flags().String("direction", "", "Sort direction: asc or desc")
 	orderListCmd.Flags().Bool("nested", false, "Include nested multi-leg order legs")
 	orderListCmd.Flags().String("side", "", "Filter by side: buy or sell")
@@ -324,26 +231,8 @@ func init() {
 	orderCmd.AddCommand(orderSubmitCmd)
 	orderCmd.AddCommand(orderListCmd)
 	orderGetCmd.Flags().String("client-id", "", "Look up order by client order ID")
-
 	orderCmd.AddCommand(orderGetCmd)
 	orderCmd.AddCommand(orderCancelCmd)
 	orderCmd.AddCommand(orderCancelAllCmd)
 	orderCmd.AddCommand(orderReplaceCmd)
-}
-
-func orderColumns() []output.Column {
-	return []output.Column{
-		{Header: "ID", Field: "id"},
-		{Header: "SYMBOL", Field: "symbol"},
-		{Header: "SIDE", Field: "side"},
-		{Header: "QTY", Field: "qty"},
-		{Header: "TYPE", Field: "type"},
-		{Header: "STATUS", Field: "status"},
-		{Header: "LIMIT PRICE", Field: "limit_price"},
-		{Header: "STOP PRICE", Field: "stop_price"},
-		{Header: "FILLED QTY", Field: "filled_qty"},
-		{Header: "FILLED AVG", Field: "filled_avg_price"},
-		{Header: "TIME IN FORCE", Field: "time_in_force"},
-		{Header: "SUBMITTED", Field: "submitted_at"},
-	}
 }

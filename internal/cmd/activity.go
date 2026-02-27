@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"encoding/json"
-	"net/url"
 
+	"github.com/alpacahq/cli/internal/api"
+	"github.com/alpacahq/cli/internal/cmdutil"
 	"github.com/alpacahq/cli/internal/output"
 	"github.com/spf13/cobra"
 )
@@ -21,47 +22,31 @@ var activityListCmd = &cobra.Command{
   alpaca activity list --type DIV --after 2025-01-01
   alpaca activity list --type FILL,TRANS --direction desc`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		params := url.Values{}
+		actType := cmdutil.Str(cmd, "type")
 
-		actType, _ := cmd.Flags().GetString("type")
-		after, _ := cmd.Flags().GetString("after")
-		until, _ := cmd.Flags().GetString("until")
-		date, _ := cmd.Flags().GetString("date")
-		direction, _ := cmd.Flags().GetString("direction")
-		limit, _ := cmd.Flags().GetString("limit")
-		category, _ := cmd.Flags().GetString("category")
-		pageToken, _ := cmd.Flags().GetString("page-token")
+		var data json.RawMessage
+		var err error
 
-		if after != "" {
-			params.Set("after", after)
-		}
-		if until != "" {
-			params.Set("until", until)
-		}
-		if date != "" {
-			params.Set("date", date)
-		}
-		if direction != "" {
-			params.Set("direction", direction)
-		}
-		if limit != "" {
-			params.Set("page_size", limit)
-		}
-		if category != "" {
-			params.Set("category", category)
-		}
-		if pageToken != "" {
-			params.Set("page_token", pageToken)
-		}
-
-		var path string
 		if actType != "" {
-			path = "/v2/account/activities/" + actType
+			data, err = tradingClient.GetAccountActivitiesByActivityType(actType, &api.GetAccountActivitiesByActivityTypeParams{
+				After:     cmdutil.Str(cmd, "after"),
+				Until:     cmdutil.Str(cmd, "until"),
+				Date:      cmdutil.Str(cmd, "date"),
+				Direction: cmdutil.Str(cmd, "direction"),
+				PageSize:  cmdutil.Int(cmd, "limit"),
+				PageToken: cmdutil.Str(cmd, "page-token"),
+			})
 		} else {
-			path = "/v2/account/activities"
+			data, err = tradingClient.GetAccountActivities(&api.GetAccountActivitiesParams{
+				After:     cmdutil.Str(cmd, "after"),
+				Until:     cmdutil.Str(cmd, "until"),
+				Date:      cmdutil.Str(cmd, "date"),
+				Direction: cmdutil.Str(cmd, "direction"),
+				PageSize:  cmdutil.Int(cmd, "limit"),
+				Category:  cmdutil.Str(cmd, "category"),
+				PageToken: cmdutil.Str(cmd, "page-token"),
+			})
 		}
-
-		data, err := apiClient.Get(path, params)
 		if err != nil {
 			return err
 		}
@@ -85,40 +70,13 @@ var activityListCmd = &cobra.Command{
 	},
 }
 
-func tradeActivityColumns() []output.Column {
-	return []output.Column{
-		{Header: "ID", Field: "id"},
-		{Header: "TYPE", Field: "activity_type"},
-		{Header: "SYMBOL", Field: "symbol"},
-		{Header: "SIDE", Field: "side"},
-		{Header: "QTY", Field: "qty"},
-		{Header: "PRICE", Field: "price"},
-		{Header: "CUM QTY", Field: "cum_qty"},
-		{Header: "ORDER ID", Field: "order_id"},
-		{Header: "TIME", Field: "transaction_time"},
-	}
-}
-
-func nonTradeActivityColumns() []output.Column {
-	return []output.Column{
-		{Header: "ID", Field: "id"},
-		{Header: "TYPE", Field: "activity_type"},
-		{Header: "SYMBOL", Field: "symbol"},
-		{Header: "NET AMOUNT", Field: "net_amount"},
-		{Header: "QTY", Field: "qty"},
-		{Header: "PER SHARE", Field: "per_share_amount"},
-		{Header: "STATUS", Field: "status"},
-		{Header: "DATE", Field: "date"},
-	}
-}
-
 func init() {
 	activityListCmd.Flags().String("type", "", "Activity type: FILL, DIV, TRANS, etc. (comma-separated for multiple)")
 	activityListCmd.Flags().String("after", "", "Only activities after this date/time")
 	activityListCmd.Flags().String("until", "", "Only activities before this date/time")
 	activityListCmd.Flags().String("date", "", "Exact date filter")
 	activityListCmd.Flags().String("direction", "", "Sort: asc or desc")
-	activityListCmd.Flags().String("limit", "", "Max number of results")
+	activityListCmd.Flags().Int("limit", 0, "Max number of results")
 	activityListCmd.Flags().String("category", "", "Category: trade_activity or non_trade_activity")
 	activityListCmd.Flags().String("page-token", "", "Pagination token")
 

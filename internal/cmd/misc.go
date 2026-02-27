@@ -3,8 +3,9 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"net/url"
 
+	"github.com/alpacahq/cli/internal/api"
+	"github.com/alpacahq/cli/internal/cmdutil"
 	"github.com/alpacahq/cli/internal/output"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
@@ -14,27 +15,22 @@ var clockCmd = &cobra.Command{
 	Use:   "clock",
 	Short: "Show market clock",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		data, err := apiClient.Get("/v2/clock", nil)
+		clock, err := tradingClient.LegacyClock()
 		if err != nil {
 			return err
 		}
 
 		if getOutput() == "json" {
-			return output.JSON(cmd.OutOrStdout(), data)
+			return output.JSON(cmd.OutOrStdout(), clock)
 		}
 
-		var clock map[string]any
-		json.Unmarshal(data, &clock)
-
-		isOpen, _ := clock["is_open"].(bool)
-		if isOpen {
+		if clock.IsOpen {
 			color.Green("Market is OPEN")
 		} else {
 			color.Yellow("Market is CLOSED")
 		}
-		fmt.Printf("  Next open:  %v\n", clock["next_open"])
-		fmt.Printf("  Next close: %v\n", clock["next_close"])
-
+		fmt.Printf("  Next open:  %v\n", clock.NextOpen)
+		fmt.Printf("  Next close: %v\n", clock.NextClose)
 		return nil
 	},
 }
@@ -45,30 +41,16 @@ var calendarCmd = &cobra.Command{
 	Example: `  alpaca calendar
   alpaca calendar --start 2025-01-01 --end 2025-12-31`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		params := url.Values{}
-		start, _ := cmd.Flags().GetString("start")
-		if start != "" {
-			params.Set("start", start)
-		}
-		end, _ := cmd.Flags().GetString("end")
-		if end != "" {
-			params.Set("end", end)
+		params := &api.LegacyCalendarParams{
+			Start: cmdutil.Str(cmd, "start"),
+			End:   cmdutil.Str(cmd, "end"),
 		}
 
-		data, err := apiClient.Get("/v2/calendar", params)
+		data, err := tradingClient.LegacyCalendar(params)
 		if err != nil {
 			return err
 		}
-
-		columns := []output.Column{
-			{Header: "DATE", Field: "date"},
-			{Header: "OPEN", Field: "open"},
-			{Header: "CLOSE", Field: "close"},
-			{Header: "SESSION OPEN", Field: "session_open"},
-			{Header: "SESSION CLOSE", Field: "session_close"},
-		}
-
-		return output.Render(getOutput(), columns, data)
+		return output.Render(getOutput(), calendarColumns(), data)
 	},
 }
 
@@ -83,38 +65,20 @@ var portfolioHistoryCmd = &cobra.Command{
 	Example: `  alpaca portfolio history
   alpaca portfolio history --period 1M --timeframe 1D`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		params := url.Values{}
-		period, _ := cmd.Flags().GetString("period")
-		if period != "" {
-			params.Set("period", period)
-		}
-		tf, _ := cmd.Flags().GetString("timeframe")
-		if tf != "" {
-			params.Set("timeframe", tf)
-		}
-		start, _ := cmd.Flags().GetString("start")
-		if start != "" {
-			params.Set("start", start)
-		}
-		end, _ := cmd.Flags().GetString("end")
-		if end != "" {
-			params.Set("end", end)
-		}
-		intradayReporting, _ := cmd.Flags().GetString("intraday-reporting")
-		if intradayReporting != "" {
-			params.Set("intraday_reporting", intradayReporting)
-		}
-		pnlReset, _ := cmd.Flags().GetString("pnl-reset")
-		if pnlReset != "" {
-			params.Set("pnl_reset", pnlReset)
+		params := &api.GetAccountPortfolioHistoryParams{
+			Period:            cmdutil.Str(cmd, "period"),
+			Timeframe:         cmdutil.Str(cmd, "timeframe"),
+			Start:             cmdutil.Str(cmd, "start"),
+			End:               cmdutil.Str(cmd, "end"),
+			IntradayReporting: cmdutil.Str(cmd, "intraday-reporting"),
+			PNLReset:          cmdutil.Str(cmd, "pnl-reset"),
 		}
 
-		data, err := apiClient.Get("/v2/account/portfolio/history", params)
+		history, err := tradingClient.GetAccountPortfolioHistory(params)
 		if err != nil {
 			return err
 		}
-
-		return output.JSON(cmd.OutOrStdout(), data)
+		return output.JSON(cmd.OutOrStdout(), history)
 	},
 }
 
@@ -124,56 +88,26 @@ var newsCmd = &cobra.Command{
 	Example: `  alpaca news
   alpaca news --symbols AAPL,MSFT --limit 10`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		params := url.Values{}
-		symbols, _ := cmd.Flags().GetString("symbols")
-		if symbols != "" {
-			params.Set("symbols", symbols)
+		params := &api.NewsParams{
+			Symbols:        cmdutil.Str(cmd, "symbols"),
+			Start:          cmdutil.Str(cmd, "start"),
+			End:            cmdutil.Str(cmd, "end"),
+			Sort:           cmdutil.Str(cmd, "sort"),
+			IncludeContent: cmdutil.Bool(cmd, "include-content"),
+			Limit:          cmdutil.Int(cmd, "limit"),
 		}
-		start, _ := cmd.Flags().GetString("start")
-		if start != "" {
-			params.Set("start", start)
-		}
-		end, _ := cmd.Flags().GetString("end")
-		if end != "" {
-			params.Set("end", end)
-		}
-		limit, _ := cmd.Flags().GetString("limit")
-		if limit != "" {
-			params.Set("limit", limit)
-		} else {
-			params.Set("limit", "10")
-		}
-		sort, _ := cmd.Flags().GetString("sort")
-		if sort != "" {
-			params.Set("sort", sort)
-		}
-		includeContent, _ := cmd.Flags().GetBool("include-content")
-		if includeContent {
-			params.Set("include_content", "true")
+		if params.Limit == 0 {
+			params.Limit = 10
 		}
 
-		data, err := apiClient.GetData("/v1beta1/news", params)
+		resp, err := dataClient.News(params)
 		if err != nil {
 			return err
 		}
 
-		// News response: {"news": [...]}
-		var resp map[string]json.RawMessage
-		if json.Unmarshal(data, &resp) == nil {
-			if news, ok := resp["news"]; ok {
-				data = news
-			}
-		}
-
-		columns := []output.Column{
-			{Header: "DATE", Field: "created_at"},
-			{Header: "HEADLINE", Field: "headline"},
-			{Header: "SOURCE", Field: "source"},
-			{Header: "SYMBOLS", Field: "symbols"},
-			{Header: "URL", Field: "url"},
-		}
-
-		return output.Render(getOutput(), columns, data)
+		// Unwrap the news array from the response
+		newsData, _ := json.Marshal(resp.News)
+		return output.Render(getOutput(), newsColumns(), json.RawMessage(newsData))
 	},
 }
 
@@ -192,7 +126,7 @@ func init() {
 	newsCmd.Flags().String("symbols", "", "Filter by symbols (comma-separated)")
 	newsCmd.Flags().String("start", "", "Start date")
 	newsCmd.Flags().String("end", "", "End date")
-	newsCmd.Flags().String("limit", "", "Max articles (default: 10)")
+	newsCmd.Flags().Int("limit", 0, "Max articles (default: 10)")
 	newsCmd.Flags().String("sort", "", "Sort order: asc or desc")
 	newsCmd.Flags().Bool("include-content", false, "Include full article content")
 }

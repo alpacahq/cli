@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"net/url"
 
+	"github.com/alpacahq/cli/internal/api"
+	"github.com/alpacahq/cli/internal/cmdutil"
 	"github.com/alpacahq/cli/internal/output"
 	"github.com/spf13/cobra"
 )
@@ -21,61 +22,23 @@ var optionChainCmd = &cobra.Command{
   alpaca option chain SPY --strike-gte 400 --strike-lte 450`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		params := url.Values{}
-		params.Set("underlying_symbols", args[0])
-
-		expiry, _ := cmd.Flags().GetString("expiry")
-		if expiry != "" {
-			params.Set("expiration_date", expiry)
-		}
-		optType, _ := cmd.Flags().GetString("type")
-		if optType != "" {
-			params.Set("type", optType)
-		}
-		strikeGte, _ := cmd.Flags().GetString("strike-gte")
-		if strikeGte != "" {
-			params.Set("strike_price_gte", strikeGte)
-		}
-		strikeLte, _ := cmd.Flags().GetString("strike-lte")
-		if strikeLte != "" {
-			params.Set("strike_price_lte", strikeLte)
-		}
-		expiryGte, _ := cmd.Flags().GetString("expiry-gte")
-		if expiryGte != "" {
-			params.Set("expiration_date_gte", expiryGte)
-		}
-		expiryLte, _ := cmd.Flags().GetString("expiry-lte")
-		if expiryLte != "" {
-			params.Set("expiration_date_lte", expiryLte)
-		}
-		rootSymbol, _ := cmd.Flags().GetString("root-symbol")
-		if rootSymbol != "" {
-			params.Set("root_symbol", rootSymbol)
-		}
-		limit, _ := cmd.Flags().GetString("limit")
-		if limit != "" {
-			params.Set("limit", limit)
-		}
-		showDeliverables, _ := cmd.Flags().GetBool("show-deliverables")
-		if showDeliverables {
-			params.Set("show_deliverables", "true")
+		params := &api.GetOptionsContractsParams{
+			UnderlyingSymbols: args[0],
+			ExpirationDate:    cmdutil.Str(cmd, "expiry"),
+			Type:              cmdutil.Str(cmd, "type"),
+			StrikePriceGte:    cmdutil.Float64(cmd, "strike-gte"),
+			StrikePriceLte:    cmdutil.Float64(cmd, "strike-lte"),
+			ExpirationDateGte: cmdutil.Str(cmd, "expiry-gte"),
+			ExpirationDateLte: cmdutil.Str(cmd, "expiry-lte"),
+			RootSymbol:        cmdutil.Str(cmd, "root-symbol"),
+			Limit:             cmdutil.Int(cmd, "limit"),
 		}
 
-		data, err := apiClient.Get("/v2/options/contracts", params)
+		data, err := tradingClient.GetOptionsContracts(params)
 		if err != nil {
 			return err
 		}
-
-		columns := []output.Column{
-			{Header: "SYMBOL", Field: "symbol"},
-			{Header: "TYPE", Field: "type"},
-			{Header: "STRIKE", Field: "strike_price"},
-			{Header: "EXPIRY", Field: "expiration_date"},
-			{Header: "STATUS", Field: "status"},
-			{Header: "UNDERLYING", Field: "underlying_symbol"},
-		}
-
-		return output.Render(getOutput(), columns, data)
+		return output.Render(getOutput(), optionChainColumns(), data)
 	},
 }
 
@@ -84,11 +47,11 @@ var optionGetCmd = &cobra.Command{
 	Short: "Get option contract details",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		data, err := apiClient.Get("/v2/options/contracts/"+args[0], nil)
+		contract, err := tradingClient.GetOptionContractSymbolOrID(args[0])
 		if err != nil {
 			return err
 		}
-		return output.JSON(cmd.OutOrStdout(), data)
+		return output.JSON(cmd.OutOrStdout(), contract)
 	},
 }
 
@@ -97,7 +60,7 @@ var optionExerciseCmd = &cobra.Command{
 	Short: "Exercise an option position",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		_, err := apiClient.Post("/v2/positions/"+args[0]+"/exercise", nil)
+		_, err := tradingClient.OptionExercise(args[0])
 		if err != nil {
 			return err
 		}
@@ -111,7 +74,7 @@ var optionDoNotExerciseCmd = &cobra.Command{
 	Short: "Mark an option position as do-not-exercise",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		_, err := apiClient.Post("/v2/positions/"+args[0]+"/do-not-exercise", nil)
+		_, err := tradingClient.OptionDoNotExercise(args[0])
 		if err != nil {
 			return err
 		}
@@ -125,10 +88,10 @@ func init() {
 	optionChainCmd.Flags().String("expiry-gte", "", "Expiration date on or after (YYYY-MM-DD)")
 	optionChainCmd.Flags().String("expiry-lte", "", "Expiration date on or before (YYYY-MM-DD)")
 	optionChainCmd.Flags().String("type", "", "Option type: call or put")
-	optionChainCmd.Flags().String("strike-gte", "", "Minimum strike price")
-	optionChainCmd.Flags().String("strike-lte", "", "Maximum strike price")
+	optionChainCmd.Flags().Float64("strike-gte", 0, "Minimum strike price")
+	optionChainCmd.Flags().Float64("strike-lte", 0, "Maximum strike price")
 	optionChainCmd.Flags().String("root-symbol", "", "Root symbol for options")
-	optionChainCmd.Flags().String("limit", "", "Max results")
+	optionChainCmd.Flags().Int("limit", 0, "Max results")
 	optionChainCmd.Flags().Bool("show-deliverables", false, "Include deliverables info")
 
 	optionCmd.AddCommand(optionChainCmd)

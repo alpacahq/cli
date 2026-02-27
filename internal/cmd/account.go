@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"github.com/alpacahq/cli/internal/api"
+	"github.com/alpacahq/cli/internal/cmdutil"
 	"github.com/alpacahq/cli/internal/output"
 	"github.com/spf13/cobra"
 )
@@ -14,24 +16,11 @@ var accountGetCmd = &cobra.Command{
 	Use:   "get",
 	Short: "Show account details",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		data, err := apiClient.Get("/v2/account", nil)
+		account, err := tradingClient.GetAccount()
 		if err != nil {
 			return err
 		}
-
-		columns := []output.Column{
-			{Header: "ACCOUNT #", Field: "account_number"},
-			{Header: "STATUS", Field: "status"},
-			{Header: "EQUITY", Field: "equity"},
-			{Header: "CASH", Field: "cash"},
-			{Header: "BUYING POWER", Field: "buying_power"},
-			{Header: "PORTFOLIO VALUE", Field: "portfolio_value"},
-			{Header: "CURRENCY", Field: "currency"},
-			{Header: "PDT", Field: "pattern_day_trader"},
-			{Header: "TRADING BLOCKED", Field: "trading_blocked"},
-		}
-
-		return output.PrintSingle(getOutput(), columns, data)
+		return output.PrintSingle(getOutput(), accountColumns(), account)
 	},
 }
 
@@ -39,22 +28,11 @@ var accountConfigGetCmd = &cobra.Command{
 	Use:   "get",
 	Short: "Show account configuration",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		data, err := apiClient.Get("/v2/account/configurations", nil)
+		config, err := tradingClient.GetAccountConfig()
 		if err != nil {
 			return err
 		}
-
-		columns := []output.Column{
-			{Header: "DTBP CHECK", Field: "dtbp_check"},
-			{Header: "FRACTIONAL TRADING", Field: "fractional_trading"},
-			{Header: "MAX MARGIN MULTIPLIER", Field: "max_margin_multiplier"},
-			{Header: "NO SHORTING", Field: "no_shorting"},
-			{Header: "PDT CHECK", Field: "pdt_check"},
-			{Header: "SUSPEND TRADE", Field: "suspend_trade"},
-			{Header: "TRADE CONFIRM EMAIL", Field: "trade_confirm_email"},
-		}
-
-		return output.PrintSingle(getOutput(), columns, data)
+		return output.PrintSingle(getOutput(), accountConfigColumns(), config)
 	},
 }
 
@@ -64,56 +42,47 @@ var accountConfigSetCmd = &cobra.Command{
 	Example: `  alpaca account config set --no-shorting true
   alpaca account config set --dtbp-check entry`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		body := map[string]any{}
+		body := &api.AccountConfigurations{}
+		anyChanged := false
 
-		if cmd.Flags().Changed("dtbp-check") {
-			v, _ := cmd.Flags().GetString("dtbp-check")
-			body["dtbp_check"] = v
+		if cmdutil.Changed(cmd, "dtbp-check") {
+			body.DTBPCheck = cmdutil.Str(cmd, "dtbp-check")
+			anyChanged = true
 		}
-		if cmd.Flags().Changed("no-shorting") {
-			v, _ := cmd.Flags().GetBool("no-shorting")
-			body["no_shorting"] = v
+		if cmdutil.Changed(cmd, "no-shorting") {
+			body.NoShorting = cmdutil.Bool(cmd, "no-shorting")
+			anyChanged = true
 		}
-		if cmd.Flags().Changed("pdt-check") {
-			v, _ := cmd.Flags().GetString("pdt-check")
-			body["pdt_check"] = v
+		if cmdutil.Changed(cmd, "pdt-check") {
+			body.PDTCheck = cmdutil.Str(cmd, "pdt-check")
+			anyChanged = true
 		}
-		if cmd.Flags().Changed("fractional-trading") {
-			v, _ := cmd.Flags().GetBool("fractional-trading")
-			body["fractional_trading"] = v
+		if cmdutil.Changed(cmd, "fractional-trading") {
+			body.FractionalTrading = cmdutil.Bool(cmd, "fractional-trading")
+			anyChanged = true
 		}
-		if cmd.Flags().Changed("suspend-trade") {
-			v, _ := cmd.Flags().GetBool("suspend-trade")
-			body["suspend_trade"] = v
+		if cmdutil.Changed(cmd, "suspend-trade") {
+			body.SuspendTrade = cmdutil.Bool(cmd, "suspend-trade")
+			anyChanged = true
 		}
-		if cmd.Flags().Changed("trade-confirm-email") {
-			v, _ := cmd.Flags().GetString("trade-confirm-email")
-			body["trade_confirm_email"] = v
+		if cmdutil.Changed(cmd, "trade-confirm-email") {
+			body.TradeConfirmEmail = cmdutil.Str(cmd, "trade-confirm-email")
+			anyChanged = true
 		}
-		if cmd.Flags().Changed("max-margin-multiplier") {
-			v, _ := cmd.Flags().GetString("max-margin-multiplier")
-			body["max_margin_multiplier"] = v
+		if cmdutil.Changed(cmd, "max-margin-multiplier") {
+			body.MaxMarginMultiplier = cmdutil.Str(cmd, "max-margin-multiplier")
+			anyChanged = true
 		}
 
-		if len(body) == 0 {
+		if !anyChanged {
 			return cmd.Help()
 		}
 
-		data, err := apiClient.Patch("/v2/account/configurations", body)
+		config, err := tradingClient.PatchAccountConfig(body)
 		if err != nil {
 			return err
 		}
-
-		columns := []output.Column{
-			{Header: "DTBP CHECK", Field: "dtbp_check"},
-			{Header: "FRACTIONAL TRADING", Field: "fractional_trading"},
-			{Header: "MAX MARGIN MULTIPLIER", Field: "max_margin_multiplier"},
-			{Header: "NO SHORTING", Field: "no_shorting"},
-			{Header: "PDT CHECK", Field: "pdt_check"},
-			{Header: "SUSPEND TRADE", Field: "suspend_trade"},
-			{Header: "TRADE CONFIRM EMAIL", Field: "trade_confirm_email"},
-		}
-		return output.PrintSingle(getOutput(), columns, data)
+		return output.PrintSingle(getOutput(), accountConfigColumns(), config)
 	},
 }
 

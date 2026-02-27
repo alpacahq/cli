@@ -3,9 +3,10 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"net/url"
 	"strings"
 
+	"github.com/alpacahq/cli/internal/api"
+	"github.com/alpacahq/cli/internal/cmdutil"
 	"github.com/alpacahq/cli/internal/output"
 	"github.com/spf13/cobra"
 )
@@ -37,62 +38,58 @@ var sellCmd = &cobra.Command{
 func submitShortcut(cmd *cobra.Command, args []string, side string) error {
 	symbol := args[0]
 
-	body := map[string]any{
-		"symbol": symbol,
-		"side":   side,
-		"type":   "market",
+	body := &api.PostOrderRequest{
+		Symbol: symbol,
+		Side:   api.OrderSide(side),
+		Type:   "market",
 	}
 
 	if len(args) > 1 {
-		body["qty"] = args[1]
+		body.Qty = args[1]
 	}
 
-	notional, _ := cmd.Flags().GetString("notional")
+	notional := cmdutil.Str(cmd, "notional")
 	if notional != "" {
-		body["notional"] = notional
-		delete(body, "qty")
+		body.Notional = notional
+		body.Qty = ""
 	}
 
-	if body["qty"] == nil && notional == "" {
+	if body.Qty == "" && notional == "" {
 		return fmt.Errorf("either <qty> argument or --notional flag is required")
 	}
 
-	limitPrice, _ := cmd.Flags().GetString("limit")
+	limitPrice := cmdutil.Str(cmd, "limit")
 	if limitPrice != "" {
-		body["type"] = "limit"
-		body["limit_price"] = limitPrice
+		body.Type = "limit"
+		body.LimitPrice = limitPrice
 	}
 
-	tif, _ := cmd.Flags().GetString("tif")
+	tif := cmdutil.Str(cmd, "tif")
 	if tif != "" {
-		body["time_in_force"] = tif
+		body.TimeInForce = api.TimeInForce(tif)
 	} else {
-		body["time_in_force"] = "day"
+		body.TimeInForce = "day"
 	}
 
-	extendedHours, _ := cmd.Flags().GetBool("extended-hours")
-	if extendedHours {
-		body["extended_hours"] = true
-	}
+	body.ExtendedHours = cmdutil.Bool(cmd, "extended-hours")
 
-	takeProfit, _ := cmd.Flags().GetString("take-profit")
-	stopLoss, _ := cmd.Flags().GetString("stop-loss")
+	takeProfit := cmdutil.Str(cmd, "take-profit")
+	stopLoss := cmdutil.Str(cmd, "stop-loss")
 	if takeProfit != "" || stopLoss != "" {
-		body["order_class"] = "bracket"
+		body.OrderClass = "bracket"
 		if takeProfit != "" {
-			body["take_profit"] = map[string]any{"limit_price": takeProfit}
+			body.TakeProfit = map[string]any{"limit_price": takeProfit}
 		}
 		if stopLoss != "" {
-			body["stop_loss"] = map[string]any{"stop_price": stopLoss}
+			body.StopLoss = map[string]any{"stop_price": stopLoss}
 		}
 	}
 
-	data, err := apiClient.Post("/v2/orders", body)
+	order, err := tradingClient.PostOrder(body)
 	if err != nil {
 		return err
 	}
-
-	return output.PrintSingle(getOutput(), orderColumns(), data)
+	return output.PrintSingle(getOutput(), orderColumns(), order)
 }
 
 var priceCmd = &cobra.Command{
@@ -155,11 +152,11 @@ var positionsShortcut = &cobra.Command{
 	Use:   "positions",
 	Short: "List all open positions (shortcut)",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		data, err := apiClient.Get("/v2/positions", nil)
+		positions, err := tradingClient.GetAllOpenPositions()
 		if err != nil {
 			return err
 		}
-		return output.Render(getOutput(), positionColumns(), data)
+		return output.Render(getOutput(), positionColumns(), positions)
 	},
 }
 
@@ -167,13 +164,13 @@ var ordersShortcut = &cobra.Command{
 	Use:   "orders",
 	Short: "List open orders (shortcut)",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		params := url.Values{}
-		params.Set("status", "open")
-		data, err := apiClient.Get("/v2/orders", params)
+		orders, err := tradingClient.GetAllOrders(&api.GetAllOrdersParams{
+			Status: "open",
+		})
 		if err != nil {
 			return err
 		}
-			return output.Render(getOutput(), orderColumns(), data)
+		return output.Render(getOutput(), orderColumns(), orders)
 	},
 }
 

@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"net/url"
-
+	"github.com/alpacahq/cli/internal/api"
+	"github.com/alpacahq/cli/internal/cmdutil"
 	"github.com/alpacahq/cli/internal/output"
 	"github.com/spf13/cobra"
 )
@@ -19,37 +19,17 @@ var assetListCmd = &cobra.Command{
   alpaca asset list --class us_equity --status active
   alpaca asset list --exchange NYSE`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		params := url.Values{}
-		status, _ := cmd.Flags().GetString("status")
-		if status != "" {
-			params.Set("status", status)
-		}
-		class, _ := cmd.Flags().GetString("class")
-		if class != "" {
-			params.Set("asset_class", class)
-		}
-		exchange, _ := cmd.Flags().GetString("exchange")
-		if exchange != "" {
-			params.Set("exchange", exchange)
+		params := &api.GetV2AssetsParams{
+			Status:     cmdutil.Str(cmd, "status"),
+			AssetClass: cmdutil.Str(cmd, "class"),
+			Exchange:   cmdutil.Str(cmd, "exchange"),
 		}
 
-		data, err := apiClient.Get("/v2/assets", params)
+		assets, err := tradingClient.GetV2Assets(params)
 		if err != nil {
 			return err
 		}
-
-		columns := []output.Column{
-			{Header: "SYMBOL", Field: "symbol"},
-			{Header: "NAME", Field: "name"},
-			{Header: "CLASS", Field: "class"},
-			{Header: "EXCHANGE", Field: "exchange"},
-			{Header: "STATUS", Field: "status"},
-			{Header: "TRADABLE", Field: "tradable"},
-			{Header: "SHORTABLE", Field: "shortable"},
-			{Header: "FRACTIONABLE", Field: "fractionable"},
-		}
-
-		return output.Render(getOutput(), columns, data)
+		return output.Render(getOutput(), assetListColumns(), assets)
 	},
 }
 
@@ -58,25 +38,11 @@ var assetGetCmd = &cobra.Command{
 	Short: "Get asset details",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		data, err := apiClient.Get("/v2/assets/"+args[0], nil)
+		asset, err := tradingClient.GetV2AssetsSymbolOrAssetID(args[0])
 		if err != nil {
 			return err
 		}
-
-		columns := []output.Column{
-			{Header: "SYMBOL", Field: "symbol"},
-			{Header: "NAME", Field: "name"},
-			{Header: "CLASS", Field: "class"},
-			{Header: "EXCHANGE", Field: "exchange"},
-			{Header: "STATUS", Field: "status"},
-			{Header: "TRADABLE", Field: "tradable"},
-			{Header: "SHORTABLE", Field: "shortable"},
-			{Header: "FRACTIONABLE", Field: "fractionable"},
-			{Header: "MARGINABLE", Field: "marginable"},
-			{Header: "EASY TO BORROW", Field: "easy_to_borrow"},
-		}
-
-		return output.PrintSingle(getOutput(), columns, data)
+		return output.PrintSingle(getOutput(), assetDetailColumns(), asset)
 	},
 }
 
