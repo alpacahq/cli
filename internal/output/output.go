@@ -1,0 +1,213 @@
+package output
+
+import (
+	"encoding/csv"
+	"encoding/json"
+	"fmt"
+	"io"
+	"os"
+	"strings"
+	"text/tabwriter"
+
+	"github.com/fatih/color"
+)
+
+type Column struct {
+	Header string
+	Field  string
+	Width  int
+	Right  bool
+	Format func(any) string
+}
+
+func Render(format string, columns []Column, data any) error {
+	return RenderTo(os.Stdout, format, columns, data)
+}
+
+func RenderTo(w io.Writer, format string, columns []Column, data any) error {
+	switch format {
+	case "json":
+		return JSON(w, data)
+	case "csv":
+		return CSV(w, columns, data)
+	default:
+		return Table(w, columns, data)
+	}
+}
+
+func JSON(w io.Writer, data any) error {
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+	return enc.Encode(data)
+}
+
+func Table(w io.Writer, columns []Column, data any) error {
+	rows := toRows(data)
+	if len(rows) == 0 {
+		fmt.Fprintln(w, "No results.")
+		return nil
+	}
+
+	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
+
+	headers := make([]string, len(columns))
+	for i, c := range columns {
+		headers[i] = c.Header
+	}
+	fmt.Fprintln(tw, strings.Join(headers, "\t"))
+
+	for _, row := range rows {
+		vals := make([]string, len(columns))
+		for i, c := range columns {
+			vals[i] = formatField(row, c)
+		}
+		fmt.Fprintln(tw, strings.Join(vals, "\t"))
+	}
+
+	return tw.Flush()
+}
+
+func CSV(w io.Writer, columns []Column, data any) error {
+	rows := toRows(data)
+	cw := csv.NewWriter(w)
+
+	headers := make([]string, len(columns))
+	for i, c := range columns {
+		headers[i] = c.Field
+	}
+	cw.Write(headers)
+
+	for _, row := range rows {
+		vals := make([]string, len(columns))
+		for i, c := range columns {
+			vals[i] = rawField(row, c.Field)
+		}
+		cw.Write(vals)
+	}
+
+	cw.Flush()
+	return cw.Error()
+}
+
+func PrintSingle(format string, columns []Column, data any) error {
+	switch format {
+	case "json":
+		return JSON(os.Stdout, data)
+	case "csv":
+		return CSV(os.Stdout, columns, data)
+	default:
+		row := toMap(data)
+		if row == nil {
+			return fmt.Errorf("no data")
+		}
+
+		tw := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+		for _, c := range columns {
+			val := formatField(row, c)
+			fmt.Fprintf(tw, "%s:\t%s\n", c.Header, val)
+		}
+		return tw.Flush()
+	}
+}
+
+func ColorPL(val string) string {
+	if strings.HasPrefix(val, "-") {
+		return color.RedString(val)
+	}
+	if val != "0" && val != "0.00" && val != "" {
+		return color.GreenString("+" + val)
+	}
+	return val
+}
+
+func DollarPL(val string) string {
+	if val == "" {
+		return "$0.00"
+	}
+	if strings.HasPrefix(val, "-") {
+		return color.RedString("-$" + val[1:])
+	}
+	if val != "0" && val != "0.00" {
+		return color.GreenString("+$" + val)
+	}
+	return "$" + val
+}
+
+func PercentPL(val string) string {
+	if val == "" {
+		return "0.00%"
+	}
+	return ColorPL(val) + "%"
+}
+
+func toRows(data any) []map[string]any {
+	switch v := data.(type) {
+	case []map[string]any:
+		return v
+	case json.RawMessage:
+		var arr []map[string]any
+		if json.Unmarshal(v, &arr) == nil {
+			return arr
+		}
+		var single map[string]any
+		if json.Unmarshal(v, &single) == nil {
+			return []map[string]any{single}
+		}
+		return nil
+	default:
+		b, _ := json.Marshal(v)
+		var arr []map[string]any
+		if json.Unmarshal(b, &arr) == nil {
+			return arr
+		}
+		return nil
+	}
+}
+
+func toMap(data any) map[string]any {
+	switch v := data.(type) {
+	case map[string]any:
+		return v
+	case json.RawMessage:
+		var m map[string]any
+		json.Unmarshal(v, &m)
+		return m
+	default:
+		b, _ := json.Marshal(v)
+		var m map[string]any
+		json.Unmarshal(b, &m)
+		return m
+	}
+}
+
+func formatField(row map[string]any, col Column) string {
+	if col.Format != nil {
+		return col.Format(row[col.Field])
+	}
+	return rawField(row, col.Field)
+}
+
+func rawField(row map[string]any, field string) string {
+	v, ok := row[field]
+	if !ok {
+		return ""
+	}
+	switch val := v.(type) {
+	case string:
+		return val
+	case float64:
+		if val == float64(int64(val)) {
+			return fmt.Sprintf("%d", int64(val))
+		}
+		return fmt.Sprintf("%.2f", val)
+	case bool:
+		if val {
+			return "true"
+		}
+		return "false"
+	case nil:
+		return ""
+	default:
+		return fmt.Sprintf("%v", val)
+	}
+}

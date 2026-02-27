@@ -1,0 +1,39 @@
+version: 2
+
+builds:
+  - main: ./cmd/alpaca
+    binary: alpaca
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+
+brews:
+  - repository:
+      owner: alpacahq
+      name: homebrew-tap
+    homepage: https://alpaca.markets
+    description: CLI for Alpaca Trading API
