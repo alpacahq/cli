@@ -12,7 +12,7 @@ func TestDataBars(t *testing.T) {
 		"--start", "2025-01-02",
 		"--end", "2025-01-10",
 		"--timeframe", "1Day",
-		"-o", "json",
+		"--json",
 	)
 
 	bars := parseJSONArray(t, out)
@@ -29,7 +29,7 @@ func TestDataBars(t *testing.T) {
 }
 
 func TestDataLatestTrade(t *testing.T) {
-	out := alpaca(t, "data", "latest", "trade", "AAPL", "-o", "json")
+	out := alpaca(t, "data", "latest", "trade", "AAPL", "--json")
 	data := parseJSONMap(t, out)
 
 	// Response has "trade" key for single stock
@@ -39,7 +39,7 @@ func TestDataLatestTrade(t *testing.T) {
 }
 
 func TestDataLatestQuote(t *testing.T) {
-	out := alpaca(t, "data", "latest", "quote", "AAPL", "-o", "json")
+	out := alpaca(t, "data", "latest", "quote", "AAPL", "--json")
 	data := parseJSONMap(t, out)
 
 	if _, ok := data["quote"]; !ok {
@@ -48,7 +48,7 @@ func TestDataLatestQuote(t *testing.T) {
 }
 
 func TestDataSnapshot(t *testing.T) {
-	out := alpaca(t, "data", "snapshot", "AAPL", "-o", "json")
+	out := alpaca(t, "data", "snapshot", "AAPL", "--json")
 	data := parseJSONMap(t, out)
 
 	for _, key := range []string{"latestTrade", "latestQuote", "minuteBar", "dailyBar"} {
@@ -59,7 +59,7 @@ func TestDataSnapshot(t *testing.T) {
 }
 
 func TestDataNews(t *testing.T) {
-	out := alpaca(t, "news", "--symbols", "AAPL", "--limit", "5", "-o", "json")
+	out := alpaca(t, "news", "--symbols", "AAPL", "--limit", "5", "--json")
 	news := parseJSONArray(t, out)
 
 	if len(news) == 0 {

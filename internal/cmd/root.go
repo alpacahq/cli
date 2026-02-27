@@ -7,10 +7,11 @@ import (
 )
 
 var (
-	version    = "dev"
-	cfg        *config.Resolved
-	apiClient  *client.Client
-	outputFlag string
+	version     = "dev"
+	cfg         *config.Resolved
+	apiClient   *client.Client
+	jsonFlag    bool
+	csvFlag     bool
 	profileFlag string
 )
 
@@ -39,7 +40,7 @@ var rootCmd = &cobra.Command{
 		}
 
 		var err error
-		cfg, err = config.Load(profileFlag, outputFlag)
+		cfg, err = config.Load(profileFlag, resolveOutputFlag())
 		if err != nil {
 			return err
 		}
@@ -56,7 +57,9 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&outputFlag, "output", "o", "", "Output format: table, json, csv")
+	rootCmd.PersistentFlags().BoolVar(&jsonFlag, "json", false, "Output as JSON")
+	rootCmd.PersistentFlags().BoolVar(&csvFlag, "csv", false, "Output as CSV")
+	rootCmd.MarkFlagsMutuallyExclusive("json", "csv")
 	rootCmd.PersistentFlags().StringVarP(&profileFlag, "profile", "p", "", "Config profile to use")
 
 	rootCmd.AddCommand(versionCmd)
@@ -96,12 +99,25 @@ func needsAuth(cmd *cobra.Command) bool {
 	return true
 }
 
+func resolveOutputFlag() string {
+	if jsonFlag {
+		return "json"
+	}
+	if csvFlag {
+		return "csv"
+	}
+	return ""
+}
+
 func getOutput() string {
+	if jsonFlag {
+		return "json"
+	}
+	if csvFlag {
+		return "csv"
+	}
 	if cfg != nil {
 		return cfg.Output
-	}
-	if outputFlag != "" {
-		return outputFlag
 	}
 	return "table"
 }

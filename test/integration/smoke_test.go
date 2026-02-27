@@ -15,7 +15,7 @@ func TestSmoke_Version(t *testing.T) {
 }
 
 func TestSmoke_Account(t *testing.T) {
-	out := alpaca(t, "account", "get", "-o", "json")
+	out := alpaca(t, "account", "get", "--json")
 	acct := parseJSONMap(t, out)
 
 	for _, field := range []string{"id", "status", "equity", "buying_power", "cash"} {
@@ -26,7 +26,7 @@ func TestSmoke_Account(t *testing.T) {
 }
 
 func TestSmoke_Clock(t *testing.T) {
-	out := alpaca(t, "clock", "-o", "json")
+	out := alpaca(t, "clock", "--json")
 	clock := parseJSONMap(t, out)
 
 	for _, field := range []string{"is_open", "next_open", "next_close"} {
@@ -37,7 +37,7 @@ func TestSmoke_Clock(t *testing.T) {
 }
 
 func TestSmoke_Calendar(t *testing.T) {
-	out := alpaca(t, "calendar", "--start", "2025-01-01", "--end", "2025-01-31", "-o", "json")
+	out := alpaca(t, "calendar", "--start", "2025-01-01", "--end", "2025-01-31", "--json")
 	days := parseJSONArray(t, out)
 
 	if len(days) == 0 {
@@ -49,7 +49,7 @@ func TestSmoke_Calendar(t *testing.T) {
 }
 
 func TestSmoke_AccountConfig(t *testing.T) {
-	out := alpaca(t, "account", "config", "get", "-o", "json")
+	out := alpaca(t, "account", "config", "get", "--json")
 	cfg := parseJSONMap(t, out)
 
 	if _, ok := cfg["dtbp_check"]; !ok {
@@ -58,7 +58,7 @@ func TestSmoke_AccountConfig(t *testing.T) {
 }
 
 func TestSmoke_Assets(t *testing.T) {
-	out := alpaca(t, "asset", "get", "AAPL", "-o", "json")
+	out := alpaca(t, "asset", "get", "AAPL", "--json")
 	asset := parseJSONMap(t, out)
 
 	if asset["symbol"] != "AAPL" {

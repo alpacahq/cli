@@ -16,7 +16,7 @@ func TestOrderLifecycle(t *testing.T) {
 		"--type", "limit",
 		"--limit-price", "1.00",
 		"--tif", "gtc",
-		"-o", "json",
+		"--json",
 	)
 
 	order := parseJSONMap(t, out)
@@ -39,14 +39,14 @@ func TestOrderLifecycle(t *testing.T) {
 	time.Sleep(500 * time.Millisecond)
 
 	// Get order by ID
-	out = alpaca(t, "order", "get", orderID, "-o", "json")
+	out = alpaca(t, "order", "get", orderID, "--json")
 	fetched := parseJSONMap(t, out)
 	if fetched["id"] != orderID {
 		t.Errorf("get returned wrong order: %v", fetched["id"])
 	}
 
 	// List open orders — should contain our order
-	out = alpaca(t, "order", "list", "--status", "open", "-o", "json")
+	out = alpaca(t, "order", "list", "--status", "open", "--json")
 	orders := parseJSONArray(t, out)
 	if !containsID(orders, orderID) {
 		t.Error("open orders list does not contain our order")
@@ -57,7 +57,7 @@ func TestOrderLifecycle(t *testing.T) {
 	time.Sleep(500 * time.Millisecond)
 
 	// Verify cancelled
-	out = alpaca(t, "order", "get", orderID, "-o", "json")
+	out = alpaca(t, "order", "get", orderID, "--json")
 	cancelled := parseJSONMap(t, out)
 	status, _ := cancelled["status"].(string)
 	if status != "canceled" && status != "cancelled" && status != "pending_cancel" {
@@ -69,7 +69,7 @@ func TestBuyShortcut(t *testing.T) {
 	out := alpaca(t, "buy", "AAPL", "1",
 		"--limit", "1.00",
 		"--tif", "gtc",
-		"-o", "json",
+		"--json",
 	)
 
 	order := parseJSONMap(t, out)
@@ -98,7 +98,7 @@ func TestOrderCancelAll(t *testing.T) {
 			"--type", "limit",
 			"--limit-price", "1.00",
 			"--tif", "gtc",
-			"-o", "json",
+			"--json",
 		)
 	}
 
@@ -110,7 +110,7 @@ func TestOrderCancelAll(t *testing.T) {
 	time.Sleep(1 * time.Second)
 
 	// Verify no open orders remain
-	out := alpaca(t, "order", "list", "--status", "open", "-o", "json")
+	out := alpaca(t, "order", "list", "--status", "open", "--json")
 	orders := parseJSONArray(t, out)
 	if len(orders) > 0 {
 		t.Errorf("expected 0 open orders after cancel-all, got %d", len(orders))

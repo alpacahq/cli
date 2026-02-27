@@ -70,8 +70,8 @@ Every command supports `--help` for full flag documentation.
 
 ```bash
 alpaca positions              # Pretty table (default)
-alpaca positions -o json      # JSON for scripts and agents
-alpaca positions -o csv       # CSV for spreadsheets
+alpaca positions --json       # JSON for scripts and agents
+alpaca positions --csv        # CSV for spreadsheets
 ```
 
 ## Configuration
@@ -101,8 +101,8 @@ Precedence: flags > env vars > profile config > defaults.
 Designed for scripting and AI agent integration:
 
 ```bash
-result=$(alpaca positions -o json)
-price=$(alpaca data latest trade AAPL -o json)
+result=$(alpaca positions --json)
+price=$(alpaca data latest trade AAPL --json)
 
 # Exit codes: 0=success, 1=API error, 2=auth error, 3=validation, 4=network
 ```
