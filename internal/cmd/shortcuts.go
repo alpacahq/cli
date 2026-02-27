@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/alpacahq/cli/internal/output"
 	"github.com/spf13/cobra"
@@ -97,9 +98,21 @@ func submitShortcut(cmd *cobra.Command, args []string, side string) error {
 var priceCmd = &cobra.Command{
 	Use:   "price <symbol>",
 	Short: "Get latest price for a symbol",
-	Args:  cobra.ExactArgs(1),
+	Example: `  alpaca price AAPL
+  alpaca price BTC/USD`,
+	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		data, err := apiClient.GetData("/v2/stocks/"+args[0]+"/snapshot", nil)
+		symbol := args[0]
+
+		var path string
+		if isCrypto(symbol) {
+			encoded := strings.ReplaceAll(symbol, "/", "%2F")
+			path = "/v1beta3/crypto/us/snapshots/" + encoded
+		} else {
+			path = "/v2/stocks/" + symbol + "/snapshot"
+		}
+
+		data, err := apiClient.GetData(path, nil)
 		if err != nil {
 			return err
 		}
@@ -113,10 +126,19 @@ var priceCmd = &cobra.Command{
 			return err
 		}
 
-		latestTrade, _ := m["latestTrade"].(map[string]any)
-		latestQuote, _ := m["latestQuote"].(map[string]any)
+		snapshot := m
+		if isCrypto(symbol) {
+			if snapshots, ok := m["snapshots"].(map[string]any); ok {
+				if s, ok := snapshots[symbol].(map[string]any); ok {
+					snapshot = s
+				}
+			}
+		}
 
-		fmt.Printf("%s\n", args[0])
+		latestTrade, _ := snapshot["latestTrade"].(map[string]any)
+		latestQuote, _ := snapshot["latestQuote"].(map[string]any)
+
+		fmt.Printf("%s\n", symbol)
 		if latestTrade != nil {
 			fmt.Printf("  Price:  $%v\n", latestTrade["p"])
 		}
