@@ -65,25 +65,6 @@ func alpaca(t *testing.T, args ...string) []byte {
 	return out
 }
 
-// alpacaExpectFail runs the CLI and expects it to fail.
-func alpacaExpectFail(t *testing.T, args ...string) (stdout, stderr []byte, exitCode int) {
-	t.Helper()
-	cmd := exec.Command(cliBinary, args...)
-	cmd.Env = cliEnv()
-
-	out, err := cmd.Output()
-	if err == nil {
-		t.Fatalf("expected alpaca %s to fail, but it succeeded:\n%s", strings.Join(args, " "), string(out))
-	}
-
-	var exitErr *exec.ExitError
-	if errors.As(err, &exitErr) {
-		return out, exitErr.Stderr, exitErr.ExitCode()
-	}
-	t.Fatalf("unexpected error type: %v", err)
-	return nil, nil, 0
-}
-
 func parseJSON[T any](t *testing.T, data []byte) T {
 	t.Helper()
 	var v T

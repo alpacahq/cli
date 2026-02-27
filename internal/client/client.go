@@ -15,8 +15,6 @@ import (
 
 const ExitAPIError = 1
 const ExitAuthError = 2
-const ExitValidationError = 3
-const ExitNetworkError = 4
 
 type Client struct {
 	HTTP      *http.Client

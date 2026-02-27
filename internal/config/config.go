@@ -96,28 +96,29 @@ func ResolveBaseURL(value string) string {
 	}
 }
 
-// BaseURLForEnv is an alias for ResolveBaseURL (backwards compat).
-func BaseURLForEnv(env string) string {
-	return ResolveBaseURL(env)
-}
-
 func loadGlobalConfig() Config {
 	var cfg Config
-	data, err := os.ReadFile(filepath.Join(Dir(), "config.yaml"))
+	path := filepath.Join(Dir(), "config.yaml")
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return cfg
 	}
-	yaml.Unmarshal(data, &cfg)
+	if err := yaml.Unmarshal(data, &cfg); err != nil {
+		fmt.Fprintf(os.Stderr, "Warning: failed to parse %s: %v\n", path, err)
+	}
 	return cfg
 }
 
 func loadProfile(name string) Profile {
 	var p Profile
-	data, err := os.ReadFile(filepath.Join(Dir(), "profiles", name+".yaml"))
+	path := filepath.Join(Dir(), "profiles", name+".yaml")
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return p
 	}
-	yaml.Unmarshal(data, &p)
+	if err := yaml.Unmarshal(data, &p); err != nil {
+		fmt.Fprintf(os.Stderr, "Warning: failed to parse %s: %v\n", path, err)
+	}
 	return p
 }
 

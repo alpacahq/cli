@@ -21,17 +21,13 @@ type Column struct {
 }
 
 func Render(format string, columns []Column, data any) error {
-	return RenderTo(os.Stdout, format, columns, data)
-}
-
-func RenderTo(w io.Writer, format string, columns []Column, data any) error {
 	switch format {
 	case "json":
-		return JSON(w, data)
+		return JSON(os.Stdout, data)
 	case "csv":
-		return CSV(w, columns, data)
+		return CSV(os.Stdout, columns, data)
 	default:
-		return Table(w, columns, data)
+		return Table(os.Stdout, columns, data)
 	}
 }
 
