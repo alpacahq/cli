@@ -88,6 +88,7 @@ func init() {
 	optionChainCmd.Flags().String("expiry-gte", "", "Expiration date on or after (YYYY-MM-DD)")
 	optionChainCmd.Flags().String("expiry-lte", "", "Expiration date on or before (YYYY-MM-DD)")
 	optionChainCmd.Flags().String("type", "", "Option type: call or put")
+	optionChainCmd.RegisterFlagCompletionFunc("type", cobra.FixedCompletions([]string{"call", "put"}, cobra.ShellCompDirectiveNoFileComp))
 	optionChainCmd.Flags().Float64("strike-gte", 0, "Minimum strike price")
 	optionChainCmd.Flags().Float64("strike-lte", 0, "Maximum strike price")
 	optionChainCmd.Flags().String("root-symbol", "", "Root symbol for options")

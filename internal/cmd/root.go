@@ -1,10 +1,22 @@
 package cmd
 
 import (
+	"errors"
+	"fmt"
+	"os"
+
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/client"
 	"github.com/alpacahq/cli/internal/config"
 	"github.com/spf13/cobra"
+)
+
+const (
+	exitSuccess    = 0
+	exitAPIError   = 1
+	exitAuthError  = 2
+	exitValidation = 3
+	exitNetwork    = 4
 )
 
 var (
@@ -24,7 +36,16 @@ func SetVersion(v string) {
 }
 
 func Execute() error {
-	return rootCmd.Execute()
+	err := rootCmd.Execute()
+	if err != nil {
+		var apiErr *client.APIError
+		if errors.As(err, &apiErr) {
+			os.Exit(apiErr.ExitCode())
+		}
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(exitAPIError)
+	}
+	return nil
 }
 
 var rootCmd = &cobra.Command{
@@ -82,6 +103,7 @@ func init() {
 	rootCmd.AddCommand(activityCmd)
 	rootCmd.AddCommand(screenerCmd)
 	rootCmd.AddCommand(corporateActionCmd)
+	rootCmd.AddCommand(walletCmd)
 	rootCmd.AddCommand(apiCmd)
 	rootCmd.AddCommand(updateCmd)
 

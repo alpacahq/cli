@@ -14,7 +14,21 @@ import (
 var clockCmd = &cobra.Command{
 	Use:   "clock",
 	Short: "Show market clock",
+	Example: `  alpaca clock
+  alpaca clock --markets XNYS,XNAS`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		markets := cmdutil.Str(cmd, "markets")
+
+		if markets != "" {
+			resp, err := tradingClient.Clock(&api.ClockParams{
+				Markets: markets,
+			})
+			if err != nil {
+				return err
+			}
+			return output.JSON(cmd.OutOrStdout(), resp)
+		}
+
 		clock, err := tradingClient.LegacyClock()
 		if err != nil {
 			return err
@@ -39,8 +53,22 @@ var calendarCmd = &cobra.Command{
 	Use:   "calendar",
 	Short: "Show trading calendar",
 	Example: `  alpaca calendar
-  alpaca calendar --start 2025-01-01 --end 2025-12-31`,
+  alpaca calendar --start 2025-01-01 --end 2025-12-31
+  alpaca calendar --market XNYS --start 2025-01-01`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		market := cmdutil.Str(cmd, "market")
+
+		if market != "" {
+			resp, err := tradingClient.Calendar(market, &api.CalendarParams{
+				Start: cmdutil.Str(cmd, "start"),
+				End:   cmdutil.Str(cmd, "end"),
+			})
+			if err != nil {
+				return err
+			}
+			return output.JSON(cmd.OutOrStdout(), resp)
+		}
+
 		params := &api.LegacyCalendarParams{
 			Start: cmdutil.Str(cmd, "start"),
 			End:   cmdutil.Str(cmd, "end"),
@@ -89,12 +117,13 @@ var newsCmd = &cobra.Command{
   alpaca news --symbols AAPL,MSFT --limit 10`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		params := &api.NewsParams{
-			Symbols:        cmdutil.Str(cmd, "symbols"),
-			Start:          cmdutil.Str(cmd, "start"),
-			End:            cmdutil.Str(cmd, "end"),
-			Sort:           cmdutil.Str(cmd, "sort"),
-			IncludeContent: cmdutil.Bool(cmd, "include-content"),
-			Limit:          cmdutil.Int(cmd, "limit"),
+			Symbols:            cmdutil.Str(cmd, "symbols"),
+			Start:              cmdutil.Str(cmd, "start"),
+			End:                cmdutil.Str(cmd, "end"),
+			Sort:               cmdutil.Str(cmd, "sort"),
+			IncludeContent:     cmdutil.Bool(cmd, "include-content"),
+			ExcludeContentless: cmdutil.Bool(cmd, "exclude-contentless"),
+			Limit:              cmdutil.Int(cmd, "limit"),
 		}
 		if params.Limit == 0 {
 			params.Limit = 10
@@ -105,15 +134,17 @@ var newsCmd = &cobra.Command{
 			return err
 		}
 
-		// Unwrap the news array from the response
 		newsData, _ := json.Marshal(resp.News)
 		return output.Render(getOutput(), newsColumns(), json.RawMessage(newsData))
 	},
 }
 
 func init() {
+	clockCmd.Flags().String("markets", "", "Market MICs for v3 multi-market clock (e.g. XNYS,XNAS)")
+
 	calendarCmd.Flags().String("start", "", "Start date (YYYY-MM-DD)")
 	calendarCmd.Flags().String("end", "", "End date (YYYY-MM-DD)")
+	calendarCmd.Flags().String("market", "", "Market MIC for v3 calendar (e.g. XNYS)")
 
 	portfolioHistoryCmd.Flags().String("period", "", "Period: 1D, 1W, 1M, 3M, 1A, all")
 	portfolioHistoryCmd.Flags().String("timeframe", "", "Timeframe: 1Min, 5Min, 15Min, 1H, 1D")
@@ -129,4 +160,5 @@ func init() {
 	newsCmd.Flags().Int("limit", 0, "Max articles (default: 10)")
 	newsCmd.Flags().String("sort", "", "Sort order: asc or desc")
 	newsCmd.Flags().Bool("include-content", false, "Include full article content")
+	newsCmd.Flags().Bool("exclude-contentless", false, "Exclude articles without content")
 }

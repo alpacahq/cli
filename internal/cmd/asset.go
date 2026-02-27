@@ -46,11 +46,55 @@ var assetGetCmd = &cobra.Command{
 	},
 }
 
+var treasuryListCmd = &cobra.Command{
+	Use:   "treasury",
+	Short: "List US Treasury bonds",
+	Example: `  alpaca asset treasury
+  alpaca asset treasury --status active`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		resp, err := tradingClient.UsTreasuries(&api.UsTreasuriesParams{
+			BondStatus: cmdutil.Str(cmd, "status"),
+			Cusips:     cmdutil.Str(cmd, "cusips"),
+		})
+		if err != nil {
+			return err
+		}
+		return output.Render(getOutput(), treasuryColumns(), resp.UsTreasuries)
+	},
+}
+
+var bondListCmd = &cobra.Command{
+	Use:   "bond",
+	Short: "List US Corporate bonds",
+	Example: `  alpaca asset bond
+  alpaca asset bond --status active`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		resp, err := tradingClient.UsCorporates(&api.UsCorporatesParams{
+			BondStatus: cmdutil.Str(cmd, "status"),
+			Cusips:     cmdutil.Str(cmd, "cusips"),
+		})
+		if err != nil {
+			return err
+		}
+		return output.Render(getOutput(), bondColumns(), resp.UsCorporates)
+	},
+}
+
 func init() {
 	assetListCmd.Flags().String("status", "", "Filter: active or inactive")
+	assetListCmd.RegisterFlagCompletionFunc("status", cobra.FixedCompletions([]string{"active", "inactive"}, cobra.ShellCompDirectiveNoFileComp))
 	assetListCmd.Flags().String("class", "", "Asset class: us_equity, crypto")
+	assetListCmd.RegisterFlagCompletionFunc("class", cobra.FixedCompletions([]string{"us_equity", "crypto", "us_option", "fixed_income"}, cobra.ShellCompDirectiveNoFileComp))
 	assetListCmd.Flags().String("exchange", "", "Exchange: NYSE, NASDAQ, etc.")
+	assetListCmd.RegisterFlagCompletionFunc("exchange", cobra.FixedCompletions([]string{"NYSE", "NASDAQ", "AMEX", "ARCA", "BATS", "OTC", "FTXU", "CBSE", "ERSX"}, cobra.ShellCompDirectiveNoFileComp))
+
+	treasuryListCmd.Flags().String("status", "", "Bond status: active or inactive")
+	treasuryListCmd.Flags().String("cusips", "", "Filter by CUSIPs (comma-separated)")
+	bondListCmd.Flags().String("status", "", "Bond status: active or inactive")
+	bondListCmd.Flags().String("cusips", "", "Filter by CUSIPs (comma-separated)")
 
 	assetCmd.AddCommand(assetListCmd)
 	assetCmd.AddCommand(assetGetCmd)
+	assetCmd.AddCommand(treasuryListCmd)
+	assetCmd.AddCommand(bondListCmd)
 }

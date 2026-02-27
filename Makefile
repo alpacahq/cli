@@ -2,7 +2,7 @@ VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev
 LDFLAGS := -ldflags "-s -w -X main.version=$(VERSION)"
 BINARY := alpaca
 
-.PHONY: build install test test-integration lint clean
+.PHONY: build install test test-integration lint clean generate spec-update
 
 build:
 	go build $(LDFLAGS) -o bin/$(BINARY) ./cmd/alpaca
@@ -21,3 +21,12 @@ lint:
 
 clean:
 	rm -rf bin/
+
+generate:
+	go run ./cmd/generate
+
+spec-update:
+	@echo "Fetching latest OpenAPI specs..."
+	curl -sSfL "https://docs.alpaca.markets/_mock/openapi/trading/bundled" | python3 -m json.tool > api/specs/trading-api.json
+	curl -sSfL "https://docs.alpaca.markets/_mock/openapi/data/bundled" | python3 -m json.tool > api/specs/market-data-api.json
+	@echo "Specs updated. Run 'make generate' to regenerate client code."

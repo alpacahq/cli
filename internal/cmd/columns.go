@@ -209,6 +209,70 @@ func screenerMoverColumns() []output.Column {
 	}
 }
 
+func forexRateColumns() []output.Column {
+	return []output.Column{
+		{Header: "TIMESTAMP", Field: "t"},
+		{Header: "BID", Field: "bp"},
+		{Header: "ASK", Field: "ap"},
+		{Header: "MID", Field: "mp"},
+	}
+}
+
+func treasuryColumns() []output.Column {
+	return []output.Column{
+		{Header: "CUSIP", Field: "cusip"},
+		{Header: "SYMBOL", Field: "symbol"},
+		{Header: "STATUS", Field: "bond_status"},
+		{Header: "COUPON", Field: "coupon"},
+		{Header: "MATURITY", Field: "maturity_date"},
+		{Header: "CLOSE PRICE", Field: "close_price"},
+		{Header: "CLOSE YTM", Field: "close_yield_to_maturity"},
+	}
+}
+
+func bondColumns() []output.Column {
+	return []output.Column{
+		{Header: "CUSIP", Field: "cusip"},
+		{Header: "SYMBOL", Field: "symbol"},
+		{Header: "NAME", Field: "name"},
+		{Header: "STATUS", Field: "bond_status"},
+		{Header: "COUPON", Field: "coupon"},
+		{Header: "MATURITY", Field: "maturity_date"},
+		{Header: "CLOSE PRICE", Field: "close_price"},
+	}
+}
+
+func walletColumns() []output.Column {
+	return []output.Column{
+		{Header: "ADDRESS", Field: "address"},
+		{Header: "CHAIN", Field: "chain"},
+		{Header: "CREATED", Field: "created_at"},
+	}
+}
+
+func transferColumns() []output.Column {
+	return []output.Column{
+		{Header: "ID", Field: "id"},
+		{Header: "ASSET", Field: "asset"},
+		{Header: "AMOUNT", Field: "amount"},
+		{Header: "DIRECTION", Field: "direction"},
+		{Header: "STATUS", Field: "status"},
+		{Header: "CHAIN", Field: "chain"},
+		{Header: "CREATED", Field: "created_at"},
+	}
+}
+
+func whitelistColumns() []output.Column {
+	return []output.Column{
+		{Header: "ID", Field: "id"},
+		{Header: "ADDRESS", Field: "address"},
+		{Header: "ASSET", Field: "asset"},
+		{Header: "CHAIN", Field: "chain"},
+		{Header: "STATUS", Field: "status"},
+		{Header: "CREATED", Field: "created_at"},
+	}
+}
+
 func corporateActionColumns() []output.Column {
 	return []output.Column{
 		{Header: "ID", Field: "id"},

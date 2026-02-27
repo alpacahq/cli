@@ -217,17 +217,22 @@ var dataLatestBarCmd = &cobra.Command{
 }
 
 func init() {
-	for _, cmd := range []*cobra.Command{dataBarsCmd, dataQuotesCmd, dataTradesCmd} {
-		cmd.Flags().String("symbol", "", "Ticker symbol (e.g. AAPL, BTC/USD)")
-		cmd.Flags().String("start", "", "Start date (YYYY-MM-DD or RFC3339)")
-		cmd.Flags().String("end", "", "End date (YYYY-MM-DD or RFC3339)")
-		cmd.Flags().String("limit", "", "Max number of results")
-		cmd.Flags().String("feed", "", "Data feed: iex, sip, otc, delayed_sip")
-		cmd.Flags().String("currency", "", "Currency for prices (e.g. USD, EUR)")
-		cmd.Flags().String("sort", "", "Sort order: asc or desc")
+	for _, c := range []*cobra.Command{dataBarsCmd, dataQuotesCmd, dataTradesCmd} {
+		c.Flags().String("symbol", "", "Ticker symbol (e.g. AAPL, BTC/USD)")
+		c.Flags().String("start", "", "Start date (YYYY-MM-DD or RFC3339)")
+		c.Flags().String("end", "", "End date (YYYY-MM-DD or RFC3339)")
+		c.Flags().String("limit", "", "Max number of results")
+		c.Flags().String("feed", "", "Data feed: iex, sip, otc, delayed_sip")
+		c.RegisterFlagCompletionFunc("feed", cobra.FixedCompletions([]string{"iex", "sip", "otc", "delayed_sip"}, cobra.ShellCompDirectiveNoFileComp))
+		c.Flags().String("currency", "", "Currency for prices (e.g. USD, EUR)")
+		c.Flags().String("sort", "", "Sort order: asc or desc")
+		c.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions([]string{"asc", "desc"}, cobra.ShellCompDirectiveNoFileComp))
+		c.Flags().String("asof", "", "As-of date for point-in-time data")
 	}
 	dataBarsCmd.Flags().String("timeframe", "1Day", "Bar timeframe: 1Min, 5Min, 15Min, 1Hour, 1Day, 1Week, 1Month")
+	dataBarsCmd.RegisterFlagCompletionFunc("timeframe", cobra.FixedCompletions([]string{"1Min", "5Min", "15Min", "1Hour", "1Day", "1Week", "1Month"}, cobra.ShellCompDirectiveNoFileComp))
 	dataBarsCmd.Flags().String("adjustment", "", "Price adjustment: raw, split, dividend, all")
+	dataBarsCmd.RegisterFlagCompletionFunc("adjustment", cobra.FixedCompletions([]string{"raw", "split", "dividend", "all"}, cobra.ShellCompDirectiveNoFileComp))
 
 	dataLatestCmd.AddCommand(dataLatestTradeCmd)
 	dataLatestCmd.AddCommand(dataLatestQuoteCmd)
@@ -254,7 +259,7 @@ func stockOrCryptoPath(symbol, endpoint string, params url.Values) (string, url.
 
 func dataParams(cmd *cobra.Command) url.Values {
 	params := url.Values{}
-	for _, key := range []string{"start", "end", "limit", "timeframe", "feed", "currency", "sort", "adjustment"} {
+	for _, key := range []string{"start", "end", "limit", "timeframe", "feed", "currency", "sort", "adjustment", "asof"} {
 		if v := cmdutil.Str(cmd, key); v != "" {
 			params.Set(key, v)
 		}
