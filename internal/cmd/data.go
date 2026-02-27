@@ -250,8 +250,12 @@ func init() {
 		cmd.Flags().String("start", "", "Start date (YYYY-MM-DD or RFC3339)")
 		cmd.Flags().String("end", "", "End date (YYYY-MM-DD or RFC3339)")
 		cmd.Flags().String("limit", "", "Max number of results")
+		cmd.Flags().String("feed", "", "Data feed: iex, sip, otc, delayed_sip")
+		cmd.Flags().String("currency", "", "Currency for prices (e.g. USD, EUR)")
+		cmd.Flags().String("sort", "", "Sort order: asc or desc")
 	}
 	dataBarsCmd.Flags().String("timeframe", "1Day", "Bar timeframe: 1Min, 5Min, 15Min, 1Hour, 1Day, 1Week, 1Month")
+	dataBarsCmd.Flags().String("adjustment", "", "Price adjustment: raw, split, dividend, all")
 
 	dataLatestCmd.AddCommand(dataLatestTradeCmd)
 	dataLatestCmd.AddCommand(dataLatestQuoteCmd)
@@ -293,6 +297,22 @@ func dataParams(cmd *cobra.Command) url.Values {
 	tf, _ := cmd.Flags().GetString("timeframe")
 	if tf != "" {
 		params.Set("timeframe", tf)
+	}
+	feed, _ := cmd.Flags().GetString("feed")
+	if feed != "" {
+		params.Set("feed", feed)
+	}
+	currency, _ := cmd.Flags().GetString("currency")
+	if currency != "" {
+		params.Set("currency", currency)
+	}
+	sort, _ := cmd.Flags().GetString("sort")
+	if sort != "" {
+		params.Set("sort", sort)
+	}
+	adjustment, _ := cmd.Flags().GetString("adjustment")
+	if adjustment != "" {
+		params.Set("adjustment", adjustment)
 	}
 	return params
 }

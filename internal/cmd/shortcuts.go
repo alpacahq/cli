@@ -173,18 +173,7 @@ var ordersShortcut = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		columns := []output.Column{
-			{Header: "ID", Field: "id"},
-			{Header: "SYMBOL", Field: "symbol"},
-			{Header: "SIDE", Field: "side"},
-			{Header: "QTY", Field: "qty"},
-			{Header: "TYPE", Field: "type"},
-			{Header: "STATUS", Field: "status"},
-			{Header: "LIMIT", Field: "limit_price"},
-			{Header: "FILLED QTY", Field: "filled_qty"},
-			{Header: "SUBMITTED", Field: "submitted_at"},
-		}
-		return output.Render(getOutput(), columns, data)
+			return output.Render(getOutput(), orderColumns(), data)
 	},
 }
 

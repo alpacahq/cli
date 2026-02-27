@@ -92,6 +92,22 @@ var portfolioHistoryCmd = &cobra.Command{
 		if tf != "" {
 			params.Set("timeframe", tf)
 		}
+		start, _ := cmd.Flags().GetString("start")
+		if start != "" {
+			params.Set("start", start)
+		}
+		end, _ := cmd.Flags().GetString("end")
+		if end != "" {
+			params.Set("end", end)
+		}
+		intradayReporting, _ := cmd.Flags().GetString("intraday-reporting")
+		if intradayReporting != "" {
+			params.Set("intraday_reporting", intradayReporting)
+		}
+		pnlReset, _ := cmd.Flags().GetString("pnl-reset")
+		if pnlReset != "" {
+			params.Set("pnl_reset", pnlReset)
+		}
 
 		data, err := apiClient.Get("/v2/account/portfolio/history", params)
 		if err != nil {
@@ -127,6 +143,14 @@ var newsCmd = &cobra.Command{
 		} else {
 			params.Set("limit", "10")
 		}
+		sort, _ := cmd.Flags().GetString("sort")
+		if sort != "" {
+			params.Set("sort", sort)
+		}
+		includeContent, _ := cmd.Flags().GetBool("include-content")
+		if includeContent {
+			params.Set("include_content", "true")
+		}
 
 		data, err := apiClient.GetData("/v1beta1/news", params)
 		if err != nil {
@@ -159,10 +183,16 @@ func init() {
 
 	portfolioHistoryCmd.Flags().String("period", "", "Period: 1D, 1W, 1M, 3M, 1A, all")
 	portfolioHistoryCmd.Flags().String("timeframe", "", "Timeframe: 1Min, 5Min, 15Min, 1H, 1D")
+	portfolioHistoryCmd.Flags().String("start", "", "Start date (RFC3339)")
+	portfolioHistoryCmd.Flags().String("end", "", "End date (RFC3339)")
+	portfolioHistoryCmd.Flags().String("intraday-reporting", "", "Intraday reporting: market_hours, extended_hours, continuous")
+	portfolioHistoryCmd.Flags().String("pnl-reset", "", "P&L reset mode: no_reset, per_day")
 	portfolioCmd.AddCommand(portfolioHistoryCmd)
 
 	newsCmd.Flags().String("symbols", "", "Filter by symbols (comma-separated)")
 	newsCmd.Flags().String("start", "", "Start date")
 	newsCmd.Flags().String("end", "", "End date")
 	newsCmd.Flags().String("limit", "", "Max articles (default: 10)")
+	newsCmd.Flags().String("sort", "", "Sort order: asc or desc")
+	newsCmd.Flags().Bool("include-content", false, "Include full article content")
 }

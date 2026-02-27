@@ -104,7 +104,16 @@ var accountConfigSetCmd = &cobra.Command{
 			return err
 		}
 
-		return output.JSON(cmd.OutOrStdout(), data)
+		columns := []output.Column{
+			{Header: "DTBP CHECK", Field: "dtbp_check"},
+			{Header: "FRACTIONAL TRADING", Field: "fractional_trading"},
+			{Header: "MAX MARGIN MULTIPLIER", Field: "max_margin_multiplier"},
+			{Header: "NO SHORTING", Field: "no_shorting"},
+			{Header: "PDT CHECK", Field: "pdt_check"},
+			{Header: "SUSPEND TRADE", Field: "suspend_trade"},
+			{Header: "TRADE CONFIRM EMAIL", Field: "trade_confirm_email"},
+		}
+		return output.PrintSingle(getOutput(), columns, data)
 	},
 }
 

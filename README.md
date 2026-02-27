@@ -14,7 +14,7 @@ Or download a prebuilt binary from [Releases](https://github.com/alpacahq/cli/re
 
 ```bash
 # Authenticate
-alpaca auth login
+alpaca profile login
 
 # Check your account
 alpaca account get
@@ -42,7 +42,7 @@ alpaca clock
 
 | Command | Description |
 |---------|-------------|
-| `alpaca auth login` | Authenticate with API key/secret |
+| `alpaca profile login` | Authenticate with API key/secret |
 | `alpaca account get` | Account details (equity, buying power) |
 | `alpaca buy <sym> <qty>` | Buy shares (market order) |
 | `alpaca sell <sym> <qty>` | Sell shares (market order) |
@@ -56,10 +56,14 @@ alpaca clock
 | `alpaca data latest trade <sym>` | Latest trade |
 | `alpaca data latest quote <sym>` | Latest quote |
 | `alpaca data snapshot <sym>` | Full snapshot |
+| `alpaca activity list` | Account activity (fills, dividends, etc.) |
+| `alpaca screener most-actives` | Most active stocks |
+| `alpaca screener movers` | Top market movers |
 | `alpaca news` | Market news |
 | `alpaca asset list` | Browse assets |
 | `alpaca watchlist create` | Create a watchlist |
 | `alpaca option chain <sym>` | Options chain |
+| `alpaca corporate-action list` | Corporate actions announcements |
 | `alpaca clock` | Market clock |
 | `alpaca calendar` | Trading calendar |
 | `alpaca api get <path>` | Raw API access |
@@ -79,9 +83,10 @@ alpaca positions --csv        # CSV for spreadsheets
 ### Profiles
 
 ```bash
-alpaca auth login                                    # Paper trading (default)
-alpaca auth login --profile live --environment live   # Live trading
-alpaca auth switch live                              # Switch default profile
+alpaca profile login                                 # Paper trading (default)
+alpaca profile login --name live --live               # Live trading
+alpaca profile login --name staging --base-url https://staging-api.example.com
+alpaca profile switch live                            # Switch default profile
 ```
 
 Credentials are stored in `~/.config/alpaca/profiles/`.

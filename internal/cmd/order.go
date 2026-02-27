@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/url"
 
@@ -82,6 +83,15 @@ var orderSubmitCmd = &cobra.Command{
 			body["client_order_id"] = clientOrderID
 		}
 
+		orderClass, _ := cmd.Flags().GetString("order-class")
+		if orderClass != "" {
+			body["order_class"] = orderClass
+		}
+		positionIntent, _ := cmd.Flags().GetString("position-intent")
+		if positionIntent != "" {
+			body["position_intent"] = positionIntent
+		}
+
 		if takeProfit != "" || stopLoss != "" {
 			body["order_class"] = "bracket"
 			if takeProfit != "" {
@@ -138,6 +148,19 @@ var orderListCmd = &cobra.Command{
 			params.Set("direction", direction)
 		}
 
+		nested, _ := cmd.Flags().GetBool("nested")
+		if nested {
+			params.Set("nested", "true")
+		}
+		side, _ := cmd.Flags().GetString("side")
+		if side != "" {
+			params.Set("side", side)
+		}
+		assetClass, _ := cmd.Flags().GetString("asset-class")
+		if assetClass != "" {
+			params.Set("asset_class", assetClass)
+		}
+
 		data, err := apiClient.Get("/v2/orders", params)
 		if err != nil {
 			return err
@@ -162,11 +185,28 @@ var orderListCmd = &cobra.Command{
 }
 
 var orderGetCmd = &cobra.Command{
-	Use:   "get <order-id>",
-	Short: "Get order details",
-	Args:  cobra.ExactArgs(1),
+	Use:   "get [order-id]",
+	Short: "Get order details by ID or client order ID",
+	Example: `  alpaca order get 61e69015-8549-4baf-b96f-9c4f3e8d0c35
+  alpaca order get --client-id my-order-123`,
+	Args: cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		data, err := apiClient.Get("/v2/orders/"+args[0], nil)
+		clientID, _ := cmd.Flags().GetString("client-id")
+
+		if len(args) == 0 && clientID == "" {
+			return fmt.Errorf("either <order-id> argument or --client-id flag is required")
+		}
+
+		var data json.RawMessage
+		var err error
+
+		if clientID != "" {
+			params := url.Values{}
+			params.Set("client_order_id", clientID)
+			data, err = apiClient.Get("/v2/orders:by_client_order_id", params)
+		} else {
+			data, err = apiClient.Get("/v2/orders/"+args[0], nil)
+		}
 		if err != nil {
 			return err
 		}
@@ -261,6 +301,8 @@ func init() {
 	orderSubmitCmd.Flags().String("take-profit", "", "Take profit limit price (bracket order)")
 	orderSubmitCmd.Flags().String("stop-loss", "", "Stop loss price (bracket order)")
 	orderSubmitCmd.Flags().String("client-order-id", "", "Client-specified order ID")
+	orderSubmitCmd.Flags().String("order-class", "", "Order class: simple, bracket, oco, oto, mleg")
+	orderSubmitCmd.Flags().String("position-intent", "", "Position intent: buy_to_open, buy_to_close, sell_to_open, sell_to_close")
 
 	orderListCmd.Flags().String("status", "", "Filter: open, closed, all (default: open)")
 	orderListCmd.Flags().String("symbols", "", "Filter by symbols (comma-separated)")
@@ -268,6 +310,9 @@ func init() {
 	orderListCmd.Flags().String("until", "", "Filter: orders until this date")
 	orderListCmd.Flags().String("limit", "", "Max number of orders to return")
 	orderListCmd.Flags().String("direction", "", "Sort direction: asc or desc")
+	orderListCmd.Flags().Bool("nested", false, "Include nested multi-leg order legs")
+	orderListCmd.Flags().String("side", "", "Filter by side: buy or sell")
+	orderListCmd.Flags().String("asset-class", "", "Filter by asset class: us_equity, us_option, crypto")
 
 	orderReplaceCmd.Flags().String("qty", "", "New quantity")
 	orderReplaceCmd.Flags().String("limit-price", "", "New limit price")
@@ -278,6 +323,8 @@ func init() {
 
 	orderCmd.AddCommand(orderSubmitCmd)
 	orderCmd.AddCommand(orderListCmd)
+	orderGetCmd.Flags().String("client-id", "", "Look up order by client order ID")
+
 	orderCmd.AddCommand(orderGetCmd)
 	orderCmd.AddCommand(orderCancelCmd)
 	orderCmd.AddCommand(orderCancelAllCmd)

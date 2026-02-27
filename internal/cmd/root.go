@@ -74,6 +74,9 @@ func init() {
 	rootCmd.AddCommand(portfolioCmd)
 	rootCmd.AddCommand(newsCmd)
 	rootCmd.AddCommand(optionCmd)
+	rootCmd.AddCommand(activityCmd)
+	rootCmd.AddCommand(screenerCmd)
+	rootCmd.AddCommand(corporateActionCmd)
 	rootCmd.AddCommand(apiCmd)
 	rootCmd.AddCommand(updateCmd)
 
@@ -87,7 +90,7 @@ func init() {
 
 func needsAuth(cmd *cobra.Command) bool {
 	switch cmd.Name() {
-	case "version", "help", "completion", "update", "login", "logout", "status", "switch", "set":
+	case "version", "help", "completion", "update":
 		return false
 	}
 	return true

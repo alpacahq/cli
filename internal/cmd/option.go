@@ -40,9 +40,25 @@ var optionChainCmd = &cobra.Command{
 		if strikeLte != "" {
 			params.Set("strike_price_lte", strikeLte)
 		}
+		expiryGte, _ := cmd.Flags().GetString("expiry-gte")
+		if expiryGte != "" {
+			params.Set("expiration_date_gte", expiryGte)
+		}
+		expiryLte, _ := cmd.Flags().GetString("expiry-lte")
+		if expiryLte != "" {
+			params.Set("expiration_date_lte", expiryLte)
+		}
+		rootSymbol, _ := cmd.Flags().GetString("root-symbol")
+		if rootSymbol != "" {
+			params.Set("root_symbol", rootSymbol)
+		}
 		limit, _ := cmd.Flags().GetString("limit")
 		if limit != "" {
 			params.Set("limit", limit)
+		}
+		showDeliverables, _ := cmd.Flags().GetBool("show-deliverables")
+		if showDeliverables {
+			params.Set("show_deliverables", "true")
 		}
 
 		data, err := apiClient.Get("/v2/options/contracts", params)
@@ -90,14 +106,33 @@ var optionExerciseCmd = &cobra.Command{
 	},
 }
 
+var optionDoNotExerciseCmd = &cobra.Command{
+	Use:   "do-not-exercise <symbol-or-id>",
+	Short: "Mark an option position as do-not-exercise",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		_, err := apiClient.Post("/v2/positions/"+args[0]+"/do-not-exercise", nil)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("Option %s marked as do-not-exercise.\n", args[0])
+		return nil
+	},
+}
+
 func init() {
-	optionChainCmd.Flags().String("expiry", "", "Expiration date (YYYY-MM-DD)")
+	optionChainCmd.Flags().String("expiry", "", "Exact expiration date (YYYY-MM-DD)")
+	optionChainCmd.Flags().String("expiry-gte", "", "Expiration date on or after (YYYY-MM-DD)")
+	optionChainCmd.Flags().String("expiry-lte", "", "Expiration date on or before (YYYY-MM-DD)")
 	optionChainCmd.Flags().String("type", "", "Option type: call or put")
 	optionChainCmd.Flags().String("strike-gte", "", "Minimum strike price")
 	optionChainCmd.Flags().String("strike-lte", "", "Maximum strike price")
+	optionChainCmd.Flags().String("root-symbol", "", "Root symbol for options")
 	optionChainCmd.Flags().String("limit", "", "Max results")
+	optionChainCmd.Flags().Bool("show-deliverables", false, "Include deliverables info")
 
 	optionCmd.AddCommand(optionChainCmd)
 	optionCmd.AddCommand(optionGetCmd)
 	optionCmd.AddCommand(optionExerciseCmd)
+	optionCmd.AddCommand(optionDoNotExerciseCmd)
 }

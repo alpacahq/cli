@@ -77,7 +77,7 @@ func (r *Resolved) HasCredentials() bool {
 
 func (r *Resolved) Validate() error {
 	if !r.HasCredentials() {
-		return fmt.Errorf("authentication required\nHint: run `alpaca auth login` to set up your credentials")
+		return fmt.Errorf("authentication required\nHint: run `alpaca profile login` to set up your credentials")
 	}
 	return nil
 }
