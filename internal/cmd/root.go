@@ -11,13 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	exitSuccess    = 0
-	exitAPIError   = 1
-	exitAuthError  = 2
-	exitValidation = 3
-	exitNetwork    = 4
-)
+const exitAPIError = 1
 
 var (
 	version       = "dev"

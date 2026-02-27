@@ -24,7 +24,7 @@ var walletListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.JSON(cmd.OutOrStdout(), wallet)
+		return output.Render(getOutput(), walletColumns(), wallet)
 	},
 }
 
@@ -36,7 +36,7 @@ var walletTransfersCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.JSON(cmd.OutOrStdout(), transfers)
+		return output.Render(getOutput(), transferColumns(), transfers)
 	},
 }
 
@@ -49,7 +49,7 @@ var walletTransferGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.JSON(cmd.OutOrStdout(), transfer)
+		return output.PrintSingle(getOutput(), transferColumns(), transfer)
 	},
 }
 
@@ -70,7 +70,7 @@ var walletTransferCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.JSON(cmd.OutOrStdout(), transfer)
+		return output.PrintSingle(getOutput(), transferColumns(), transfer)
 	},
 }
 
@@ -82,7 +82,7 @@ var walletWhitelistListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.JSON(cmd.OutOrStdout(), addrs)
+		return output.Render(getOutput(), whitelistColumns(), addrs)
 	},
 }
 
@@ -102,7 +102,7 @@ var walletWhitelistAddCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.JSON(cmd.OutOrStdout(), addr)
+		return output.PrintSingle(getOutput(), whitelistColumns(), addr)
 	},
 }
 
@@ -115,7 +115,7 @@ var walletWhitelistDeleteCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		fmt.Println("Whitelisted address removed.")
+		fmt.Fprintln(cmd.OutOrStdout(), "Whitelisted address removed.")
 		return nil
 	},
 }

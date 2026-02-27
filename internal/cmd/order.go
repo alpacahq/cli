@@ -143,7 +143,7 @@ var orderCancelCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		fmt.Printf("Order %s cancelled.\n", args[0])
+		fmt.Fprintf(cmd.OutOrStdout(), "Order %s cancelled.\n", args[0])
 		return nil
 	},
 }

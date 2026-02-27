@@ -221,7 +221,8 @@ func forexRateColumns() []output.Column {
 func treasuryColumns() []output.Column {
 	return []output.Column{
 		{Header: "CUSIP", Field: "cusip"},
-		{Header: "SYMBOL", Field: "symbol"},
+		{Header: "DESCRIPTION", Field: "description_short"},
+		{Header: "SUBTYPE", Field: "subtype"},
 		{Header: "STATUS", Field: "bond_status"},
 		{Header: "COUPON", Field: "coupon"},
 		{Header: "MATURITY", Field: "maturity_date"},
@@ -233,8 +234,8 @@ func treasuryColumns() []output.Column {
 func bondColumns() []output.Column {
 	return []output.Column{
 		{Header: "CUSIP", Field: "cusip"},
-		{Header: "SYMBOL", Field: "symbol"},
-		{Header: "NAME", Field: "name"},
+		{Header: "TICKER", Field: "ticker"},
+		{Header: "DESCRIPTION", Field: "description_short"},
 		{Header: "STATUS", Field: "bond_status"},
 		{Header: "COUPON", Field: "coupon"},
 		{Header: "MATURITY", Field: "maturity_date"},

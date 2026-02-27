@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
@@ -207,5 +208,5 @@ func renderMapValues(format string, cols []output.Column, data any) error {
 			return output.Render(format, cols, v)
 		}
 	}
-	return output.JSON(nil, data)
+	return output.JSON(os.Stdout, data)
 }

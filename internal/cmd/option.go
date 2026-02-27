@@ -64,7 +64,7 @@ var optionExerciseCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		fmt.Printf("Option %s exercise requested.\n", args[0])
+		fmt.Fprintf(cmd.OutOrStdout(), "Option %s exercise requested.\n", args[0])
 		return nil
 	},
 }
@@ -78,7 +78,7 @@ var optionDoNotExerciseCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		fmt.Printf("Option %s marked as do-not-exercise.\n", args[0])
+		fmt.Fprintf(cmd.OutOrStdout(), "Option %s marked as do-not-exercise.\n", args[0])
 		return nil
 	},
 }

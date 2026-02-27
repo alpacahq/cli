@@ -93,7 +93,7 @@ var watchlistDeleteCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		fmt.Println("Watchlist deleted.")
+		fmt.Fprintln(cmd.OutOrStdout(), "Watchlist deleted.")
 		return nil
 	},
 }
@@ -122,7 +122,7 @@ var watchlistRemoveCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		fmt.Printf("Removed %s from watchlist.\n", args[1])
+		fmt.Fprintf(cmd.OutOrStdout(), "Removed %s from watchlist.\n", args[1])
 		return nil
 	},
 }
