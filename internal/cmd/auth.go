@@ -14,27 +14,28 @@ import (
 	"golang.org/x/term"
 )
 
-var authCmd = &cobra.Command{
-	Use:   "auth",
-	Short: "Manage authentication",
+var profileCmd = &cobra.Command{
+	Use:   "profile",
+	Short: "Manage connection profiles",
 }
 
-var authLoginCmd = &cobra.Command{
+var profileLoginCmd = &cobra.Command{
 	Use:   "login",
-	Short: "Authenticate with Alpaca",
-	Example: `  alpaca auth login
-  alpaca auth login --key PKXXXXXXXX --secret XXXXXXXX
-  alpaca auth login --profile myaccount --live
-  alpaca auth login --profile dev --base-url https://custom-api.example.com
-  alpaca auth login --profile dev --base-url https://custom-api.example.com --no-validate`,
+	Short: "Create a profile and authenticate",
+	Example: `  alpaca profile login
+  alpaca profile login --key PKXXXXXXXX --secret XXXXXXXX
+  alpaca profile login --name myaccount --live
+  alpaca profile login --name dev --base-url https://custom-api.example.com
+  alpaca profile login --name dev --base-url https://custom-api.example.com --data-url https://custom-data.example.com`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		key, _ := cmd.Flags().GetString("key")
 		secret, _ := cmd.Flags().GetString("secret")
-		profile, _ := cmd.Flags().GetString("profile")
+		name, _ := cmd.Flags().GetString("name")
+		dataURL, _ := cmd.Flags().GetString("data-url")
 		noValidate, _ := cmd.Flags().GetBool("no-validate")
 
-		if profile == "" {
-			profile = "paper"
+		if name == "" {
+			name = "paper"
 		}
 
 		baseURL, err := resolveBaseURLFlags(cmd)
@@ -88,44 +89,46 @@ var authLoginCmd = &cobra.Command{
 			APIKey:    key,
 			SecretKey: secret,
 			BaseURL:   baseURL,
+			DataURL:   dataURL,
 		}
-		if err := config.SaveProfile(profile, p); err != nil {
+		if err := config.SaveProfile(name, p); err != nil {
 			return fmt.Errorf("saving profile: %w", err)
 		}
 
 		globalCfg := loadOrCreateGlobal()
-		globalCfg.DefaultProfile = profile
+		globalCfg.DefaultProfile = name
 		if err := config.SaveGlobalConfig(globalCfg); err != nil {
 			return fmt.Errorf("saving global config: %w", err)
 		}
 
-		color.Green("✓ Logged in to %s profile (%s)", profile, baseURL)
+		color.Green("✓ Logged in to %s (%s)", name, baseURL)
 		return nil
 	},
 }
 
-var authLogoutCmd = &cobra.Command{
-	Use:   "logout",
-	Short: "Remove stored credentials",
+var profileLogoutCmd = &cobra.Command{
+	Use:   "logout [name]",
+	Short: "Remove a profile",
+	Args:  cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		profile, _ := cmd.Flags().GetString("profile")
-		if profile == "" {
-			profile = "paper"
+		name := "paper"
+		if len(args) > 0 {
+			name = args[0]
 		}
-		if err := config.DeleteProfile(profile); err != nil {
+		if err := config.DeleteProfile(name); err != nil {
 			if os.IsNotExist(err) {
-				return fmt.Errorf("profile %q not found", profile)
+				return fmt.Errorf("profile %q not found", name)
 			}
 			return err
 		}
-		fmt.Printf("Logged out of %s profile.\n", profile)
+		fmt.Printf("Removed profile %s.\n", name)
 		return nil
 	},
 }
 
-var authStatusCmd = &cobra.Command{
+var profileStatusCmd = &cobra.Command{
 	Use:   "status",
-	Short: "Show current authentication status",
+	Short: "Show the active profile",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		resolved, err := config.Load(profileFlag, "")
 		if err != nil {
@@ -134,6 +137,7 @@ var authStatusCmd = &cobra.Command{
 
 		fmt.Printf("Profile:   %s\n", resolved.ProfileName)
 		fmt.Printf("Base URL:  %s\n", resolved.BaseURL)
+		fmt.Printf("Data URL:  %s\n", resolved.DataURL)
 
 		if resolved.HasCredentials() {
 			masked := resolved.APIKey
@@ -144,15 +148,41 @@ var authStatusCmd = &cobra.Command{
 			color.Green("✓ Authenticated")
 		} else {
 			color.Yellow("✗ Not authenticated")
-			fmt.Println("Hint: run `alpaca auth login` to set up your credentials")
+			fmt.Println("Hint: run `alpaca profile login` to set up credentials")
 		}
 		return nil
 	},
 }
 
-var authSwitchCmd = &cobra.Command{
-	Use:   "switch <profile>",
-	Short: "Switch the default profile",
+var profileListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List all profiles",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		profiles, err := config.ListProfiles()
+		if err != nil {
+			return err
+		}
+		if len(profiles) == 0 {
+			fmt.Println("No profiles configured.")
+			fmt.Println("Hint: run `alpaca profile login` to create one")
+			return nil
+		}
+
+		resolved, _ := config.Load("", "")
+		for _, name := range profiles {
+			if name == resolved.ProfileName {
+				color.Green("* %s (active)", name)
+			} else {
+				fmt.Printf("  %s\n", name)
+			}
+		}
+		return nil
+	},
+}
+
+var profileSwitchCmd = &cobra.Command{
+	Use:   "switch <name>",
+	Short: "Switch the active profile",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		name := args[0]
@@ -173,7 +203,7 @@ var authSwitchCmd = &cobra.Command{
 			if len(profiles) > 0 {
 				available = strings.Join(profiles, ", ")
 			}
-			return fmt.Errorf("profile %q not found\nAvailable profiles: %s\nHint: run `alpaca auth login --profile %s` to create it", name, available, name)
+			return fmt.Errorf("profile %q not found\nAvailable: %s\nHint: run `alpaca profile login --name %s` to create it", name, available, name)
 		}
 
 		globalCfg := loadOrCreateGlobal()
@@ -182,27 +212,66 @@ var authSwitchCmd = &cobra.Command{
 			return err
 		}
 
-		fmt.Printf("Switched to %s profile.\n", name)
+		fmt.Printf("Switched to %s.\n", name)
+		return nil
+	},
+}
+
+var profileSetCmd = &cobra.Command{
+	Use:   "set <key> <value>",
+	Short: "Update a profile setting",
+	Long: `Update a setting on the active profile.
+
+Available keys:
+  base_url    API base URL for trading
+  data_url    API base URL for market data`,
+	Example: `  alpaca profile set data_url https://data.example.com
+  alpaca profile set base_url https://api.example.com`,
+	Args: cobra.ExactArgs(2),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		key, value := args[0], args[1]
+
+		resolved, err := config.Load(profileFlag, "")
+		if err != nil {
+			return err
+		}
+
+		profile := config.LoadProfileByName(resolved.ProfileName)
+
+		switch key {
+		case "base_url":
+			profile.BaseURL = value
+		case "data_url":
+			profile.DataURL = value
+		default:
+			return fmt.Errorf("unknown key: %s\nAvailable keys: base_url, data_url", key)
+		}
+
+		if err := config.SaveProfile(resolved.ProfileName, profile); err != nil {
+			return err
+		}
+		fmt.Printf("Set %s = %s (profile: %s)\n", key, value, resolved.ProfileName)
 		return nil
 	},
 }
 
 func init() {
-	authLoginCmd.Flags().String("key", "", "API key")
-	authLoginCmd.Flags().String("secret", "", "Secret key")
-	authLoginCmd.Flags().String("profile", "", "Profile name (default: paper)")
-	authLoginCmd.Flags().Bool("paper", false, "Use paper trading URL (default)")
-	authLoginCmd.Flags().Bool("live", false, "Use live trading URL")
-	authLoginCmd.Flags().String("base-url", "", "Custom API base URL")
-	authLoginCmd.MarkFlagsMutuallyExclusive("paper", "live", "base-url")
-	authLoginCmd.Flags().Bool("no-validate", false, "Skip credential validation")
+	profileLoginCmd.Flags().String("key", "", "API key")
+	profileLoginCmd.Flags().String("secret", "", "Secret key")
+	profileLoginCmd.Flags().String("name", "", "Profile name (default: paper)")
+	profileLoginCmd.Flags().Bool("paper", false, "Use paper trading URL (default)")
+	profileLoginCmd.Flags().Bool("live", false, "Use live trading URL")
+	profileLoginCmd.Flags().String("base-url", "", "Custom API base URL")
+	profileLoginCmd.MarkFlagsMutuallyExclusive("paper", "live", "base-url")
+	profileLoginCmd.Flags().String("data-url", "", "Custom market data API URL")
+	profileLoginCmd.Flags().Bool("no-validate", false, "Skip credential validation")
 
-	authLogoutCmd.Flags().String("profile", "", "Profile name (default: paper)")
-
-	authCmd.AddCommand(authLoginCmd)
-	authCmd.AddCommand(authLogoutCmd)
-	authCmd.AddCommand(authStatusCmd)
-	authCmd.AddCommand(authSwitchCmd)
+	profileCmd.AddCommand(profileLoginCmd)
+	profileCmd.AddCommand(profileLogoutCmd)
+	profileCmd.AddCommand(profileStatusCmd)
+	profileCmd.AddCommand(profileListCmd)
+	profileCmd.AddCommand(profileSwitchCmd)
+	profileCmd.AddCommand(profileSetCmd)
 }
 
 func resolveBaseURLFlags(cmd *cobra.Command) (string, error) {

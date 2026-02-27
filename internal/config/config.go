@@ -109,6 +109,11 @@ func loadGlobalConfig() Config {
 	return cfg
 }
 
+func LoadProfileByName(name string) *Profile {
+	p := loadProfile(name)
+	return &p
+}
+
 func loadProfile(name string) Profile {
 	var p Profile
 	path := filepath.Join(Dir(), "profiles", name+".yaml")

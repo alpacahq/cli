@@ -34,8 +34,7 @@ var rootCmd = &cobra.Command{
 		if cmd.Name() == "help" || cmd.Name() == "completion" || cmd.Name() == "version" {
 			return nil
 		}
-		// Auth commands handle their own config
-		if cmd.Parent() != nil && cmd.Parent().Name() == "auth" {
+		if cmd.Parent() != nil && cmd.Parent().Name() == "profile" {
 			return nil
 		}
 
@@ -63,7 +62,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&profileFlag, "profile", "p", "", "Config profile to use")
 
 	rootCmd.AddCommand(versionCmd)
-	rootCmd.AddCommand(authCmd)
+	rootCmd.AddCommand(profileCmd)
 	rootCmd.AddCommand(accountCmd)
 	rootCmd.AddCommand(orderCmd)
 	rootCmd.AddCommand(positionCmd)
@@ -77,7 +76,6 @@ func init() {
 	rootCmd.AddCommand(optionCmd)
 	rootCmd.AddCommand(apiCmd)
 	rootCmd.AddCommand(updateCmd)
-	rootCmd.AddCommand(configCmd)
 
 	// Shortcuts
 	rootCmd.AddCommand(buyCmd)
@@ -89,11 +87,7 @@ func init() {
 
 func needsAuth(cmd *cobra.Command) bool {
 	switch cmd.Name() {
-	case "version", "help", "completion", "update", "login", "logout", "status", "switch":
-		return false
-	}
-	// config get/set doesn't need auth
-	if cmd.Parent() != nil && cmd.Parent().Name() == "config" {
+	case "version", "help", "completion", "update", "login", "logout", "status", "switch", "set":
 		return false
 	}
 	return true
