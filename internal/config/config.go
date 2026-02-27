@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -15,17 +16,19 @@ type Config struct {
 }
 
 type Profile struct {
-	APIKey      string `yaml:"api_key"`
-	SecretKey   string `yaml:"secret_key"`
-	Environment string `yaml:"environment"`
-	BaseURL     string `yaml:"base_url"`
-	DataURL     string `yaml:"data_url"`
+	APIKey    string `yaml:"api_key"`
+	SecretKey string `yaml:"secret_key"`
+	BaseURL   string `yaml:"base_url"`
+	DataURL   string `yaml:"data_url"`
+
+	// Deprecated: kept for backwards compat with existing profile files.
+	// New profiles store base_url directly.
+	Environment string `yaml:"environment,omitempty"`
 }
 
 type Resolved struct {
 	APIKey      string
 	SecretKey   string
-	Environment string
 	BaseURL     string
 	DataURL     string
 	Output      string
@@ -50,15 +53,16 @@ func Load(profileFlag, outputFlag string) (*Resolved, error) {
 		ProfileName: profileName,
 		APIKey:      resolve(os.Getenv("ALPACA_API_KEY"), profile.APIKey),
 		SecretKey:   resolve(os.Getenv("ALPACA_SECRET_KEY"), profile.SecretKey),
-		Environment: resolve(os.Getenv("ALPACA_ENVIRONMENT"), profile.Environment, "paper"),
 		BaseURL:     resolve(os.Getenv("ALPACA_BASE_URL"), profile.BaseURL),
 		DataURL:     resolve(os.Getenv("ALPACA_DATA_URL"), profile.DataURL),
 		Output:      resolve(outputFlag, os.Getenv("ALPACA_OUTPUT"), cfg.Output, "table"),
 		Color:       resolve(cfg.Color, "auto"),
 	}
 
+	// Backwards compat: old profiles may have environment instead of base_url
 	if r.BaseURL == "" {
-		r.BaseURL = BaseURLForEnv(r.Environment)
+		env := resolve(os.Getenv("ALPACA_ENVIRONMENT"), profile.Environment)
+		r.BaseURL = ResolveBaseURL(env)
 	}
 	if r.DataURL == "" {
 		r.DataURL = "https://data.alpaca.markets"
@@ -78,15 +82,23 @@ func (r *Resolved) Validate() error {
 	return nil
 }
 
-func BaseURLForEnv(env string) string {
-	switch env {
+// ResolveBaseURL takes a value that is either a well-known alias
+// ("paper", "live") or a full URL, and returns a URL.
+// Empty string defaults to the paper trading URL.
+func ResolveBaseURL(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
 	case "live":
 		return "https://api.alpaca.markets"
-	case "sandbox":
-		return "https://broker-api.sandbox.alpaca.markets"
-	default:
+	case "", "paper":
 		return "https://paper-api.alpaca.markets"
+	default:
+		return strings.TrimRight(value, "/")
 	}
+}
+
+// BaseURLForEnv is an alias for ResolveBaseURL (backwards compat).
+func BaseURLForEnv(env string) string {
+	return ResolveBaseURL(env)
 }
 
 func loadGlobalConfig() Config {

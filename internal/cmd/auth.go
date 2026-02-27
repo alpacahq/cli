@@ -11,6 +11,7 @@ import (
 	"github.com/alpacahq/cli/internal/config"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 var authCmd = &cobra.Command{
@@ -23,18 +24,22 @@ var authLoginCmd = &cobra.Command{
 	Short: "Authenticate with Alpaca",
 	Example: `  alpaca auth login
   alpaca auth login --key PKXXXXXXXX --secret XXXXXXXX
-  alpaca auth login --profile live --environment live`,
+  alpaca auth login --profile myaccount --live
+  alpaca auth login --profile dev --base-url https://custom-api.example.com
+  alpaca auth login --profile dev --base-url https://custom-api.example.com --no-validate`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		key, _ := cmd.Flags().GetString("key")
 		secret, _ := cmd.Flags().GetString("secret")
 		profile, _ := cmd.Flags().GetString("profile")
-		env, _ := cmd.Flags().GetString("environment")
+		noValidate, _ := cmd.Flags().GetBool("no-validate")
 
 		if profile == "" {
 			profile = "paper"
 		}
-		if env == "" {
-			env = "paper"
+
+		baseURL, err := resolveBaseURLFlags(cmd)
+		if err != nil {
+			return err
 		}
 
 		if key == "" || secret == "" {
@@ -46,8 +51,14 @@ var authLoginCmd = &cobra.Command{
 			}
 			if secret == "" {
 				fmt.Print("Secret Key: ")
-				secret, _ = reader.ReadString('\n')
-				secret = strings.TrimSpace(secret)
+				if term.IsTerminal(int(os.Stdin.Fd())) {
+					raw, _ := term.ReadPassword(int(os.Stdin.Fd()))
+					secret = string(raw)
+					fmt.Println()
+				} else {
+					secret, _ = reader.ReadString('\n')
+					secret = strings.TrimSpace(secret)
+				}
 			}
 		}
 
@@ -55,29 +66,28 @@ var authLoginCmd = &cobra.Command{
 			return fmt.Errorf("both API key and secret key are required")
 		}
 
-		baseURL := config.BaseURLForEnv(env)
+		if !noValidate {
+			req, _ := http.NewRequest("GET", baseURL+"/v2/account", nil)
+			req.Header.Set("APCA-API-KEY-ID", key)
+			req.Header.Set("APCA-API-SECRET-KEY", secret)
+			resp, err := (&http.Client{Timeout: 10 * time.Second}).Do(req)
+			if err != nil {
+				return fmt.Errorf("failed to connect to %s: %w\nHint: use --no-validate to skip credential check", baseURL, err)
+			}
+			resp.Body.Close()
 
-		// Validate credentials by calling the account endpoint
-		req, _ := http.NewRequest("GET", baseURL+"/v2/account", nil)
-		req.Header.Set("APCA-API-KEY-ID", key)
-		req.Header.Set("APCA-API-SECRET-KEY", secret)
-		resp, err := (&http.Client{Timeout: 10 * time.Second}).Do(req)
-		if err != nil {
-			return fmt.Errorf("failed to connect to Alpaca: %w", err)
-		}
-		resp.Body.Close()
-
-		if resp.StatusCode == 401 || resp.StatusCode == 403 {
-			return fmt.Errorf("invalid credentials")
-		}
-		if resp.StatusCode >= 400 {
-			return fmt.Errorf("unexpected response: HTTP %d", resp.StatusCode)
+			if resp.StatusCode == 401 || resp.StatusCode == 403 {
+				return fmt.Errorf("invalid credentials (validated against %s)\nHint: use --base-url to specify the correct API endpoint, or --no-validate to skip", baseURL)
+			}
+			if resp.StatusCode >= 400 {
+				return fmt.Errorf("unexpected response: HTTP %d from %s", resp.StatusCode, baseURL)
+			}
 		}
 
 		p := &config.Profile{
-			APIKey:      key,
-			SecretKey:   secret,
-			Environment: env,
+			APIKey:    key,
+			SecretKey: secret,
+			BaseURL:   baseURL,
 		}
 		if err := config.SaveProfile(profile, p); err != nil {
 			return fmt.Errorf("saving profile: %w", err)
@@ -89,7 +99,7 @@ var authLoginCmd = &cobra.Command{
 			config.SaveGlobalConfig(globalCfg)
 		}
 
-		color.Green("✓ Logged in to %s profile (%s)", profile, env)
+		color.Green("✓ Logged in to %s profile (%s)", profile, baseURL)
 		return nil
 	},
 }
@@ -122,16 +132,15 @@ var authStatusCmd = &cobra.Command{
 			return err
 		}
 
-		fmt.Printf("Profile:     %s\n", resolved.ProfileName)
-		fmt.Printf("Environment: %s\n", resolved.Environment)
-		fmt.Printf("Base URL:    %s\n", resolved.BaseURL)
+		fmt.Printf("Profile:   %s\n", resolved.ProfileName)
+		fmt.Printf("Base URL:  %s\n", resolved.BaseURL)
 
 		if resolved.HasCredentials() {
 			masked := resolved.APIKey
 			if len(masked) > 6 {
 				masked = masked[:6] + strings.Repeat("*", len(masked)-6)
 			}
-			fmt.Printf("API Key:     %s\n", masked)
+			fmt.Printf("API Key:   %s\n", masked)
 			color.Green("✓ Authenticated")
 		} else {
 			color.Yellow("✗ Not authenticated")
@@ -160,7 +169,11 @@ var authSwitchCmd = &cobra.Command{
 			}
 		}
 		if !found {
-			return fmt.Errorf("profile %q not found\nAvailable profiles: %s", name, strings.Join(profiles, ", "))
+			available := "(none)"
+			if len(profiles) > 0 {
+				available = strings.Join(profiles, ", ")
+			}
+			return fmt.Errorf("profile %q not found\nAvailable profiles: %s\nHint: run `alpaca auth login --profile %s` to create it", name, available, name)
 		}
 
 		globalCfg := loadOrCreateGlobal()
@@ -178,7 +191,11 @@ func init() {
 	authLoginCmd.Flags().String("key", "", "API key")
 	authLoginCmd.Flags().String("secret", "", "Secret key")
 	authLoginCmd.Flags().String("profile", "", "Profile name (default: paper)")
-	authLoginCmd.Flags().String("environment", "", "Environment: paper, live (default: paper)")
+	authLoginCmd.Flags().Bool("paper", false, "Use paper trading URL (default)")
+	authLoginCmd.Flags().Bool("live", false, "Use live trading URL")
+	authLoginCmd.Flags().String("base-url", "", "Custom API base URL")
+	authLoginCmd.MarkFlagsMutuallyExclusive("paper", "live", "base-url")
+	authLoginCmd.Flags().Bool("no-validate", false, "Skip credential validation")
 
 	authLogoutCmd.Flags().String("profile", "", "Profile name (default: paper)")
 
@@ -186,6 +203,19 @@ func init() {
 	authCmd.AddCommand(authLogoutCmd)
 	authCmd.AddCommand(authStatusCmd)
 	authCmd.AddCommand(authSwitchCmd)
+}
+
+func resolveBaseURLFlags(cmd *cobra.Command) (string, error) {
+	live, _ := cmd.Flags().GetBool("live")
+	baseURL, _ := cmd.Flags().GetString("base-url")
+
+	if live {
+		return "https://api.alpaca.markets", nil
+	}
+	if baseURL != "" {
+		return strings.TrimRight(baseURL, "/"), nil
+	}
+	return "https://paper-api.alpaca.markets", nil
 }
 
 func loadOrCreateGlobal() *config.Config {

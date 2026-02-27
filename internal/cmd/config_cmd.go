@@ -35,10 +35,8 @@ var configGetCmd = &cobra.Command{
 			fmt.Println(resolved.BaseURL)
 		case "data_url":
 			fmt.Println(resolved.DataURL)
-		case "environment":
-			fmt.Println(resolved.Environment)
 		default:
-			return fmt.Errorf("unknown config key: %s\nAvailable keys: output, color, default_profile, base_url, data_url, environment", args[0])
+			return fmt.Errorf("unknown config key: %s\nAvailable keys: output, color, default_profile, base_url, data_url", args[0])
 		}
 		return nil
 	},
