@@ -3,7 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
+	"net/url"
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
@@ -102,14 +102,15 @@ var priceCmd = &cobra.Command{
 		symbol := args[0]
 
 		var path string
+		var params url.Values
 		if isCrypto(symbol) {
-			encoded := strings.ReplaceAll(symbol, "/", "%2F")
-			path = "/v1beta3/crypto/us/snapshots/" + encoded
+			path = "/v1beta3/crypto/us/snapshots"
+			params = url.Values{"symbols": {symbol}}
 		} else {
 			path = "/v2/stocks/" + symbol + "/snapshot"
 		}
 
-		data, err := apiClient.GetData(path, nil)
+		data, err := apiClient.GetData(path, params)
 		if err != nil {
 			return err
 		}
