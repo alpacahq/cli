@@ -34,9 +34,10 @@ func Execute() error {
 	if err != nil {
 		var apiErr *client.APIError
 		if errors.As(err, &apiErr) {
+			fmt.Fprintf(os.Stderr, "Error: %s\n", apiErr)
 			os.Exit(apiErr.ExitCode())
 		}
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintf(os.Stderr, "Error: %s\n", err)
 		os.Exit(exitAPIError)
 	}
 	return nil

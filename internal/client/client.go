@@ -32,10 +32,16 @@ type APIError struct {
 }
 
 func (e *APIError) Error() string {
-	if e.Message != "" {
-		return e.Message
+	if e.Message == "" {
+		return fmt.Sprintf("API error (HTTP %d)", e.StatusCode)
 	}
-	return fmt.Sprintf("API error (HTTP %d)", e.StatusCode)
+	if e.Code > 0 {
+		return fmt.Sprintf("%s [%d] (HTTP %d)", e.Message, e.Code, e.StatusCode)
+	}
+	if e.StatusCode > 0 {
+		return fmt.Sprintf("%s (HTTP %d)", e.Message, e.StatusCode)
+	}
+	return e.Message
 }
 
 func (e *APIError) ExitCode() int {
