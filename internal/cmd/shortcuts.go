@@ -67,6 +67,8 @@ func submitShortcut(cmd *cobra.Command, args []string, side string) error {
 	tif := cmdutil.Str(cmd, "tif")
 	if tif != "" {
 		body.TimeInForce = api.TimeInForce(tif)
+	} else if isCrypto(symbol) {
+		body.TimeInForce = "gtc"
 	} else {
 		body.TimeInForce = "day"
 	}
