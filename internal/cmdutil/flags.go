@@ -1,10 +1,22 @@
 package cmdutil
 
-import "github.com/spf13/cobra"
+import (
+	"fmt"
+
+	"github.com/spf13/cobra"
+)
 
 func Str(cmd *cobra.Command, name string) string {
 	v, _ := cmd.Flags().GetString(name)
 	return v
+}
+
+func RequireStr(cmd *cobra.Command, name string) (string, error) {
+	v := Str(cmd, name)
+	if v == "" {
+		return "", fmt.Errorf("--%s is required", name)
+	}
+	return v, nil
 }
 
 func Bool(cmd *cobra.Command, name string) bool {

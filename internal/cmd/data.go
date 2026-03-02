@@ -26,14 +26,10 @@ var dataBarsCmd = &cobra.Command{
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbol := args[0]
-
-		params := dataParams(cmd)
-		path, p := stockOrCryptoPath(symbol, "/bars", params)
-		data, err := apiClient.GetData(path, p)
+		data, err := dataClient.Bars(symbol, dataParams(cmd))
 		if err != nil {
 			return err
 		}
-
 		return output.Render(getOutput(), barColumns(), extractBars(data, symbol))
 	},
 }
@@ -44,14 +40,10 @@ var dataQuotesCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbol := args[0]
-
-		params := dataParams(cmd)
-		path, p := stockOrCryptoPath(symbol, "/quotes", params)
-		data, err := apiClient.GetData(path, p)
+		data, err := dataClient.Quotes(symbol, dataParams(cmd))
 		if err != nil {
 			return err
 		}
-
 		return output.Render(getOutput(), quoteColumns(), extractArray(data, symbol, "quotes"))
 	},
 }
@@ -62,14 +54,10 @@ var dataTradesCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbol := args[0]
-
-		params := dataParams(cmd)
-		path, p := stockOrCryptoPath(symbol, "/trades", params)
-		data, err := apiClient.GetData(path, p)
+		data, err := dataClient.Trades(symbol, dataParams(cmd))
 		if err != nil {
 			return err
 		}
-
 		return output.Render(getOutput(), tradeColumns(), extractArray(data, symbol, "trades"))
 	},
 }
@@ -79,21 +67,10 @@ var dataSnapshotCmd = &cobra.Command{
 	Short: "Get latest snapshot (bar + quote + trade)",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbol := args[0]
-
-		var path string
-		if isCrypto(symbol) {
-			encoded := strings.ReplaceAll(symbol, "/", "%2F")
-			path = "/v1beta3/crypto/us/snapshots/" + encoded
-		} else {
-			path = "/v2/stocks/" + symbol + "/snapshot"
-		}
-
-		data, err := apiClient.GetData(path, nil)
+		data, err := dataClient.Snapshot(args[0], nil)
 		if err != nil {
 			return err
 		}
-
 		return output.JSON(cmd.OutOrStdout(), data)
 	},
 }
@@ -109,19 +86,7 @@ var dataLatestTradeCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbol := args[0]
-		var path string
-		if isCrypto(symbol) {
-			path = "/v1beta3/crypto/us/latest/trades"
-		} else {
-			path = "/v2/stocks/" + symbol + "/trades/latest"
-		}
-
-		params := url.Values{}
-		if isCrypto(symbol) {
-			params.Set("symbols", symbol)
-		}
-
-		data, err := apiClient.GetData(path, params)
+		data, err := dataClient.LatestTrade(symbol, nil)
 		if err != nil {
 			return err
 		}
@@ -149,19 +114,7 @@ var dataLatestQuoteCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbol := args[0]
-		var path string
-		if isCrypto(symbol) {
-			path = "/v1beta3/crypto/us/latest/quotes"
-		} else {
-			path = "/v2/stocks/" + symbol + "/quotes/latest"
-		}
-
-		params := url.Values{}
-		if isCrypto(symbol) {
-			params.Set("symbols", symbol)
-		}
-
-		data, err := apiClient.GetData(path, params)
+		data, err := dataClient.LatestQuote(symbol, nil)
 		if err != nil {
 			return err
 		}
@@ -189,24 +142,10 @@ var dataLatestBarCmd = &cobra.Command{
 	Short: "Get latest bar",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbol := args[0]
-		var path string
-		if isCrypto(symbol) {
-			path = "/v1beta3/crypto/us/latest/bars"
-		} else {
-			path = "/v2/stocks/" + symbol + "/bars/latest"
-		}
-
-		params := url.Values{}
-		if isCrypto(symbol) {
-			params.Set("symbols", symbol)
-		}
-
-		data, err := apiClient.GetData(path, params)
+		data, err := dataClient.LatestBar(args[0], nil)
 		if err != nil {
 			return err
 		}
-
 		return output.JSON(cmd.OutOrStdout(), data)
 	},
 }
@@ -241,14 +180,6 @@ func init() {
 
 func isCrypto(symbol string) bool {
 	return strings.Contains(symbol, "/")
-}
-
-func stockOrCryptoPath(symbol, endpoint string, params url.Values) (string, url.Values) {
-	if isCrypto(symbol) {
-		params.Set("symbols", symbol)
-		return "/v1beta3/crypto/us" + endpoint, params
-	}
-	return "/v2/stocks/" + symbol + endpoint, params
 }
 
 func dataParams(cmd *cobra.Command) url.Values {

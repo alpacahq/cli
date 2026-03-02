@@ -3,7 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"net/url"
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
@@ -72,17 +71,7 @@ func submitShortcut(cmd *cobra.Command, args []string, side string) error {
 
 	body.ExtendedHours = cmdutil.Bool(cmd, "extended-hours")
 
-	takeProfit := cmdutil.Str(cmd, "take-profit")
-	stopLoss := cmdutil.Str(cmd, "stop-loss")
-	if takeProfit != "" || stopLoss != "" {
-		body.OrderClass = "bracket"
-		if takeProfit != "" {
-			body.TakeProfit = map[string]any{"limit_price": takeProfit}
-		}
-		if stopLoss != "" {
-			body.StopLoss = map[string]any{"stop_price": stopLoss}
-		}
-	}
+	applyBracket(body, cmdutil.Str(cmd, "take-profit"), cmdutil.Str(cmd, "stop-loss"))
 
 	order, err := tradingClient.PostOrder(body)
 	if err != nil {
@@ -100,16 +89,7 @@ var priceCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbol := args[0]
 
-		var path string
-		var params url.Values
-		if isCrypto(symbol) {
-			path = "/v1beta3/crypto/us/snapshots"
-			params = url.Values{"symbols": {symbol}}
-		} else {
-			path = "/v2/stocks/" + symbol + "/snapshot"
-		}
-
-		data, err := apiClient.GetData(path, params)
+		data, err := dataClient.Snapshot(symbol, nil)
 		if err != nil {
 			return err
 		}

@@ -1,10 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
-	"fmt"
-	"io"
-
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
 	"github.com/alpacahq/cli/internal/output"
@@ -22,9 +18,9 @@ var dataOptionBarsCmd = &cobra.Command{
 	Example: `  alpaca data option bars --symbols AAPL250620C00200000 --start 2025-01-01
   alpaca data option bars --symbols AAPL250620C00200000,AAPL250620P00200000 --timeframe 1Day`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbols := cmdutil.Str(cmd, "symbols")
-		if symbols == "" {
-			return fmt.Errorf("--symbols is required")
+		symbols, err := cmdutil.RequireStr(cmd, "symbols")
+		if err != nil {
+			return err
 		}
 
 		resp, err := dataClient.OptionBars(&api.OptionBarsParams{
@@ -39,7 +35,7 @@ var dataOptionBarsCmd = &cobra.Command{
 			return err
 		}
 
-		return renderOptionMap(cmd.OutOrStdout(), getOutput(), barColumns(), resp.Bars)
+		return renderMapValues(cmd.OutOrStdout(), getOutput(), barColumns(), resp.Bars)
 	},
 }
 
@@ -48,9 +44,9 @@ var dataOptionTradesCmd = &cobra.Command{
 	Short: "Get historical option trades",
 	Example: `  alpaca data option trades --symbols AAPL250620C00200000 --start 2025-01-01`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbols := cmdutil.Str(cmd, "symbols")
-		if symbols == "" {
-			return fmt.Errorf("--symbols is required")
+		symbols, err := cmdutil.RequireStr(cmd, "symbols")
+		if err != nil {
+			return err
 		}
 
 		resp, err := dataClient.OptionTrades(&api.OptionTradesParams{
@@ -64,7 +60,7 @@ var dataOptionTradesCmd = &cobra.Command{
 			return err
 		}
 
-		return renderOptionMap(cmd.OutOrStdout(), getOutput(), tradeColumns(), resp.Trades)
+		return renderMapValues(cmd.OutOrStdout(), getOutput(), tradeColumns(), resp.Trades)
 	},
 }
 
@@ -74,9 +70,9 @@ var dataOptionSnapshotCmd = &cobra.Command{
 	Example: `  alpaca data option snapshot --symbols AAPL250620C00200000
   alpaca data option snapshot --symbols AAPL250620C00200000,AAPL250620P00200000`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbols := cmdutil.Str(cmd, "symbols")
-		if symbols == "" {
-			return fmt.Errorf("--symbols is required")
+		symbols, err := cmdutil.RequireStr(cmd, "symbols")
+		if err != nil {
+			return err
 		}
 
 		resp, err := dataClient.OptionSnapshots(&api.OptionSnapshotsParams{
@@ -122,9 +118,9 @@ var dataOptionLatestQuotesCmd = &cobra.Command{
 	Short: "Get latest option quotes",
 	Example: `  alpaca data option latest-quotes --symbols AAPL250620C00200000`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbols := cmdutil.Str(cmd, "symbols")
-		if symbols == "" {
-			return fmt.Errorf("--symbols is required")
+		symbols, err := cmdutil.RequireStr(cmd, "symbols")
+		if err != nil {
+			return err
 		}
 
 		resp, err := dataClient.OptionLatestQuotes(&api.OptionLatestQuotesParams{
@@ -144,9 +140,9 @@ var dataOptionLatestTradesCmd = &cobra.Command{
 	Short: "Get latest option trades",
 	Example: `  alpaca data option latest-trades --symbols AAPL250620C00200000`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbols := cmdutil.Str(cmd, "symbols")
-		if symbols == "" {
-			return fmt.Errorf("--symbols is required")
+		symbols, err := cmdutil.RequireStr(cmd, "symbols")
+		if err != nil {
+			return err
 		}
 
 		resp, err := dataClient.OptionLatestTrades(&api.OptionLatestTradesParams{
@@ -210,13 +206,3 @@ func init() {
 	dataOptionCmd.AddCommand(dataOptionLatestTradesCmd)
 }
 
-func renderOptionMap(w io.Writer, format string, cols []output.Column, data any) error {
-	j, _ := json.Marshal(data)
-	var m map[string]json.RawMessage
-	if json.Unmarshal(j, &m) == nil && len(m) == 1 {
-		for _, v := range m {
-			return output.Render(format, cols, v)
-		}
-	}
-	return output.JSON(w, data)
-}

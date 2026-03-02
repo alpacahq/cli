@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/alpacahq/cli/internal/client"
 )
@@ -64,10 +65,6 @@ func (p *CorporateActionsParams) Values() url.Values {
 		v.Set("sort", p.Sort)
 	}
 	return v
-}
-
-var CorporateActionsParamsDefaults = map[string]string{
-	"limit": "100",
 }
 
 // CorporateActions — Corporate actions
@@ -302,10 +299,6 @@ func (p *RatesParams) Values() url.Values {
 	return v
 }
 
-var RatesParamsDefaults = map[string]string{
-	"limit": "1000",
-}
-
 // Rates — Historical rates for currency pairs
 func (c *MarketDataClient) Rates(params *RatesParams) (*ForexRatesResp, error) {
 	path := "/v1beta1/forex/rates"
@@ -330,10 +323,6 @@ func (p *LogosParams) Values() url.Values {
 		v.Set("placeholder", "true")
 	}
 	return v
-}
-
-var LogosParamsDefaults = map[string]string{
-	"placeholder": "true",
 }
 
 // Logos — Logos
@@ -391,10 +380,6 @@ func (p *NewsParams) Values() url.Values {
 
 var NewsParamsSortValues = []string{"asc", "desc"}
 
-var NewsParamsDefaults = map[string]string{
-	"sort": "desc",
-}
-
 // News — News articles
 func (c *MarketDataClient) News(params *NewsParams) (*NewsResp, error) {
 	path := "/v1beta1/news"
@@ -443,10 +428,6 @@ func (p *OptionBarsParams) Values() url.Values {
 		v.Set("sort", p.Sort)
 	}
 	return v
-}
-
-var OptionBarsParamsDefaults = map[string]string{
-	"limit": "1000",
 }
 
 // OptionBars — Historical bars
@@ -541,10 +522,6 @@ func (p *OptionSnapshotsParams) Values() url.Values {
 	return v
 }
 
-var OptionSnapshotsParamsDefaults = map[string]string{
-	"limit": "100",
-}
-
 // OptionSnapshots — Snapshots
 func (c *MarketDataClient) OptionSnapshots(params *OptionSnapshotsParams) (*OptionSnapshotsResp, error) {
 	path := "/v1beta1/options/snapshots"
@@ -613,10 +590,6 @@ func (p *OptionChainParams) Values() url.Values {
 
 var OptionChainParamsTypeValues = []string{"call", "put"}
 
-var OptionChainParamsDefaults = map[string]string{
-	"limit": "100",
-}
-
 // OptionChain — Option chain
 func (c *MarketDataClient) OptionChain(UnderlyingSymbol string, params *OptionChainParams) (*OptionSnapshotsResp, error) {
 	path := fmt.Sprintf("/v1beta1/options/snapshots/%s", UnderlyingSymbol)
@@ -661,10 +634,6 @@ func (p *OptionTradesParams) Values() url.Values {
 		v.Set("sort", p.Sort)
 	}
 	return v
-}
-
-var OptionTradesParamsDefaults = map[string]string{
-	"limit": "1000",
 }
 
 // OptionTrades — Historical trades
@@ -729,11 +698,6 @@ func (p *MostActivesParams) Values() url.Values {
 
 var MostActivesParamsByValues = []string{"trades", "volume"}
 
-var MostActivesParamsDefaults = map[string]string{
-	"by":  "volume",
-	"top": "10",
-}
-
 // MostActives — Most active stocks
 func (c *MarketDataClient) MostActives(params *MostActivesParams) (*MostActivesResp, error) {
 	path := "/v1beta1/screener/stocks/most-actives"
@@ -758,10 +722,6 @@ func (p *MoversParams) Values() url.Values {
 		v.Set("top", fmt.Sprint(p.Top))
 	}
 	return v
-}
-
-var MoversParamsDefaults = map[string]string{
-	"top": "10",
 }
 
 // Movers — Top market movers
@@ -812,10 +772,6 @@ func (p *CryptoBarsParams) Values() url.Values {
 		v.Set("sort", p.Sort)
 	}
 	return v
-}
-
-var CryptoBarsParamsDefaults = map[string]string{
-	"limit": "1000",
 }
 
 // CryptoBars — Historical bars
@@ -968,10 +924,6 @@ func (p *CryptoQuotesParams) Values() url.Values {
 	return v
 }
 
-var CryptoQuotesParamsDefaults = map[string]string{
-	"limit": "1000",
-}
-
 // CryptoQuotes — Historical quotes
 func (c *MarketDataClient) CryptoQuotes(Loc string, params *CryptoQuotesParams) (*CryptoQuotesResp, error) {
 	path := fmt.Sprintf("/v1beta3/crypto/%s/quotes", Loc)
@@ -1044,10 +996,6 @@ func (p *CryptoTradesParams) Values() url.Values {
 	return v
 }
 
-var CryptoTradesParamsDefaults = map[string]string{
-	"limit": "1000",
-}
-
 // CryptoTrades — Historical trades
 func (c *MarketDataClient) CryptoTrades(Loc string, params *CryptoTradesParams) (*CryptoTradesResp, error) {
 	path := fmt.Sprintf("/v1beta3/crypto/%s/trades", Loc)
@@ -1104,10 +1052,6 @@ func (p *StockAuctionsParams) Values() url.Values {
 		v.Set("sort", p.Sort)
 	}
 	return v
-}
-
-var StockAuctionsParamsDefaults = map[string]string{
-	"limit": "1000",
 }
 
 // StockAuctions — Historical auctions
@@ -1174,11 +1118,6 @@ func (p *StockBarsParams) Values() url.Values {
 		v.Set("sort", p.Sort)
 	}
 	return v
-}
-
-var StockBarsParamsDefaults = map[string]string{
-	"limit":      "1000",
-	"adjustment": "raw",
 }
 
 // StockBars — Historical bars
@@ -1310,10 +1249,6 @@ func (p *StockQuotesParams) Values() url.Values {
 	return v
 }
 
-var StockQuotesParamsDefaults = map[string]string{
-	"limit": "1000",
-}
-
 // StockQuotes — Historical quotes
 func (c *MarketDataClient) StockQuotes(params *StockQuotesParams) (*StockQuotesResp, error) {
 	path := "/v2/stocks/quotes"
@@ -1439,10 +1374,6 @@ func (p *StockTradesParams) Values() url.Values {
 	return v
 }
 
-var StockTradesParamsDefaults = map[string]string{
-	"limit": "1000",
-}
-
 // StockTrades — Historical trades
 func (c *MarketDataClient) StockTrades(params *StockTradesParams) (*StockTradesResp, error) {
 	path := "/v2/stocks/trades"
@@ -1531,10 +1462,6 @@ func (p *StockAuctionSingleParams) Values() url.Values {
 	return v
 }
 
-var StockAuctionSingleParamsDefaults = map[string]string{
-	"limit": "1000",
-}
-
 // StockAuctionSingle — Historical auctions (single)
 func (c *MarketDataClient) StockAuctionSingle(Symbol string, params *StockAuctionSingleParams) (*StockAuctionsRespSingle, error) {
 	path := fmt.Sprintf("/v2/stocks/%s/auctions", Symbol)
@@ -1595,11 +1522,6 @@ func (p *StockBarSingleParams) Values() url.Values {
 		v.Set("sort", p.Sort)
 	}
 	return v
-}
-
-var StockBarSingleParamsDefaults = map[string]string{
-	"limit":      "1000",
-	"adjustment": "raw",
 }
 
 // StockBarSingle — Historical bars (single symbol)
@@ -1684,10 +1606,6 @@ func (p *StockQuoteSingleParams) Values() url.Values {
 		v.Set("sort", p.Sort)
 	}
 	return v
-}
-
-var StockQuoteSingleParamsDefaults = map[string]string{
-	"limit": "1000",
 }
 
 // StockQuoteSingle — Historical quotes (single symbol)
@@ -1803,10 +1721,6 @@ func (p *StockTradeSingleParams) Values() url.Values {
 	return v
 }
 
-var StockTradeSingleParamsDefaults = map[string]string{
-	"limit": "1000",
-}
-
 // StockTradeSingle — Historical trades (single symbol)
 func (c *MarketDataClient) StockTradeSingle(Symbol string, params *StockTradeSingleParams) (*StockTradesRespSingle, error) {
 	path := fmt.Sprintf("/v2/stocks/%s/trades", Symbol)
@@ -1846,4 +1760,88 @@ func (c *MarketDataClient) StockLatestTradeSingle(Symbol string, params *StockLa
 	}
 	var result StockLatestTradesRespSingle
 	return &result, json.Unmarshal(data, &result)
+}
+
+// Bars routes to the stock or crypto endpoint based on symbol format.
+func (c *MarketDataClient) Bars(symbol string, params url.Values) (json.RawMessage, error) {
+	if params == nil {
+		params = url.Values{}
+	}
+	if strings.Contains(symbol, "/") {
+		params.Set("symbols", symbol)
+		return c.Raw.GetData("/v1beta3/crypto/us/bars", params)
+	}
+	return c.Raw.GetData(fmt.Sprintf("/v2/stocks/%s/bars", symbol), params)
+}
+
+// Quotes routes to the stock or crypto endpoint based on symbol format.
+func (c *MarketDataClient) Quotes(symbol string, params url.Values) (json.RawMessage, error) {
+	if params == nil {
+		params = url.Values{}
+	}
+	if strings.Contains(symbol, "/") {
+		params.Set("symbols", symbol)
+		return c.Raw.GetData("/v1beta3/crypto/us/quotes", params)
+	}
+	return c.Raw.GetData(fmt.Sprintf("/v2/stocks/%s/quotes", symbol), params)
+}
+
+// Trades routes to the stock or crypto endpoint based on symbol format.
+func (c *MarketDataClient) Trades(symbol string, params url.Values) (json.RawMessage, error) {
+	if params == nil {
+		params = url.Values{}
+	}
+	if strings.Contains(symbol, "/") {
+		params.Set("symbols", symbol)
+		return c.Raw.GetData("/v1beta3/crypto/us/trades", params)
+	}
+	return c.Raw.GetData(fmt.Sprintf("/v2/stocks/%s/trades", symbol), params)
+}
+
+// Snapshot routes to the stock or crypto endpoint based on symbol format.
+func (c *MarketDataClient) Snapshot(symbol string, params url.Values) (json.RawMessage, error) {
+	if params == nil {
+		params = url.Values{}
+	}
+	if strings.Contains(symbol, "/") {
+		params.Set("symbols", symbol)
+		return c.Raw.GetData("/v1beta3/crypto/us/snapshots", params)
+	}
+	return c.Raw.GetData(fmt.Sprintf("/v2/stocks/%s/snapshot", symbol), params)
+}
+
+// LatestBar routes to the stock or crypto endpoint based on symbol format.
+func (c *MarketDataClient) LatestBar(symbol string, params url.Values) (json.RawMessage, error) {
+	if params == nil {
+		params = url.Values{}
+	}
+	if strings.Contains(symbol, "/") {
+		params.Set("symbols", symbol)
+		return c.Raw.GetData("/v1beta3/crypto/us/latest/bars", params)
+	}
+	return c.Raw.GetData(fmt.Sprintf("/v2/stocks/%s/bars/latest", symbol), params)
+}
+
+// LatestQuote routes to the stock or crypto endpoint based on symbol format.
+func (c *MarketDataClient) LatestQuote(symbol string, params url.Values) (json.RawMessage, error) {
+	if params == nil {
+		params = url.Values{}
+	}
+	if strings.Contains(symbol, "/") {
+		params.Set("symbols", symbol)
+		return c.Raw.GetData("/v1beta3/crypto/us/latest/quotes", params)
+	}
+	return c.Raw.GetData(fmt.Sprintf("/v2/stocks/%s/quotes/latest", symbol), params)
+}
+
+// LatestTrade routes to the stock or crypto endpoint based on symbol format.
+func (c *MarketDataClient) LatestTrade(symbol string, params url.Values) (json.RawMessage, error) {
+	if params == nil {
+		params = url.Values{}
+	}
+	if strings.Contains(symbol, "/") {
+		params.Set("symbols", symbol)
+		return c.Raw.GetData("/v1beta3/crypto/us/latest/trades", params)
+	}
+	return c.Raw.GetData(fmt.Sprintf("/v2/stocks/%s/trades/latest", symbol), params)
 }

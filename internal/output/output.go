@@ -15,8 +15,6 @@ import (
 type Column struct {
 	Header string
 	Field  string
-	Width  int
-	Right  bool
 	Format func(any) string
 }
 

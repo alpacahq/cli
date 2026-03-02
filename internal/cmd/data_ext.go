@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 
 	"github.com/alpacahq/cli/internal/api"
@@ -24,9 +23,9 @@ var dataForexRatesCmd = &cobra.Command{
 	Example: `  alpaca data forex rates --pairs EUR/USD,GBP/USD --start 2025-01-01
   alpaca data forex rates --pairs USD/JPY --timeframe 1Hour`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		pairs := cmdutil.Str(cmd, "pairs")
-		if pairs == "" {
-			return fmt.Errorf("--pairs is required (e.g. EUR/USD,GBP/USD)")
+		pairs, err := cmdutil.RequireStr(cmd, "pairs")
+		if err != nil {
+			return err
 		}
 
 		resp, err := dataClient.Rates(&api.RatesParams{
@@ -50,9 +49,9 @@ var dataForexLatestCmd = &cobra.Command{
 	Short: "Get latest forex rates",
 	Example: `  alpaca data forex latest --pairs EUR/USD,GBP/USD`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		pairs := cmdutil.Str(cmd, "pairs")
-		if pairs == "" {
-			return fmt.Errorf("--pairs is required (e.g. EUR/USD,GBP/USD)")
+		pairs, err := cmdutil.RequireStr(cmd, "pairs")
+		if err != nil {
+			return err
 		}
 
 		resp, err := dataClient.LatestRates(&api.LatestRatesParams{
@@ -73,9 +72,9 @@ var dataCryptoOrderbookCmd = &cobra.Command{
 	Short: "Get latest crypto orderbooks",
 	Example: `  alpaca data crypto-orderbook --symbols BTC/USD,ETH/USD`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbols := cmdutil.Str(cmd, "symbols")
-		if symbols == "" {
-			return fmt.Errorf("--symbols is required (e.g. BTC/USD,ETH/USD)")
+		symbols, err := cmdutil.RequireStr(cmd, "symbols")
+		if err != nil {
+			return err
 		}
 
 		resp, err := dataClient.CryptoLatestOrderbooks("us", &api.CryptoLatestOrderbooksParams{
@@ -97,9 +96,9 @@ var dataAuctionsCmd = &cobra.Command{
 	Example: `  alpaca data auctions --symbols AAPL --start 2025-01-01
   alpaca data auctions --symbols AAPL,MSFT --limit 10`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbols := cmdutil.Str(cmd, "symbols")
-		if symbols == "" {
-			return fmt.Errorf("--symbols is required")
+		symbols, err := cmdutil.RequireStr(cmd, "symbols")
+		if err != nil {
+			return err
 		}
 
 		resp, err := dataClient.StockAuctions(&api.StockAuctionsParams{
@@ -148,9 +147,9 @@ var dataFixedIncomeCmd = &cobra.Command{
 	Short: "Get fixed income latest prices",
 	Example: `  alpaca data fixed-income --symbols 912797KR1,912797LB5`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbols := cmdutil.Str(cmd, "symbols")
-		if symbols == "" {
-			return fmt.Errorf("--symbols is required (CUSIP identifiers)")
+		symbols, err := cmdutil.RequireStr(cmd, "symbols")
+		if err != nil {
+			return err
 		}
 
 		resp, err := dataClient.FixedIncomeLatestPrices(&api.FixedIncomeLatestPricesParams{

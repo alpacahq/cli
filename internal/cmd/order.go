@@ -47,17 +47,7 @@ var orderSubmitCmd = &cobra.Command{
 			body.TimeInForce = "day"
 		}
 
-		takeProfit := cmdutil.Str(cmd, "take-profit")
-		stopLoss := cmdutil.Str(cmd, "stop-loss")
-		if takeProfit != "" || stopLoss != "" {
-			body.OrderClass = "bracket"
-			if takeProfit != "" {
-				body.TakeProfit = map[string]any{"limit_price": takeProfit}
-			}
-			if stopLoss != "" {
-				body.StopLoss = map[string]any{"stop_price": stopLoss}
-			}
-		}
+		applyBracket(body, cmdutil.Str(cmd, "take-profit"), cmdutil.Str(cmd, "stop-loss"))
 
 		order, err := tradingClient.PostOrder(body)
 		if err != nil {
@@ -259,6 +249,19 @@ func init() {
 	orderCmd.AddCommand(orderCancelCmd)
 	orderCmd.AddCommand(orderCancelAllCmd)
 	orderCmd.AddCommand(orderReplaceCmd)
+}
+
+func applyBracket(body *api.PostOrderRequest, takeProfit, stopLoss string) {
+	if takeProfit == "" && stopLoss == "" {
+		return
+	}
+	body.OrderClass = "bracket"
+	if takeProfit != "" {
+		body.TakeProfit = map[string]any{"limit_price": takeProfit}
+	}
+	if stopLoss != "" {
+		body.StopLoss = map[string]any{"stop_price": stopLoss}
+	}
 }
 
 func expandOrderLegs(orders []api.Order) []map[string]any {

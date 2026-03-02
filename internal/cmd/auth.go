@@ -284,16 +284,13 @@ func init() {
 }
 
 func resolveBaseURLFlags(cmd *cobra.Command) (string, error) {
-	live := cmdutil.Bool(cmd, "live")
-	baseURL := cmdutil.Str(cmd, "base-url")
-
-	if live {
-		return "https://api.alpaca.markets", nil
+	if cmdutil.Bool(cmd, "live") {
+		return config.ResolveBaseURL("live"), nil
 	}
-	if baseURL != "" {
-		return strings.TrimRight(baseURL, "/"), nil
+	if u := cmdutil.Str(cmd, "base-url"); u != "" {
+		return config.ResolveBaseURL(u), nil
 	}
-	return "https://paper-api.alpaca.markets", nil
+	return config.ResolveBaseURL("paper"), nil
 }
 
 func loadOrCreateGlobal() *config.Config {

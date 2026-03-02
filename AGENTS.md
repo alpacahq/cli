@@ -11,10 +11,10 @@ The CLI is driven by OpenAPI specs. Maximize what's generated, minimize what's h
 `api/specs/*.json` → `cmd/generate/main.go` → `internal/api/`
 
 - **Types**: all request/response structs, enums, aliases (~170 types)
-- **Typed clients**: `TradingClient` (61 methods), `MarketDataClient` (47 methods)
+- **Typed clients**: `TradingClient` (61 methods), `MarketDataClient` (47 methods + 7 unified stock/crypto methods)
 - **Param structs**: with `Values() url.Values` for query string encoding
+- **Unified stock/crypto methods**: `Bars`, `Quotes`, `Trades`, `Snapshot`, `LatestBar`, `LatestQuote`, `LatestTrade` — route to stock or crypto endpoint based on symbol format (contains `/` = crypto)
 - **Enum value slices**: `var <Name>Values = []string{...}` for every enum (schema-level and parameter-level) — used for shell completions via `cobra.FixedCompletions`
-- **Parameter defaults**: `var <Params>Defaults = map[string]string{...}` — spec-defined default values for query parameters
 - **Mutation metadata**: `var TradingMutatingMethods = map[string]bool{...}` — which client methods mutate state (POST/PUT/PATCH/DELETE). A test in `spec_test.go` verifies every command calling a mutating method has `warnLive()` or `requireConfirmation()`.
 - **Request body validation**: `Validate() error` methods on request body structs with `required` fields — checks for zero-value strings
 
@@ -38,7 +38,7 @@ Flag definitions + help text     →    Client methods (internal/api/)
 Column definitions (columns.go)  →    Type definitions (internal/api/)
 Output rendering logic           →    URL encoding (Values())
 Flag-to-enum binding             →    Enum value slices (<Name>Values)
-                                      Parameter defaults (<Params>Defaults)
+                                      Unified stock/crypto methods
                                       Mutation metadata (MutatingMethods)
                                       Request body Validate() methods
 ```

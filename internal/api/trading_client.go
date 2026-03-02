@@ -78,11 +78,6 @@ var GetAccountActivitiesParamsCategoryValues = []string{"non_trade_activity", "t
 
 var GetAccountActivitiesParamsDirectionValues = []string{"asc", "desc"}
 
-var GetAccountActivitiesParamsDefaults = map[string]string{
-	"direction": "desc",
-	"page_size": "100",
-}
-
 // GetAccountActivities — Retrieve Account Activities
 func (c *TradingClient) GetAccountActivities(params *GetAccountActivitiesParams) (json.RawMessage, error) {
 	path := "/v2/account/activities"
@@ -129,11 +124,6 @@ func (p *GetAccountActivitiesByActivityTypeParams) Values() url.Values {
 }
 
 var GetAccountActivitiesByActivityTypeParamsDirectionValues = []string{"asc", "desc"}
-
-var GetAccountActivitiesByActivityTypeParamsDefaults = map[string]string{
-	"direction": "desc",
-	"page_size": "100",
-}
 
 // GetAccountActivitiesByActivityType — Retrieve Account Activities of Specific Type
 func (c *TradingClient) GetAccountActivitiesByActivityType(ActivityType string, params *GetAccountActivitiesByActivityTypeParams) (json.RawMessage, error) {
@@ -214,11 +204,6 @@ var GetAccountPortfolioHistoryParamsIntradayReportingValues = []string{"continuo
 
 var GetAccountPortfolioHistoryParamsPNLResetValues = []string{"no_reset", "per_day"}
 
-var GetAccountPortfolioHistoryParamsDefaults = map[string]string{
-	"intraday_reporting": "market_hours",
-	"pnl_reset":          "per_day",
-}
-
 // GetAccountPortfolioHistory — Get Account Portfolio History
 func (c *TradingClient) GetAccountPortfolioHistory(params *GetAccountPortfolioHistoryParams) (*PortfolioHistory, error) {
 	path := "/v2/account/portfolio/history"
@@ -255,10 +240,6 @@ func (p *GetV2AssetsParams) Values() url.Values {
 		v.Set("attributes", p.Attributes)
 	}
 	return v
-}
-
-var GetV2AssetsParamsDefaults = map[string]string{
-	"attributes": "[]",
 }
 
 // GetV2Assets — Get Assets
@@ -820,14 +801,14 @@ func (p *ListCryptoPerpFundingWalletsParams) Values() url.Values {
 }
 
 // ListCryptoPerpFundingWallets — Retrieve Crypto Funding Wallets
-func (c *TradingClient) ListCryptoPerpFundingWallets(params *ListCryptoPerpFundingWalletsParams) (*CryptoWallet, error) {
+func (c *TradingClient) ListCryptoPerpFundingWallets(params *ListCryptoPerpFundingWalletsParams) ([]CryptoWallet, error) {
 	path := "/v2/perpetuals/wallets"
 	data, err := c.Raw.Get(path, params.Values())
 	if err != nil {
 		return nil, err
 	}
-	var result CryptoWallet
-	return &result, json.Unmarshal(data, &result)
+	var result []CryptoWallet
+	return result, json.Unmarshal(data, &result)
 }
 
 type GetCryptoPerpTransferEstimateParams struct {
@@ -868,14 +849,14 @@ func (c *TradingClient) GetCryptoPerpTransferEstimate(params *GetCryptoPerpTrans
 }
 
 // ListCryptoPerpFundingTransfers — Retrieve Crypto Funding Transfers
-func (c *TradingClient) ListCryptoPerpFundingTransfers() (*CryptoTransfer, error) {
+func (c *TradingClient) ListCryptoPerpFundingTransfers() ([]CryptoTransfer, error) {
 	path := "/v2/perpetuals/wallets/transfers"
 	data, err := c.Raw.Get(path, nil)
 	if err != nil {
 		return nil, err
 	}
-	var result CryptoTransfer
-	return &result, json.Unmarshal(data, &result)
+	var result []CryptoTransfer
+	return result, json.Unmarshal(data, &result)
 }
 
 // CreateCryptoPerpTransferForAccount — Request a New Withdrawal
@@ -901,14 +882,14 @@ func (c *TradingClient) GetCryptoPerpFundingTransfer(TransferID string) (*Crypto
 }
 
 // ListWhitelistedPerpAddress — An array of whitelisted addresses
-func (c *TradingClient) ListWhitelistedPerpAddress() (*WhitelistedAddress, error) {
+func (c *TradingClient) ListWhitelistedPerpAddress() ([]WhitelistedAddress, error) {
 	path := "/v2/perpetuals/wallets/whitelists"
 	data, err := c.Raw.Get(path, nil)
 	if err != nil {
 		return nil, err
 	}
-	var result WhitelistedAddress
-	return &result, json.Unmarshal(data, &result)
+	var result []WhitelistedAddress
+	return result, json.Unmarshal(data, &result)
 }
 
 type CreateWhitelistedPerpAddressRequest struct {
@@ -1057,14 +1038,14 @@ func (p *ListCryptoFundingWalletsParams) Values() url.Values {
 var ListCryptoFundingWalletsParamsNetworkValues = []string{"ethereum", "solana"}
 
 // ListCryptoFundingWallets — Retrieve Crypto Funding Wallets
-func (c *TradingClient) ListCryptoFundingWallets(params *ListCryptoFundingWalletsParams) (*CryptoWallet, error) {
+func (c *TradingClient) ListCryptoFundingWallets(params *ListCryptoFundingWalletsParams) ([]CryptoWallet, error) {
 	path := "/v2/wallets"
 	data, err := c.Raw.Get(path, params.Values())
 	if err != nil {
 		return nil, err
 	}
-	var result CryptoWallet
-	return &result, json.Unmarshal(data, &result)
+	var result []CryptoWallet
+	return result, json.Unmarshal(data, &result)
 }
 
 type GetCryptoTransferEstimateParams struct {
@@ -1105,14 +1086,14 @@ func (c *TradingClient) GetCryptoTransferEstimate(params *GetCryptoTransferEstim
 }
 
 // ListCryptoFundingTransfers — Retrieve Crypto Funding Transfers
-func (c *TradingClient) ListCryptoFundingTransfers() (*CryptoTransfer, error) {
+func (c *TradingClient) ListCryptoFundingTransfers() ([]CryptoTransfer, error) {
 	path := "/v2/wallets/transfers"
 	data, err := c.Raw.Get(path, nil)
 	if err != nil {
 		return nil, err
 	}
-	var result CryptoTransfer
-	return &result, json.Unmarshal(data, &result)
+	var result []CryptoTransfer
+	return result, json.Unmarshal(data, &result)
 }
 
 // CreateCryptoTransferForAccount — Request a New Withdrawal
@@ -1138,14 +1119,14 @@ func (c *TradingClient) GetCryptoFundingTransfer(TransferID string) (*CryptoTran
 }
 
 // ListWhitelistedAddress — An array of whitelisted addresses
-func (c *TradingClient) ListWhitelistedAddress() (*WhitelistedAddress, error) {
+func (c *TradingClient) ListWhitelistedAddress() ([]WhitelistedAddress, error) {
 	path := "/v2/wallets/whitelists"
 	data, err := c.Raw.Get(path, nil)
 	if err != nil {
 		return nil, err
 	}
-	var result WhitelistedAddress
-	return &result, json.Unmarshal(data, &result)
+	var result []WhitelistedAddress
+	return result, json.Unmarshal(data, &result)
 }
 
 type CreateWhitelistedAddressRequest struct {

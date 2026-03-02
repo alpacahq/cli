@@ -517,11 +517,13 @@ func genClient(clientName, specFile string, schemas []*schemaInfo, endpoints []*
 	var buf bytes.Buffer
 	fmt.Fprintf(&buf, "// Code generated from api/specs/%s; DO NOT EDIT.\n\n", specFile)
 	fmt.Fprintf(&buf, "package api\n\n")
-	needsStrings := false
-	for _, ep := range endpoints {
-		if ep.bodyRef != "" || ep.bodyInline != nil {
-			needsStrings = true
-			break
+	needsStrings := isData
+	if !needsStrings {
+		for _, ep := range endpoints {
+			if ep.bodyRef != "" || ep.bodyInline != nil {
+				needsStrings = true
+				break
+			}
 		}
 	}
 
@@ -575,6 +577,10 @@ func genClient(clientName, specFile string, schemas []*schemaInfo, endpoints []*
 				break
 			}
 		}
+	}
+
+	if isData {
+		genUnifiedMethods(&buf, clientName)
 	}
 
 	var mutating []string
@@ -636,20 +642,6 @@ func genEndpointMethod(buf *bytes.Buffer, ep *endpointInfo, clientName, getMetho
 			if len(p.enumValues) > 0 {
 				genValuesSlice(buf, paramsTypeName+p.goName, p.enumValues)
 			}
-		}
-
-		var defaults []paramInfo
-		for _, p := range ep.queryParams {
-			if p.defaultVal != "" {
-				defaults = append(defaults, p)
-			}
-		}
-		if len(defaults) > 0 {
-			fmt.Fprintf(buf, "var %sDefaults = map[string]string{\n", paramsTypeName)
-			for _, p := range defaults {
-				fmt.Fprintf(buf, "\t%q: %q,\n", p.name, p.defaultVal)
-			}
-			fmt.Fprintf(buf, "}\n\n")
 		}
 	}
 
@@ -854,6 +846,38 @@ func buildPathExpr(path string, pathParams []paramInfo) string {
 		return fmt.Sprintf("fmt.Sprintf(%q, %s)", expr, strings.Join(fmtArgs, ", "))
 	}
 	return fmt.Sprintf("%q", path)
+}
+
+// --- Unified stock/crypto convenience methods ---
+
+type unifiedMethod struct {
+	name       string
+	stockPath  string // uses %s for symbol
+	cryptoPath string // symbol goes in query params
+}
+
+var unifiedMethods = []unifiedMethod{
+	{"Bars", "/v2/stocks/%s/bars", "/v1beta3/crypto/us/bars"},
+	{"Quotes", "/v2/stocks/%s/quotes", "/v1beta3/crypto/us/quotes"},
+	{"Trades", "/v2/stocks/%s/trades", "/v1beta3/crypto/us/trades"},
+	{"Snapshot", "/v2/stocks/%s/snapshot", "/v1beta3/crypto/us/snapshots"},
+	{"LatestBar", "/v2/stocks/%s/bars/latest", "/v1beta3/crypto/us/latest/bars"},
+	{"LatestQuote", "/v2/stocks/%s/quotes/latest", "/v1beta3/crypto/us/latest/quotes"},
+	{"LatestTrade", "/v2/stocks/%s/trades/latest", "/v1beta3/crypto/us/latest/trades"},
+}
+
+func genUnifiedMethods(buf *bytes.Buffer, clientName string) {
+	for _, um := range unifiedMethods {
+		fmt.Fprintf(buf, "// %s routes to the stock or crypto endpoint based on symbol format.\n", um.name)
+		fmt.Fprintf(buf, "func (c *%sClient) %s(symbol string, params url.Values) (json.RawMessage, error) {\n", clientName, um.name)
+		fmt.Fprintf(buf, "\tif params == nil { params = url.Values{} }\n")
+		fmt.Fprintf(buf, "\tif strings.Contains(symbol, \"/\") {\n")
+		fmt.Fprintf(buf, "\t\tparams.Set(\"symbols\", symbol)\n")
+		fmt.Fprintf(buf, "\t\treturn c.Raw.GetData(%q, params)\n", um.cryptoPath)
+		fmt.Fprintf(buf, "\t}\n")
+		fmt.Fprintf(buf, "\treturn c.Raw.GetData(fmt.Sprintf(%q, symbol), params)\n", um.stockPath)
+		fmt.Fprintf(buf, "}\n\n")
+	}
 }
 
 // --- Naming utilities ---

@@ -94,7 +94,13 @@ var rootCmd = &cobra.Command{
 		}
 
 		var err error
-		cfg, err = config.Load(profileFlag, resolveOutputFlag())
+		outputOverride := ""
+		if jsonFlag {
+			outputOverride = "json"
+		} else if csvFlag {
+			outputOverride = "csv"
+		}
+		cfg, err = config.Load(profileFlag, outputOverride)
 		if err != nil {
 			return err
 		}
@@ -157,16 +163,6 @@ func needsAuth(cmd *cobra.Command) bool {
 		return false
 	}
 	return true
-}
-
-func resolveOutputFlag() string {
-	if jsonFlag {
-		return "json"
-	}
-	if csvFlag {
-		return "csv"
-	}
-	return ""
 }
 
 func getOutput() string {

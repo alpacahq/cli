@@ -25,6 +25,7 @@ var optionChainCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		params := &api.GetOptionsContractsParams{
 			UnderlyingSymbols: args[0],
+			ShowDeliverables:  cmdutil.Bool(cmd, "show-deliverables"),
 			ExpirationDate:    cmdutil.Str(cmd, "expiry"),
 			Type:              cmdutil.Str(cmd, "type"),
 			StrikePriceGte:    cmdutil.Float64(cmd, "strike-gte"),
