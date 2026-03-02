@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 	"text/tabwriter"
 
@@ -18,14 +17,14 @@ type Column struct {
 	Format func(any) string
 }
 
-func Render(format string, columns []Column, data any) error {
+func Render(w io.Writer, format string, columns []Column, data any) error {
 	switch format {
 	case "json":
-		return JSON(os.Stdout, data)
+		return JSON(w, data)
 	case "csv":
-		return CSV(os.Stdout, columns, data)
+		return CSV(w, columns, data)
 	default:
-		return Table(os.Stdout, columns, data)
+		return Table(w, columns, data)
 	}
 }
 
@@ -83,19 +82,19 @@ func CSV(w io.Writer, columns []Column, data any) error {
 	return cw.Error()
 }
 
-func PrintSingle(format string, columns []Column, data any) error {
+func PrintSingle(w io.Writer, format string, columns []Column, data any) error {
 	switch format {
 	case "json":
-		return JSON(os.Stdout, data)
+		return JSON(w, data)
 	case "csv":
-		return CSV(os.Stdout, columns, data)
+		return CSV(w, columns, data)
 	default:
 		row := toMap(data)
 		if row == nil {
 			return fmt.Errorf("no data")
 		}
 
-		tw := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+		tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
 		for _, c := range columns {
 			val := formatField(row, c)
 			_, _ = fmt.Fprintf(tw, "%s:\t%s\n", c.Header, val)
@@ -104,7 +103,7 @@ func PrintSingle(format string, columns []Column, data any) error {
 	}
 }
 
-func ColorPL(val string) string {
+func colorPL(val string) string {
 	if strings.HasPrefix(val, "-") {
 		return color.RedString(val)
 	}
@@ -131,7 +130,7 @@ func PercentPL(val string) string {
 	if val == "" {
 		return "0.00%"
 	}
-	return ColorPL(val) + "%"
+	return colorPL(val) + "%"
 }
 
 func toRows(data any) []map[string]any {

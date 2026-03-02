@@ -31,9 +31,10 @@ func TestDataLatestTrade(t *testing.T) {
 	out := alpaca(t, "data", "latest", "trade", "AAPL", "--json")
 	data := parseJSONMap(t, out)
 
-	// Response has "trade" key for single stock
-	if _, ok := data["trade"]; !ok {
-		t.Error("latest trade response missing 'trade' key")
+	for _, field := range []string{"t", "p", "s"} {
+		if _, ok := data[field]; !ok {
+			t.Errorf("latest trade missing field: %s", field)
+		}
 	}
 }
 
@@ -41,8 +42,10 @@ func TestDataLatestQuote(t *testing.T) {
 	out := alpaca(t, "data", "latest", "quote", "AAPL", "--json")
 	data := parseJSONMap(t, out)
 
-	if _, ok := data["quote"]; !ok {
-		t.Error("latest quote response missing 'quote' key")
+	for _, field := range []string{"bp", "ap", "bs", "as"} {
+		if _, ok := data[field]; !ok {
+			t.Errorf("latest quote missing field: %s", field)
+		}
 	}
 }
 

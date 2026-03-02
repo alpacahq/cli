@@ -3,7 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
@@ -53,7 +52,7 @@ var orderSubmitCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(getOutput(), orderColumns(), order)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), orderColumns(), order)
 	},
 }
 
@@ -88,14 +87,14 @@ var orderListCmd = &cobra.Command{
 		}
 
 		if !nested {
-			return output.Render(getOutput(), orderColumns(), orders)
+			return output.Render(cmd.OutOrStdout(), getOutput(), orderColumns(), orders)
 		}
 
 		format := getOutput()
 		if format == "json" {
-			return output.JSON(os.Stdout, orders)
+			return output.JSON(cmd.OutOrStdout(), orders)
 		}
-		return output.Render(format, orderColumns(), expandOrderLegs(orders))
+		return output.Render(cmd.OutOrStdout(), format, orderColumns(), expandOrderLegs(orders))
 	},
 }
 
@@ -125,7 +124,7 @@ var orderGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(getOutput(), orderColumns(), order)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), orderColumns(), order)
 	},
 }
 
@@ -192,7 +191,7 @@ var orderReplaceCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(getOutput(), orderColumns(), order)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), orderColumns(), order)
 	},
 }
 
@@ -221,11 +220,9 @@ func init() {
 	orderListCmd.Flags().String("status", "", "Filter: open, closed, all (default: open)")
 	_ = orderListCmd.RegisterFlagCompletionFunc("status", cobra.FixedCompletions(api.GetAllOrdersParamsStatusValues, cobra.ShellCompDirectiveNoFileComp))
 	orderListCmd.Flags().String("symbols", "", "Filter by symbols (comma-separated)")
-	orderListCmd.Flags().String("start", "", "Filter: orders after this date")
-	orderListCmd.Flags().String("end", "", "Filter: orders until this date")
-	orderListCmd.Flags().Int("limit", 0, "Max number of orders to return")
-	orderListCmd.Flags().String("sort", "", "Sort direction: asc or desc")
-	_ = orderListCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions(api.SortValues, cobra.ShellCompDirectiveNoFileComp))
+	cmdutil.AddDateRangeFlags(orderListCmd)
+	cmdutil.AddLimitFlag(orderListCmd)
+	cmdutil.AddSortFlag(orderListCmd, api.SortValues)
 	orderListCmd.Flags().Bool("nested", false, "Expand multi-leg order legs")
 	orderListCmd.Flags().String("side", "", "Filter by side: buy or sell")
 	_ = orderListCmd.RegisterFlagCompletionFunc("side", cobra.FixedCompletions(api.OrderSideValues, cobra.ShellCompDirectiveNoFileComp))

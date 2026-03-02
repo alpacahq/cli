@@ -30,7 +30,7 @@ var screenerMostActivesCmd = &cobra.Command{
 			return err
 		}
 
-		return output.Render(getOutput(), screenerMostActivesColumns(), resp.MostActives)
+		return output.Render(cmd.OutOrStdout(), getOutput(), screenerMostActivesColumns(), resp.MostActives)
 	},
 }
 
@@ -54,19 +54,20 @@ var screenerMoversCmd = &cobra.Command{
 			return err
 		}
 
+		w := cmd.OutOrStdout()
 		if getOutput() == "json" || getOutput() == "csv" {
-			return output.Render(getOutput(), screenerMoverColumns(), resp)
+			return output.Render(w, getOutput(), screenerMoverColumns(), resp)
 		}
 
 		cmd.Println("GAINERS")
 		gainersJSON, _ := json.Marshal(resp.Gainers)
-		if err := output.Render("table", screenerMoverColumns(), json.RawMessage(gainersJSON)); err != nil {
+		if err := output.Render(w, "table", screenerMoverColumns(), json.RawMessage(gainersJSON)); err != nil {
 			return err
 		}
 
 		cmd.Println("\nLOSERS")
 		losersJSON, _ := json.Marshal(resp.Losers)
-		return output.Render("table", screenerMoverColumns(), json.RawMessage(losersJSON))
+		return output.Render(w, "table", screenerMoverColumns(), json.RawMessage(losersJSON))
 	},
 }
 

@@ -38,13 +38,14 @@ var clockCmd = &cobra.Command{
 			return output.JSON(cmd.OutOrStdout(), clock)
 		}
 
+		w := cmd.OutOrStdout()
 		if clock.IsOpen {
-			color.Green("Market is OPEN")
+			_, _ = color.New(color.FgGreen).Fprintln(w, "Market is OPEN")
 		} else {
-			color.Yellow("Market is CLOSED")
+			_, _ = color.New(color.FgYellow).Fprintln(w, "Market is CLOSED")
 		}
-		fmt.Printf("  Next open:  %v\n", clock.NextOpen)
-		fmt.Printf("  Next close: %v\n", clock.NextClose)
+		_, _ = fmt.Fprintf(w, "  Next open:  %v\n", clock.NextOpen)
+		_, _ = fmt.Fprintf(w, "  Next close: %v\n", clock.NextClose)
 		return nil
 	},
 }
@@ -78,7 +79,7 @@ var calendarCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.Render(getOutput(), calendarColumns(), data)
+		return output.Render(cmd.OutOrStdout(), getOutput(), calendarColumns(), data)
 	},
 }
 
@@ -135,7 +136,7 @@ var newsCmd = &cobra.Command{
 		}
 
 		newsData, _ := json.Marshal(resp.News)
-		return output.Render(getOutput(), newsColumns(), json.RawMessage(newsData))
+		return output.Render(cmd.OutOrStdout(), getOutput(), newsColumns(), json.RawMessage(newsData))
 	},
 }
 
@@ -159,11 +160,9 @@ func init() {
 	portfolioCmd.AddCommand(portfolioHistoryCmd)
 
 	newsCmd.Flags().String("symbols", "", "Filter by symbols (comma-separated)")
-	newsCmd.Flags().String("start", "", "Start date")
-	newsCmd.Flags().String("end", "", "End date")
+	cmdutil.AddDateRangeFlags(newsCmd)
 	newsCmd.Flags().Int("limit", 0, "Max articles (default: 10)")
-	newsCmd.Flags().String("sort", "", "Sort order: asc or desc")
-	_ = newsCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions(api.SortValues, cobra.ShellCompDirectiveNoFileComp))
+	cmdutil.AddSortFlag(newsCmd, api.SortValues)
 	newsCmd.Flags().Bool("include-content", false, "Include full article content")
 	newsCmd.Flags().Bool("exclude-contentless", false, "Exclude articles without content")
 }

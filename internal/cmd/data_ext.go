@@ -167,11 +167,9 @@ func init() {
 	dataForexRatesCmd.Flags().String("pairs", "", "Currency pairs (comma-separated, e.g. EUR/USD,GBP/USD)")
 	dataForexRatesCmd.Flags().String("timeframe", "", "Timeframe: 1Min, 5Min, 1Hour, 1Day")
 	_ = dataForexRatesCmd.RegisterFlagCompletionFunc("timeframe", cobra.FixedCompletions([]string{"1Min", "5Min", "1Hour", "1Day"}, cobra.ShellCompDirectiveNoFileComp))
-	dataForexRatesCmd.Flags().String("start", "", "Start date")
-	dataForexRatesCmd.Flags().String("end", "", "End date")
-	dataForexRatesCmd.Flags().Int("limit", 0, "Max results")
-	dataForexRatesCmd.Flags().String("sort", "", "Sort: asc or desc")
-	_ = dataForexRatesCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions(api.SortValues, cobra.ShellCompDirectiveNoFileComp))
+	cmdutil.AddDateRangeFlags(dataForexRatesCmd)
+	cmdutil.AddLimitFlag(dataForexRatesCmd)
+	cmdutil.AddSortFlag(dataForexRatesCmd, api.SortValues)
 	dataForexLatestCmd.Flags().String("pairs", "", "Currency pairs (comma-separated)")
 	dataForexCmd.AddCommand(dataForexRatesCmd)
 	dataForexCmd.AddCommand(dataForexLatestCmd)
@@ -179,20 +177,16 @@ func init() {
 	dataCryptoOrderbookCmd.Flags().String("symbols", "", "Crypto symbols (comma-separated, e.g. BTC/USD)")
 
 	dataAuctionsCmd.Flags().String("symbols", "", "Stock symbols (comma-separated)")
-	dataAuctionsCmd.Flags().String("start", "", "Start date")
-	dataAuctionsCmd.Flags().String("end", "", "End date")
-	dataAuctionsCmd.Flags().Int("limit", 0, "Max results")
-	dataAuctionsCmd.Flags().String("sort", "", "Sort: asc or desc")
-	_ = dataAuctionsCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions(api.SortValues, cobra.ShellCompDirectiveNoFileComp))
+	cmdutil.AddDateRangeFlags(dataAuctionsCmd)
+	cmdutil.AddLimitFlag(dataAuctionsCmd)
+	cmdutil.AddSortFlag(dataAuctionsCmd, api.SortValues)
 	dataAuctionsCmd.Flags().String("asof", "", "As-of date for data")
 
 	dataCorporateActionsCmd.Flags().String("symbols", "", "Filter by symbols")
 	dataCorporateActionsCmd.Flags().String("types", "", "CA types: forward_split, reverse_split, cash_dividend, etc.")
-	dataCorporateActionsCmd.Flags().String("start", "", "Start date")
-	dataCorporateActionsCmd.Flags().String("end", "", "End date")
-	dataCorporateActionsCmd.Flags().Int("limit", 0, "Max results")
-	dataCorporateActionsCmd.Flags().String("sort", "", "Sort: asc or desc")
-	_ = dataCorporateActionsCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions(api.SortValues, cobra.ShellCompDirectiveNoFileComp))
+	cmdutil.AddDateRangeFlags(dataCorporateActionsCmd)
+	cmdutil.AddLimitFlag(dataCorporateActionsCmd)
+	cmdutil.AddSortFlag(dataCorporateActionsCmd, api.SortValues)
 	dataFixedIncomeCmd.Flags().String("symbols", "", "ISIN identifiers (comma-separated)")
 
 	dataCmd.AddCommand(dataOptionCmd)
@@ -208,7 +202,7 @@ func renderMapValues(w io.Writer, format string, cols []output.Column, data any)
 	var m map[string]json.RawMessage
 	if json.Unmarshal(j, &m) == nil && len(m) == 1 {
 		for _, v := range m {
-			return output.Render(format, cols, v)
+			return output.Render(w, format, cols, v)
 		}
 	}
 	return output.JSON(w, data)

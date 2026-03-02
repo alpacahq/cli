@@ -20,7 +20,7 @@ var accountGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(getOutput(), accountColumns(), account)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), accountColumns(), account)
 	},
 }
 
@@ -32,7 +32,7 @@ var accountConfigGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(getOutput(), accountConfigColumns(), config)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), accountConfigColumns(), config)
 	},
 }
 
@@ -82,7 +82,7 @@ var accountConfigSetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(getOutput(), accountConfigColumns(), config)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), accountConfigColumns(), config)
 	},
 }
 

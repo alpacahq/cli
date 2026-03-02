@@ -92,7 +92,7 @@ func TestRawField_Types(t *testing.T) {
 }
 
 func TestColorPL(t *testing.T) {
-	if got := ColorPL("0"); got != "0" {
+	if got := colorPL("0"); got != "0" {
 		t.Errorf("zero: got %q", got)
 	}
 }

@@ -22,7 +22,7 @@ var positionListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.Render(getOutput(), positionColumns(), positions)
+		return output.Render(cmd.OutOrStdout(), getOutput(), positionColumns(), positions)
 	},
 }
 
@@ -35,7 +35,7 @@ var positionGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(getOutput(), positionColumns(), pos)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), positionColumns(), pos)
 	},
 }
 
@@ -57,7 +57,7 @@ var positionCloseCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(getOutput(), orderColumns(), order)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), orderColumns(), order)
 	},
 }
 

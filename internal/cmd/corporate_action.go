@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
 	"github.com/alpacahq/cli/internal/output"
@@ -21,23 +19,14 @@ var corporateActionListCmd = &cobra.Command{
 	Example: `  alpaca corporate-action list --types reverse_split --start 2025-01-01 --end 2025-12-31
   alpaca corporate-action list --types cash_dividend --symbols AAPL --start 2025-01-01 --end 2025-06-30`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		types := cmdutil.Str(cmd, "types")
-		if types == "" {
-			return fmt.Errorf("--types is required (e.g. reverse_split, forward_split, cash_dividend, stock_dividend, spin_off, cash_merger, stock_merger)")
-		}
-		start := cmdutil.Str(cmd, "start")
-		if start == "" {
-			return fmt.Errorf("--start is required (YYYY-MM-DD)")
-		}
-		end := cmdutil.Str(cmd, "end")
-		if end == "" {
-			return fmt.Errorf("--end is required (YYYY-MM-DD)")
+		if err := cmdutil.RequireAll(cmd, "types", "start", "end"); err != nil {
+			return err
 		}
 
 		params := &api.GetV2CorporateActionsAnnouncementsParams{
-			CaTypes:  types,
-			Since:    start,
-			Until:    end,
+			CaTypes:  cmdutil.Str(cmd, "types"),
+			Since:    cmdutil.Str(cmd, "start"),
+			Until:    cmdutil.Str(cmd, "end"),
 			Symbol:   cmdutil.Str(cmd, "symbols"),
 			DateType: cmdutil.Str(cmd, "date-type"),
 		}
@@ -47,7 +36,7 @@ var corporateActionListCmd = &cobra.Command{
 			return err
 		}
 
-		return output.Render(getOutput(), corporateActionColumns(), data)
+		return output.Render(cmd.OutOrStdout(), getOutput(), corporateActionColumns(), data)
 	},
 }
 
@@ -60,7 +49,7 @@ var corporateActionGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(getOutput(), corporateActionColumns(), data)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), corporateActionColumns(), data)
 	},
 }
 

@@ -2,6 +2,7 @@ package cmdutil
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -17,6 +18,19 @@ func RequireStr(cmd *cobra.Command, name string) (string, error) {
 		return "", fmt.Errorf("--%s is required", name)
 	}
 	return v, nil
+}
+
+func RequireAll(cmd *cobra.Command, names ...string) error {
+	var missing []string
+	for _, n := range names {
+		if Str(cmd, n) == "" {
+			missing = append(missing, "--"+n)
+		}
+	}
+	if len(missing) > 0 {
+		return fmt.Errorf("%s required", strings.Join(missing, ", "))
+	}
+	return nil
 }
 
 func Bool(cmd *cobra.Command, name string) bool {
@@ -36,4 +50,19 @@ func Float64(cmd *cobra.Command, name string) float64 {
 
 func Changed(cmd *cobra.Command, name string) bool {
 	return cmd.Flags().Changed(name)
+}
+
+func AddSortFlag(cmd *cobra.Command, completions []string) {
+	cmd.Flags().String("sort", "", "Sort order: asc or desc")
+	_ = cmd.RegisterFlagCompletionFunc("sort",
+		cobra.FixedCompletions(completions, cobra.ShellCompDirectiveNoFileComp))
+}
+
+func AddDateRangeFlags(cmd *cobra.Command) {
+	cmd.Flags().String("start", "", "Start date (YYYY-MM-DD or RFC3339)")
+	cmd.Flags().String("end", "", "End date (YYYY-MM-DD or RFC3339)")
+}
+
+func AddLimitFlag(cmd *cobra.Command) {
+	cmd.Flags().Int("limit", 0, "Max number of results")
 }

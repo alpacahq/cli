@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"strings"
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
@@ -30,7 +29,7 @@ var dataBarsCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.Render(getOutput(), barColumns(), extractBars(data, symbol))
+		return output.Render(cmd.OutOrStdout(), getOutput(), barColumns(), extractBars(data, symbol))
 	},
 }
 
@@ -44,7 +43,7 @@ var dataQuotesCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.Render(getOutput(), quoteColumns(), extractArray(data, symbol, "quotes"))
+		return output.Render(cmd.OutOrStdout(), getOutput(), quoteColumns(), extractArray(data, symbol, "quotes"))
 	},
 }
 
@@ -58,7 +57,7 @@ var dataTradesCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.Render(getOutput(), tradeColumns(), extractArray(data, symbol, "trades"))
+		return output.Render(cmd.OutOrStdout(), getOutput(), tradeColumns(), extractArray(data, symbol, "trades"))
 	},
 }
 
@@ -91,20 +90,13 @@ var dataLatestTradeCmd = &cobra.Command{
 			return err
 		}
 
-		if getOutput() == "json" {
-			return output.JSON(cmd.OutOrStdout(), data)
-		}
-
-		m := make(map[string]any)
+		var m map[string]any
 		if err := json.Unmarshal(data, &m); err != nil {
 			return err
 		}
 
 		trade := extractTrade(m, symbol)
-		if trade != nil {
-			fmt.Printf("%s  $%v  (size: %v)\n", symbol, trade["p"], trade["s"])
-		}
-		return nil
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), tradeColumns(), trade)
 	},
 }
 
@@ -119,21 +111,13 @@ var dataLatestQuoteCmd = &cobra.Command{
 			return err
 		}
 
-		if getOutput() == "json" {
-			return output.JSON(cmd.OutOrStdout(), data)
-		}
-
-		m := make(map[string]any)
+		var m map[string]any
 		if err := json.Unmarshal(data, &m); err != nil {
 			return err
 		}
 
 		quote := extractQuote(m, symbol)
-		if quote != nil {
-			fmt.Printf("%s  Bid: $%v (%v)  Ask: $%v (%v)\n",
-				symbol, quote["bp"], quote["bs"], quote["ap"], quote["as"])
-		}
-		return nil
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), quoteColumns(), quote)
 	},
 }
 
@@ -152,14 +136,12 @@ var dataLatestBarCmd = &cobra.Command{
 
 func init() {
 	for _, c := range []*cobra.Command{dataBarsCmd, dataQuotesCmd, dataTradesCmd} {
-		c.Flags().String("start", "", "Start date (YYYY-MM-DD or RFC3339)")
-		c.Flags().String("end", "", "End date (YYYY-MM-DD or RFC3339)")
-		c.Flags().Int("limit", 0, "Max number of results")
+		cmdutil.AddDateRangeFlags(c)
+		cmdutil.AddLimitFlag(c)
 		c.Flags().String("feed", "", "Data feed: iex, sip, otc, delayed_sip")
 		_ = c.RegisterFlagCompletionFunc("feed", cobra.FixedCompletions([]string{"iex", "sip", "otc", "delayed_sip"}, cobra.ShellCompDirectiveNoFileComp))
 		c.Flags().String("currency", "", "Currency for prices (e.g. USD, EUR)")
-		c.Flags().String("sort", "", "Sort order: asc or desc")
-		_ = c.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions(api.SortValues, cobra.ShellCompDirectiveNoFileComp))
+		cmdutil.AddSortFlag(c, api.SortValues)
 		c.Flags().String("asof", "", "As-of date for point-in-time data")
 	}
 	dataBarsCmd.Flags().String("timeframe", "1Day", "Bar timeframe: 1Min, 5Min, 15Min, 1Hour, 1Day, 1Week, 1Month")
@@ -176,10 +158,6 @@ func init() {
 	dataCmd.AddCommand(dataTradesCmd)
 	dataCmd.AddCommand(dataSnapshotCmd)
 	dataCmd.AddCommand(dataLatestCmd)
-}
-
-func isCrypto(symbol string) bool {
-	return strings.Contains(symbol, "/")
 }
 
 func dataParams(cmd *cobra.Command) url.Values {

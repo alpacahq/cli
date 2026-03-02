@@ -23,7 +23,7 @@ var watchlistListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.Render(getOutput(), watchlistColumns(), watchlists)
+		return output.Render(cmd.OutOrStdout(), getOutput(), watchlistColumns(), watchlists)
 	},
 }
 
@@ -36,7 +36,7 @@ var watchlistGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(getOutput(), watchlistColumns(), wl)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), watchlistColumns(), wl)
 	},
 }
 
@@ -58,7 +58,7 @@ var watchlistCreateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(getOutput(), watchlistColumns(), wl)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), watchlistColumns(), wl)
 	},
 }
 
@@ -80,7 +80,7 @@ var watchlistUpdateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(getOutput(), watchlistColumns(), wl)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), watchlistColumns(), wl)
 	},
 }
 
@@ -109,7 +109,7 @@ var watchlistAddCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(getOutput(), watchlistColumns(), wl)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), watchlistColumns(), wl)
 	},
 }
 

@@ -59,25 +59,23 @@ var activityListCmd = &cobra.Command{
 		}
 
 		if len(items) == 0 {
-			return output.Render(out, tradeActivityColumns(), data)
+			return output.Render(cmd.OutOrStdout(), out, tradeActivityColumns(), data)
 		}
 
 		_, isTrade := items[0]["cum_qty"]
 		if isTrade {
-			return output.Render(out, tradeActivityColumns(), data)
+			return output.Render(cmd.OutOrStdout(), out, tradeActivityColumns(), data)
 		}
-		return output.Render(out, nonTradeActivityColumns(), data)
+		return output.Render(cmd.OutOrStdout(), out, nonTradeActivityColumns(), data)
 	},
 }
 
 func init() {
 	activityListCmd.Flags().String("types", "", "Activity types: FILL, DIV, TRANS, etc. (comma-separated)")
-	activityListCmd.Flags().String("start", "", "Only activities after this date/time")
-	activityListCmd.Flags().String("end", "", "Only activities before this date/time")
+	cmdutil.AddDateRangeFlags(activityListCmd)
 	activityListCmd.Flags().String("date", "", "Exact date filter")
-	activityListCmd.Flags().String("sort", "", "Sort: asc or desc")
-	_ = activityListCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions(api.SortValues, cobra.ShellCompDirectiveNoFileComp))
-	activityListCmd.Flags().Int("limit", 0, "Max number of results")
+	cmdutil.AddSortFlag(activityListCmd, api.SortValues)
+	cmdutil.AddLimitFlag(activityListCmd)
 	activityListCmd.Flags().String("category", "", "Category: trade_activity or non_trade_activity")
 	_ = activityListCmd.RegisterFlagCompletionFunc("category", cobra.FixedCompletions(api.GetAccountActivitiesParamsCategoryValues, cobra.ShellCompDirectiveNoFileComp))
 	activityListCmd.Flags().String("page-token", "", "Pagination token")

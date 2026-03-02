@@ -24,7 +24,7 @@ var walletListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.Render(getOutput(), walletColumns(), wallet)
+		return output.Render(cmd.OutOrStdout(), getOutput(), walletColumns(), wallet)
 	},
 }
 
@@ -43,7 +43,7 @@ var walletTransferListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.Render(getOutput(), transferColumns(), transfers)
+		return output.Render(cmd.OutOrStdout(), getOutput(), transferColumns(), transfers)
 	},
 }
 
@@ -56,7 +56,7 @@ var walletTransferGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(getOutput(), transferColumns(), transfer)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), transferColumns(), transfer)
 	},
 }
 
@@ -64,21 +64,21 @@ var walletTransferCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create a crypto transfer",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := cmdutil.RequireAll(cmd, "amount", "address", "asset"); err != nil {
+			return err
+		}
 		warnLive()
 		body := &api.CreateCryptoTransferRequest{
 			Amount:  cmdutil.Str(cmd, "amount"),
 			Address: cmdutil.Str(cmd, "address"),
 			Asset:   cmdutil.Str(cmd, "asset"),
 		}
-		if body.Amount == "" || body.Address == "" || body.Asset == "" {
-			return fmt.Errorf("--amount, --address, and --asset are all required")
-		}
 
 		transfer, err := tradingClient.CreateCryptoTransferForAccount(body)
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(getOutput(), transferColumns(), transfer)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), transferColumns(), transfer)
 	},
 }
 
@@ -97,7 +97,7 @@ var walletWhitelistListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.Render(getOutput(), whitelistColumns(), addrs)
+		return output.Render(cmd.OutOrStdout(), getOutput(), whitelistColumns(), addrs)
 	},
 }
 
@@ -105,19 +105,19 @@ var walletWhitelistAddCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add a whitelisted crypto address",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := cmdutil.RequireAll(cmd, "address", "asset"); err != nil {
+			return err
+		}
 		body := &api.CreateWhitelistedAddressRequest{
 			Address: cmdutil.Str(cmd, "address"),
 			Asset:   cmdutil.Str(cmd, "asset"),
-		}
-		if body.Address == "" || body.Asset == "" {
-			return fmt.Errorf("--address and --asset are required")
 		}
 
 		addr, err := tradingClient.CreateWhitelistedAddress(body)
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(getOutput(), whitelistColumns(), addr)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), whitelistColumns(), addr)
 	},
 }
 

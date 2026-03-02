@@ -103,20 +103,3 @@ func TestExtractQuote_CryptoFormat(t *testing.T) {
 		t.Errorf("expected ask=3001, got %v", quote["ap"])
 	}
 }
-
-func TestIsCrypto(t *testing.T) {
-	cases := []struct {
-		symbol string
-		want   bool
-	}{
-		{"AAPL", false},
-		{"MSFT", false},
-		{"BTC/USD", true},
-		{"ETH/USD", true},
-	}
-	for _, tc := range cases {
-		if got := isCrypto(tc.symbol); got != tc.want {
-			t.Errorf("isCrypto(%q) = %v, want %v", tc.symbol, got, tc.want)
-		}
-	}
-}
