@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/alpacahq/cli/internal/cmdutil"
+
 	"github.com/alpacahq/cli/internal/config"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
@@ -28,11 +30,11 @@ var profileLoginCmd = &cobra.Command{
   alpaca profile login --name dev --base-url https://custom-api.example.com
   alpaca profile login --name dev --base-url https://custom-api.example.com --data-url https://custom-data.example.com`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		key, _ := cmd.Flags().GetString("key")
-		secret, _ := cmd.Flags().GetString("secret")
-		name, _ := cmd.Flags().GetString("name")
-		dataURL, _ := cmd.Flags().GetString("data-url")
-		noValidate, _ := cmd.Flags().GetBool("no-validate")
+		key := cmdutil.Str(cmd, "key")
+		secret := cmdutil.Str(cmd, "secret")
+		name := cmdutil.Str(cmd, "name")
+		dataURL := cmdutil.Str(cmd, "data-url")
+		noValidate := cmdutil.Bool(cmd, "no-validate")
 
 		if name == "" {
 			name = "paper"
@@ -43,7 +45,7 @@ var profileLoginCmd = &cobra.Command{
 			return err
 		}
 
-		if cmd.Flags().Changed("secret") {
+		if cmdutil.Changed(cmd, "secret") {
 			fmt.Fprintln(os.Stderr, "Warning: passing secrets via flags may expose them in shell history.")
 			fmt.Fprintln(os.Stderr, "  Use `alpaca profile login` interactively or ALPACA_SECRET_KEY env var.")
 		}
@@ -282,8 +284,8 @@ func init() {
 }
 
 func resolveBaseURLFlags(cmd *cobra.Command) (string, error) {
-	live, _ := cmd.Flags().GetBool("live")
-	baseURL, _ := cmd.Flags().GetString("base-url")
+	live := cmdutil.Bool(cmd, "live")
+	baseURL := cmdutil.Str(cmd, "base-url")
 
 	if live {
 		return "https://api.alpaca.markets", nil

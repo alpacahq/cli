@@ -3,7 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"os"
+	"io"
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
@@ -39,7 +39,7 @@ var dataOptionBarsCmd = &cobra.Command{
 			return err
 		}
 
-		return renderOptionMap(getOutput(), barColumns(), resp.Bars)
+		return renderOptionMap(cmd.OutOrStdout(), getOutput(), barColumns(), resp.Bars)
 	},
 }
 
@@ -64,7 +64,7 @@ var dataOptionTradesCmd = &cobra.Command{
 			return err
 		}
 
-		return renderOptionMap(getOutput(), tradeColumns(), resp.Trades)
+		return renderOptionMap(cmd.OutOrStdout(), getOutput(), tradeColumns(), resp.Trades)
 	},
 }
 
@@ -164,21 +164,26 @@ var dataOptionLatestTradesCmd = &cobra.Command{
 func init() {
 	dataOptionBarsCmd.Flags().String("symbols", "", "Option symbols (comma-separated, required)")
 	dataOptionBarsCmd.Flags().String("timeframe", "1Day", "Timeframe: 1Min, 5Min, 15Min, 1Hour, 1Day, 1Week, 1Month")
+	_ = dataOptionBarsCmd.RegisterFlagCompletionFunc("timeframe", cobra.FixedCompletions([]string{"1Min", "5Min", "15Min", "1Hour", "1Day", "1Week", "1Month"}, cobra.ShellCompDirectiveNoFileComp))
 	dataOptionBarsCmd.Flags().String("start", "", "Start date (YYYY-MM-DD or RFC3339)")
 	dataOptionBarsCmd.Flags().String("end", "", "End date")
 	dataOptionBarsCmd.Flags().Int("limit", 0, "Max results")
 	dataOptionBarsCmd.Flags().String("sort", "", "Sort: asc or desc")
+	_ = dataOptionBarsCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions([]string{"asc", "desc"}, cobra.ShellCompDirectiveNoFileComp))
 
 	dataOptionTradesCmd.Flags().String("symbols", "", "Option symbols (comma-separated, required)")
 	dataOptionTradesCmd.Flags().String("start", "", "Start date")
 	dataOptionTradesCmd.Flags().String("end", "", "End date")
 	dataOptionTradesCmd.Flags().Int("limit", 0, "Max results")
 	dataOptionTradesCmd.Flags().String("sort", "", "Sort: asc or desc")
+	_ = dataOptionTradesCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions([]string{"asc", "desc"}, cobra.ShellCompDirectiveNoFileComp))
 
 	dataOptionSnapshotCmd.Flags().String("symbols", "", "Option symbols (comma-separated, required)")
 	dataOptionSnapshotCmd.Flags().String("feed", "", "Feed: indicative or opra")
+	_ = dataOptionSnapshotCmd.RegisterFlagCompletionFunc("feed", cobra.FixedCompletions([]string{"indicative", "opra"}, cobra.ShellCompDirectiveNoFileComp))
 
 	dataOptionChainCmd.Flags().String("feed", "", "Feed: indicative or opra")
+	_ = dataOptionChainCmd.RegisterFlagCompletionFunc("feed", cobra.FixedCompletions([]string{"indicative", "opra"}, cobra.ShellCompDirectiveNoFileComp))
 	dataOptionChainCmd.Flags().String("expiry", "", "Exact expiration date (YYYY-MM-DD)")
 	dataOptionChainCmd.Flags().String("expiry-gte", "", "Expiration on or after")
 	dataOptionChainCmd.Flags().String("expiry-lte", "", "Expiration on or before")
@@ -186,13 +191,16 @@ func init() {
 	dataOptionChainCmd.Flags().Float64("strike-lte", 0, "Max strike price")
 	dataOptionChainCmd.Flags().String("root-symbol", "", "Root symbol")
 	dataOptionChainCmd.Flags().String("type", "", "Option type: call or put")
+	_ = dataOptionChainCmd.RegisterFlagCompletionFunc("type", cobra.FixedCompletions([]string{"call", "put"}, cobra.ShellCompDirectiveNoFileComp))
 	dataOptionChainCmd.Flags().Int("limit", 0, "Max results")
 
 	dataOptionLatestQuotesCmd.Flags().String("symbols", "", "Option symbols (comma-separated, required)")
 	dataOptionLatestQuotesCmd.Flags().String("feed", "", "Feed: indicative or opra")
+	_ = dataOptionLatestQuotesCmd.RegisterFlagCompletionFunc("feed", cobra.FixedCompletions([]string{"indicative", "opra"}, cobra.ShellCompDirectiveNoFileComp))
 
 	dataOptionLatestTradesCmd.Flags().String("symbols", "", "Option symbols (comma-separated, required)")
 	dataOptionLatestTradesCmd.Flags().String("feed", "", "Feed: indicative or opra")
+	_ = dataOptionLatestTradesCmd.RegisterFlagCompletionFunc("feed", cobra.FixedCompletions([]string{"indicative", "opra"}, cobra.ShellCompDirectiveNoFileComp))
 
 	dataOptionCmd.AddCommand(dataOptionBarsCmd)
 	dataOptionCmd.AddCommand(dataOptionTradesCmd)
@@ -202,7 +210,7 @@ func init() {
 	dataOptionCmd.AddCommand(dataOptionLatestTradesCmd)
 }
 
-func renderOptionMap(format string, cols []output.Column, data any) error {
+func renderOptionMap(w io.Writer, format string, cols []output.Column, data any) error {
 	j, _ := json.Marshal(data)
 	var m map[string]json.RawMessage
 	if json.Unmarshal(j, &m) == nil && len(m) == 1 {
@@ -210,5 +218,5 @@ func renderOptionMap(format string, cols []output.Column, data any) error {
 			return output.Render(format, cols, v)
 		}
 	}
-	return output.JSON(os.Stdout, data)
+	return output.JSON(w, data)
 }

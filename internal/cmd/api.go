@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/alpacahq/cli/internal/cmdutil"
 	"github.com/alpacahq/cli/internal/output"
 	"github.com/spf13/cobra"
 )
@@ -56,8 +57,8 @@ var apiDeleteCmd = &cobra.Command{
 }
 
 func rawAPI(cmd *cobra.Command, method, path string) error {
-	dataFlag, _ := cmd.Flags().GetString("data")
-	useData, _ := cmd.Flags().GetBool("use-data-api")
+	dataFlag := cmdutil.Str(cmd, "data")
+	useData := cmdutil.Bool(cmd, "use-data-api")
 
 	if !strings.HasPrefix(path, "/") {
 		path = "/" + path

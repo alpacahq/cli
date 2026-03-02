@@ -93,12 +93,16 @@ var accountConfigCmd = &cobra.Command{
 
 func init() {
 	accountConfigSetCmd.Flags().String("dtbp-check", "", "Day trading buying power check: entry or exit")
+	_ = accountConfigSetCmd.RegisterFlagCompletionFunc("dtbp-check", cobra.FixedCompletions([]string{"entry", "exit"}, cobra.ShellCompDirectiveNoFileComp))
 	accountConfigSetCmd.Flags().Bool("no-shorting", false, "Disable short selling")
 	accountConfigSetCmd.Flags().String("pdt-check", "", "PDT check: entry or exit")
+	_ = accountConfigSetCmd.RegisterFlagCompletionFunc("pdt-check", cobra.FixedCompletions([]string{"entry", "exit"}, cobra.ShellCompDirectiveNoFileComp))
 	accountConfigSetCmd.Flags().Bool("fractional-trading", false, "Enable fractional trading")
 	accountConfigSetCmd.Flags().Bool("suspend-trade", false, "Suspend trading")
 	accountConfigSetCmd.Flags().String("trade-confirm-email", "", "Trade confirm email: all or none")
+	_ = accountConfigSetCmd.RegisterFlagCompletionFunc("trade-confirm-email", cobra.FixedCompletions([]string{"all", "none"}, cobra.ShellCompDirectiveNoFileComp))
 	accountConfigSetCmd.Flags().String("max-margin-multiplier", "", "Max margin multiplier: 1 or 4")
+	_ = accountConfigSetCmd.RegisterFlagCompletionFunc("max-margin-multiplier", cobra.FixedCompletions([]string{"1", "4"}, cobra.ShellCompDirectiveNoFileComp))
 
 	accountConfigCmd.AddCommand(accountConfigGetCmd)
 	accountConfigCmd.AddCommand(accountConfigSetCmd)

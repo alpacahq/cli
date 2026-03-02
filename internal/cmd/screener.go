@@ -72,9 +72,11 @@ var screenerMoversCmd = &cobra.Command{
 
 func init() {
 	screenerMostActivesCmd.Flags().String("by", "", "Sort by: volume or trades (default: volume)")
+	_ = screenerMostActivesCmd.RegisterFlagCompletionFunc("by", cobra.FixedCompletions([]string{"volume", "trades"}, cobra.ShellCompDirectiveNoFileComp))
 	screenerMostActivesCmd.Flags().Int("top", 0, "Number of results (default: 10)")
 
 	screenerMoversCmd.Flags().String("market", "", "Market: stocks or crypto (default: stocks)")
+	_ = screenerMoversCmd.RegisterFlagCompletionFunc("market", cobra.FixedCompletions([]string{"stocks", "crypto"}, cobra.ShellCompDirectiveNoFileComp))
 	screenerMoversCmd.Flags().Int("top", 0, "Number of results per direction (default: 10)")
 
 	screenerCmd.AddCommand(screenerMostActivesCmd)

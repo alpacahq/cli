@@ -3,7 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"os"
+	"io"
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
@@ -41,7 +41,7 @@ var dataForexRatesCmd = &cobra.Command{
 			return err
 		}
 
-		return renderMapValues(getOutput(), forexRateColumns(), resp.Rates)
+		return renderMapValues(cmd.OutOrStdout(), getOutput(), forexRateColumns(), resp.Rates)
 	},
 }
 
@@ -167,10 +167,12 @@ var dataFixedIncomeCmd = &cobra.Command{
 func init() {
 	dataForexRatesCmd.Flags().String("pairs", "", "Currency pairs (comma-separated, e.g. EUR/USD,GBP/USD)")
 	dataForexRatesCmd.Flags().String("timeframe", "", "Timeframe: 1Min, 5Min, 1Hour, 1Day")
+	_ = dataForexRatesCmd.RegisterFlagCompletionFunc("timeframe", cobra.FixedCompletions([]string{"1Min", "5Min", "1Hour", "1Day"}, cobra.ShellCompDirectiveNoFileComp))
 	dataForexRatesCmd.Flags().String("start", "", "Start date")
 	dataForexRatesCmd.Flags().String("end", "", "End date")
 	dataForexRatesCmd.Flags().Int("limit", 0, "Max results")
 	dataForexRatesCmd.Flags().String("sort", "", "Sort: asc or desc")
+	_ = dataForexRatesCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions([]string{"asc", "desc"}, cobra.ShellCompDirectiveNoFileComp))
 	dataForexLatestCmd.Flags().String("pairs", "", "Currency pairs (comma-separated)")
 	dataForexCmd.AddCommand(dataForexRatesCmd)
 	dataForexCmd.AddCommand(dataForexLatestCmd)
@@ -182,6 +184,7 @@ func init() {
 	dataAuctionsCmd.Flags().String("end", "", "End date")
 	dataAuctionsCmd.Flags().Int("limit", 0, "Max results")
 	dataAuctionsCmd.Flags().String("sort", "", "Sort: asc or desc")
+	_ = dataAuctionsCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions([]string{"asc", "desc"}, cobra.ShellCompDirectiveNoFileComp))
 	dataAuctionsCmd.Flags().String("asof", "", "As-of date for data")
 
 	dataCorporateActionsCmd.Flags().String("symbols", "", "Filter by symbols")
@@ -190,6 +193,7 @@ func init() {
 	dataCorporateActionsCmd.Flags().String("end", "", "End date")
 	dataCorporateActionsCmd.Flags().Int("limit", 0, "Max results")
 	dataCorporateActionsCmd.Flags().String("sort", "", "Sort: asc or desc")
+	_ = dataCorporateActionsCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions([]string{"asc", "desc"}, cobra.ShellCompDirectiveNoFileComp))
 	dataFixedIncomeCmd.Flags().String("symbols", "", "ISIN identifiers (comma-separated)")
 
 	dataCmd.AddCommand(dataOptionCmd)
@@ -200,7 +204,7 @@ func init() {
 	dataCmd.AddCommand(dataFixedIncomeCmd)
 }
 
-func renderMapValues(format string, cols []output.Column, data any) error {
+func renderMapValues(w io.Writer, format string, cols []output.Column, data any) error {
 	j, _ := json.Marshal(data)
 	var m map[string]json.RawMessage
 	if json.Unmarshal(j, &m) == nil && len(m) == 1 {
@@ -208,5 +212,5 @@ func renderMapValues(format string, cols []output.Column, data any) error {
 			return output.Render(format, cols, v)
 		}
 	}
-	return output.JSON(os.Stdout, data)
+	return output.JSON(w, data)
 }

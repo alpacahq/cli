@@ -132,6 +132,7 @@ var orderCancelCmd = &cobra.Command{
 	Short: "Cancel an order",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		warnLive()
 		_, err := tradingClient.DeleteOrderByOrderID(args[0])
 		if err != nil {
 			return err
@@ -211,7 +212,9 @@ func init() {
 	orderSubmitCmd.Flags().String("stop-loss", "", "Stop loss price (bracket order)")
 	orderSubmitCmd.Flags().String("client-order-id", "", "Client-specified order ID")
 	orderSubmitCmd.Flags().String("order-class", "", "Order class: simple, bracket, oco, oto, mleg")
+	_ = orderSubmitCmd.RegisterFlagCompletionFunc("order-class", cobra.FixedCompletions([]string{"simple", "bracket", "oco", "oto", "mleg"}, cobra.ShellCompDirectiveNoFileComp))
 	orderSubmitCmd.Flags().String("position-intent", "", "Position intent: buy_to_open, buy_to_close, sell_to_open, sell_to_close")
+	_ = orderSubmitCmd.RegisterFlagCompletionFunc("position-intent", cobra.FixedCompletions([]string{"buy_to_open", "buy_to_close", "sell_to_open", "sell_to_close"}, cobra.ShellCompDirectiveNoFileComp))
 
 	orderListCmd.Flags().String("status", "", "Filter: open, closed, all (default: open)")
 	_ = orderListCmd.RegisterFlagCompletionFunc("status", cobra.FixedCompletions([]string{"open", "closed", "all"}, cobra.ShellCompDirectiveNoFileComp))
@@ -233,6 +236,7 @@ func init() {
 	orderReplaceCmd.Flags().String("limit-price", "", "New limit price")
 	orderReplaceCmd.Flags().String("stop-price", "", "New stop price")
 	orderReplaceCmd.Flags().String("tif", "", "New time in force")
+	_ = orderReplaceCmd.RegisterFlagCompletionFunc("tif", cobra.FixedCompletions([]string{"day", "gtc", "ioc", "fok", "opg", "cls"}, cobra.ShellCompDirectiveNoFileComp))
 	orderReplaceCmd.Flags().String("trail", "", "New trail value")
 	orderReplaceCmd.Flags().String("client-order-id", "", "New client order ID")
 

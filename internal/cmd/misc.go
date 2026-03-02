@@ -147,11 +147,15 @@ func init() {
 	calendarCmd.Flags().String("market", "", "Market MIC for v3 calendar (e.g. XNYS)")
 
 	portfolioHistoryCmd.Flags().String("period", "", "Period: 1D, 1W, 1M, 3M, 1A, all")
+	_ = portfolioHistoryCmd.RegisterFlagCompletionFunc("period", cobra.FixedCompletions([]string{"1D", "1W", "1M", "3M", "1A", "all"}, cobra.ShellCompDirectiveNoFileComp))
 	portfolioHistoryCmd.Flags().String("timeframe", "", "Timeframe: 1Min, 5Min, 15Min, 1H, 1D")
+	_ = portfolioHistoryCmd.RegisterFlagCompletionFunc("timeframe", cobra.FixedCompletions([]string{"1Min", "5Min", "15Min", "1H", "1D"}, cobra.ShellCompDirectiveNoFileComp))
 	portfolioHistoryCmd.Flags().String("start", "", "Start date (RFC3339)")
 	portfolioHistoryCmd.Flags().String("end", "", "End date (RFC3339)")
 	portfolioHistoryCmd.Flags().String("intraday-reporting", "", "Intraday reporting: market_hours, extended_hours, continuous")
+	_ = portfolioHistoryCmd.RegisterFlagCompletionFunc("intraday-reporting", cobra.FixedCompletions([]string{"market_hours", "extended_hours", "continuous"}, cobra.ShellCompDirectiveNoFileComp))
 	portfolioHistoryCmd.Flags().String("pnl-reset", "", "P&L reset mode: no_reset, per_day")
+	_ = portfolioHistoryCmd.RegisterFlagCompletionFunc("pnl-reset", cobra.FixedCompletions([]string{"no_reset", "per_day"}, cobra.ShellCompDirectiveNoFileComp))
 	portfolioCmd.AddCommand(portfolioHistoryCmd)
 
 	newsCmd.Flags().String("symbols", "", "Filter by symbols (comma-separated)")
@@ -159,6 +163,7 @@ func init() {
 	newsCmd.Flags().String("end", "", "End date")
 	newsCmd.Flags().Int("limit", 0, "Max articles (default: 10)")
 	newsCmd.Flags().String("sort", "", "Sort order: asc or desc")
+	_ = newsCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions([]string{"asc", "desc"}, cobra.ShellCompDirectiveNoFileComp))
 	newsCmd.Flags().Bool("include-content", false, "Include full article content")
 	newsCmd.Flags().Bool("exclude-contentless", false, "Exclude articles without content")
 }

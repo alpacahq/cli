@@ -64,6 +64,7 @@ var walletTransferCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create a crypto transfer",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		warnLive()
 		body := &api.CreateCryptoTransferRequest{
 			Amount:  cmdutil.Str(cmd, "amount"),
 			Address: cmdutil.Str(cmd, "address"),

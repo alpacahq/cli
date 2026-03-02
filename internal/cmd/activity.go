@@ -79,6 +79,7 @@ func init() {
 	_ = activityListCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions([]string{"asc", "desc"}, cobra.ShellCompDirectiveNoFileComp))
 	activityListCmd.Flags().Int("limit", 0, "Max number of results")
 	activityListCmd.Flags().String("category", "", "Category: trade_activity or non_trade_activity")
+	_ = activityListCmd.RegisterFlagCompletionFunc("category", cobra.FixedCompletions([]string{"trade_activity", "non_trade_activity"}, cobra.ShellCompDirectiveNoFileComp))
 	activityListCmd.Flags().String("page-token", "", "Pagination token")
 
 	activityCmd.AddCommand(activityListCmd)

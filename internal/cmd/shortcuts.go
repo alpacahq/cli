@@ -179,6 +179,7 @@ func init() {
 		cmd.Flags().String("limit", "", "Limit price (converts to limit order)")
 		cmd.Flags().String("notional", "", "Dollar amount instead of qty (fractional)")
 		cmd.Flags().String("tif", "", "Time in force: day, gtc, ioc, fok")
+		_ = cmd.RegisterFlagCompletionFunc("tif", cobra.FixedCompletions([]string{"day", "gtc", "ioc", "fok"}, cobra.ShellCompDirectiveNoFileComp))
 		cmd.Flags().Bool("extended-hours", false, "Allow extended hours trading")
 		cmd.Flags().String("take-profit", "", "Take profit price (bracket)")
 		cmd.Flags().String("stop-loss", "", "Stop loss price (bracket)")

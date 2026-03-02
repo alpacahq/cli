@@ -61,6 +61,7 @@ var optionExerciseCmd = &cobra.Command{
 	Short: "Exercise an option position",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		warnLive()
 		_, err := tradingClient.OptionExercise(args[0])
 		if err != nil {
 			return err
@@ -75,6 +76,7 @@ var optionDoNotExerciseCmd = &cobra.Command{
 	Short: "Mark an option position as do-not-exercise",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		warnLive()
 		_, err := tradingClient.OptionDoNotExercise(args[0])
 		if err != nil {
 			return err

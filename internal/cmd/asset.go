@@ -89,8 +89,10 @@ func init() {
 	_ = assetListCmd.RegisterFlagCompletionFunc("exchange", cobra.FixedCompletions([]string{"NYSE", "NASDAQ", "AMEX", "ARCA", "BATS", "OTC", "FTXU", "CBSE", "ERSX"}, cobra.ShellCompDirectiveNoFileComp))
 
 	treasuryListCmd.Flags().String("status", "", "Bond status: active or inactive")
+	_ = treasuryListCmd.RegisterFlagCompletionFunc("status", cobra.FixedCompletions([]string{"active", "inactive"}, cobra.ShellCompDirectiveNoFileComp))
 	treasuryListCmd.Flags().String("cusips", "", "Filter by CUSIPs (comma-separated)")
 	bondListCmd.Flags().String("status", "", "Bond status: active or inactive")
+	_ = bondListCmd.RegisterFlagCompletionFunc("status", cobra.FixedCompletions([]string{"active", "inactive"}, cobra.ShellCompDirectiveNoFileComp))
 	bondListCmd.Flags().String("cusips", "", "Filter by CUSIPs (comma-separated)")
 
 	assetCmd.AddCommand(assetListCmd)

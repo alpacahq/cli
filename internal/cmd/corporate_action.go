@@ -60,7 +60,7 @@ var corporateActionGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.JSON(cmd.OutOrStdout(), data)
+		return output.PrintSingle(getOutput(), corporateActionColumns(), data)
 	},
 }
 
@@ -70,6 +70,7 @@ func init() {
 	corporateActionListCmd.Flags().String("end", "", "End date (YYYY-MM-DD, required)")
 	corporateActionListCmd.Flags().String("symbols", "", "Filter by symbols (comma-separated)")
 	corporateActionListCmd.Flags().String("date-type", "", "Date type: TRADING or SETTLEMENT")
+	_ = corporateActionListCmd.RegisterFlagCompletionFunc("date-type", cobra.FixedCompletions([]string{"TRADING", "SETTLEMENT"}, cobra.ShellCompDirectiveNoFileComp))
 
 	corporateActionCmd.AddCommand(corporateActionListCmd)
 	corporateActionCmd.AddCommand(corporateActionGetCmd)
