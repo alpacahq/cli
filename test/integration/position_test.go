@@ -22,8 +22,3 @@ func TestPositionGetNotFound(t *testing.T) {
 		t.Error("expected error message in JSON error output")
 	}
 }
-
-func TestPositionsShortcut(t *testing.T) {
-	out := alpaca(t, "positions", "--json")
-	_ = parseJSONArray(t, out)
-}

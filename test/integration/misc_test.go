@@ -43,15 +43,3 @@ func TestAPIPassthrough(t *testing.T) {
 	}
 }
 
-func TestPriceShortcut(t *testing.T) {
-	out := alpaca(t, "price", "AAPL", "--json")
-	data := parseJSONMap(t, out)
-	if data["latestTrade"] == nil {
-		t.Error("price snapshot missing 'latestTrade'")
-	}
-}
-
-func TestOrdersShortcut(t *testing.T) {
-	out := alpaca(t, "orders", "--json")
-	_ = parseJSONArray(t, out)
-}

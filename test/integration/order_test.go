@@ -64,29 +64,6 @@ func TestOrderLifecycle(t *testing.T) {
 	}
 }
 
-func TestBuyShortcut(t *testing.T) {
-	out := alpaca(t, "buy", "AAPL", "1",
-		"--limit", "1.00",
-		"--tif", "gtc",
-		"--json",
-	)
-
-	order := parseJSONMap(t, out)
-	orderID, _ := order["id"].(string)
-	t.Cleanup(func() {
-		if orderID != "" {
-			alpaca(t, "order", "cancel", orderID)
-		}
-	})
-
-	if order["side"] != "buy" {
-		t.Errorf("expected buy, got %v", order["side"])
-	}
-	if order["type"] != "limit" {
-		t.Errorf("expected limit order, got %v", order["type"])
-	}
-}
-
 func TestOrderCancelAll(t *testing.T) {
 	// Submit two orders
 	for range 2 {

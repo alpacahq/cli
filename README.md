@@ -19,17 +19,14 @@ alpaca profile login
 # Check your account
 alpaca account get
 
-# Buy 10 shares of AAPL
-alpaca buy AAPL 10
-
-# Get a quick price check
-alpaca price AAPL
+# Submit an order
+alpaca order submit AAPL --side buy --qty 10 --type market
 
 # List your positions
-alpaca positions
+alpaca position list
 
 # List open orders
-alpaca orders
+alpaca order list --status open
 
 # Get market data
 alpaca data bars AAPL --start 2025-01-01 --timeframe 1Day
@@ -43,7 +40,7 @@ alpaca clock
 **Paper trading is the default.** When you run `alpaca profile login`, credentials are stored for paper trading (`paper-api.alpaca.markets`) unless you explicitly pass `--live`.
 
 - Destructive operations (`order cancel-all`, `position close-all`) on live accounts require `--confirm` to proceed.
-- `buy` and `sell` commands print a warning when targeting a live account.
+- `order submit` prints a warning when targeting a live account.
 - Suppress informational warnings with `suppress_warnings: true` in your profile config. Confirmation prompts for destructive operations cannot be suppressed.
 
 **Credential safety:**
@@ -54,7 +51,7 @@ alpaca clock
 ```bash
 export ALPACA_API_KEY=PK...
 export ALPACA_SECRET_KEY=...
-alpaca positions --json
+alpaca position list --json
 ```
 
 - Passing `--secret` via flags is discouraged (shell history exposure). Use interactive login or env vars.
@@ -65,11 +62,6 @@ alpaca positions --json
 
 | Command | Description |
 |---------|-------------|
-| `alpaca buy <symbol> [qty]` | Buy shares (market order shortcut) |
-| `alpaca sell <symbol> [qty]` | Sell shares (market order shortcut) |
-| `alpaca orders` | List open orders (shortcut) |
-| `alpaca positions` | List open positions (shortcut) |
-| `alpaca price <symbol>` | Latest price (shortcut) |
 | `alpaca order submit <symbol>` | Submit any order type |
 | `alpaca order list` | List orders |
 | `alpaca order get <id>` | Get order details |
@@ -166,9 +158,9 @@ Every command supports `--help` for full flag documentation.
 ## Output Formats
 
 ```bash
-alpaca positions              # Pretty table (default)
-alpaca positions --json       # JSON for scripts and agents
-alpaca positions --csv        # CSV for spreadsheets
+alpaca position list              # Pretty table (default)
+alpaca position list --json       # JSON for scripts and agents
+alpaca position list --csv        # CSV for spreadsheets
 ```
 
 ## Configuration
@@ -225,7 +217,7 @@ export ALPACA_SECRET_KEY=...
 Use `--json` for structured data and `--quiet` to suppress all non-data output (warnings, hints, color):
 
 ```bash
-alpaca positions --json --quiet
+alpaca position list --json --quiet
 alpaca data latest trade AAPL --json --quiet
 ```
 
@@ -279,7 +271,7 @@ is_open=$(echo "$clock" | jq -r '.is_open')
 
 # Place order if open
 if [ "$is_open" = "true" ]; then
-  alpaca buy AAPL 10 --json --quiet --confirm
+  alpaca order submit AAPL --side buy --qty 10 --type market --json --quiet
 fi
 
 # Handle errors programmatically

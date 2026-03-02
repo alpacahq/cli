@@ -148,13 +148,6 @@ func init() {
 	rootCmd.AddCommand(walletCmd)
 	rootCmd.AddCommand(apiCmd)
 	rootCmd.AddCommand(updateCmd)
-
-	// Shortcuts
-	rootCmd.AddCommand(buyCmd)
-	rootCmd.AddCommand(sellCmd)
-	rootCmd.AddCommand(priceCmd)
-	rootCmd.AddCommand(positionsShortcut)
-	rootCmd.AddCommand(ordersShortcut)
 }
 
 func needsAuth(cmd *cobra.Command) bool {
