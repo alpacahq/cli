@@ -116,6 +116,22 @@ func projectRoot() string {
 	return "."
 }
 
+func alpacaFail(t *testing.T, args ...string) (stdout, stderr []byte, exitCode int) {
+	t.Helper()
+	cmd := exec.Command(cliBinary, args...)
+	cmd.Env = cliEnv()
+	stdout, err := cmd.Output()
+	if err != nil {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
+			return stdout, exitErr.Stderr, exitErr.ExitCode()
+		}
+		t.Fatalf("alpaca %s failed unexpectedly: %v", strings.Join(args, " "), err)
+	}
+	t.Fatalf("alpaca %s succeeded but expected failure", strings.Join(args, " "))
+	return nil, nil, 0
+}
+
 func containsID(items []map[string]any, id string) bool {
 	for _, item := range items {
 		if item["id"] == id {

@@ -38,6 +38,27 @@ alpaca data bars --symbol AAPL --start 2025-01-01 --timeframe 1Day
 alpaca clock
 ```
 
+## Safety
+
+**Paper trading is the default.** When you run `alpaca profile login`, credentials are stored for paper trading (`paper-api.alpaca.markets`) unless you explicitly pass `--live`.
+
+- Destructive operations (`order cancel-all`, `position close-all`) on live accounts require `--confirm` to proceed.
+- `buy` and `sell` commands print a warning when targeting a live account.
+- Suppress informational warnings with `suppress_warnings: true` in your profile config. Confirmation prompts for destructive operations cannot be suppressed.
+
+**Credential safety:**
+
+- For interactive use, `alpaca profile login` stores credentials in `~/.config/alpaca/profiles/` with restricted file permissions (0600).
+- For CI/automation, use environment variables instead of stored profiles — no secrets touch disk:
+
+```bash
+export ALPACA_API_KEY=PK...
+export ALPACA_SECRET_KEY=...
+alpaca positions --json
+```
+
+- Passing `--secret` via flags is discouraged (shell history exposure). Use interactive login or env vars.
+
 ## Commands
 
 ### Trading
@@ -142,11 +163,16 @@ Credentials are stored in `~/.config/alpaca/profiles/`.
 
 ### Environment Variables
 
-```bash
-export ALPACA_API_KEY=PK...
-export ALPACA_SECRET_KEY=...
-export ALPACA_BASE_URL=https://paper-api.alpaca.markets
-```
+| Variable | Description |
+|----------|-------------|
+| `ALPACA_API_KEY` | API key (overrides profile) |
+| `ALPACA_SECRET_KEY` | Secret key (overrides profile) |
+| `ALPACA_BASE_URL` | Trading API base URL |
+| `ALPACA_DATA_URL` | Market data API base URL |
+| `ALPACA_PROFILE` | Profile name to use |
+| `ALPACA_OUTPUT` | Default output format (`table`, `json`, `csv`) |
+| `ALPACA_CONFIG_DIR` | Config directory (default: `~/.config/alpaca`) |
+| `ALPACA_VERBOSE` | Enable verbose HTTP tracing (any non-empty value) |
 
 Precedence: flags > env vars > profile config > defaults.
 
@@ -160,15 +186,84 @@ alpaca completion fish > ~/.config/fish/completions/alpaca.fish  # Fish
 
 Enum-valued flags auto-complete with valid values (e.g. `--side` → `buy`/`sell`, `--type` → `market`/`limit`/`stop`/etc.).
 
-## Agent / Automation
+## Agent & Automation
 
-Designed for scripting and AI agent integration:
+Designed for scripting, CI pipelines, and AI agent integration.
+
+### Auth (no disk, no prompts)
 
 ```bash
-result=$(alpaca positions --json)
-price=$(alpaca data latest trade AAPL --json)
+export ALPACA_API_KEY=PK...
+export ALPACA_SECRET_KEY=...
+```
 
-# Exit codes: 0=success, 1=API error, 2=auth error (401/403)
+### Clean Output
+
+Use `--json` for structured data and `--quiet` to suppress all non-data output (warnings, hints, color):
+
+```bash
+alpaca positions --json --quiet
+alpaca data latest trade AAPL --json --quiet
+```
+
+### Structured Errors
+
+When `--json` or `--quiet` is set, errors are JSON on stderr:
+
+```json
+{"error":"rate limited","code":0,"status":429,"hint":"Rate limited. Reduce request frequency or add delays between calls."}
+```
+
+### Unattended Operations
+
+The CLI is fully non-interactive. Destructive operations on live accounts require `--confirm`:
+
+```bash
+alpaca order cancel-all --confirm
+alpaca position close-all --confirm
+```
+
+### Exit Codes
+
+| Code | Meaning |
+|------|---------|
+| `0` | Success |
+| `1` | API or general error |
+| `2` | Authentication error (401/403) |
+
+### Verbose Tracing
+
+Debug API calls with `--verbose` or `ALPACA_VERBOSE=1`:
+
+```bash
+alpaca account get --verbose
+# stderr: GET https://paper-api.alpaca.markets/v2/account → 200 (142ms)
+```
+
+### Resilience
+
+The CLI automatically retries on 429 (rate limit) and 5xx errors with exponential backoff (max 3 attempts). The `Retry-After` header is respected for rate limits.
+
+### Example: Agent Workflow
+
+```bash
+export ALPACA_API_KEY=PK...
+export ALPACA_SECRET_KEY=...
+
+# Check if market is open
+clock=$(alpaca clock --json --quiet)
+is_open=$(echo "$clock" | jq -r '.is_open')
+
+# Place order if open
+if [ "$is_open" = "true" ]; then
+  alpaca buy AAPL 10 --json --quiet --confirm
+fi
+
+# Handle errors programmatically
+if ! result=$(alpaca order get abc123 --json --quiet 2>err.json); then
+  status=$(jq .status err.json)
+  echo "Failed with HTTP $status"
+fi
 ```
 
 ## Development

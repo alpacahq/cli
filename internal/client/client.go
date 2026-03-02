@@ -5,8 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
+	"math/rand/v2"
 	"net/http"
 	"net/url"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -16,6 +20,8 @@ import (
 const ExitAPIError = 1
 const ExitAuthError = 2
 
+const maxRetries = 3
+
 type Client struct {
 	HTTP      *http.Client
 	BaseURL   string
@@ -23,12 +29,15 @@ type Client struct {
 	APIKey    string
 	Secret    string
 	UserAgent string
+	Verbose   bool
+	Quiet     bool
 }
 
 type APIError struct {
-	StatusCode int    `json:"-"`
+	StatusCode int    `json:"status"`
 	Code       int    `json:"code"`
 	Message    string `json:"message"`
+	retryAfter time.Duration
 }
 
 func (e *APIError) Error() string {
@@ -51,6 +60,18 @@ func (e *APIError) ExitCode() int {
 	return ExitAPIError
 }
 
+func (e *APIError) Hint() string {
+	switch e.StatusCode {
+	case 429:
+		return "Rate limited. Reduce request frequency or add delays between calls."
+	case 401:
+		return "Invalid credentials. Run `alpaca profile login` to re-authenticate."
+	case 403:
+		return "Access denied. Check your API key permissions or account status."
+	}
+	return ""
+}
+
 var Version = "dev"
 
 func New(cfg *config.Resolved) *Client {
@@ -66,39 +87,77 @@ func New(cfg *config.Resolved) *Client {
 
 func (c *Client) Get(path string, params url.Values) (json.RawMessage, error) {
 	u := c.tradingURL(path, params)
-	return c.do("GET", u, nil)
+	return c.doWithRetry("GET", u, nil)
 }
 
 func (c *Client) Post(path string, body any) (json.RawMessage, error) {
 	u := c.tradingURL(path, nil)
-	return c.do("POST", u, body)
+	return c.doWithRetry("POST", u, body)
 }
 
 func (c *Client) Put(path string, body any) (json.RawMessage, error) {
 	u := c.tradingURL(path, nil)
-	return c.do("PUT", u, body)
+	return c.doWithRetry("PUT", u, body)
 }
 
 func (c *Client) Patch(path string, body any) (json.RawMessage, error) {
 	u := c.tradingURL(path, nil)
-	return c.do("PATCH", u, body)
+	return c.doWithRetry("PATCH", u, body)
 }
 
 func (c *Client) Delete(path string, params url.Values) (json.RawMessage, error) {
 	u := c.tradingURL(path, params)
-	return c.do("DELETE", u, nil)
+	return c.doWithRetry("DELETE", u, nil)
 }
 
 func (c *Client) GetData(path string, params url.Values) (json.RawMessage, error) {
 	u := c.dataURL(path, params)
-	return c.do("GET", u, nil)
+	return c.doWithRetry("GET", u, nil)
 }
 
 func (c *Client) RawRequest(method, fullURL string, body any) (json.RawMessage, error) {
-	return c.do(method, fullURL, body)
+	return c.doWithRetry(method, fullURL, body)
 }
 
-func (c *Client) do(method, url string, body any) (json.RawMessage, error) {
+func (c *Client) doWithRetry(method, reqURL string, body any) (json.RawMessage, error) {
+	var lastErr error
+	for attempt := range maxRetries {
+		result, err := c.do(method, reqURL, body)
+		if err == nil {
+			return result, nil
+		}
+		lastErr = err
+
+		apiErr, ok := err.(*APIError)
+		if !ok || !isRetryable(apiErr.StatusCode) {
+			return nil, err
+		}
+
+		delay := retryDelay(apiErr, attempt)
+		if c.Verbose {
+			fmt.Fprintf(os.Stderr, "  retrying in %s (attempt %d/%d)\n", delay, attempt+1, maxRetries)
+		}
+		time.Sleep(delay)
+	}
+	return nil, lastErr
+}
+
+func isRetryable(status int) bool {
+	return status == 429 || status == 500 || status == 502 || status == 503 || status == 504
+}
+
+func retryDelay(apiErr *APIError, attempt int) time.Duration {
+	if apiErr.StatusCode == 429 && apiErr.retryAfter > 0 {
+		return apiErr.retryAfter
+	}
+	base := time.Duration(math.Pow(2, float64(attempt))) * 500 * time.Millisecond
+	jitter := time.Duration(rand.Int64N(int64(base/2) + 1))
+	return base + jitter
+}
+
+func (c *Client) do(method, reqURL string, body any) (json.RawMessage, error) {
+	start := time.Now()
+
 	var bodyReader io.Reader
 	if body != nil {
 		data, err := json.Marshal(body)
@@ -108,7 +167,7 @@ func (c *Client) do(method, url string, body any) (json.RawMessage, error) {
 		bodyReader = bytes.NewReader(data)
 	}
 
-	req, err := http.NewRequest(method, url, bodyReader)
+	req, err := http.NewRequest(method, reqURL, bodyReader)
 	if err != nil {
 		return nil, fmt.Errorf("creating request: %w", err)
 	}
@@ -122,9 +181,14 @@ func (c *Client) do(method, url string, body any) (json.RawMessage, error) {
 
 	resp, err := c.HTTP.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("request failed: %w", err)
+		return nil, fmt.Errorf("could not reach %s: %w\nHint: check your internet connection and base URL. Run `alpaca profile status` to verify configuration.", c.scrub(reqURL), c.scrubErr(err))
 	}
 	defer func() { _ = resp.Body.Close() }()
+
+	elapsed := time.Since(start)
+	if c.Verbose {
+		fmt.Fprintf(os.Stderr, "%s %s → %d (%dms)\n", method, c.scrub(reqURL), resp.StatusCode, elapsed.Milliseconds())
+	}
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -134,7 +198,17 @@ func (c *Client) do(method, url string, body any) (json.RawMessage, error) {
 	if resp.StatusCode >= 400 {
 		apiErr := &APIError{StatusCode: resp.StatusCode}
 		if json.Unmarshal(respBody, apiErr) != nil || apiErr.Message == "" {
-			apiErr.Message = fmt.Sprintf("HTTP %d: %s", resp.StatusCode, string(respBody))
+			apiErr.Message = strings.TrimSpace(string(respBody))
+			if apiErr.Message == "" {
+				apiErr.Message = http.StatusText(resp.StatusCode)
+			}
+		}
+		if resp.StatusCode == 429 {
+			if ra := resp.Header.Get("Retry-After"); ra != "" {
+				if secs, err := strconv.Atoi(ra); err == nil {
+					apiErr.retryAfter = time.Duration(secs) * time.Second
+				}
+			}
 		}
 		return nil, apiErr
 	}
@@ -144,6 +218,27 @@ func (c *Client) do(method, url string, body any) (json.RawMessage, error) {
 	}
 
 	return json.RawMessage(respBody), nil
+}
+
+func (c *Client) scrub(s string) string {
+	if c.APIKey != "" {
+		s = strings.ReplaceAll(s, c.APIKey, "[REDACTED]")
+	}
+	if c.Secret != "" {
+		s = strings.ReplaceAll(s, c.Secret, "[REDACTED]")
+	}
+	return s
+}
+
+func (c *Client) scrubErr(err error) error {
+	if err == nil {
+		return nil
+	}
+	msg := c.scrub(err.Error())
+	if msg == err.Error() {
+		return err
+	}
+	return fmt.Errorf("%s", msg)
 }
 
 func (c *Client) tradingURL(path string, params url.Values) string {

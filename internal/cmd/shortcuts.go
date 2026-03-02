@@ -36,6 +36,7 @@ var sellCmd = &cobra.Command{
 }
 
 func submitShortcut(cmd *cobra.Command, args []string, side string) error {
+	warnLive()
 	symbol := args[0]
 
 	body := &api.PostOrderRequest{
@@ -52,10 +53,6 @@ func submitShortcut(cmd *cobra.Command, args []string, side string) error {
 	if notional != "" {
 		body.Notional = notional
 		body.Qty = ""
-	}
-
-	if body.Qty == "" && notional == "" {
-		return fmt.Errorf("either <qty> argument or --notional flag is required")
 	}
 
 	limitPrice := cmdutil.Str(cmd, "limit")

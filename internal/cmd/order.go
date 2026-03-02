@@ -22,6 +22,7 @@ var orderSubmitCmd = &cobra.Command{
   alpaca order submit --symbol AAPL --qty 10 --side sell --type stop --stop-price 175.00
   alpaca order submit --symbol AAPL --notional 1000 --side buy --type market`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		warnLive()
 		body := &api.PostOrderRequest{
 			Symbol:        cmdutil.Str(cmd, "symbol"),
 			Qty:           cmdutil.Str(cmd, "qty"),
@@ -39,15 +40,6 @@ var orderSubmitCmd = &cobra.Command{
 			PositionIntent: api.PositionIntent(cmdutil.Str(cmd, "position-intent")),
 		}
 
-		if body.Symbol == "" {
-			return fmt.Errorf("--symbol is required")
-		}
-		if body.Side == "" {
-			return fmt.Errorf("--side is required (buy or sell)")
-		}
-		if body.Qty == "" && body.Notional == "" {
-			return fmt.Errorf("either --qty or --notional is required")
-		}
 		if body.TimeInForce == "" {
 			body.TimeInForce = "day"
 		}
@@ -152,6 +144,11 @@ var orderCancelAllCmd = &cobra.Command{
 	Use:   "cancel-all",
 	Short: "Cancel all open orders",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if isLive() {
+			if err := requireConfirmation("Cancel ALL open orders on your live account?"); err != nil {
+				return err
+			}
+		}
 		cancelled, err := tradingClient.DeleteAllOrders()
 		if err != nil {
 			return err

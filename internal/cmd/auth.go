@@ -43,6 +43,11 @@ var profileLoginCmd = &cobra.Command{
 			return err
 		}
 
+		if cmd.Flags().Changed("secret") {
+			fmt.Fprintln(os.Stderr, "Warning: passing secrets via flags may expose them in shell history.")
+			fmt.Fprintln(os.Stderr, "  Use `alpaca profile login` interactively or ALPACA_SECRET_KEY env var.")
+		}
+
 		if key == "" || secret == "" {
 			reader := bufio.NewReader(os.Stdin)
 			if key == "" {
@@ -102,6 +107,8 @@ var profileLoginCmd = &cobra.Command{
 		}
 
 		color.Green("✓ Logged in to %s (%s)", name, baseURL)
+		fmt.Fprintf(os.Stderr, "  Credentials stored in %s/profiles/\n", config.Dir())
+		fmt.Fprintln(os.Stderr, "  For CI/automation, use ALPACA_API_KEY and ALPACA_SECRET_KEY env vars instead.")
 		return nil
 	},
 }
