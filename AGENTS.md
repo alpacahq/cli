@@ -13,7 +13,8 @@ The CLI is driven by OpenAPI specs. Maximize what's generated, minimize what's h
 - **Types**: all request/response structs, enums, aliases (~170 types)
 - **Typed clients**: `TradingClient` (61 methods), `MarketDataClient` (47 methods)
 - **Param structs**: with `Values() url.Values` for query string encoding
-- **Enum value slices**: `var <Name>Values = []string{...}` for every enum — used for shell completions via `cobra.FixedCompletions`
+- **Enum value slices**: `var <Name>Values = []string{...}` for every enum (schema-level and parameter-level) — used for shell completions via `cobra.FixedCompletions`
+- **Parameter defaults**: `var <Params>Defaults = map[string]string{...}` — spec-defined default values for query parameters
 
 Trigger: `make generate` (or `go generate ./internal/api/...`)
 
@@ -35,8 +36,20 @@ Flag definitions + help text     →    Client methods (internal/api/)
 Column definitions (columns.go)  →    Type definitions (internal/api/)
 Output rendering logic           →    URL encoding (Values())
 Flag-to-enum binding             →    Enum value slices (<Name>Values)
+                                      Parameter defaults (<Params>Defaults)
 ```
 
 Commands bridge the two worlds: they read flags via `cmdutil`, populate generated structs, call generated client methods, and render responses through `output.Render`/`output.PrintSingle`.
 
 **Do not edit `internal/api/` directly.** Change the specs or the generator, then regenerate.
+
+## After Every Change
+
+Always run tests and linting before considering a change complete:
+
+```
+make test      # go test ./...
+make lint      # golangci-lint run ./...
+```
+
+Fix any failures you introduce before moving on.

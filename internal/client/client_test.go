@@ -32,7 +32,7 @@ func TestAuthHeaders(t *testing.T) {
 		gotSecret = r.Header.Get("APCA-API-SECRET-KEY")
 		gotUA = r.Header.Get("User-Agent")
 		w.WriteHeader(200)
-		w.Write([]byte(`{"ok":true}`))
+		_, _ = w.Write([]byte(`{"ok":true}`))
 	})
 
 	_, err := c.Get("/v2/account", nil)
@@ -56,7 +56,7 @@ func TestGet200(t *testing.T) {
 			t.Errorf("expected GET, got %s", r.Method)
 		}
 		w.WriteHeader(200)
-		w.Write([]byte(`{"id":"abc","equity":"10000"}`))
+		_, _ = w.Write([]byte(`{"id":"abc","equity":"10000"}`))
 	})
 
 	data, err := c.Get("/v2/account", nil)
@@ -79,10 +79,10 @@ func TestPostSendsBody(t *testing.T) {
 	c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
 		gotContentType = r.Header.Get("Content-Type")
 		b := make([]byte, r.ContentLength)
-		r.Body.Read(b)
+		_, _ = r.Body.Read(b)
 		gotBody = string(b)
 		w.WriteHeader(200)
-		w.Write([]byte(`{"id":"order1"}`))
+		_, _ = w.Write([]byte(`{"id":"order1"}`))
 	})
 
 	body := map[string]string{"symbol": "AAPL", "qty": "10"}
@@ -101,7 +101,7 @@ func TestPostSendsBody(t *testing.T) {
 func TestError400(t *testing.T) {
 	c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
-		w.Write([]byte(`{"code":40010001,"message":"qty is required"}`))
+		_, _ = w.Write([]byte(`{"code":40010001,"message":"qty is required"}`))
 	})
 
 	_, err := c.Get("/v2/orders", nil)
@@ -130,7 +130,7 @@ func TestError400(t *testing.T) {
 func TestError401(t *testing.T) {
 	c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(401)
-		w.Write([]byte(`{"message":"unauthorized"}`))
+		_, _ = w.Write([]byte(`{"message":"unauthorized"}`))
 	})
 
 	_, err := c.Get("/v2/account", nil)
@@ -149,7 +149,7 @@ func TestError401(t *testing.T) {
 func TestError403(t *testing.T) {
 	c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(403)
-		w.Write([]byte(`{"message":"forbidden"}`))
+		_, _ = w.Write([]byte(`{"message":"forbidden"}`))
 	})
 
 	_, err := c.Get("/v2/account", nil)
@@ -165,7 +165,7 @@ func TestError403(t *testing.T) {
 func TestError422MalformedJSON(t *testing.T) {
 	c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(422)
-		w.Write([]byte(`not json at all`))
+		_, _ = w.Write([]byte(`not json at all`))
 	})
 
 	_, err := c.Get("/v2/orders", nil)
@@ -185,7 +185,7 @@ func TestError429Hint(t *testing.T) {
 	c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Retry-After", "5")
 		w.WriteHeader(429)
-		w.Write([]byte(`{"message":"rate limit exceeded"}`))
+		_, _ = w.Write([]byte(`{"message":"rate limit exceeded"}`))
 	})
 
 	_, err := c.Get("/v2/orders", nil)
@@ -222,11 +222,11 @@ func TestRetryOn500(t *testing.T) {
 		attempts++
 		if attempts < 3 {
 			w.WriteHeader(500)
-			w.Write([]byte(`{"message":"internal server error"}`))
+			_, _ = w.Write([]byte(`{"message":"internal server error"}`))
 			return
 		}
 		w.WriteHeader(200)
-		w.Write([]byte(`{"ok":true}`))
+		_, _ = w.Write([]byte(`{"ok":true}`))
 	})
 
 	data, err := c.Get("/v2/account", nil)
@@ -237,7 +237,7 @@ func TestRetryOn500(t *testing.T) {
 		t.Errorf("expected 3 attempts, got %d", attempts)
 	}
 	var m map[string]any
-	json.Unmarshal(data, &m)
+	_ = json.Unmarshal(data, &m)
 	if m["ok"] != true {
 		t.Errorf("expected ok=true, got %v", m["ok"])
 	}
@@ -248,7 +248,7 @@ func TestNoRetryOn400(t *testing.T) {
 	c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
 		attempts++
 		w.WriteHeader(400)
-		w.Write([]byte(`{"message":"bad request"}`))
+		_, _ = w.Write([]byte(`{"message":"bad request"}`))
 	})
 
 	_, err := c.Get("/v2/orders", nil)
@@ -309,7 +309,7 @@ func TestDataURL(t *testing.T) {
 	c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
 		gotPath = r.URL.Path
 		w.WriteHeader(200)
-		w.Write([]byte(`{"bars":[]}`))
+		_, _ = w.Write([]byte(`{"bars":[]}`))
 	})
 
 	_, err := c.GetData("/v2/stocks/AAPL/bars", nil)
@@ -340,7 +340,7 @@ func TestHTTPMethods(t *testing.T) {
 			c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
 				gotMethod = r.Method
 				w.WriteHeader(200)
-				w.Write([]byte(`{}`))
+				_, _ = w.Write([]byte(`{}`))
 			})
 			_, err := tt.call(c)
 			if err != nil {

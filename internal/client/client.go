@@ -37,6 +37,7 @@ type APIError struct {
 	StatusCode int    `json:"status"`
 	Code       int    `json:"code"`
 	Message    string `json:"message"`
+	hint       string
 	retryAfter time.Duration
 }
 
@@ -61,6 +62,9 @@ func (e *APIError) ExitCode() int {
 }
 
 func (e *APIError) Hint() string {
+	if e.hint != "" {
+		return e.hint
+	}
 	switch e.StatusCode {
 	case 429:
 		return "Rate limited. Reduce request frequency or add delays between calls."
@@ -181,7 +185,10 @@ func (c *Client) do(method, reqURL string, body any) (json.RawMessage, error) {
 
 	resp, err := c.HTTP.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("could not reach %s: %w\nHint: check your internet connection and base URL. Run `alpaca profile status` to verify configuration.", c.scrub(reqURL), c.scrubErr(err))
+		return nil, &APIError{
+			Message: fmt.Sprintf("could not reach %s: %v", c.scrub(reqURL), c.scrubErr(err)),
+			hint:    "check your internet connection and base URL. Run `alpaca profile status` to verify configuration",
+		}
 	}
 	defer func() { _ = resp.Body.Close() }()
 

@@ -36,8 +36,8 @@ type GetAccountActivitiesParams struct {
 	Date          string
 	Until         string
 	After         string
-	Direction     string
-	PageSize      int
+	Direction     string // default: desc
+	PageSize      int    // default: 100
 	PageToken     string
 }
 
@@ -73,6 +73,15 @@ func (p *GetAccountActivitiesParams) Values() url.Values {
 	return v
 }
 
+var GetAccountActivitiesParamsCategoryValues = []string{"non_trade_activity", "trade_activity"}
+
+var GetAccountActivitiesParamsDirectionValues = []string{"asc", "desc"}
+
+var GetAccountActivitiesParamsDefaults = map[string]string{
+	"direction": "desc",
+	"page_size": "100",
+}
+
 // GetAccountActivities — Retrieve Account Activities
 func (c *TradingClient) GetAccountActivities(params *GetAccountActivitiesParams) (json.RawMessage, error) {
 	path := "/v2/account/activities"
@@ -87,8 +96,8 @@ type GetAccountActivitiesByActivityTypeParams struct {
 	Date      string
 	Until     string
 	After     string
-	Direction string
-	PageSize  int
+	Direction string // default: desc
+	PageSize  int    // default: 100
 	PageToken string
 }
 
@@ -116,6 +125,13 @@ func (p *GetAccountActivitiesByActivityTypeParams) Values() url.Values {
 		v.Set("page_token", p.PageToken)
 	}
 	return v
+}
+
+var GetAccountActivitiesByActivityTypeParamsDirectionValues = []string{"asc", "desc"}
+
+var GetAccountActivitiesByActivityTypeParamsDefaults = map[string]string{
+	"direction": "desc",
+	"page_size": "100",
 }
 
 // GetAccountActivitiesByActivityType — Retrieve Account Activities of Specific Type
@@ -153,9 +169,9 @@ func (c *TradingClient) PatchAccountConfig(body *AccountConfigurations) (*Accoun
 type GetAccountPortfolioHistoryParams struct {
 	Period            string
 	Timeframe         string
-	IntradayReporting string
+	IntradayReporting string // default: market_hours
 	Start             string
-	PNLReset          string
+	PNLReset          string // default: per_day
 	End               string
 	ExtendedHours     string
 	CashflowTypes     string
@@ -193,6 +209,15 @@ func (p *GetAccountPortfolioHistoryParams) Values() url.Values {
 	return v
 }
 
+var GetAccountPortfolioHistoryParamsIntradayReportingValues = []string{"continuous", "extended_hours", "market_hours"}
+
+var GetAccountPortfolioHistoryParamsPNLResetValues = []string{"no_reset", "per_day"}
+
+var GetAccountPortfolioHistoryParamsDefaults = map[string]string{
+	"intraday_reporting": "market_hours",
+	"pnl_reset":          "per_day",
+}
+
 // GetAccountPortfolioHistory — Get Account Portfolio History
 func (c *TradingClient) GetAccountPortfolioHistory(params *GetAccountPortfolioHistoryParams) (*PortfolioHistory, error) {
 	path := "/v2/account/portfolio/history"
@@ -208,7 +233,7 @@ type GetV2AssetsParams struct {
 	Status     string
 	AssetClass string
 	Exchange   string
-	Attributes string
+	Attributes string // default: []
 }
 
 func (p *GetV2AssetsParams) Values() url.Values {
@@ -229,6 +254,10 @@ func (p *GetV2AssetsParams) Values() url.Values {
 		v.Set("attributes", p.Attributes)
 	}
 	return v
+}
+
+var GetV2AssetsParamsDefaults = map[string]string{
+	"attributes": "[]",
 }
 
 // GetV2Assets — Get Assets
@@ -351,6 +380,8 @@ func (p *LegacyCalendarParams) Values() url.Values {
 	}
 	return v
 }
+
+var LegacyCalendarParamsDateTypeValues = []string{"SETTLEMENT", "TRADING"}
 
 // LegacyCalendar — Get US Market Calendar
 func (c *TradingClient) LegacyCalendar(params *LegacyCalendarParams) (json.RawMessage, error) {
@@ -495,6 +526,12 @@ func (p *GetOptionsContractsParams) Values() url.Values {
 	return v
 }
 
+var GetOptionsContractsParamsStatusValues = []string{"active", "inactive"}
+
+var GetOptionsContractsParamsTypeValues = []string{"call", "put"}
+
+var GetOptionsContractsParamsStyleValues = []string{"american", "european"}
+
 // GetOptionsContracts — Get Option Contracts
 func (c *TradingClient) GetOptionsContracts(params *GetOptionsContractsParams) (json.RawMessage, error) {
 	path := "/v2/options/contracts"
@@ -570,6 +607,10 @@ func (p *GetAllOrdersParams) Values() url.Values {
 	}
 	return v
 }
+
+var GetAllOrdersParamsStatusValues = []string{"all", "closed", "open"}
+
+var GetAllOrdersParamsDirectionValues = []string{"asc", "desc"}
 
 // GetAllOrders — Get All Orders
 func (c *TradingClient) GetAllOrders(params *GetAllOrdersParams) ([]Order, error) {
@@ -1012,6 +1053,8 @@ func (p *ListCryptoFundingWalletsParams) Values() url.Values {
 	return v
 }
 
+var ListCryptoFundingWalletsParamsNetworkValues = []string{"ethereum", "solana"}
+
 // ListCryptoFundingWallets — Retrieve Crypto Funding Wallets
 func (c *TradingClient) ListCryptoFundingWallets(params *ListCryptoFundingWalletsParams) (*CryptoWallet, error) {
 	path := "/v2/wallets"
@@ -1335,6 +1378,8 @@ func (p *CalendarParams) Values() url.Values {
 	}
 	return v
 }
+
+var CalendarParamsTimezoneValues = []string{"UTC"}
 
 // Calendar — Get Market Calendar
 func (c *TradingClient) Calendar(Market string, params *CalendarParams) (*PublicCalendarResp, error) {

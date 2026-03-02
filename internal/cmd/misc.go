@@ -153,9 +153,9 @@ func init() {
 	portfolioHistoryCmd.Flags().String("start", "", "Start date (RFC3339)")
 	portfolioHistoryCmd.Flags().String("end", "", "End date (RFC3339)")
 	portfolioHistoryCmd.Flags().String("intraday-reporting", "", "Intraday reporting: market_hours, extended_hours, continuous")
-	_ = portfolioHistoryCmd.RegisterFlagCompletionFunc("intraday-reporting", cobra.FixedCompletions([]string{"market_hours", "extended_hours", "continuous"}, cobra.ShellCompDirectiveNoFileComp))
+	_ = portfolioHistoryCmd.RegisterFlagCompletionFunc("intraday-reporting", cobra.FixedCompletions(api.GetAccountPortfolioHistoryParamsIntradayReportingValues, cobra.ShellCompDirectiveNoFileComp))
 	portfolioHistoryCmd.Flags().String("pnl-reset", "", "P&L reset mode: no_reset, per_day")
-	_ = portfolioHistoryCmd.RegisterFlagCompletionFunc("pnl-reset", cobra.FixedCompletions([]string{"no_reset", "per_day"}, cobra.ShellCompDirectiveNoFileComp))
+	_ = portfolioHistoryCmd.RegisterFlagCompletionFunc("pnl-reset", cobra.FixedCompletions(api.GetAccountPortfolioHistoryParamsPNLResetValues, cobra.ShellCompDirectiveNoFileComp))
 	portfolioCmd.AddCommand(portfolioHistoryCmd)
 
 	newsCmd.Flags().String("symbols", "", "Filter by symbols (comma-separated)")

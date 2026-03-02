@@ -196,7 +196,7 @@ func warnLive() {
 	if cfg != nil && cfg.SuppressWarnings {
 		return
 	}
-	color.New(color.FgYellow).Fprintln(os.Stderr, "⚠ Live trading account. This order will use real money.")
+	_, _ = color.New(color.FgYellow).Fprintln(os.Stderr, "⚠ Live trading account. This order will use real money.")
 }
 
 func requireConfirmation(prompt string) error {

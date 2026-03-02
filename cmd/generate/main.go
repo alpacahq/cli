@@ -174,10 +174,12 @@ type endpointInfo struct {
 }
 
 type paramInfo struct {
-	name     string
-	goName   string
-	goType   string
-	required bool
+	name       string
+	goName     string
+	goType     string
+	required   bool
+	enumValues []string
+	defaultVal string
 }
 
 func extractEndpoints(spec map[string]any) []*endpointInfo {
@@ -257,6 +259,23 @@ func extractEndpoints(spec map[string]any) []*endpointInfo {
 					}
 				}
 			pi := paramInfo{name: name, goName: toGoFieldName(name), goType: goType, required: req}
+			if pSchema != nil {
+				if ev, ok := pSchema["enum"].([]any); ok {
+					for _, v := range ev {
+						if v == nil {
+							continue
+						}
+						sv := fmt.Sprint(v)
+						if sv != "" {
+							pi.enumValues = append(pi.enumValues, sv)
+						}
+					}
+					sort.Strings(pi.enumValues)
+				}
+				if dv, ok := pSchema["default"]; ok && dv != nil {
+					pi.defaultVal = fmt.Sprint(dv)
+				}
+			}
 			switch in {
 			case "path":
 				ep.pathParams = append(ep.pathParams, pi)
@@ -534,7 +553,11 @@ func genEndpointMethod(buf *bytes.Buffer, ep *endpointInfo, clientName, getMetho
 	if hasParams {
 		fmt.Fprintf(buf, "type %s struct {\n", paramsTypeName)
 		for _, p := range ep.queryParams {
-			fmt.Fprintf(buf, "\t%s %s\n", p.goName, p.goType)
+			if p.defaultVal != "" {
+				fmt.Fprintf(buf, "\t%s %s // default: %s\n", p.goName, p.goType, p.defaultVal)
+			} else {
+				fmt.Fprintf(buf, "\t%s %s\n", p.goName, p.goType)
+			}
 		}
 		fmt.Fprintf(buf, "}\n\n")
 
@@ -554,6 +577,26 @@ func genEndpointMethod(buf *bytes.Buffer, ep *endpointInfo, clientName, getMetho
 			}
 		}
 		fmt.Fprintf(buf, "\treturn v\n}\n\n")
+
+		for _, p := range ep.queryParams {
+			if len(p.enumValues) > 0 {
+				genValuesSlice(buf, paramsTypeName+p.goName, p.enumValues)
+			}
+		}
+
+		var defaults []paramInfo
+		for _, p := range ep.queryParams {
+			if p.defaultVal != "" {
+				defaults = append(defaults, p)
+			}
+		}
+		if len(defaults) > 0 {
+			fmt.Fprintf(buf, "var %sDefaults = map[string]string{\n", paramsTypeName)
+			for _, p := range defaults {
+				fmt.Fprintf(buf, "\t%q: %q,\n", p.name, p.defaultVal)
+			}
+			fmt.Fprintf(buf, "}\n\n")
+		}
 	}
 
 	bodyType := ep.bodyRef

@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
 	"github.com/alpacahq/cli/internal/output"
 	"github.com/spf13/cobra"
@@ -219,7 +220,7 @@ func init() {
 		_ = c.RegisterFlagCompletionFunc("feed", cobra.FixedCompletions([]string{"iex", "sip", "otc", "delayed_sip"}, cobra.ShellCompDirectiveNoFileComp))
 		c.Flags().String("currency", "", "Currency for prices (e.g. USD, EUR)")
 		c.Flags().String("sort", "", "Sort order: asc or desc")
-		_ = c.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions([]string{"asc", "desc"}, cobra.ShellCompDirectiveNoFileComp))
+		_ = c.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions(api.SortValues, cobra.ShellCompDirectiveNoFileComp))
 		c.Flags().String("asof", "", "As-of date for point-in-time data")
 	}
 	dataBarsCmd.Flags().String("timeframe", "1Day", "Bar timeframe: 1Min, 5Min, 15Min, 1Hour, 1Day, 1Week, 1Month")
