@@ -10,6 +10,7 @@ func orderColumns() []output.Column {
 	return []output.Column{
 		{Header: "ID", Field: "id"},
 		{Header: "SYMBOL", Field: "symbol"},
+		{Header: "CLASS", Field: "order_class"},
 		{Header: "SIDE", Field: "side"},
 		{Header: "QTY", Field: "qty"},
 		{Header: "TYPE", Field: "type"},

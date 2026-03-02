@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
@@ -72,6 +74,7 @@ var orderListCmd = &cobra.Command{
   alpaca order list --status closed --limit 20
   alpaca order list --symbols AAPL,MSFT --start 2025-01-01`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		nested := cmdutil.Bool(cmd, "nested")
 		params := &api.GetAllOrdersParams{
 			Status:        cmdutil.Str(cmd, "status"),
 			Symbols:       cmdutil.Str(cmd, "symbols"),
@@ -79,7 +82,7 @@ var orderListCmd = &cobra.Command{
 			Until:         cmdutil.Str(cmd, "end"),
 			Limit:         cmdutil.Int(cmd, "limit"),
 			Direction:     cmdutil.Str(cmd, "sort"),
-			Nested:        cmdutil.Bool(cmd, "nested"),
+			Nested:        nested,
 			Side:          cmdutil.Str(cmd, "side"),
 			AssetClass:    cmdutil.Str(cmd, "class"),
 			BeforeOrderID: cmdutil.Str(cmd, "before-order-id"),
@@ -93,7 +96,16 @@ var orderListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.Render(getOutput(), orderColumns(), orders)
+
+		if !nested {
+			return output.Render(getOutput(), orderColumns(), orders)
+		}
+
+		format := getOutput()
+		if format == "json" {
+			return output.JSON(os.Stdout, orders)
+		}
+		return output.Render(format, orderColumns(), expandOrderLegs(orders))
 	},
 }
 
@@ -224,7 +236,7 @@ func init() {
 	orderListCmd.Flags().Int("limit", 0, "Max number of orders to return")
 	orderListCmd.Flags().String("sort", "", "Sort direction: asc or desc")
 	_ = orderListCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions(api.SortValues, cobra.ShellCompDirectiveNoFileComp))
-	orderListCmd.Flags().Bool("nested", false, "Include nested multi-leg order legs")
+	orderListCmd.Flags().Bool("nested", false, "Expand multi-leg order legs")
 	orderListCmd.Flags().String("side", "", "Filter by side: buy or sell")
 	_ = orderListCmd.RegisterFlagCompletionFunc("side", cobra.FixedCompletions(api.OrderSideValues, cobra.ShellCompDirectiveNoFileComp))
 	orderListCmd.Flags().String("class", "", "Filter by asset class: us_equity, us_option, crypto")
@@ -247,4 +259,31 @@ func init() {
 	orderCmd.AddCommand(orderCancelCmd)
 	orderCmd.AddCommand(orderCancelAllCmd)
 	orderCmd.AddCommand(orderReplaceCmd)
+}
+
+func expandOrderLegs(orders []api.Order) []map[string]any {
+	var rows []map[string]any
+	for _, o := range orders {
+		b, _ := json.Marshal(o)
+		var row map[string]any
+		_ = json.Unmarshal(b, &row)
+		delete(row, "legs")
+		rows = append(rows, row)
+
+		for i, leg := range o.Legs {
+			b, _ = json.Marshal(leg)
+			var legRow map[string]any
+			_ = json.Unmarshal(b, &legRow)
+			prefix := " ├─ "
+			if i == len(o.Legs)-1 {
+				prefix = " └─ "
+			}
+			if id, ok := legRow["id"].(string); ok {
+				legRow["id"] = prefix + id
+			}
+			delete(legRow, "legs")
+			rows = append(rows, legRow)
+		}
+	}
+	return rows
 }
