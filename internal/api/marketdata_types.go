@@ -10,6 +10,8 @@ const (
 	CryptoHistoricalLocUs1 CryptoHistoricalLoc = "us-1"
 )
 
+var CryptoHistoricalLocValues = []string{"eu-1", "us", "us-1"}
+
 type CryptoLatestLoc string
 
 const (
@@ -18,11 +20,15 @@ const (
 	CryptoLatestLocUs1 CryptoLatestLoc = "us-1"
 )
 
+var CryptoLatestLocValues = []string{"eu-1", "us", "us-1"}
+
 type CryptoPerpLoc string
 
 const (
 	CryptoPerpLocGlobal CryptoPerpLoc = "global"
 )
+
+var CryptoPerpLocValues = []string{"global"}
 
 type MarketType string
 
@@ -31,6 +37,8 @@ const (
 	MarketTypeStocks MarketType = "stocks"
 )
 
+var MarketTypeValues = []string{"crypto", "stocks"}
+
 type OptionFeed string
 
 const (
@@ -38,12 +46,16 @@ const (
 	OptionFeedOpra       OptionFeed = "opra"
 )
 
+var OptionFeedValues = []string{"indicative", "opra"}
+
 type Sort string
 
 const (
 	SortAsc  Sort = "asc"
 	SortDesc Sort = "desc"
 )
+
+var SortValues = []string{"asc", "desc"}
 
 type StockHistoricalFeed string
 
@@ -53,6 +65,8 @@ const (
 	StockHistoricalFeedOtc   StockHistoricalFeed = "otc"
 	StockHistoricalFeedSip   StockHistoricalFeed = "sip"
 )
+
+var StockHistoricalFeedValues = []string{"boats", "iex", "otc", "sip"}
 
 type StockLatestFeed string
 
@@ -65,6 +79,8 @@ const (
 	StockLatestFeedSip        StockLatestFeed = "sip"
 )
 
+var StockLatestFeedValues = []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}
+
 type StockTape string
 
 const (
@@ -74,6 +90,8 @@ const (
 	StockTapeN StockTape = "N"
 	StockTapeO StockTape = "O"
 )
+
+var StockTapeValues = []string{"A", "B", "C", "N", "O"}
 
 type CashDividend struct {
 	Cusip          string  `json:"cusip"`
@@ -640,3 +658,5 @@ type WorthlessRemoval struct {
 	ProcessDate string `json:"process_date"`
 	Symbol      string `json:"symbol"`
 }
+
+var NewsImageSizeValues = []string{"large", "small", "thumb"}

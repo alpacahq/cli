@@ -163,7 +163,7 @@ func init() {
 	newsCmd.Flags().String("end", "", "End date")
 	newsCmd.Flags().Int("limit", 0, "Max articles (default: 10)")
 	newsCmd.Flags().String("sort", "", "Sort order: asc or desc")
-	_ = newsCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions([]string{"asc", "desc"}, cobra.ShellCompDirectiveNoFileComp))
+	_ = newsCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions(api.SortValues, cobra.ShellCompDirectiveNoFileComp))
 	newsCmd.Flags().Bool("include-content", false, "Include full article content")
 	newsCmd.Flags().Bool("exclude-contentless", false, "Exclude articles without content")
 }

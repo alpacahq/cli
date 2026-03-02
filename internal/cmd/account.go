@@ -93,7 +93,7 @@ var accountConfigCmd = &cobra.Command{
 
 func init() {
 	accountConfigSetCmd.Flags().String("dtbp-check", "", "Day trading buying power check: entry or exit")
-	_ = accountConfigSetCmd.RegisterFlagCompletionFunc("dtbp-check", cobra.FixedCompletions([]string{"entry", "exit"}, cobra.ShellCompDirectiveNoFileComp))
+	_ = accountConfigSetCmd.RegisterFlagCompletionFunc("dtbp-check", cobra.FixedCompletions(api.AccountConfigurationsDTBPCheckValues, cobra.ShellCompDirectiveNoFileComp))
 	accountConfigSetCmd.Flags().Bool("no-shorting", false, "Disable short selling")
 	accountConfigSetCmd.Flags().String("pdt-check", "", "PDT check: entry or exit")
 	_ = accountConfigSetCmd.RegisterFlagCompletionFunc("pdt-check", cobra.FixedCompletions([]string{"entry", "exit"}, cobra.ShellCompDirectiveNoFileComp))

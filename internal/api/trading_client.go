@@ -944,7 +944,7 @@ func (c *TradingClient) GetOpenPosition(SymbolOrAssetID string) (*Position, erro
 }
 
 type DeleteOpenPositionParams struct {
-	Qty        string
+	Qty        float64
 	Percentage float64
 }
 
@@ -953,8 +953,8 @@ func (p *DeleteOpenPositionParams) Values() url.Values {
 		return nil
 	}
 	v := url.Values{}
-	if p.Qty != "" {
-		v.Set("qty", p.Qty)
+	if p.Qty != 0 {
+		v.Set("qty", fmt.Sprintf("%g", p.Qty))
 	}
 	if p.Percentage != 0 {
 		v.Set("percentage", fmt.Sprintf("%g", p.Percentage))

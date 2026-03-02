@@ -355,7 +355,47 @@ func genTypes(specFile string, schemas []*schemaInfo) string {
 			genStruct(&buf, s, schemas)
 		}
 	}
+	for _, s := range schemas {
+		if s.kind == "struct" {
+			genInlineEnumValues(&buf, s)
+		}
+	}
 	return buf.String()
+}
+
+func genInlineEnumValues(buf *bytes.Buffer, s *schemaInfo) {
+	var fields []string
+	for f := range s.props {
+		fields = append(fields, f)
+	}
+	sort.Strings(fields)
+
+	for _, fieldName := range fields {
+		fieldSchema := s.props[fieldName]
+		enumVals, ok := fieldSchema["enum"].([]any)
+		if !ok || len(enumVals) == 0 {
+			continue
+		}
+
+		var vals []string
+		for _, v := range enumVals {
+			if v == nil {
+				continue
+			}
+			sv := fmt.Sprint(v)
+			if sv == "" {
+				continue
+			}
+			vals = append(vals, sv)
+		}
+		if len(vals) == 0 {
+			continue
+		}
+		sort.Strings(vals)
+
+		varName := s.goName + toGoFieldName(fieldName)
+		genValuesSlice(buf, varName, vals)
+	}
 }
 
 func genEnum(buf *bytes.Buffer, s *schemaInfo) {
@@ -365,6 +405,19 @@ func genEnum(buf *bytes.Buffer, s *schemaInfo) {
 		fmt.Fprintf(buf, "\t%s %s = %q\n", constName, s.goName, val)
 	}
 	fmt.Fprintf(buf, ")\n\n")
+
+	genValuesSlice(buf, s.goName, s.enumValues)
+}
+
+func genValuesSlice(buf *bytes.Buffer, name string, vals []string) {
+	fmt.Fprintf(buf, "var %sValues = []string{", name)
+	for i, val := range vals {
+		if i > 0 {
+			buf.WriteString(", ")
+		}
+		fmt.Fprintf(buf, "%q", val)
+	}
+	buf.WriteString("}\n\n")
 }
 
 func sanitizeConstName(val string) string {

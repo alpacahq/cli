@@ -76,7 +76,7 @@ func init() {
 	activityListCmd.Flags().String("end", "", "Only activities before this date/time")
 	activityListCmd.Flags().String("date", "", "Exact date filter")
 	activityListCmd.Flags().String("sort", "", "Sort: asc or desc")
-	_ = activityListCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions([]string{"asc", "desc"}, cobra.ShellCompDirectiveNoFileComp))
+	_ = activityListCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions(api.SortValues, cobra.ShellCompDirectiveNoFileComp))
 	activityListCmd.Flags().Int("limit", 0, "Max number of results")
 	activityListCmd.Flags().String("category", "", "Category: trade_activity or non_trade_activity")
 	_ = activityListCmd.RegisterFlagCompletionFunc("category", cobra.FixedCompletions([]string{"trade_activity", "non_trade_activity"}, cobra.ShellCompDirectiveNoFileComp))

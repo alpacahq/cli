@@ -14,6 +14,8 @@ const (
 	AccountStatusSUBMITTED        AccountStatus = "SUBMITTED"
 )
 
+var AccountStatusValues = []string{"ACCOUNT_UPDATED", "ACTIVE", "APPROVAL_PENDING", "ONBOARDING", "REJECTED", "SUBMISSION_FAILED", "SUBMITTED"}
+
 type ActivityType string
 
 const (
@@ -57,6 +59,8 @@ const (
 	ActivityTypeTRANS   ActivityType = "TRANS"
 )
 
+var ActivityTypeValues = []string{"ACATC", "ACATS", "CFEE", "CSD", "CSW", "DIV", "DIVCGL", "DIVCGS", "DIVFEE", "DIVFT", "DIVNRA", "DIVROC", "DIVTW", "DIVTXEX", "FEE", "FILL", "FOPT", "INT", "INTNRA", "INTTW", "JNL", "JNLC", "JNLS", "MA", "MISC", "NC", "OPASN", "OPCA", "OPCSH", "OPEXC", "OPEXP", "OPTRD", "PTC", "PTR", "REORG", "SPIN", "SPLIT", "TRANS"}
+
 type AssetClass string
 
 const (
@@ -65,6 +69,8 @@ const (
 	AssetClassUsOption AssetClass = "us_option"
 )
 
+var AssetClassValues = []string{"crypto", "us_equity", "us_option"}
+
 type CryptoTransferStatus string
 
 const (
@@ -72,6 +78,8 @@ const (
 	CryptoTransferStatusFAILED     CryptoTransferStatus = "FAILED"
 	CryptoTransferStatusPROCESSING CryptoTransferStatus = "PROCESSING"
 )
+
+var CryptoTransferStatusValues = []string{"COMPLETE", "FAILED", "PROCESSING"}
 
 type Exchange string
 
@@ -85,6 +93,8 @@ const (
 	ExchangeOTC      Exchange = "OTC"
 )
 
+var ExchangeValues = []string{"AMEX", "ARCA", "BATS", "NASDAQ", "NYSE", "NYSEARCA", "OTC"}
+
 type ExchangeForPosition string
 
 const (
@@ -97,6 +107,8 @@ const (
 	ExchangeForPositionOTC      ExchangeForPosition = "OTC"
 )
 
+var ExchangeForPositionValues = []string{"AMEX", "ARCA", "BATS", "NASDAQ", "NYSE", "NYSEARCA", "OTC"}
+
 type OrderClass string
 
 const (
@@ -107,12 +119,16 @@ const (
 	OrderClassSimple  OrderClass = "simple"
 )
 
+var OrderClassValues = []string{"bracket", "mleg", "oco", "oto", "simple"}
+
 type OrderSide string
 
 const (
 	OrderSideBuy  OrderSide = "buy"
 	OrderSideSell OrderSide = "sell"
 )
+
+var OrderSideValues = []string{"buy", "sell"}
 
 type OrderStatus string
 
@@ -135,6 +151,8 @@ const (
 	OrderStatusSuspended          OrderStatus = "suspended"
 )
 
+var OrderStatusValues = []string{"accepted", "accepted_for_bidding", "calculated", "canceled", "done_for_day", "expired", "filled", "new", "partially_filled", "pending_cancel", "pending_new", "pending_replace", "rejected", "replaced", "stopped", "suspended"}
+
 type OrderType string
 
 const (
@@ -145,6 +163,8 @@ const (
 	OrderTypeTrailingStop OrderType = "trailing_stop"
 )
 
+var OrderTypeValues = []string{"limit", "market", "stop", "stop_limit", "trailing_stop"}
+
 type PositionIntent string
 
 const (
@@ -153,6 +173,8 @@ const (
 	PositionIntentSellToClose PositionIntent = "sell_to_close"
 	PositionIntentSellToOpen  PositionIntent = "sell_to_open"
 )
+
+var PositionIntentValues = []string{"buy_to_close", "buy_to_open", "sell_to_close", "sell_to_open"}
 
 type TimeInForce string
 
@@ -165,12 +187,16 @@ const (
 	TimeInForceOpg TimeInForce = "opg"
 )
 
+var TimeInForceValues = []string{"cls", "day", "fok", "gtc", "ioc", "opg"}
+
 type TransferDirection string
 
 const (
 	TransferDirectionINCOMING TransferDirection = "INCOMING"
 	TransferDirectionOUTGOING TransferDirection = "OUTGOING"
 )
+
+var TransferDirectionValues = []string{"INCOMING", "OUTGOING"}
 
 type BondStatus string
 
@@ -180,6 +206,8 @@ const (
 	BondStatusPreIssuance BondStatus = "pre_issuance"
 )
 
+var BondStatusValues = []string{"matured", "outstanding", "pre_issuance"}
+
 type CallType string
 
 const (
@@ -188,6 +216,8 @@ const (
 	CallTypeRegulatory CallType = "regulatory"
 	CallTypeSpecial    CallType = "special"
 )
+
+var CallTypeValues = []string{"make_whole", "ordinary", "regulatory", "special"}
 
 type CouponFrequency string
 
@@ -199,6 +229,8 @@ const (
 	CouponFrequencyZero       CouponFrequency = "zero"
 )
 
+var CouponFrequencyValues = []string{"annual", "monthly", "quarterly", "semi_annual", "zero"}
+
 type CouponType string
 
 const (
@@ -206,6 +238,8 @@ const (
 	CouponTypeFloating CouponType = "floating"
 	CouponTypeZero     CouponType = "zero"
 )
+
+var CouponTypeValues = []string{"fixed", "floating", "zero"}
 
 type DayCount string
 
@@ -219,6 +253,8 @@ const (
 	DayCountAxA      DayCount = "A/A"
 	DayCountBx252    DayCount = "B/252"
 )
+
+var DayCountValues = []string{"30/360", "30/365", "30E/360", "A/360", "A/364", "A/365", "A/A", "B/252"}
 
 type Market string
 
@@ -257,6 +293,8 @@ const (
 	MarketXSAU    Market = "XSAU"
 )
 
+var MarketValues = []string{"BMO", "BNYM", "BOATS", "CEUX", "CHIX", "HKEX", "IEX", "IEXG", "ISE", "LSE", "MTA", "MTAA", "NASDAQ", "NYSE", "OCEA", "OPRA", "OTC", "OTCM", "SIFMA", "TADAWUL", "XAMS", "XBRU", "XDUB", "XETR", "XETRA", "XHKG", "XLIS", "XLON", "XNAS", "XNYS", "XPAR", "XSAU"}
+
 type Phase string
 
 const (
@@ -266,6 +304,8 @@ const (
 	PhasePost   Phase = "post"
 	PhasePre    Phase = "pre"
 )
+
+var PhaseValues = []string{"closed", "core", "lunch", "post", "pre"}
 
 type SpOutlook string
 
@@ -278,6 +318,8 @@ const (
 	SpOutlookStable        SpOutlook = "stable"
 )
 
+var SpOutlookValues = []string{"developing", "negative", "not_meaningful", "not_rated", "positive", "stable"}
+
 type TreasurySubtype string
 
 const (
@@ -288,6 +330,8 @@ const (
 	TreasurySubtypeStrips   TreasurySubtype = "strips"
 	TreasurySubtypeTips     TreasurySubtype = "tips"
 )
+
+var TreasurySubtypeValues = []string{"bill", "bond", "floating", "note", "strips", "tips"}
 
 type Account struct {
 	AccountBlocked           bool          `json:"account_blocked,omitempty"`
@@ -791,3 +835,35 @@ type UsTreasury struct {
 	Subtype              TreasurySubtype `json:"subtype"`
 	Tradable             bool            `json:"tradable"`
 }
+
+var AccountOptionsApprovedLevelValues = []string{"0", "1", "2", "3"}
+
+var AccountOptionsTradingLevelValues = []string{"0", "1", "2", "3"}
+
+var AccountConfigurationsDTBPCheckValues = []string{"both", "entry", "exit"}
+
+var AccountConfigurationsMaxOptionsTradingLevelValues = []string{"0", "1", "2", "3"}
+
+var AdvancedInstructionsAlgorithmValues = []string{"DMA", "TWAP", "VWAP"}
+
+var AdvancedInstructionsDestinationValues = []string{"ARCA", "NASDAQ", "NYSE"}
+
+var AssetsStatusValues = []string{"active", "inactive"}
+
+var NonTradeActivitiesStatusValues = []string{"canceled", "correct", "executed"}
+
+var OptionContractStatusValues = []string{"active", "inactive"}
+
+var OptionContractStyleValues = []string{"american", "european"}
+
+var OptionContractTypeValues = []string{"call", "put"}
+
+var OptionDeliverableSettlementMethodValues = []string{"BTOB", "CADF", "CAFX", "CCC"}
+
+var OptionDeliverableSettlementTypeValues = []string{"T+0", "T+1", "T+2", "T+3", "T+4", "T+5"}
+
+var OptionDeliverableTypeValues = []string{"cash", "equity"}
+
+var TradingActivitiesTypeValues = []string{"fill", "partial_fill"}
+
+var WhitelistedAddressStatusValues = []string{"APPROVED", "PENDING"}

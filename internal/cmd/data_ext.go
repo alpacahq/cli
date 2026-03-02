@@ -172,7 +172,7 @@ func init() {
 	dataForexRatesCmd.Flags().String("end", "", "End date")
 	dataForexRatesCmd.Flags().Int("limit", 0, "Max results")
 	dataForexRatesCmd.Flags().String("sort", "", "Sort: asc or desc")
-	_ = dataForexRatesCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions([]string{"asc", "desc"}, cobra.ShellCompDirectiveNoFileComp))
+	_ = dataForexRatesCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions(api.SortValues, cobra.ShellCompDirectiveNoFileComp))
 	dataForexLatestCmd.Flags().String("pairs", "", "Currency pairs (comma-separated)")
 	dataForexCmd.AddCommand(dataForexRatesCmd)
 	dataForexCmd.AddCommand(dataForexLatestCmd)
@@ -184,7 +184,7 @@ func init() {
 	dataAuctionsCmd.Flags().String("end", "", "End date")
 	dataAuctionsCmd.Flags().Int("limit", 0, "Max results")
 	dataAuctionsCmd.Flags().String("sort", "", "Sort: asc or desc")
-	_ = dataAuctionsCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions([]string{"asc", "desc"}, cobra.ShellCompDirectiveNoFileComp))
+	_ = dataAuctionsCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions(api.SortValues, cobra.ShellCompDirectiveNoFileComp))
 	dataAuctionsCmd.Flags().String("asof", "", "As-of date for data")
 
 	dataCorporateActionsCmd.Flags().String("symbols", "", "Filter by symbols")
@@ -193,7 +193,7 @@ func init() {
 	dataCorporateActionsCmd.Flags().String("end", "", "End date")
 	dataCorporateActionsCmd.Flags().Int("limit", 0, "Max results")
 	dataCorporateActionsCmd.Flags().String("sort", "", "Sort: asc or desc")
-	_ = dataCorporateActionsCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions([]string{"asc", "desc"}, cobra.ShellCompDirectiveNoFileComp))
+	_ = dataCorporateActionsCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions(api.SortValues, cobra.ShellCompDirectiveNoFileComp))
 	dataFixedIncomeCmd.Flags().String("symbols", "", "ISIN identifiers (comma-separated)")
 
 	dataCmd.AddCommand(dataOptionCmd)
