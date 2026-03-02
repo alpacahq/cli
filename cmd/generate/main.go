@@ -16,7 +16,9 @@ import (
 func main() {
 	root := findProjectRoot()
 	outDir := filepath.Join(root, "internal", "api")
-	os.MkdirAll(outDir, 0755)
+	if err := os.MkdirAll(outDir, 0755); err != nil {
+		log.Fatalf("creating output dir: %v", err)
+	}
 
 	tSpec := loadSpec(filepath.Join(root, "api", "specs", "trading-api.json"))
 	mSpec := loadSpec(filepath.Join(root, "api", "specs", "market-data-api.json"))
@@ -254,12 +256,13 @@ func extractEndpoints(spec map[string]any) []*endpointInfo {
 						goType = "float64"
 					}
 				}
-				pi := paramInfo{name: name, goName: toGoFieldName(name), goType: goType, required: req}
-				if in == "path" {
-					ep.pathParams = append(ep.pathParams, pi)
-				} else if in == "query" {
-					ep.queryParams = append(ep.queryParams, pi)
-				}
+			pi := paramInfo{name: name, goName: toGoFieldName(name), goType: goType, required: req}
+			switch in {
+			case "path":
+				ep.pathParams = append(ep.pathParams, pi)
+			case "query":
+				ep.queryParams = append(ep.queryParams, pi)
+			}
 			}
 
 			if rb, ok := op["requestBody"].(map[string]any); ok {

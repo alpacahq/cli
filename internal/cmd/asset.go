@@ -82,11 +82,11 @@ var bondListCmd = &cobra.Command{
 
 func init() {
 	assetListCmd.Flags().String("status", "", "Filter: active or inactive")
-	assetListCmd.RegisterFlagCompletionFunc("status", cobra.FixedCompletions([]string{"active", "inactive"}, cobra.ShellCompDirectiveNoFileComp))
+	_ = assetListCmd.RegisterFlagCompletionFunc("status", cobra.FixedCompletions([]string{"active", "inactive"}, cobra.ShellCompDirectiveNoFileComp))
 	assetListCmd.Flags().String("class", "", "Asset class: us_equity, crypto")
-	assetListCmd.RegisterFlagCompletionFunc("class", cobra.FixedCompletions([]string{"us_equity", "crypto", "us_option", "fixed_income"}, cobra.ShellCompDirectiveNoFileComp))
+	_ = assetListCmd.RegisterFlagCompletionFunc("class", cobra.FixedCompletions([]string{"us_equity", "crypto", "us_option", "fixed_income"}, cobra.ShellCompDirectiveNoFileComp))
 	assetListCmd.Flags().String("exchange", "", "Exchange: NYSE, NASDAQ, etc.")
-	assetListCmd.RegisterFlagCompletionFunc("exchange", cobra.FixedCompletions([]string{"NYSE", "NASDAQ", "AMEX", "ARCA", "BATS", "OTC", "FTXU", "CBSE", "ERSX"}, cobra.ShellCompDirectiveNoFileComp))
+	_ = assetListCmd.RegisterFlagCompletionFunc("exchange", cobra.FixedCompletions([]string{"NYSE", "NASDAQ", "AMEX", "ARCA", "BATS", "OTC", "FTXU", "CBSE", "ERSX"}, cobra.ShellCompDirectiveNoFileComp))
 
 	treasuryListCmd.Flags().String("status", "", "Bond status: active or inactive")
 	treasuryListCmd.Flags().String("cusips", "", "Filter by CUSIPs (comma-separated)")

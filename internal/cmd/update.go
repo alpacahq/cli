@@ -110,7 +110,7 @@ func getLatestRelease() (tag, downloadURL, checksumURL string, err error) {
 	if err != nil {
 		return "", "", "", err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != 200 {
 		return "", "", "", fmt.Errorf("GitHub API returned %d", resp.StatusCode)
@@ -152,7 +152,7 @@ func downloadBinary(url string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("download returned HTTP %d", resp.StatusCode)
@@ -196,7 +196,7 @@ func extractFromTarGz(data []byte, binaryName string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("decompressing: %w", err)
 	}
-	defer gz.Close()
+	defer func() { _ = gz.Close() }()
 
 	tr := tar.NewReader(gz)
 	for {
@@ -226,7 +226,7 @@ func extractFromZip(data []byte, binaryName string) ([]byte, error) {
 			if err != nil {
 				return nil, err
 			}
-			defer rc.Close()
+			defer func() { _ = rc.Close() }()
 			return io.ReadAll(rc)
 		}
 	}

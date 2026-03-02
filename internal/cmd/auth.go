@@ -75,7 +75,7 @@ var profileLoginCmd = &cobra.Command{
 			if err != nil {
 				return fmt.Errorf("failed to connect to %s: %w\nHint: use --no-validate to skip credential check", baseURL, err)
 			}
-			resp.Body.Close()
+			_ = resp.Body.Close()
 
 			if resp.StatusCode == 401 || resp.StatusCode == 403 {
 				return fmt.Errorf("invalid credentials (validated against %s)\nHint: use --base-url to specify the correct API endpoint, or --no-validate to skip", baseURL)

@@ -40,7 +40,7 @@ func JSON(w io.Writer, data any) error {
 func Table(w io.Writer, columns []Column, data any) error {
 	rows := toRows(data)
 	if len(rows) == 0 {
-		fmt.Fprintln(w, "No results.")
+		_, _ = fmt.Fprintln(w, "No results.")
 		return nil
 	}
 
@@ -50,14 +50,14 @@ func Table(w io.Writer, columns []Column, data any) error {
 	for i, c := range columns {
 		headers[i] = c.Header
 	}
-	fmt.Fprintln(tw, strings.Join(headers, "\t"))
+	_, _ = fmt.Fprintln(tw, strings.Join(headers, "\t"))
 
 	for _, row := range rows {
 		vals := make([]string, len(columns))
 		for i, c := range columns {
 			vals[i] = formatField(row, c)
 		}
-		fmt.Fprintln(tw, strings.Join(vals, "\t"))
+		_, _ = fmt.Fprintln(tw, strings.Join(vals, "\t"))
 	}
 
 	return tw.Flush()
@@ -71,14 +71,14 @@ func CSV(w io.Writer, columns []Column, data any) error {
 	for i, c := range columns {
 		headers[i] = c.Field
 	}
-	cw.Write(headers)
+	_ = cw.Write(headers)
 
 	for _, row := range rows {
 		vals := make([]string, len(columns))
 		for i, c := range columns {
 			vals[i] = rawField(row, c.Field)
 		}
-		cw.Write(vals)
+		_ = cw.Write(vals)
 	}
 
 	cw.Flush()
@@ -100,7 +100,7 @@ func PrintSingle(format string, columns []Column, data any) error {
 		tw := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 		for _, c := range columns {
 			val := formatField(row, c)
-			fmt.Fprintf(tw, "%s:\t%s\n", c.Header, val)
+			_, _ = fmt.Fprintf(tw, "%s:\t%s\n", c.Header, val)
 		}
 		return tw.Flush()
 	}
@@ -166,12 +166,12 @@ func toMap(data any) map[string]any {
 		return v
 	case json.RawMessage:
 		var m map[string]any
-		json.Unmarshal(v, &m)
+		_ = json.Unmarshal(v, &m)
 		return m
 	default:
 		b, _ := json.Marshal(v)
 		var m map[string]any
-		json.Unmarshal(b, &m)
+		_ = json.Unmarshal(b, &m)
 		return m
 	}
 }

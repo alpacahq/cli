@@ -21,7 +21,7 @@ func TestJSON(t *testing.T) {
 func TestTable_EmptyData(t *testing.T) {
 	var buf bytes.Buffer
 	cols := []Column{{Header: "NAME", Field: "name"}}
-	Table(&buf, cols, json.RawMessage(`[]`))
+	_ = Table(&buf, cols, json.RawMessage(`[]`))
 	if !strings.Contains(buf.String(), "No results.") {
 		t.Errorf("expected 'No results.', got: %s", buf.String())
 	}

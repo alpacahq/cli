@@ -115,7 +115,7 @@ var walletWhitelistDeleteCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		fmt.Fprintln(cmd.OutOrStdout(), "Whitelisted address removed.")
+		_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Whitelisted address removed.")
 		return nil
 	},
 }
