@@ -16,7 +16,8 @@ var optionCmd = &cobra.Command{
 
 var optionChainCmd = &cobra.Command{
 	Use:   "chain <underlying>",
-	Short: "Get option chain for an underlying symbol",
+	Short: "Get option chain for an underlying symbol (contracts)",
+	Long:  "List option contracts for an underlying symbol. For market data (greeks, pricing), use `data option chain`.",
 	Example: `  alpaca option chain AAPL
   alpaca option chain AAPL --expiry 2025-06-20 --type call
   alpaca option chain SPY --strike-gte 400 --strike-lte 450`,
@@ -51,7 +52,7 @@ var optionGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.JSON(cmd.OutOrStdout(), contract)
+		return output.PrintSingle(getOutput(), optionChainColumns(), contract)
 	},
 }
 

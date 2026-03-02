@@ -18,27 +18,27 @@ var corporateActionCmd = &cobra.Command{
 var corporateActionListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List corporate action announcements",
-	Example: `  alpaca corporate-action list --types reverse_split --since 2025-01-01 --until 2025-12-31
-  alpaca corporate-action list --types cash_dividend --symbol AAPL --since 2025-01-01 --until 2025-06-30`,
+	Example: `  alpaca corporate-action list --types reverse_split --start 2025-01-01 --end 2025-12-31
+  alpaca corporate-action list --types cash_dividend --symbols AAPL --start 2025-01-01 --end 2025-06-30`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		types := cmdutil.Str(cmd, "types")
 		if types == "" {
 			return fmt.Errorf("--types is required (e.g. reverse_split, forward_split, cash_dividend, stock_dividend, spin_off, cash_merger, stock_merger)")
 		}
-		since := cmdutil.Str(cmd, "since")
-		if since == "" {
-			return fmt.Errorf("--since is required (YYYY-MM-DD)")
+		start := cmdutil.Str(cmd, "start")
+		if start == "" {
+			return fmt.Errorf("--start is required (YYYY-MM-DD)")
 		}
-		until := cmdutil.Str(cmd, "until")
-		if until == "" {
-			return fmt.Errorf("--until is required (YYYY-MM-DD)")
+		end := cmdutil.Str(cmd, "end")
+		if end == "" {
+			return fmt.Errorf("--end is required (YYYY-MM-DD)")
 		}
 
 		params := &api.GetV2CorporateActionsAnnouncementsParams{
 			CaTypes:  types,
-			Since:    since,
-			Until:    until,
-			Symbol:   cmdutil.Str(cmd, "symbol"),
+			Since:    start,
+			Until:    end,
+			Symbol:   cmdutil.Str(cmd, "symbols"),
 			DateType: cmdutil.Str(cmd, "date-type"),
 		}
 
@@ -66,9 +66,9 @@ var corporateActionGetCmd = &cobra.Command{
 
 func init() {
 	corporateActionListCmd.Flags().String("types", "", "CA types (comma-separated): reverse_split, forward_split, cash_dividend, stock_dividend, spin_off, cash_merger, stock_merger")
-	corporateActionListCmd.Flags().String("since", "", "Start date (YYYY-MM-DD, required)")
-	corporateActionListCmd.Flags().String("until", "", "End date (YYYY-MM-DD, required)")
-	corporateActionListCmd.Flags().String("symbol", "", "Filter by symbol")
+	corporateActionListCmd.Flags().String("start", "", "Start date (YYYY-MM-DD, required)")
+	corporateActionListCmd.Flags().String("end", "", "End date (YYYY-MM-DD, required)")
+	corporateActionListCmd.Flags().String("symbols", "", "Filter by symbols (comma-separated)")
 	corporateActionListCmd.Flags().String("date-type", "", "Date type: TRADING or SETTLEMENT")
 
 	corporateActionCmd.AddCommand(corporateActionListCmd)

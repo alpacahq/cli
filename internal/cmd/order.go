@@ -15,16 +15,17 @@ var orderCmd = &cobra.Command{
 }
 
 var orderSubmitCmd = &cobra.Command{
-	Use:   "submit",
+	Use:   "submit <symbol>",
 	Short: "Submit a new order",
-	Example: `  alpaca order submit --symbol AAPL --qty 10 --side buy --type market
-  alpaca order submit --symbol AAPL --qty 5 --side buy --type limit --limit-price 185.00
-  alpaca order submit --symbol AAPL --qty 10 --side sell --type stop --stop-price 175.00
-  alpaca order submit --symbol AAPL --notional 1000 --side buy --type market`,
+	Example: `  alpaca order submit AAPL --qty 10 --side buy --type market
+  alpaca order submit AAPL --qty 5 --side buy --type limit --limit-price 185.00
+  alpaca order submit AAPL --qty 10 --side sell --type stop --stop-price 175.00
+  alpaca order submit AAPL --notional 1000 --side buy --type market`,
+	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		warnLive()
 		body := &api.PostOrderRequest{
-			Symbol:        cmdutil.Str(cmd, "symbol"),
+			Symbol:        args[0],
 			Qty:           cmdutil.Str(cmd, "qty"),
 			Notional:      cmdutil.Str(cmd, "notional"),
 			Side:          api.OrderSide(cmdutil.Str(cmd, "side")),
@@ -69,18 +70,18 @@ var orderListCmd = &cobra.Command{
 	Short: "List orders",
 	Example: `  alpaca order list
   alpaca order list --status closed --limit 20
-  alpaca order list --symbols AAPL,MSFT --after 2025-01-01`,
+  alpaca order list --symbols AAPL,MSFT --start 2025-01-01`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		params := &api.GetAllOrdersParams{
 			Status:        cmdutil.Str(cmd, "status"),
 			Symbols:       cmdutil.Str(cmd, "symbols"),
-			After:         cmdutil.Str(cmd, "after"),
-			Until:         cmdutil.Str(cmd, "until"),
+			After:         cmdutil.Str(cmd, "start"),
+			Until:         cmdutil.Str(cmd, "end"),
 			Limit:         cmdutil.Int(cmd, "limit"),
-			Direction:     cmdutil.Str(cmd, "direction"),
+			Direction:     cmdutil.Str(cmd, "sort"),
 			Nested:        cmdutil.Bool(cmd, "nested"),
 			Side:          cmdutil.Str(cmd, "side"),
-			AssetClass:    cmdutil.Str(cmd, "asset-class"),
+			AssetClass:    cmdutil.Str(cmd, "class"),
 			BeforeOrderID: cmdutil.Str(cmd, "before-order-id"),
 			AfterOrderID:  cmdutil.Str(cmd, "after-order-id"),
 		}
@@ -193,7 +194,6 @@ var orderReplaceCmd = &cobra.Command{
 }
 
 func init() {
-	orderSubmitCmd.Flags().String("symbol", "", "Ticker symbol")
 	orderSubmitCmd.Flags().String("qty", "", "Number of shares")
 	orderSubmitCmd.Flags().String("notional", "", "Dollar amount (fractional)")
 	orderSubmitCmd.Flags().String("side", "", "buy or sell")
@@ -216,15 +216,16 @@ func init() {
 	orderListCmd.Flags().String("status", "", "Filter: open, closed, all (default: open)")
 	_ = orderListCmd.RegisterFlagCompletionFunc("status", cobra.FixedCompletions([]string{"open", "closed", "all"}, cobra.ShellCompDirectiveNoFileComp))
 	orderListCmd.Flags().String("symbols", "", "Filter by symbols (comma-separated)")
-	orderListCmd.Flags().String("after", "", "Filter: orders after this date")
-	orderListCmd.Flags().String("until", "", "Filter: orders until this date")
+	orderListCmd.Flags().String("start", "", "Filter: orders after this date")
+	orderListCmd.Flags().String("end", "", "Filter: orders until this date")
 	orderListCmd.Flags().Int("limit", 0, "Max number of orders to return")
-	orderListCmd.Flags().String("direction", "", "Sort direction: asc or desc")
+	orderListCmd.Flags().String("sort", "", "Sort direction: asc or desc")
+	_ = orderListCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions([]string{"asc", "desc"}, cobra.ShellCompDirectiveNoFileComp))
 	orderListCmd.Flags().Bool("nested", false, "Include nested multi-leg order legs")
 	orderListCmd.Flags().String("side", "", "Filter by side: buy or sell")
 	_ = orderListCmd.RegisterFlagCompletionFunc("side", cobra.FixedCompletions([]string{"buy", "sell"}, cobra.ShellCompDirectiveNoFileComp))
-	orderListCmd.Flags().String("asset-class", "", "Filter by asset class: us_equity, us_option, crypto")
-	_ = orderListCmd.RegisterFlagCompletionFunc("asset-class", cobra.FixedCompletions([]string{"us_equity", "us_option", "crypto"}, cobra.ShellCompDirectiveNoFileComp))
+	orderListCmd.Flags().String("class", "", "Filter by asset class: us_equity, us_option, crypto")
+	_ = orderListCmd.RegisterFlagCompletionFunc("class", cobra.FixedCompletions([]string{"us_equity", "us_option", "crypto"}, cobra.ShellCompDirectiveNoFileComp))
 	orderListCmd.Flags().String("before-order-id", "", "Cursor: orders before this order ID")
 	orderListCmd.Flags().String("after-order-id", "", "Cursor: orders after this order ID")
 

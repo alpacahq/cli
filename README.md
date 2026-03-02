@@ -32,7 +32,7 @@ alpaca positions
 alpaca orders
 
 # Get market data
-alpaca data bars --symbol AAPL --start 2025-01-01 --timeframe 1Day
+alpaca data bars AAPL --start 2025-01-01 --timeframe 1Day
 
 # Check if market is open
 alpaca clock
@@ -65,38 +65,41 @@ alpaca positions --json
 
 | Command | Description |
 |---------|-------------|
-| `alpaca buy <sym> <qty>` | Buy shares (market order) |
-| `alpaca sell <sym> <qty>` | Sell shares (market order) |
-| `alpaca order submit` | Submit any order type |
+| `alpaca buy <symbol> [qty]` | Buy shares (market order shortcut) |
+| `alpaca sell <symbol> [qty]` | Sell shares (market order shortcut) |
+| `alpaca orders` | List open orders (shortcut) |
+| `alpaca positions` | List open positions (shortcut) |
+| `alpaca price <symbol>` | Latest price (shortcut) |
+| `alpaca order submit <symbol>` | Submit any order type |
 | `alpaca order list` | List orders |
 | `alpaca order get <id>` | Get order details |
 | `alpaca order cancel <id>` | Cancel an order |
 | `alpaca order cancel-all` | Cancel all open orders |
 | `alpaca order replace <id>` | Replace an existing order |
 | `alpaca position list` | List open positions |
-| `alpaca position get <sym>` | Get position for a symbol |
-| `alpaca position close <sym>` | Close a position |
+| `alpaca position get <symbol>` | Get position for a symbol |
+| `alpaca position close <symbol>` | Close a position |
 | `alpaca position close-all` | Close all positions |
-| `alpaca option chain <sym>` | Options chain (trading API) |
+| `alpaca option chain <symbol>` | Options chain (contracts) |
 | `alpaca option get <id>` | Option contract details |
 | `alpaca option exercise <id>` | Exercise an option |
+| `alpaca option do-not-exercise <id>` | Mark option as do-not-exercise |
 
 ### Market Data
 
 | Command | Description |
 |---------|-------------|
-| `alpaca price <sym>` | Latest price |
-| `alpaca data bars` | Historical price bars (stock/crypto) |
-| `alpaca data quotes` | Historical quotes |
-| `alpaca data trades` | Historical trades |
-| `alpaca data snapshot <sym>` | Full snapshot |
-| `alpaca data latest trade <sym>` | Latest trade |
-| `alpaca data latest quote <sym>` | Latest quote |
-| `alpaca data latest bar <sym>` | Latest bar |
+| `alpaca data bars <symbol>` | Historical price bars (stock/crypto) |
+| `alpaca data quotes <symbol>` | Historical quotes |
+| `alpaca data trades <symbol>` | Historical trades |
+| `alpaca data snapshot <symbol>` | Full snapshot |
+| `alpaca data latest trade <symbol>` | Latest trade |
+| `alpaca data latest quote <symbol>` | Latest quote |
+| `alpaca data latest bar <symbol>` | Latest bar |
 | `alpaca data option bars` | Option historical bars |
 | `alpaca data option trades` | Option historical trades |
 | `alpaca data option snapshot` | Option snapshots |
-| `alpaca data option chain <sym>` | Option chain (market data) |
+| `alpaca data option chain <symbol>` | Option chain (greeks and pricing) |
 | `alpaca data option latest-quotes` | Latest option quotes |
 | `alpaca data option latest-trades` | Latest option trades |
 | `alpaca data forex rates` | Historical forex rates |
@@ -118,13 +121,26 @@ alpaca positions --json
 | `alpaca account config set` | Update account settings |
 | `alpaca activity list` | Account activity (fills, dividends, etc.) |
 | `alpaca asset list` | Browse equities and crypto |
-| `alpaca asset get <sym>` | Asset details |
+| `alpaca asset get <symbol>` | Asset details |
 | `alpaca asset treasury` | US Treasury bonds |
 | `alpaca asset bond` | US Corporate bonds |
 | `alpaca portfolio history` | Portfolio value history |
-| `alpaca corporate-action list` | Corporate actions announcements |
-| `alpaca watchlist create/list/get/add/remove/update/delete` | Watchlist management |
-| `alpaca wallet list/transfer/transfers/whitelist` | Crypto funding |
+| `alpaca corporate-action list` | Corporate action announcements |
+| `alpaca corporate-action get <id>` | Get a specific announcement |
+| `alpaca watchlist list` | List all watchlists |
+| `alpaca watchlist get <id>` | Get watchlist details |
+| `alpaca watchlist create <name>` | Create a watchlist |
+| `alpaca watchlist update <id>` | Update a watchlist |
+| `alpaca watchlist delete <id>` | Delete a watchlist |
+| `alpaca watchlist add <id> <symbol>` | Add symbol to watchlist |
+| `alpaca watchlist remove <id> <symbol>` | Remove symbol from watchlist |
+| `alpaca wallet list` | List crypto wallets |
+| `alpaca wallet transfer list` | List crypto transfers |
+| `alpaca wallet transfer get <id>` | Get a crypto transfer |
+| `alpaca wallet transfer create` | Create a crypto transfer |
+| `alpaca wallet whitelist list` | List whitelisted addresses |
+| `alpaca wallet whitelist add` | Add a whitelisted address |
+| `alpaca wallet whitelist delete <id>` | Remove a whitelisted address |
 
 ### Utilities
 
@@ -133,8 +149,15 @@ alpaca positions --json
 | `alpaca clock` | Market clock (supports `--markets` for v3) |
 | `alpaca calendar` | Trading calendar (supports `--market` for v3) |
 | `alpaca profile login` | Authenticate with API key/secret |
+| `alpaca profile logout [name]` | Remove a profile |
+| `alpaca profile status` | Show the active profile |
+| `alpaca profile list` | List all profiles |
 | `alpaca profile switch <name>` | Switch between profiles |
-| `alpaca api get <path>` | Raw API access |
+| `alpaca profile set <key> <value>` | Update a profile setting |
+| `alpaca api get <path>` | GET request to any endpoint |
+| `alpaca api post <path>` | POST request to any endpoint |
+| `alpaca api patch <path>` | PATCH request to any endpoint |
+| `alpaca api delete <path>` | DELETE request to any endpoint |
 | `alpaca update` | Self-update |
 | `alpaca version` | Print version |
 

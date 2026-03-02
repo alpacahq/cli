@@ -93,7 +93,7 @@ var dataOptionSnapshotCmd = &cobra.Command{
 
 var dataOptionChainCmd = &cobra.Command{
 	Use:   "chain <underlying>",
-	Short: "Get option chain snapshots for an underlying symbol",
+	Short: "Get option chain snapshots with greeks and pricing",
 	Example: `  alpaca data option chain AAPL
   alpaca data option chain SPY --expiry 2025-06-20 --type call`,
 	Args: cobra.ExactArgs(1),

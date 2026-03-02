@@ -7,8 +7,7 @@ import (
 )
 
 func TestDataBars(t *testing.T) {
-	out := alpaca(t, "data", "bars",
-		"--symbol", "AAPL",
+	out := alpaca(t, "data", "bars", "AAPL",
 		"--start", "2025-01-02",
 		"--end", "2025-01-10",
 		"--timeframe", "1Day",

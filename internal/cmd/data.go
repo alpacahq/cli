@@ -17,16 +17,14 @@ var dataCmd = &cobra.Command{
 }
 
 var dataBarsCmd = &cobra.Command{
-	Use:   "bars",
+	Use:   "bars <symbol>",
 	Short: "Get historical price bars",
-	Example: `  alpaca data bars --symbol AAPL --start 2025-01-01 --timeframe 1Day
-  alpaca data bars --symbol BTC/USD --start 2025-01-01 --timeframe 1Hour
-  alpaca data bars --symbol AAPL --start 2025-01-01 --end 2025-06-01 --limit 100`,
+	Example: `  alpaca data bars AAPL --start 2025-01-01 --timeframe 1Day
+  alpaca data bars BTC/USD --start 2025-01-01 --timeframe 1Hour
+  alpaca data bars AAPL --start 2025-01-01 --end 2025-06-01 --limit 100`,
+	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbol := cmdutil.Str(cmd, "symbol")
-		if symbol == "" {
-			return fmt.Errorf("--symbol is required")
-		}
+		symbol := args[0]
 
 		params := dataParams(cmd)
 		path, p := stockOrCryptoPath(symbol, "/bars", params)
@@ -40,13 +38,11 @@ var dataBarsCmd = &cobra.Command{
 }
 
 var dataQuotesCmd = &cobra.Command{
-	Use:   "quotes",
+	Use:   "quotes <symbol>",
 	Short: "Get historical quotes",
+	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbol := cmdutil.Str(cmd, "symbol")
-		if symbol == "" {
-			return fmt.Errorf("--symbol is required")
-		}
+		symbol := args[0]
 
 		params := dataParams(cmd)
 		path, p := stockOrCryptoPath(symbol, "/quotes", params)
@@ -60,13 +56,11 @@ var dataQuotesCmd = &cobra.Command{
 }
 
 var dataTradesCmd = &cobra.Command{
-	Use:   "trades",
+	Use:   "trades <symbol>",
 	Short: "Get historical trades",
+	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbol := cmdutil.Str(cmd, "symbol")
-		if symbol == "" {
-			return fmt.Errorf("--symbol is required")
-		}
+		symbol := args[0]
 
 		params := dataParams(cmd)
 		path, p := stockOrCryptoPath(symbol, "/trades", params)
@@ -218,10 +212,9 @@ var dataLatestBarCmd = &cobra.Command{
 
 func init() {
 	for _, c := range []*cobra.Command{dataBarsCmd, dataQuotesCmd, dataTradesCmd} {
-		c.Flags().String("symbol", "", "Ticker symbol (e.g. AAPL, BTC/USD)")
 		c.Flags().String("start", "", "Start date (YYYY-MM-DD or RFC3339)")
 		c.Flags().String("end", "", "End date (YYYY-MM-DD or RFC3339)")
-		c.Flags().String("limit", "", "Max number of results")
+		c.Flags().Int("limit", 0, "Max number of results")
 		c.Flags().String("feed", "", "Data feed: iex, sip, otc, delayed_sip")
 		_ = c.RegisterFlagCompletionFunc("feed", cobra.FixedCompletions([]string{"iex", "sip", "otc", "delayed_sip"}, cobra.ShellCompDirectiveNoFileComp))
 		c.Flags().String("currency", "", "Currency for prices (e.g. USD, EUR)")
@@ -259,10 +252,13 @@ func stockOrCryptoPath(symbol, endpoint string, params url.Values) (string, url.
 
 func dataParams(cmd *cobra.Command) url.Values {
 	params := url.Values{}
-	for _, key := range []string{"start", "end", "limit", "timeframe", "feed", "currency", "sort", "adjustment", "asof"} {
+	for _, key := range []string{"start", "end", "timeframe", "feed", "currency", "sort", "adjustment", "asof"} {
 		if v := cmdutil.Str(cmd, key); v != "" {
 			params.Set(key, v)
 		}
+	}
+	if v := cmdutil.Int(cmd, "limit"); v != 0 {
+		params.Set("limit", fmt.Sprint(v))
 	}
 	return params
 }

@@ -28,8 +28,15 @@ var walletListCmd = &cobra.Command{
 	},
 }
 
-var walletTransfersCmd = &cobra.Command{
-	Use:   "transfers",
+// --- wallet transfer ---
+
+var walletTransferCmd = &cobra.Command{
+	Use:   "transfer",
+	Short: "Manage crypto transfers",
+}
+
+var walletTransferListCmd = &cobra.Command{
+	Use:   "list",
 	Short: "List crypto funding transfers",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		transfers, err := tradingClient.ListCryptoFundingTransfers()
@@ -41,7 +48,7 @@ var walletTransfersCmd = &cobra.Command{
 }
 
 var walletTransferGetCmd = &cobra.Command{
-	Use:   "transfer-get <id>",
+	Use:   "get <id>",
 	Short: "Get a specific crypto transfer",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -53,8 +60,8 @@ var walletTransferGetCmd = &cobra.Command{
 	},
 }
 
-var walletTransferCmd = &cobra.Command{
-	Use:   "transfer",
+var walletTransferCreateCmd = &cobra.Command{
+	Use:   "create",
 	Short: "Create a crypto transfer",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		body := &api.CreateCryptoTransferRequest{
@@ -74,8 +81,15 @@ var walletTransferCmd = &cobra.Command{
 	},
 }
 
-var walletWhitelistListCmd = &cobra.Command{
+// --- wallet whitelist ---
+
+var walletWhitelistCmd = &cobra.Command{
 	Use:   "whitelist",
+	Short: "Manage whitelisted crypto addresses",
+}
+
+var walletWhitelistListCmd = &cobra.Command{
+	Use:   "list",
 	Short: "List whitelisted crypto addresses",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		addrs, err := tradingClient.ListWhitelistedAddress()
@@ -87,7 +101,7 @@ var walletWhitelistListCmd = &cobra.Command{
 }
 
 var walletWhitelistAddCmd = &cobra.Command{
-	Use:   "whitelist-add",
+	Use:   "add",
 	Short: "Add a whitelisted crypto address",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		body := &api.CreateWhitelistedAddressRequest{
@@ -107,7 +121,7 @@ var walletWhitelistAddCmd = &cobra.Command{
 }
 
 var walletWhitelistDeleteCmd = &cobra.Command{
-	Use:   "whitelist-delete <id>",
+	Use:   "delete <id>",
 	Short: "Remove a whitelisted crypto address",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -123,18 +137,22 @@ var walletWhitelistDeleteCmd = &cobra.Command{
 func init() {
 	walletListCmd.Flags().String("asset", "", "Filter by crypto asset (e.g. BTC, ETH)")
 
-	walletTransferCmd.Flags().String("amount", "", "Transfer amount")
-	walletTransferCmd.Flags().String("address", "", "Destination address")
-	walletTransferCmd.Flags().String("asset", "", "Crypto asset (e.g. BTC, ETH)")
+	walletTransferCreateCmd.Flags().String("amount", "", "Transfer amount")
+	walletTransferCreateCmd.Flags().String("address", "", "Destination address")
+	walletTransferCreateCmd.Flags().String("asset", "", "Crypto asset (e.g. BTC, ETH)")
 
 	walletWhitelistAddCmd.Flags().String("address", "", "Crypto address to whitelist")
 	walletWhitelistAddCmd.Flags().String("asset", "", "Crypto asset (e.g. BTC, ETH)")
 
+	walletTransferCmd.AddCommand(walletTransferListCmd)
+	walletTransferCmd.AddCommand(walletTransferGetCmd)
+	walletTransferCmd.AddCommand(walletTransferCreateCmd)
+
+	walletWhitelistCmd.AddCommand(walletWhitelistListCmd)
+	walletWhitelistCmd.AddCommand(walletWhitelistAddCmd)
+	walletWhitelistCmd.AddCommand(walletWhitelistDeleteCmd)
+
 	walletCmd.AddCommand(walletListCmd)
-	walletCmd.AddCommand(walletTransfersCmd)
-	walletCmd.AddCommand(walletTransferGetCmd)
 	walletCmd.AddCommand(walletTransferCmd)
-	walletCmd.AddCommand(walletWhitelistListCmd)
-	walletCmd.AddCommand(walletWhitelistAddCmd)
-	walletCmd.AddCommand(walletWhitelistDeleteCmd)
+	walletCmd.AddCommand(walletWhitelistCmd)
 }

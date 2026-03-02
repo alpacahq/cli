@@ -36,7 +36,7 @@ var watchlistGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.JSON(cmd.OutOrStdout(), wl)
+		return output.PrintSingle(getOutput(), watchlistColumns(), wl)
 	},
 }
 
@@ -58,7 +58,7 @@ var watchlistCreateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.JSON(cmd.OutOrStdout(), wl)
+		return output.PrintSingle(getOutput(), watchlistColumns(), wl)
 	},
 }
 
@@ -80,7 +80,7 @@ var watchlistUpdateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.JSON(cmd.OutOrStdout(), wl)
+		return output.PrintSingle(getOutput(), watchlistColumns(), wl)
 	},
 }
 
@@ -109,7 +109,7 @@ var watchlistAddCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.JSON(cmd.OutOrStdout(), wl)
+		return output.PrintSingle(getOutput(), watchlistColumns(), wl)
 	},
 }
 

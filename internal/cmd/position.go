@@ -48,7 +48,7 @@ var positionCloseCmd = &cobra.Command{
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		params := &api.DeleteOpenPositionParams{
-			Qty:        cmdutil.Float64(cmd, "qty"),
+			Qty:        cmdutil.Str(cmd, "qty"),
 			Percentage: cmdutil.Float64(cmd, "pct"),
 		}
 
@@ -84,7 +84,7 @@ var positionCloseAllCmd = &cobra.Command{
 }
 
 func init() {
-	positionCloseCmd.Flags().Float64("qty", 0, "Number of shares to close")
+	positionCloseCmd.Flags().String("qty", "", "Number of shares to close")
 	positionCloseCmd.Flags().Float64("pct", 0, "Percentage of position to close (0-100)")
 
 	positionCloseAllCmd.Flags().Bool("cancel-orders", false, "Also cancel all open orders")
