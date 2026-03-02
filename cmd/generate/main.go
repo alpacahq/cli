@@ -517,11 +517,22 @@ func genClient(clientName, specFile string, schemas []*schemaInfo, endpoints []*
 	var buf bytes.Buffer
 	fmt.Fprintf(&buf, "// Code generated from api/specs/%s; DO NOT EDIT.\n\n", specFile)
 	fmt.Fprintf(&buf, "package api\n\n")
+	needsStrings := false
+	for _, ep := range endpoints {
+		if ep.bodyRef != "" || ep.bodyInline != nil {
+			needsStrings = true
+			break
+		}
+	}
+
 	fmt.Fprintf(&buf, "import (\n")
 	fmt.Fprintf(&buf, "\t\"encoding/json\"\n")
 	fmt.Fprintf(&buf, "\t\"fmt\"\n")
-	fmt.Fprintf(&buf, "\t\"net/url\"\n\n")
-	fmt.Fprintf(&buf, "\t\"github.com/alpacahq/cli/internal/client\"\n")
+	fmt.Fprintf(&buf, "\t\"net/url\"\n")
+	if needsStrings {
+		fmt.Fprintf(&buf, "\t\"strings\"\n")
+	}
+	fmt.Fprintf(&buf, "\n\t\"github.com/alpacahq/cli/internal/client\"\n")
 	fmt.Fprintf(&buf, ")\n\n")
 
 	fmt.Fprintf(&buf, "// %sClient provides typed methods for the %s API.\n", clientName, clientName)
@@ -536,6 +547,49 @@ func genClient(clientName, specFile string, schemas []*schemaInfo, endpoints []*
 
 	for _, ep := range endpoints {
 		genEndpointMethod(&buf, ep, clientName, getMethod, schemas, isData)
+	}
+
+	validated := map[string]bool{}
+	for _, ep := range endpoints {
+		if ep.bodyRef == "" || validated[ep.bodyRef] {
+			continue
+		}
+		for _, s := range schemas {
+			if s.goName == ep.bodyRef && s.kind == "struct" && len(s.required) > 0 {
+				var reqFields []string
+				for fn, isReq := range s.required {
+					if !isReq {
+						continue
+					}
+					fs, ok := s.props[fn]
+					if !ok {
+						continue
+					}
+					if resolveGoType(fs, schemas) == "string" {
+						reqFields = append(reqFields, fn)
+					}
+				}
+				sort.Strings(reqFields)
+				genValidateMethod(&buf, s.goName, reqFields)
+				validated[ep.bodyRef] = true
+				break
+			}
+		}
+	}
+
+	var mutating []string
+	for _, ep := range endpoints {
+		switch ep.method {
+		case "POST", "PUT", "PATCH", "DELETE":
+			mutating = append(mutating, ep.goName)
+		}
+	}
+	if len(mutating) > 0 {
+		fmt.Fprintf(&buf, "var %sMutatingMethods = map[string]bool{\n", clientName)
+		for _, m := range mutating {
+			fmt.Fprintf(&buf, "\t%q: true,\n", m)
+		}
+		fmt.Fprintf(&buf, "}\n\n")
 	}
 
 	return buf.String()
@@ -729,6 +783,39 @@ func genInlineRequestStruct(buf *bytes.Buffer, name string, schema map[string]an
 		}
 		fmt.Fprintf(buf, "\t%s %s `json:%q`\n", goField, goType, tag)
 	}
+	fmt.Fprintf(buf, "}\n\n")
+
+	var reqFields []string
+	for fn := range reqMap {
+		p, ok := props[fn]
+		if !ok {
+			continue
+		}
+		fs, ok := p.(map[string]any)
+		if !ok {
+			continue
+		}
+		if t, _ := fs["type"].(string); t == "string" {
+			reqFields = append(reqFields, fn)
+		}
+	}
+	sort.Strings(reqFields)
+	genValidateMethod(buf, name, reqFields)
+}
+
+func genValidateMethod(buf *bytes.Buffer, typeName string, reqFields []string) {
+	if len(reqFields) == 0 {
+		return
+	}
+	fmt.Fprintf(buf, "func (r *%s) Validate() error {\n", typeName)
+	fmt.Fprintf(buf, "\tvar missing []string\n")
+	for _, fn := range reqFields {
+		fmt.Fprintf(buf, "\tif r.%s == \"\" { missing = append(missing, %q) }\n", toGoFieldName(fn), fn)
+	}
+	fmt.Fprintf(buf, "\tif len(missing) > 0 {\n")
+	fmt.Fprintf(buf, "\t\treturn fmt.Errorf(\"missing required fields: %%s\", strings.Join(missing, \", \"))\n")
+	fmt.Fprintf(buf, "\t}\n")
+	fmt.Fprintf(buf, "\treturn nil\n")
 	fmt.Fprintf(buf, "}\n\n")
 }
 

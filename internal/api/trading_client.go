@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/alpacahq/cli/internal/client"
 )
@@ -1420,4 +1421,59 @@ func (c *TradingClient) Clock(params *ClockParams) (*ClockResp, error) {
 	}
 	var result ClockResp
 	return &result, json.Unmarshal(data, &result)
+}
+
+func (r *CreateCryptoTransferRequest) Validate() error {
+	var missing []string
+	if r.Address == "" {
+		missing = append(missing, "address")
+	}
+	if r.Amount == "" {
+		missing = append(missing, "amount")
+	}
+	if r.Asset == "" {
+		missing = append(missing, "asset")
+	}
+	if len(missing) > 0 {
+		return fmt.Errorf("missing required fields: %s", strings.Join(missing, ", "))
+	}
+	return nil
+}
+
+func (r *UpdateWatchlistRequest) Validate() error {
+	var missing []string
+	if r.Name == "" {
+		missing = append(missing, "name")
+	}
+	if len(missing) > 0 {
+		return fmt.Errorf("missing required fields: %s", strings.Join(missing, ", "))
+	}
+	return nil
+}
+
+var TradingMutatingMethods = map[string]bool{
+	"PatchAccountConfig":                 true,
+	"PostOrder":                          true,
+	"DeleteAllOrders":                    true,
+	"PatchOrderByOrderID":                true,
+	"DeleteOrderByOrderID":               true,
+	"SetCryptoPerpAccountLeverage":       true,
+	"CreateCryptoPerpTransferForAccount": true,
+	"CreateWhitelistedPerpAddress":       true,
+	"DeleteWhitelistedPerpAddress":       true,
+	"DeleteAllOpenPositions":             true,
+	"DeleteOpenPosition":                 true,
+	"OptionDoNotExercise":                true,
+	"OptionExercise":                     true,
+	"CreateCryptoTransferForAccount":     true,
+	"CreateWhitelistedAddress":           true,
+	"DeleteWhitelistedAddress":           true,
+	"PostWatchlist":                      true,
+	"AddAssetToWatchlist":                true,
+	"UpdateWatchlistByID":                true,
+	"DeleteWatchlistByID":                true,
+	"RemoveAssetFromWatchlist":           true,
+	"AddAssetToWatchlistByName":          true,
+	"UpdateWatchlistByName":              true,
+	"DeleteWatchlistByName":              true,
 }

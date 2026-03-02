@@ -15,6 +15,8 @@ The CLI is driven by OpenAPI specs. Maximize what's generated, minimize what's h
 - **Param structs**: with `Values() url.Values` for query string encoding
 - **Enum value slices**: `var <Name>Values = []string{...}` for every enum (schema-level and parameter-level) — used for shell completions via `cobra.FixedCompletions`
 - **Parameter defaults**: `var <Params>Defaults = map[string]string{...}` — spec-defined default values for query parameters
+- **Mutation metadata**: `var TradingMutatingMethods = map[string]bool{...}` — which client methods mutate state (POST/PUT/PATCH/DELETE). A test in `spec_test.go` verifies every command calling a mutating method has `warnLive()` or `requireConfirmation()`.
+- **Request body validation**: `Validate() error` methods on request body structs with `required` fields — checks for zero-value strings
 
 Trigger: `make generate` (or `go generate ./internal/api/...`)
 
@@ -37,6 +39,8 @@ Column definitions (columns.go)  →    Type definitions (internal/api/)
 Output rendering logic           →    URL encoding (Values())
 Flag-to-enum binding             →    Enum value slices (<Name>Values)
                                       Parameter defaults (<Params>Defaults)
+                                      Mutation metadata (MutatingMethods)
+                                      Request body Validate() methods
 ```
 
 Commands bridge the two worlds: they read flags via `cmdutil`, populate generated structs, call generated client methods, and render responses through `output.Render`/`output.PrintSingle`.
