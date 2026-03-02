@@ -34,6 +34,28 @@ jobs:
       - name: Verify binary runs
         run: bin/alpaca version
 
+  integration:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
+      - name: Integration tests
+        env:
+          ALPACA_TEST_API_KEY: ${{ secrets.ALPACA_TEST_API_KEY }}
+          ALPACA_TEST_SECRET_KEY: ${{ secrets.ALPACA_TEST_SECRET_KEY }}
+        run: |
+          if [ -z "$ALPACA_TEST_API_KEY" ]; then
+            echo "::warning::Skipping integration tests — secrets not configured"
+            exit 0
+          fi
+          make test-integration
+
   lint:
     runs-on: ubuntu-latest
     steps:

@@ -9,7 +9,7 @@ import (
 
 func TestWatchlistLifecycle(t *testing.T) {
 	out := alpaca(t, "watchlist", "create",
-		"--name", "cli-integration-test",
+		"cli-integration-test",
 		"--symbols", "AAPL,MSFT",
 		"--json",
 	)
@@ -47,11 +47,11 @@ func TestWatchlistLifecycle(t *testing.T) {
 		t.Error("created watchlist not found in list")
 	}
 
-	alpaca(t, "watchlist", "add", wlID, "--symbol", "GOOG")
+	alpaca(t, "watchlist", "add", wlID, "GOOG")
 
 	time.Sleep(300 * time.Millisecond)
 
-	alpaca(t, "watchlist", "remove", wlID, "--symbol", "MSFT")
+	alpaca(t, "watchlist", "remove", wlID, "MSFT")
 
 	time.Sleep(300 * time.Millisecond)
 

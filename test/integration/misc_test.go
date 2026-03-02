@@ -20,7 +20,7 @@ func TestPortfolioHistory(t *testing.T) {
 }
 
 func TestAssetList(t *testing.T) {
-	out := alpaca(t, "asset", "list", "--status", "active", "--asset-class", "us_equity", "--json")
+	out := alpaca(t, "asset", "list", "--status", "active", "--class", "us_equity", "--json")
 	assets := parseJSONArray(t, out)
 	if len(assets) == 0 {
 		t.Fatal("expected at least one asset")
@@ -29,9 +29,9 @@ func TestAssetList(t *testing.T) {
 
 func TestScreenerMostActives(t *testing.T) {
 	out := alpaca(t, "screener", "most-actives", "--top", "5", "--json")
-	data := parseJSONMap(t, out)
-	if data["most_actives"] == nil {
-		t.Error("screener response missing 'most_actives'")
+	actives := parseJSONArray(t, out)
+	if len(actives) == 0 {
+		t.Error("screener response returned no results")
 	}
 }
 

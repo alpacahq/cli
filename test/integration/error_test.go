@@ -27,14 +27,8 @@ func TestAPIError_InvalidOrderReturnsStructuredJSON(t *testing.T) {
 }
 
 func TestAPIError_InvalidAuth(t *testing.T) {
+	// Valid creds succeed, so test with a bogus order ID to trigger a 404.
 	_, stderr, code := alpacaFail(t,
-		"--json",
-		"account", "get",
-	)
-
-	// This test uses valid creds so it should succeed.
-	// Instead, test with a bogus order ID to trigger a 404.
-	_, stderr, code = alpacaFail(t,
 		"order", "get", "00000000-0000-0000-0000-000000000000",
 		"--json",
 	)
