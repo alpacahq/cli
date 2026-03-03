@@ -16,7 +16,7 @@ import (
 func main() {
 	root := findProjectRoot()
 	outDir := filepath.Join(root, "internal", "api")
-	if err := os.MkdirAll(outDir, 0755); err != nil {
+	if err := os.MkdirAll(outDir, 0o755); err != nil {
 		log.Fatalf("creating output dir: %v", err)
 	}
 
@@ -272,31 +272,31 @@ func extractEndpoints(spec map[string]any) []*endpointInfo {
 						goType = "float64"
 					}
 				}
-			pi := paramInfo{name: name, goName: toGoFieldName(name), goType: goType, required: req}
-			pi.description, _ = p["description"].(string)
-			if pSchema != nil {
-				if ev, ok := pSchema["enum"].([]any); ok {
-					for _, v := range ev {
-						if v == nil {
-							continue
+				pi := paramInfo{name: name, goName: toGoFieldName(name), goType: goType, required: req}
+				pi.description, _ = p["description"].(string)
+				if pSchema != nil {
+					if ev, ok := pSchema["enum"].([]any); ok {
+						for _, v := range ev {
+							if v == nil {
+								continue
+							}
+							sv := fmt.Sprint(v)
+							if sv != "" {
+								pi.enumValues = append(pi.enumValues, sv)
+							}
 						}
-						sv := fmt.Sprint(v)
-						if sv != "" {
-							pi.enumValues = append(pi.enumValues, sv)
-						}
+						sort.Strings(pi.enumValues)
 					}
-					sort.Strings(pi.enumValues)
+					if dv, ok := pSchema["default"]; ok && dv != nil {
+						pi.defaultVal = fmt.Sprint(dv)
+					}
 				}
-				if dv, ok := pSchema["default"]; ok && dv != nil {
-					pi.defaultVal = fmt.Sprint(dv)
+				switch in {
+				case "path":
+					ep.pathParams = append(ep.pathParams, pi)
+				case "query":
+					ep.queryParams = append(ep.queryParams, pi)
 				}
-			}
-			switch in {
-			case "path":
-				ep.pathParams = append(ep.pathParams, pi)
-			case "query":
-				ep.queryParams = append(ep.queryParams, pi)
-			}
 			}
 
 			if rb, ok := op["requestBody"].(map[string]any); ok {
@@ -1174,9 +1174,7 @@ func normalizeDesc(s string) string {
 	}
 	s = strings.TrimRight(s, ".")
 	s = strings.ReplaceAll(s, "`", "")
-	if strings.HasPrefix(s, "The ") {
-		s = s[4:]
-	}
+	s = strings.TrimPrefix(s, "The ")
 	if len(s) > 120 {
 		s = firstSentence(s)
 	}
@@ -1371,7 +1369,7 @@ func writeGo(path, content string) {
 		fmt.Fprintf(os.Stderr, "Warning: gofmt failed for %s: %v\nWriting unformatted.\n", filepath.Base(path), err)
 		formatted = []byte(content)
 	}
-	if err := os.WriteFile(path, formatted, 0644); err != nil {
+	if err := os.WriteFile(path, formatted, 0o644); err != nil {
 		log.Fatalf("writing %s: %v", path, err)
 	}
 }

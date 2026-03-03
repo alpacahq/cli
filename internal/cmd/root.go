@@ -15,7 +15,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const exitAPIError = 1
+const (
+	exitAPIError = 1
+
+	outputJSON  = "json"
+	outputCSV   = "csv"
+	outputTable = "table"
+)
 
 var (
 	version       = "dev"
@@ -80,9 +86,9 @@ func printJSONError(apiErr *client.APIError) {
 }
 
 var rootCmd = &cobra.Command{
-	Use:   "alpaca",
-	Short: "CLI for Alpaca Trading API",
-	Long:  "Trade stocks & crypto, access market data, and manage your Alpaca account from the command line.",
+	Use:           "alpaca",
+	Short:         "CLI for Alpaca Trading API",
+	Long:          "Trade stocks & crypto, access market data, and manage your Alpaca account from the command line.",
 	SilenceUsage:  true,
 	SilenceErrors: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -114,9 +120,9 @@ var rootCmd = &cobra.Command{
 		var err error
 		outputOverride := ""
 		if jsonFlag {
-			outputOverride = "json"
+			outputOverride = outputJSON
 		} else if csvFlag {
-			outputOverride = "csv"
+			outputOverride = outputCSV
 		}
 		cfg, err = config.Load(profileFlag, outputOverride)
 		if err != nil {
@@ -159,28 +165,28 @@ func init() {
 
 	rootCmd.AddGroup(tradingGroup, dataGroup, accountGroup, utilGroup)
 
-	orderCmd.GroupID = "trading"
-	positionCmd.GroupID = "trading"
-	optionCmd.GroupID = "trading"
+	orderCmd.GroupID = tradingGroup.ID
+	positionCmd.GroupID = tradingGroup.ID
+	optionCmd.GroupID = tradingGroup.ID
 
-	dataCmd.GroupID = "data"
-	screenerCmd.GroupID = "data"
-	newsCmd.GroupID = "data"
+	dataCmd.GroupID = dataGroup.ID
+	screenerCmd.GroupID = dataGroup.ID
+	newsCmd.GroupID = dataGroup.ID
 
-	accountCmd.GroupID = "account"
-	activityCmd.GroupID = "account"
-	assetCmd.GroupID = "account"
-	portfolioCmd.GroupID = "account"
-	corporateActionCmd.GroupID = "account"
-	watchlistCmd.GroupID = "account"
-	walletCmd.GroupID = "account"
+	accountCmd.GroupID = accountGroup.ID
+	activityCmd.GroupID = accountGroup.ID
+	assetCmd.GroupID = accountGroup.ID
+	portfolioCmd.GroupID = accountGroup.ID
+	corporateActionCmd.GroupID = accountGroup.ID
+	watchlistCmd.GroupID = accountGroup.ID
+	walletCmd.GroupID = accountGroup.ID
 
-	profileCmd.GroupID = "util"
-	clockCmd.GroupID = "util"
-	calendarCmd.GroupID = "util"
-	apiCmd.GroupID = "util"
-	updateCmd.GroupID = "util"
-	versionCmd.GroupID = "util"
+	profileCmd.GroupID = utilGroup.ID
+	clockCmd.GroupID = utilGroup.ID
+	calendarCmd.GroupID = utilGroup.ID
+	apiCmd.GroupID = utilGroup.ID
+	updateCmd.GroupID = utilGroup.ID
+	versionCmd.GroupID = utilGroup.ID
 
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(profileCmd)
@@ -213,15 +219,15 @@ func needsAuth(cmd *cobra.Command) bool {
 
 func getOutput() string {
 	if jsonFlag {
-		return "json"
+		return outputJSON
 	}
 	if csvFlag {
-		return "csv"
+		return outputCSV
 	}
 	if cfg != nil {
 		return cfg.Output
 	}
-	return "table"
+	return outputTable
 }
 
 func isLive() bool {
@@ -246,4 +252,3 @@ func warnLive() {
 	}
 	_, _ = color.New(color.FgYellow).Fprintln(os.Stderr, "⚠ Live trading account. This order will use real money.")
 }
-

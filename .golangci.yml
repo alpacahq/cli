@@ -1,26 +1,43 @@
+version: "2"
 linters:
   enable:
-    - errcheck
-    - govet
-    - staticcheck
-    - unused
-    - gosimple
-    - ineffassign
     - goconst
     - misspell
+  settings:
+    goconst:
+      min-occurrences: 3
+    misspell:
+      locale: US
+      extra-words:
+        - typo: "marginable"
+          correction: "marginable"
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - errcheck
+          - goconst
+        path: _test\.go
+      - linters:
+          - goconst
+        path: cmd/generate/
+    paths:
+      - internal/api
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
     - gofumpt
-
-linters-settings:
-  goconst:
-    min-occurrences: 3
-  misspell:
-    locale: US
-
-issues:
-  exclude-dirs:
-    - internal/api
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - goconst
-        - errcheck
+  exclusions:
+    generated: lax
+    paths:
+      - internal/api
+      - third_party$
+      - builtin$
+      - examples$

@@ -132,26 +132,26 @@ func loadProfile(name string) Profile {
 
 func SaveGlobalConfig(cfg *Config) error {
 	dir := Dir()
-	if err := os.MkdirAll(dir, 0700); err != nil {
+	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return err
 	}
 	data, err := yaml.Marshal(cfg)
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(filepath.Join(dir, "config.yaml"), data, 0600)
+	return os.WriteFile(filepath.Join(dir, "config.yaml"), data, 0o600)
 }
 
 func SaveProfile(name string, p *Profile) error {
 	dir := filepath.Join(Dir(), "profiles")
-	if err := os.MkdirAll(dir, 0700); err != nil {
+	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return err
 	}
 	data, err := yaml.Marshal(p)
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(filepath.Join(dir, name+".yaml"), data, 0600)
+	return os.WriteFile(filepath.Join(dir, name+".yaml"), data, 0o600)
 }
 
 func DeleteProfile(name string) error {

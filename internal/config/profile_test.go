@@ -223,7 +223,7 @@ func TestProfileFilePermissions(t *testing.T) {
 	}
 
 	perm := info.Mode().Perm()
-	if perm != 0600 {
+	if perm != 0o600 {
 		t.Errorf("profile file permissions = %o, want 0600", perm)
 	}
 }

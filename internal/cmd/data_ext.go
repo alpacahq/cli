@@ -46,8 +46,8 @@ var dataForexRatesCmd = &cobra.Command{
 }
 
 var dataForexLatestCmd = &cobra.Command{
-	Use:   "latest",
-	Short: api.LatestRatesOp.Summary,
+	Use:     "latest",
+	Short:   api.LatestRatesOp.Summary,
 	Example: `  alpaca data forex latest --pairs EUR/USD,GBP/USD`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		pairs, err := cmdutil.RequireStr(cmd, "pairs")
@@ -69,8 +69,8 @@ var dataForexLatestCmd = &cobra.Command{
 // --- Crypto Orderbook ---
 
 var dataCryptoOrderbookCmd = &cobra.Command{
-	Use:   "crypto-orderbook",
-	Short: api.CryptoLatestOrderbooksOp.Summary,
+	Use:     "crypto-orderbook",
+	Short:   api.CryptoLatestOrderbooksOp.Summary,
 	Example: `  alpaca data crypto-orderbook --symbols BTC/USD,ETH/USD`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbols, err := cmdutil.RequireStr(cmd, "symbols")
@@ -124,8 +124,8 @@ var dataAuctionsCmd = &cobra.Command{
 // --- Corporate Actions (market data) ---
 
 var dataCorporateActionsCmd = &cobra.Command{
-	Use:   "corporate-actions",
-	Short: api.CorporateActionsOp.Summary,
+	Use:     "corporate-actions",
+	Short:   api.CorporateActionsOp.Summary,
 	Example: `  alpaca data corporate-actions --symbols AAPL --types forward_split --start 2025-01-01`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		resp, err := dataClient.CorporateActions(&api.CorporateActionsParams{
@@ -150,8 +150,8 @@ var dataCorporateActionsCmd = &cobra.Command{
 // --- Fixed Income Data ---
 
 var dataFixedIncomeCmd = &cobra.Command{
-	Use:   "fixed-income",
-	Short: api.FixedIncomeLatestPricesOp.Summary,
+	Use:     "fixed-income",
+	Short:   api.FixedIncomeLatestPricesOp.Summary,
 	Example: `  alpaca data fixed-income --symbols 912797KR1,912797LB5`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbols, err := cmdutil.RequireStr(cmd, "symbols")

@@ -21,8 +21,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const repoOwner = "alpacahq"
-const repoName = "cli"
+const (
+	repoOwner = "alpacahq"
+	repoName  = "cli"
+)
 
 var updateCmd = &cobra.Command{
 	Use:   "update",
@@ -81,7 +83,7 @@ var updateCmd = &cobra.Command{
 			return fmt.Errorf("locating current binary: %w", err)
 		}
 
-		if err := os.WriteFile(execPath, binary, 0755); err != nil {
+		if err := os.WriteFile(execPath, binary, 0o755); err != nil {
 			return fmt.Errorf("replacing binary at %s: %w\nHint: try one of:\n  sudo alpaca update\n  go install github.com/alpacahq/cli/cmd/alpaca@latest\n  Download from https://github.com/%s/%s/releases", execPath, err, repoOwner, repoName)
 		}
 

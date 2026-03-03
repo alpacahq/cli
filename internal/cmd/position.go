@@ -66,14 +66,14 @@ var positionCloseAllCmd = &cobra.Command{
 	Short: api.DeleteAllOpenPositionsOp.Summary,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		warnLive()
-		cancelled, err := tradingClient.DeleteAllOpenPositions(&api.DeleteAllOpenPositionsParams{
+		canceled, err := tradingClient.DeleteAllOpenPositions(&api.DeleteAllOpenPositionsParams{
 			CancelOrders: cmdutil.Bool(cmd, "cancel-orders"),
 		})
 		if err != nil {
 			return err
 		}
-		if getOutput() == "json" || getOutput() == "csv" {
-			return output.JSON(cmd.OutOrStdout(), cancelled)
+		if getOutput() == outputJSON || getOutput() == outputCSV {
+			return output.JSON(cmd.OutOrStdout(), canceled)
 		}
 		_, _ = fmt.Fprintln(cmd.OutOrStdout(), "All positions closed.")
 		return nil

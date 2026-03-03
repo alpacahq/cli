@@ -17,8 +17,10 @@ import (
 	"github.com/alpacahq/cli/internal/config"
 )
 
-const ExitAPIError = 1
-const ExitAuthError = 2
+const (
+	ExitAPIError  = 1
+	ExitAuthError = 2
+)
 
 const maxRetries = 3
 

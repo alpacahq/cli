@@ -26,19 +26,19 @@ var orderSubmitCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		warnLive()
 		body := &api.PostOrderRequest{
-			Symbol:        args[0],
-			Qty:           cmdutil.Str(cmd, "qty"),
-			Notional:      cmdutil.Str(cmd, "notional"),
-			Side:          api.OrderSide(cmdutil.Str(cmd, "side")),
-			Type:          api.OrderType(cmdutil.Str(cmd, "type")),
-			TimeInForce:   api.TimeInForce(cmdutil.Str(cmd, "tif")),
-			LimitPrice:    cmdutil.Str(cmd, "limit-price"),
-			StopPrice:     cmdutil.Str(cmd, "stop-price"),
-			TrailPercent:  cmdutil.Str(cmd, "trail-percent"),
-			TrailPrice:    cmdutil.Str(cmd, "trail-price"),
-			ExtendedHours: cmdutil.Bool(cmd, "extended-hours"),
-			ClientOrderID: cmdutil.Str(cmd, "client-order-id"),
-			OrderClass:    api.OrderClass(cmdutil.Str(cmd, "order-class")),
+			Symbol:         args[0],
+			Qty:            cmdutil.Str(cmd, "qty"),
+			Notional:       cmdutil.Str(cmd, "notional"),
+			Side:           api.OrderSide(cmdutil.Str(cmd, "side")),
+			Type:           api.OrderType(cmdutil.Str(cmd, "type")),
+			TimeInForce:    api.TimeInForce(cmdutil.Str(cmd, "tif")),
+			LimitPrice:     cmdutil.Str(cmd, "limit-price"),
+			StopPrice:      cmdutil.Str(cmd, "stop-price"),
+			TrailPercent:   cmdutil.Str(cmd, "trail-percent"),
+			TrailPrice:     cmdutil.Str(cmd, "trail-price"),
+			ExtendedHours:  cmdutil.Bool(cmd, "extended-hours"),
+			ClientOrderID:  cmdutil.Str(cmd, "client-order-id"),
+			OrderClass:     api.OrderClass(cmdutil.Str(cmd, "order-class")),
 			PositionIntent: api.PositionIntent(cmdutil.Str(cmd, "position-intent")),
 		}
 
@@ -95,7 +95,7 @@ var orderListCmd = &cobra.Command{
 		}
 
 		format := getOutput()
-		if format == "json" {
+		if format == outputJSON {
 			return output.JSON(cmd.OutOrStdout(), orders)
 		}
 		return output.Render(cmd.OutOrStdout(), format, orderColumns(), expandOrderLegs(orders))
@@ -144,7 +144,7 @@ var orderCancelCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Order %s cancelled.\n", args[0])
+		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Order %s canceled.\n", args[0])
 		return nil
 	},
 }
@@ -154,19 +154,19 @@ var orderCancelAllCmd = &cobra.Command{
 	Short: api.DeleteAllOrdersOp.Summary,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		warnLive()
-		cancelled, err := tradingClient.DeleteAllOrders()
+		canceled, err := tradingClient.DeleteAllOrders()
 		if err != nil {
 			return err
 		}
-		return output.JSON(cmd.OutOrStdout(), cancelled)
+		return output.JSON(cmd.OutOrStdout(), canceled)
 	},
 }
 
 var orderReplaceCmd = &cobra.Command{
-	Use:   "replace <order-id>",
-	Short: api.PatchOrderByOrderIDOp.Summary,
+	Use:     "replace <order-id>",
+	Short:   api.PatchOrderByOrderIDOp.Summary,
 	Example: `  alpaca order replace <order-id> --qty 20 --limit-price 190.00`,
-	Args:  cobra.ExactArgs(1),
+	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		body := &api.PatchOrderRequest{}
 

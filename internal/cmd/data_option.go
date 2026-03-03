@@ -41,8 +41,8 @@ var dataOptionBarsCmd = &cobra.Command{
 }
 
 var dataOptionTradesCmd = &cobra.Command{
-	Use:   "trades",
-	Short: api.OptionTradesOp.Summary,
+	Use:     "trades",
+	Short:   api.OptionTradesOp.Summary,
 	Example: `  alpaca data option trades --symbols AAPL250620C00200000 --start 2025-01-01`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbols, err := cmdutil.RequireStr(cmd, "symbols")
@@ -118,8 +118,8 @@ var dataOptionChainCmd = &cobra.Command{
 }
 
 var dataOptionLatestQuotesCmd = &cobra.Command{
-	Use:   "latest-quotes",
-	Short: api.OptionLatestQuotesOp.Summary,
+	Use:     "latest-quotes",
+	Short:   api.OptionLatestQuotesOp.Summary,
 	Example: `  alpaca data option latest-quotes --symbols AAPL250620C00200000`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbols, err := cmdutil.RequireStr(cmd, "symbols")
@@ -140,8 +140,8 @@ var dataOptionLatestQuotesCmd = &cobra.Command{
 }
 
 var dataOptionLatestTradesCmd = &cobra.Command{
-	Use:   "latest-trades",
-	Short: api.OptionLatestTradesOp.Summary,
+	Use:     "latest-trades",
+	Short:   api.OptionLatestTradesOp.Summary,
 	Example: `  alpaca data option latest-trades --symbols AAPL250620C00200000`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbols, err := cmdutil.RequireStr(cmd, "symbols")
@@ -193,4 +193,3 @@ func init() {
 	dataOptionCmd.AddCommand(dataOptionLatestQuotesCmd)
 	dataOptionCmd.AddCommand(dataOptionLatestTradesCmd)
 }
-

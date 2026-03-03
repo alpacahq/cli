@@ -41,10 +41,10 @@ var watchlistGetCmd = &cobra.Command{
 }
 
 var watchlistCreateCmd = &cobra.Command{
-	Use:   "create <name>",
-	Short: api.PostWatchlistOp.Summary,
+	Use:     "create <name>",
+	Short:   api.PostWatchlistOp.Summary,
 	Example: `  alpaca watchlist create "Tech Stocks" --symbols AAPL,MSFT,GOOG`,
-	Args:  cobra.ExactArgs(1),
+	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		body := &api.UpdateWatchlistRequest{
 			Name: args[0],
