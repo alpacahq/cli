@@ -86,8 +86,18 @@ var rootCmd = &cobra.Command{
 	Long:  "Trade stocks & crypto, access market data, and manage your Alpaca account from the command line.",
 	SilenceUsage:  true,
 	SilenceErrors: true,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if ha, _ := cmd.Flags().GetBool("help-all"); ha {
+			printCommandTree(cmd.OutOrStdout(), cmd, 0)
+			return nil
+		}
+		return cmd.Help()
+	},
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if cmd.Name() == "help" || cmd.Name() == "completion" || cmd.Name() == "version" {
+			return nil
+		}
+		if ha, _ := cmd.Flags().GetBool("help-all"); ha {
 			return nil
 		}
 		if cmd.Parent() != nil && cmd.Parent().Name() == "profile" {
@@ -141,6 +151,8 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&quietFlag, "quiet", "q", false, "Suppress non-data output (warnings, hints, color)")
 	rootCmd.PersistentFlags().BoolVar(&confirmFlag, "confirm", false, "Authorize destructive operations (cancel-all, close-all on live)")
 	rootCmd.PersistentFlags().IntVar(&timeoutFlag, "timeout", 30, "HTTP request timeout in seconds")
+
+	rootCmd.Flags().Bool("help-all", false, "Print full reference for every command")
 
 	tradingGroup := &cobra.Group{ID: "trading", Title: "Trading"}
 	dataGroup := &cobra.Group{ID: "data", Title: "Market Data"}
