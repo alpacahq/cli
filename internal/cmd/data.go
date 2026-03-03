@@ -135,19 +135,23 @@ var dataLatestBarCmd = &cobra.Command{
 }
 
 func init() {
-	for _, c := range []*cobra.Command{dataBarsCmd, dataQuotesCmd, dataTradesCmd} {
-		cmdutil.AddDateRangeFlags(c)
-		cmdutil.AddLimitFlag(c)
-		c.Flags().String("feed", "", "Data feed: iex, sip, otc, delayed_sip")
-		_ = c.RegisterFlagCompletionFunc("feed", cobra.FixedCompletions([]string{"iex", "sip", "otc", "delayed_sip"}, cobra.ShellCompDirectiveNoFileComp))
-		c.Flags().String("currency", "", "Currency for prices (e.g. USD, EUR)")
-		cmdutil.AddSortFlag(c, api.SortValues)
-		c.Flags().String("asof", "", "As-of date for point-in-time data")
-	}
-	dataBarsCmd.Flags().String("timeframe", "1Day", "Bar timeframe: 1Min, 5Min, 15Min, 1Hour, 1Day, 1Week, 1Month")
+	cmdutil.RegisterFlags(dataBarsCmd, api.StockBarSingleFlags, &cmdutil.FlagOpts{
+		Exclude:  map[string]bool{"page_token": true},
+		Defaults: map[string]string{"timeframe": "1Day"},
+	})
+	_ = dataBarsCmd.RegisterFlagCompletionFunc("feed", cobra.FixedCompletions([]string{"iex", "sip", "otc", "delayed_sip"}, cobra.ShellCompDirectiveNoFileComp))
 	_ = dataBarsCmd.RegisterFlagCompletionFunc("timeframe", cobra.FixedCompletions([]string{"1Min", "5Min", "15Min", "1Hour", "1Day", "1Week", "1Month"}, cobra.ShellCompDirectiveNoFileComp))
-	dataBarsCmd.Flags().String("adjustment", "", "Price adjustment: raw, split, dividend, all")
 	_ = dataBarsCmd.RegisterFlagCompletionFunc("adjustment", cobra.FixedCompletions([]string{"raw", "split", "dividend", "all"}, cobra.ShellCompDirectiveNoFileComp))
+
+	cmdutil.RegisterFlags(dataQuotesCmd, api.StockQuoteSingleFlags, &cmdutil.FlagOpts{
+		Exclude: map[string]bool{"page_token": true},
+	})
+	_ = dataQuotesCmd.RegisterFlagCompletionFunc("feed", cobra.FixedCompletions([]string{"iex", "sip", "otc", "delayed_sip"}, cobra.ShellCompDirectiveNoFileComp))
+
+	cmdutil.RegisterFlags(dataTradesCmd, api.StockTradeSingleFlags, &cmdutil.FlagOpts{
+		Exclude: map[string]bool{"page_token": true},
+	})
+	_ = dataTradesCmd.RegisterFlagCompletionFunc("feed", cobra.FixedCompletions([]string{"iex", "sip", "otc", "delayed_sip"}, cobra.ShellCompDirectiveNoFileComp))
 
 	dataLatestCmd.AddCommand(dataLatestTradeCmd)
 	dataLatestCmd.AddCommand(dataLatestQuoteCmd)

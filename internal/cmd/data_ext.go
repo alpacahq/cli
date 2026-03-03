@@ -19,7 +19,7 @@ var dataForexCmd = &cobra.Command{
 
 var dataForexRatesCmd = &cobra.Command{
 	Use:   "rates",
-	Short: api.OperationSummary["Rates"],
+	Short: api.RatesOp.Summary,
 	Example: `  alpaca data forex rates --pairs EUR/USD,GBP/USD --start 2025-01-01
   alpaca data forex rates --pairs USD/JPY --timeframe 1Hour`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -46,7 +46,7 @@ var dataForexRatesCmd = &cobra.Command{
 
 var dataForexLatestCmd = &cobra.Command{
 	Use:   "latest",
-	Short: api.OperationSummary["LatestRates"],
+	Short: api.LatestRatesOp.Summary,
 	Example: `  alpaca data forex latest --pairs EUR/USD,GBP/USD`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		pairs, err := cmdutil.RequireStr(cmd, "pairs")
@@ -69,7 +69,7 @@ var dataForexLatestCmd = &cobra.Command{
 
 var dataCryptoOrderbookCmd = &cobra.Command{
 	Use:   "crypto-orderbook",
-	Short: api.OperationSummary["CryptoLatestOrderbooks"],
+	Short: api.CryptoLatestOrderbooksOp.Summary,
 	Example: `  alpaca data crypto-orderbook --symbols BTC/USD,ETH/USD`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbols, err := cmdutil.RequireStr(cmd, "symbols")
@@ -92,7 +92,7 @@ var dataCryptoOrderbookCmd = &cobra.Command{
 
 var dataAuctionsCmd = &cobra.Command{
 	Use:   "auctions",
-	Short: api.OperationSummary["StockAuctions"],
+	Short: api.StockAuctionsOp.Summary,
 	Example: `  alpaca data auctions --symbols AAPL --start 2025-01-01
   alpaca data auctions --symbols AAPL,MSFT --limit 10`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -121,7 +121,7 @@ var dataAuctionsCmd = &cobra.Command{
 
 var dataCorporateActionsCmd = &cobra.Command{
 	Use:   "corporate-actions",
-	Short: api.OperationSummary["CorporateActions"],
+	Short: api.CorporateActionsOp.Summary,
 	Example: `  alpaca data corporate-actions --symbols AAPL --types forward_split --start 2025-01-01`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		resp, err := dataClient.CorporateActions(&api.CorporateActionsParams{
@@ -144,7 +144,7 @@ var dataCorporateActionsCmd = &cobra.Command{
 
 var dataFixedIncomeCmd = &cobra.Command{
 	Use:   "fixed-income",
-	Short: api.OperationSummary["FixedIncomeLatestPrices"],
+	Short: api.FixedIncomeLatestPricesOp.Summary,
 	Example: `  alpaca data fixed-income --symbols 912797KR1,912797LB5`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbols, err := cmdutil.RequireStr(cmd, "symbols")
@@ -164,30 +164,29 @@ var dataFixedIncomeCmd = &cobra.Command{
 }
 
 func init() {
-	dataForexRatesCmd.Flags().String("pairs", "", "Currency pairs (comma-separated, e.g. EUR/USD,GBP/USD)")
-	dataForexRatesCmd.Flags().String("timeframe", "", "Timeframe: 1Min, 5Min, 1Hour, 1Day")
-	_ = dataForexRatesCmd.RegisterFlagCompletionFunc("timeframe", cobra.FixedCompletions([]string{"1Min", "5Min", "1Hour", "1Day"}, cobra.ShellCompDirectiveNoFileComp))
-	cmdutil.AddDateRangeFlags(dataForexRatesCmd)
-	cmdutil.AddLimitFlag(dataForexRatesCmd)
-	cmdutil.AddSortFlag(dataForexRatesCmd, api.SortValues)
-	dataForexLatestCmd.Flags().String("pairs", "", "Currency pairs (comma-separated)")
+	cmdutil.RegisterFlags(dataForexRatesCmd, api.RatesFlags, &cmdutil.FlagOpts{
+		Exclude: map[string]bool{"page_token": true},
+		Aliases: map[string]string{"currency_pairs": "pairs"},
+	})
+	cmdutil.RegisterFlags(dataForexLatestCmd, api.LatestRatesFlags, &cmdutil.FlagOpts{
+		Aliases: map[string]string{"currency_pairs": "pairs"},
+	})
 	dataForexCmd.AddCommand(dataForexRatesCmd)
 	dataForexCmd.AddCommand(dataForexLatestCmd)
 
-	dataCryptoOrderbookCmd.Flags().String("symbols", "", "Crypto symbols (comma-separated, e.g. BTC/USD)")
+	cmdutil.RegisterFlags(dataCryptoOrderbookCmd, api.CryptoLatestOrderbooksFlags, nil)
 
-	dataAuctionsCmd.Flags().String("symbols", "", "Stock symbols (comma-separated)")
-	cmdutil.AddDateRangeFlags(dataAuctionsCmd)
-	cmdutil.AddLimitFlag(dataAuctionsCmd)
-	cmdutil.AddSortFlag(dataAuctionsCmd, api.SortValues)
-	dataAuctionsCmd.Flags().String("asof", "", "As-of date for data")
+	cmdutil.RegisterFlags(dataAuctionsCmd, api.StockAuctionsFlags, &cmdutil.FlagOpts{
+		Exclude: map[string]bool{"currency": true, "feed": true, "page_token": true},
+	})
 
-	dataCorporateActionsCmd.Flags().String("symbols", "", "Filter by symbols")
-	dataCorporateActionsCmd.Flags().String("types", "", "CA types: forward_split, reverse_split, cash_dividend, etc.")
-	cmdutil.AddDateRangeFlags(dataCorporateActionsCmd)
-	cmdutil.AddLimitFlag(dataCorporateActionsCmd)
-	cmdutil.AddSortFlag(dataCorporateActionsCmd, api.SortValues)
-	dataFixedIncomeCmd.Flags().String("symbols", "", "ISIN identifiers (comma-separated)")
+	cmdutil.RegisterFlags(dataCorporateActionsCmd, api.CorporateActionsFlags, &cmdutil.FlagOpts{
+		Exclude: map[string]bool{"cusips": true, "ids": true, "page_token": true},
+	})
+
+	cmdutil.RegisterFlags(dataFixedIncomeCmd, api.FixedIncomeLatestPricesFlags, &cmdutil.FlagOpts{
+		Aliases: map[string]string{"isins": "symbols"},
+	})
 
 	dataCmd.AddCommand(dataOptionCmd)
 	dataCmd.AddCommand(dataForexCmd)

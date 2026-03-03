@@ -17,7 +17,7 @@ var watchlistCmd = &cobra.Command{
 
 var watchlistListCmd = &cobra.Command{
 	Use:   "list",
-	Short: api.OperationSummary["getWatchlists"],
+	Short: api.GetWatchlistsOp.Summary,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		watchlists, err := tradingClient.GetWatchlists()
 		if err != nil {
@@ -29,7 +29,7 @@ var watchlistListCmd = &cobra.Command{
 
 var watchlistGetCmd = &cobra.Command{
 	Use:   "get <id>",
-	Short: api.OperationSummary["getWatchlistById"],
+	Short: api.GetWatchlistByIDOp.Summary,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		wl, err := tradingClient.GetWatchlistByID(args[0])
@@ -42,7 +42,7 @@ var watchlistGetCmd = &cobra.Command{
 
 var watchlistCreateCmd = &cobra.Command{
 	Use:   "create <name>",
-	Short: api.OperationSummary["postWatchlist"],
+	Short: api.PostWatchlistOp.Summary,
 	Example: `  alpaca watchlist create "Tech Stocks" --symbols AAPL,MSFT,GOOG`,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -64,7 +64,7 @@ var watchlistCreateCmd = &cobra.Command{
 
 var watchlistUpdateCmd = &cobra.Command{
 	Use:   "update <id>",
-	Short: api.OperationSummary["updateWatchlistById"],
+	Short: api.UpdateWatchlistByIDOp.Summary,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		body := &api.UpdateWatchlistRequest{}
@@ -86,7 +86,7 @@ var watchlistUpdateCmd = &cobra.Command{
 
 var watchlistDeleteCmd = &cobra.Command{
 	Use:   "delete <id>",
-	Short: api.OperationSummary["deleteWatchlistById"],
+	Short: api.DeleteWatchlistByIDOp.Summary,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		_, err := tradingClient.DeleteWatchlistByID(args[0])
@@ -100,7 +100,7 @@ var watchlistDeleteCmd = &cobra.Command{
 
 var watchlistAddCmd = &cobra.Command{
 	Use:   "add <id> <symbol>",
-	Short: api.OperationSummary["addAssetToWatchlist"],
+	Short: api.AddAssetToWatchlistOp.Summary,
 	Args:  cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		wl, err := tradingClient.AddAssetToWatchlist(args[0], &api.AddAssetToWatchlistRequest{
@@ -115,7 +115,7 @@ var watchlistAddCmd = &cobra.Command{
 
 var watchlistRemoveCmd = &cobra.Command{
 	Use:   "remove <id> <symbol>",
-	Short: api.OperationSummary["removeAssetFromWatchlist"],
+	Short: api.RemoveAssetFromWatchlistOp.Summary,
 	Args:  cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		_, err := tradingClient.RemoveAssetFromWatchlist(args[0], args[1])
@@ -128,9 +128,12 @@ var watchlistRemoveCmd = &cobra.Command{
 }
 
 func init() {
-	watchlistCreateCmd.Flags().String("symbols", "", "Comma-separated symbols to add")
-	watchlistUpdateCmd.Flags().String("name", "", "New watchlist name")
-	watchlistUpdateCmd.Flags().String("symbols", "", "Replace watchlist symbols with this list (comma-separated)")
+	cmdutil.RegisterFlags(watchlistCreateCmd, api.PostWatchlistFlags, &cmdutil.FlagOpts{
+		Exclude: map[string]bool{"name": true},
+	})
+	cmdutil.RegisterFlags(watchlistUpdateCmd, api.UpdateWatchlistByIDFlags, &cmdutil.FlagOpts{
+		Exclude: map[string]bool{"watchlist_id": true},
+	})
 
 	watchlistCmd.AddCommand(watchlistListCmd)
 	watchlistCmd.AddCommand(watchlistGetCmd)

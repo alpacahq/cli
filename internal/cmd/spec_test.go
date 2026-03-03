@@ -332,12 +332,11 @@ func TestValidateMethods(t *testing.T) {
 	})
 }
 
-// TestDescriptionKeysExist verifies that every api.OperationSummary and
-// api.ParamDescription key referenced in command source files actually
-// exists in the generated maps. Catches typos and stale references.
-func TestDescriptionKeysExist(t *testing.T) {
-	summaryRef := regexp.MustCompile(`api\.OperationSummary\["([^"]+)"\]`)
-	paramRef := regexp.MustCompile(`api\.ParamDescription\["([^"]+)"\]`)
+// TestNoEmptyFlagDescriptions verifies that every generated FlagDef has
+// a non-empty Description (which would produce blank help text) and a
+// valid Name (no underscores, no empty strings).
+func TestNoEmptyFlagDescriptions(t *testing.T) {
+	flagRef := regexp.MustCompile(`api\.(\w+)Flags`)
 
 	dir := cmdDir()
 	entries, err := os.ReadDir(dir)
@@ -345,6 +344,7 @@ func TestDescriptionKeysExist(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	referenced := map[string]bool{}
 	for _, e := range entries {
 		if e.IsDir() || !strings.HasSuffix(e.Name(), ".go") || strings.HasSuffix(e.Name(), "_test.go") {
 			continue
@@ -353,28 +353,75 @@ func TestDescriptionKeysExist(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		src := string(data)
-
-		for _, m := range summaryRef.FindAllStringSubmatch(src, -1) {
-			key := m[1]
-			if _, ok := api.OperationSummary[key]; !ok {
-				t.Errorf("%s: api.OperationSummary[%q] does not exist", e.Name(), key)
-			}
+		for _, m := range flagRef.FindAllStringSubmatch(string(data), -1) {
+			referenced[m[1]+"Flags"] = true
 		}
-		for _, m := range paramRef.FindAllStringSubmatch(src, -1) {
-			key := m[1]
-			if _, ok := api.ParamDescription[key]; !ok {
-				t.Errorf("%s: api.ParamDescription[%q] does not exist", e.Name(), key)
+	}
+
+	allFlags := map[string][]api.FlagDef{
+		"PostOrderFlags":                          api.PostOrderFlags,
+		"GetAllOrdersFlags":                       api.GetAllOrdersFlags,
+		"PatchOrderByOrderIDFlags":                api.PatchOrderByOrderIDFlags,
+		"DeleteOpenPositionFlags":                 api.DeleteOpenPositionFlags,
+		"DeleteAllOpenPositionsFlags":             api.DeleteAllOpenPositionsFlags,
+		"PostWatchlistFlags":                      api.PostWatchlistFlags,
+		"UpdateWatchlistByIDFlags":                api.UpdateWatchlistByIDFlags,
+		"GetAccountActivitiesFlags":               api.GetAccountActivitiesFlags,
+		"GetV2AssetsFlags":                        api.GetV2AssetsFlags,
+		"UsTreasuriesFlags":                       api.UsTreasuriesFlags,
+		"UsCorporatesFlags":                       api.UsCorporatesFlags,
+		"GetV2CorporateActionsAnnouncementsFlags": api.GetV2CorporateActionsAnnouncementsFlags,
+		"MostActivesFlags":                        api.MostActivesFlags,
+		"MoversFlags":                             api.MoversFlags,
+		"GetOptionsContractsFlags":                api.GetOptionsContractsFlags,
+		"ListCryptoFundingWalletsFlags":            api.ListCryptoFundingWalletsFlags,
+		"CreateCryptoTransferForAccountFlags":      api.CreateCryptoTransferForAccountFlags,
+		"CreateWhitelistedAddressFlags":            api.CreateWhitelistedAddressFlags,
+		"ClockFlags":                               api.ClockFlags,
+		"LegacyCalendarFlags":                      api.LegacyCalendarFlags,
+		"GetAccountPortfolioHistoryFlags":           api.GetAccountPortfolioHistoryFlags,
+		"NewsFlags":                                 api.NewsFlags,
+		"RatesFlags":                                api.RatesFlags,
+		"LatestRatesFlags":                          api.LatestRatesFlags,
+		"CryptoLatestOrderbooksFlags":               api.CryptoLatestOrderbooksFlags,
+		"StockAuctionsFlags":                        api.StockAuctionsFlags,
+		"CorporateActionsFlags":                     api.CorporateActionsFlags,
+		"FixedIncomeLatestPricesFlags":              api.FixedIncomeLatestPricesFlags,
+		"OptionBarsFlags":                           api.OptionBarsFlags,
+		"OptionTradesFlags":                         api.OptionTradesFlags,
+		"OptionSnapshotsFlags":                      api.OptionSnapshotsFlags,
+		"OptionChainFlags":                          api.OptionChainFlags,
+		"OptionLatestQuotesFlags":                   api.OptionLatestQuotesFlags,
+		"OptionLatestTradesFlags":                   api.OptionLatestTradesFlags,
+		"StockBarSingleFlags":                       api.StockBarSingleFlags,
+		"StockQuoteSingleFlags":                     api.StockQuoteSingleFlags,
+		"StockTradeSingleFlags":                     api.StockTradeSingleFlags,
+		"PatchAccountConfigFlags":                   api.PatchAccountConfigFlags,
+	}
+
+	for name, defs := range allFlags {
+		if !referenced[name] {
+			continue
+		}
+		for _, d := range defs {
+			if d.Description == "" {
+				t.Errorf("%s: flag %q has empty description", name, d.Name)
+			}
+			if d.Name == "" {
+				t.Errorf("%s: FlagDef has empty Name", name)
+			}
+			if strings.Contains(d.Name, "_") {
+				t.Errorf("%s: flag %q contains underscore (should be kebab-case)", name, d.Name)
 			}
 		}
 	}
 }
 
-// TestNoEmptyDescriptions verifies that no referenced description resolves
-// to an empty string, which would produce blank help text.
-func TestNoEmptyDescriptions(t *testing.T) {
-	summaryRef := regexp.MustCompile(`api\.OperationSummary\["([^"]+)"\]`)
-	paramRef := regexp.MustCompile(`api\.ParamDescription\["([^"]+)"\]`)
+// TestTypedDescriptionsCompile verifies that the typed description structs
+// referenced in command source code have non-empty Summary fields.
+// Field references are caught at compile time; this test catches empty values.
+func TestTypedDescriptionsCompile(t *testing.T) {
+	opRef := regexp.MustCompile(`api\.(\w+Op)\.Summary`)
 
 	dir := cmdDir()
 	entries, err := os.ReadDir(dir)
@@ -382,6 +429,60 @@ func TestNoEmptyDescriptions(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	summaries := map[string]string{
+		"PostOrderOp":                             api.PostOrderOp.Summary,
+		"GetAllOrdersOp":                          api.GetAllOrdersOp.Summary,
+		"GetOrderByOrderIDOp":                     api.GetOrderByOrderIDOp.Summary,
+		"DeleteOrderByOrderIDOp":                  api.DeleteOrderByOrderIDOp.Summary,
+		"DeleteAllOrdersOp":                       api.DeleteAllOrdersOp.Summary,
+		"PatchOrderByOrderIDOp":                   api.PatchOrderByOrderIDOp.Summary,
+		"GetAllOpenPositionsOp":                   api.GetAllOpenPositionsOp.Summary,
+		"GetOpenPositionOp":                       api.GetOpenPositionOp.Summary,
+		"DeleteOpenPositionOp":                    api.DeleteOpenPositionOp.Summary,
+		"DeleteAllOpenPositionsOp":                api.DeleteAllOpenPositionsOp.Summary,
+		"GetAccountOp":                            api.GetAccountOp.Summary,
+		"GetAccountConfigOp":                      api.GetAccountConfigOp.Summary,
+		"PatchAccountConfigOp":                    api.PatchAccountConfigOp.Summary,
+		"LegacyClockOp":                           api.LegacyClockOp.Summary,
+		"LegacyCalendarOp":                        api.LegacyCalendarOp.Summary,
+		"GetAccountPortfolioHistoryOp":            api.GetAccountPortfolioHistoryOp.Summary,
+		"NewsOp":                                  api.NewsOp.Summary,
+		"GetAccountActivitiesOp":                  api.GetAccountActivitiesOp.Summary,
+		"MostActivesOp":                           api.MostActivesOp.Summary,
+		"MoversOp":                                api.MoversOp.Summary,
+		"GetV2AssetsOp":                           api.GetV2AssetsOp.Summary,
+		"GetV2AssetsSymbolOrAssetIDOp":            api.GetV2AssetsSymbolOrAssetIDOp.Summary,
+		"UsTreasuriesOp":                          api.UsTreasuriesOp.Summary,
+		"UsCorporatesOp":                          api.UsCorporatesOp.Summary,
+		"GetV2CorporateActionsAnnouncementsOp":    api.GetV2CorporateActionsAnnouncementsOp.Summary,
+		"GetV2CorporateActionsAnnouncementsIDOp":  api.GetV2CorporateActionsAnnouncementsIDOp.Summary,
+		"GetOptionsContractsOp":                   api.GetOptionsContractsOp.Summary,
+		"GetOptionContractSymbolOrIDOp":           api.GetOptionContractSymbolOrIDOp.Summary,
+		"OptionExerciseOp":                        api.OptionExerciseOp.Summary,
+		"OptionDoNotExerciseOp":                   api.OptionDoNotExerciseOp.Summary,
+		"ListCryptoFundingWalletsOp":              api.ListCryptoFundingWalletsOp.Summary,
+		"ListCryptoFundingTransfersOp":            api.ListCryptoFundingTransfersOp.Summary,
+		"GetCryptoFundingTransferOp":              api.GetCryptoFundingTransferOp.Summary,
+		"CreateCryptoTransferForAccountOp":        api.CreateCryptoTransferForAccountOp.Summary,
+		"ListWhitelistedAddressOp":                api.ListWhitelistedAddressOp.Summary,
+		"CreateWhitelistedAddressOp":              api.CreateWhitelistedAddressOp.Summary,
+		"DeleteWhitelistedAddressOp":              api.DeleteWhitelistedAddressOp.Summary,
+		"RatesOp":                                 api.RatesOp.Summary,
+		"LatestRatesOp":                           api.LatestRatesOp.Summary,
+		"CryptoLatestOrderbooksOp":                api.CryptoLatestOrderbooksOp.Summary,
+		"StockAuctionsOp":                         api.StockAuctionsOp.Summary,
+		"CorporateActionsOp":                      api.CorporateActionsOp.Summary,
+		"FixedIncomeLatestPricesOp":               api.FixedIncomeLatestPricesOp.Summary,
+		"OptionBarsOp":                            api.OptionBarsOp.Summary,
+		"OptionTradesOp":                          api.OptionTradesOp.Summary,
+		"OptionSnapshotsOp":                       api.OptionSnapshotsOp.Summary,
+		"OptionChainOp":                           api.OptionChainOp.Summary,
+		"OptionLatestQuotesOp":                    api.OptionLatestQuotesOp.Summary,
+		"OptionLatestTradesOp":                    api.OptionLatestTradesOp.Summary,
+		"GetAccountActivitiesByActivityTypeOp":    api.GetAccountActivitiesByActivityTypeOp.Summary,
+	}
+
+	referenced := map[string]bool{}
 	for _, e := range entries {
 		if e.IsDir() || !strings.HasSuffix(e.Name(), ".go") || strings.HasSuffix(e.Name(), "_test.go") {
 			continue
@@ -390,17 +491,17 @@ func TestNoEmptyDescriptions(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		src := string(data)
-
-		for _, m := range summaryRef.FindAllStringSubmatch(src, -1) {
-			if api.OperationSummary[m[1]] == "" {
-				t.Errorf("%s: api.OperationSummary[%q] is empty", e.Name(), m[1])
-			}
+		for _, m := range opRef.FindAllStringSubmatch(string(data), -1) {
+			referenced[m[1]] = true
 		}
-		for _, m := range paramRef.FindAllStringSubmatch(src, -1) {
-			if api.ParamDescription[m[1]] == "" {
-				t.Errorf("%s: api.ParamDescription[%q] is empty", e.Name(), m[1])
-			}
+	}
+
+	for name, summary := range summaries {
+		if !referenced[name] {
+			continue
+		}
+		if summary == "" {
+			t.Errorf("%s.Summary is empty", name)
 		}
 	}
 }

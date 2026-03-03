@@ -16,7 +16,7 @@ var positionCmd = &cobra.Command{
 
 var positionListCmd = &cobra.Command{
 	Use:   "list",
-	Short: api.OperationSummary["getAllOpenPositions"],
+	Short: api.GetAllOpenPositionsOp.Summary,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		positions, err := tradingClient.GetAllOpenPositions()
 		if err != nil {
@@ -28,7 +28,7 @@ var positionListCmd = &cobra.Command{
 
 var positionGetCmd = &cobra.Command{
 	Use:   "get <symbol>",
-	Short: api.OperationSummary["getOpenPosition"],
+	Short: api.GetOpenPositionOp.Summary,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		pos, err := tradingClient.GetOpenPosition(args[0])
@@ -41,7 +41,7 @@ var positionGetCmd = &cobra.Command{
 
 var positionCloseCmd = &cobra.Command{
 	Use:   "close <symbol>",
-	Short: api.OperationSummary["deleteOpenPosition"],
+	Short: api.DeleteOpenPositionOp.Summary,
 	Example: `  alpaca position close AAPL
   alpaca position close AAPL --qty 5
   alpaca position close AAPL --pct 50`,
@@ -63,7 +63,7 @@ var positionCloseCmd = &cobra.Command{
 
 var positionCloseAllCmd = &cobra.Command{
 	Use:   "close-all",
-	Short: api.OperationSummary["deleteAllOpenPositions"],
+	Short: api.DeleteAllOpenPositionsOp.Summary,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		warnLive()
 		cancelled, err := tradingClient.DeleteAllOpenPositions(&api.DeleteAllOpenPositionsParams{
@@ -81,10 +81,11 @@ var positionCloseAllCmd = &cobra.Command{
 }
 
 func init() {
-	positionCloseCmd.Flags().Float64("qty", 0, "Number of shares to close")
-	positionCloseCmd.Flags().Float64("pct", 0, "Percentage of position to close (0-100)")
-
-	positionCloseAllCmd.Flags().Bool("cancel-orders", false, "Also cancel all open orders")
+	cmdutil.RegisterFlags(positionCloseCmd, api.DeleteOpenPositionFlags, &cmdutil.FlagOpts{
+		Exclude: map[string]bool{"symbol_or_asset_id": true},
+		Aliases: map[string]string{"percentage": "pct"},
+	})
+	cmdutil.RegisterFlags(positionCloseAllCmd, api.DeleteAllOpenPositionsFlags, nil)
 
 	positionCmd.AddCommand(positionListCmd)
 	positionCmd.AddCommand(positionGetCmd)

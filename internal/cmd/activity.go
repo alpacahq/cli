@@ -16,7 +16,7 @@ var activityCmd = &cobra.Command{
 
 var activityListCmd = &cobra.Command{
 	Use:   "list",
-	Short: api.OperationSummary["getAccountActivities"],
+	Short: api.GetAccountActivitiesOp.Summary,
 	Example: `  alpaca activity list
   alpaca activity list --types FILL --limit 20
   alpaca activity list --types DIV --start 2025-01-01
@@ -71,14 +71,15 @@ var activityListCmd = &cobra.Command{
 }
 
 func init() {
-	activityListCmd.Flags().String("types", "", "Activity types: FILL, DIV, TRANS, etc. (comma-separated)")
-	cmdutil.AddDateRangeFlags(activityListCmd)
-	activityListCmd.Flags().String("date", "", "Exact date filter")
-	cmdutil.AddSortFlag(activityListCmd, api.SortValues)
-	cmdutil.AddLimitFlag(activityListCmd)
-	activityListCmd.Flags().String("category", "", "Category: trade_activity or non_trade_activity")
-	_ = activityListCmd.RegisterFlagCompletionFunc("category", cobra.FixedCompletions(api.GetAccountActivitiesParamsCategoryValues, cobra.ShellCompDirectiveNoFileComp))
-	activityListCmd.Flags().String("page-token", "", "Pagination token")
+	cmdutil.RegisterFlags(activityListCmd, api.GetAccountActivitiesFlags, &cmdutil.FlagOpts{
+		Aliases: map[string]string{
+			"activity_types": "types",
+			"after":          "start",
+			"until":          "end",
+			"direction":      "sort",
+			"page_size":      "limit",
+		},
+	})
 
 	activityCmd.AddCommand(activityListCmd)
 }

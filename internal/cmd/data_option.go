@@ -14,7 +14,7 @@ var dataOptionCmd = &cobra.Command{
 
 var dataOptionBarsCmd = &cobra.Command{
 	Use:   "bars",
-	Short: api.OperationSummary["optionBars"],
+	Short: api.OptionBarsOp.Summary,
 	Example: `  alpaca data option bars --symbols AAPL250620C00200000 --start 2025-01-01
   alpaca data option bars --symbols AAPL250620C00200000,AAPL250620P00200000 --timeframe 1Day`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -41,7 +41,7 @@ var dataOptionBarsCmd = &cobra.Command{
 
 var dataOptionTradesCmd = &cobra.Command{
 	Use:   "trades",
-	Short: api.OperationSummary["OptionTrades"],
+	Short: api.OptionTradesOp.Summary,
 	Example: `  alpaca data option trades --symbols AAPL250620C00200000 --start 2025-01-01`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbols, err := cmdutil.RequireStr(cmd, "symbols")
@@ -66,7 +66,7 @@ var dataOptionTradesCmd = &cobra.Command{
 
 var dataOptionSnapshotCmd = &cobra.Command{
 	Use:   "snapshot",
-	Short: api.OperationSummary["OptionSnapshots"],
+	Short: api.OptionSnapshotsOp.Summary,
 	Example: `  alpaca data option snapshot --symbols AAPL250620C00200000
   alpaca data option snapshot --symbols AAPL250620C00200000,AAPL250620P00200000`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -89,7 +89,7 @@ var dataOptionSnapshotCmd = &cobra.Command{
 
 var dataOptionChainCmd = &cobra.Command{
 	Use:   "chain <underlying>",
-	Short: api.OperationSummary["OptionChain"],
+	Short: api.OptionChainOp.Summary,
 	Example: `  alpaca data option chain AAPL
   alpaca data option chain SPY --expiry 2025-06-20 --type call`,
 	Args: cobra.ExactArgs(1),
@@ -115,7 +115,7 @@ var dataOptionChainCmd = &cobra.Command{
 
 var dataOptionLatestQuotesCmd = &cobra.Command{
 	Use:   "latest-quotes",
-	Short: api.OperationSummary["OptionLatestQuotes"],
+	Short: api.OptionLatestQuotesOp.Summary,
 	Example: `  alpaca data option latest-quotes --symbols AAPL250620C00200000`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbols, err := cmdutil.RequireStr(cmd, "symbols")
@@ -137,7 +137,7 @@ var dataOptionLatestQuotesCmd = &cobra.Command{
 
 var dataOptionLatestTradesCmd = &cobra.Command{
 	Use:   "latest-trades",
-	Short: api.OperationSummary["OptionLatestTrades"],
+	Short: api.OptionLatestTradesOp.Summary,
 	Example: `  alpaca data option latest-trades --symbols AAPL250620C00200000`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbols, err := cmdutil.RequireStr(cmd, "symbols")
@@ -158,41 +158,32 @@ var dataOptionLatestTradesCmd = &cobra.Command{
 }
 
 func init() {
-	dataOptionBarsCmd.Flags().String("symbols", "", "Option symbols (comma-separated, required)")
-	dataOptionBarsCmd.Flags().String("timeframe", "1Day", "Timeframe: 1Min, 5Min, 15Min, 1Hour, 1Day, 1Week, 1Month")
-	_ = dataOptionBarsCmd.RegisterFlagCompletionFunc("timeframe", cobra.FixedCompletions([]string{"1Min", "5Min", "15Min", "1Hour", "1Day", "1Week", "1Month"}, cobra.ShellCompDirectiveNoFileComp))
-	cmdutil.AddDateRangeFlags(dataOptionBarsCmd)
-	cmdutil.AddLimitFlag(dataOptionBarsCmd)
-	cmdutil.AddSortFlag(dataOptionBarsCmd, api.SortValues)
+	cmdutil.RegisterFlags(dataOptionBarsCmd, api.OptionBarsFlags, &cmdutil.FlagOpts{
+		Exclude:  map[string]bool{"page_token": true},
+		Defaults: map[string]string{"timeframe": "1Day"},
+	})
 
-	dataOptionTradesCmd.Flags().String("symbols", "", "Option symbols (comma-separated, required)")
-	cmdutil.AddDateRangeFlags(dataOptionTradesCmd)
-	cmdutil.AddLimitFlag(dataOptionTradesCmd)
-	cmdutil.AddSortFlag(dataOptionTradesCmd, api.SortValues)
+	cmdutil.RegisterFlags(dataOptionTradesCmd, api.OptionTradesFlags, &cmdutil.FlagOpts{
+		Exclude: map[string]bool{"page_token": true},
+	})
 
-	dataOptionSnapshotCmd.Flags().String("symbols", "", "Option symbols (comma-separated, required)")
-	dataOptionSnapshotCmd.Flags().String("feed", "", "Feed: indicative or opra")
-	_ = dataOptionSnapshotCmd.RegisterFlagCompletionFunc("feed", cobra.FixedCompletions(api.OptionFeedValues, cobra.ShellCompDirectiveNoFileComp))
+	cmdutil.RegisterFlags(dataOptionSnapshotCmd, api.OptionSnapshotsFlags, &cmdutil.FlagOpts{
+		Exclude: map[string]bool{"limit": true, "page_token": true, "updated_since": true},
+	})
 
-	dataOptionChainCmd.Flags().String("feed", "", "Feed: indicative or opra")
-	_ = dataOptionChainCmd.RegisterFlagCompletionFunc("feed", cobra.FixedCompletions(api.OptionFeedValues, cobra.ShellCompDirectiveNoFileComp))
-	dataOptionChainCmd.Flags().String("expiry", "", "Exact expiration date (YYYY-MM-DD)")
-	dataOptionChainCmd.Flags().String("expiry-gte", "", "Expiration on or after")
-	dataOptionChainCmd.Flags().String("expiry-lte", "", "Expiration on or before")
-	dataOptionChainCmd.Flags().Float64("strike-gte", 0, "Min strike price")
-	dataOptionChainCmd.Flags().Float64("strike-lte", 0, "Max strike price")
-	dataOptionChainCmd.Flags().String("root-symbol", "", "Root symbol")
-	dataOptionChainCmd.Flags().String("type", "", "Option type: call or put")
-	_ = dataOptionChainCmd.RegisterFlagCompletionFunc("type", cobra.FixedCompletions(api.OptionContractTypeValues, cobra.ShellCompDirectiveNoFileComp))
-	dataOptionChainCmd.Flags().Int("limit", 0, "Max results")
+	cmdutil.RegisterFlags(dataOptionChainCmd, api.OptionChainFlags, &cmdutil.FlagOpts{
+		Exclude: map[string]bool{"page_token": true, "updated_since": true},
+		Aliases: map[string]string{
+			"expiration_date":     "expiry",
+			"expiration_date_gte": "expiry-gte",
+			"expiration_date_lte": "expiry-lte",
+			"strike_price_gte":    "strike-gte",
+			"strike_price_lte":    "strike-lte",
+		},
+	})
 
-	dataOptionLatestQuotesCmd.Flags().String("symbols", "", "Option symbols (comma-separated, required)")
-	dataOptionLatestQuotesCmd.Flags().String("feed", "", "Feed: indicative or opra")
-	_ = dataOptionLatestQuotesCmd.RegisterFlagCompletionFunc("feed", cobra.FixedCompletions(api.OptionFeedValues, cobra.ShellCompDirectiveNoFileComp))
-
-	dataOptionLatestTradesCmd.Flags().String("symbols", "", "Option symbols (comma-separated, required)")
-	dataOptionLatestTradesCmd.Flags().String("feed", "", "Feed: indicative or opra")
-	_ = dataOptionLatestTradesCmd.RegisterFlagCompletionFunc("feed", cobra.FixedCompletions(api.OptionFeedValues, cobra.ShellCompDirectiveNoFileComp))
+	cmdutil.RegisterFlags(dataOptionLatestQuotesCmd, api.OptionLatestQuotesFlags, nil)
+	cmdutil.RegisterFlags(dataOptionLatestTradesCmd, api.OptionLatestTradesFlags, nil)
 
 	dataOptionCmd.AddCommand(dataOptionBarsCmd)
 	dataOptionCmd.AddCommand(dataOptionTradesCmd)

@@ -36,15 +36,21 @@ func main() {
 	writeGo(filepath.Join(outDir, "marketdata_types.go"), genTypes("market-data-api.json", mSchemas))
 	writeGo(filepath.Join(outDir, "marketdata_client.go"), genClient("MarketData", "market-data-api.json", mSchemas, mEndpoints, true))
 
-	summaries := map[string]string{}
-	paramDescs := map[string]string{}
-	collectDescriptions(tEndpoints, tSchemas, tSpec, summaries, paramDescs)
-	collectDescriptions(mEndpoints, mSchemas, mSpec, summaries, paramDescs)
-	writeGo(filepath.Join(outDir, "descriptions.go"), writeDescriptionsFile(summaries, paramDescs))
+	var ops []*opDesc
+	ops = append(ops, collectDescriptions(tEndpoints, tSchemas, tSpec)...)
+	ops = append(ops, collectDescriptions(mEndpoints, mSchemas, mSpec)...)
+	sort.Slice(ops, func(i, j int) bool {
+		return ops[i].operationID < ops[j].operationID
+	})
+	writeGo(filepath.Join(outDir, "descriptions.go"), writeTypedDescriptionsFile(ops))
 
 	fmt.Printf("Generated %d trading types, %d market data types\n", len(tSchemas), len(mSchemas))
 	fmt.Printf("Generated %d trading endpoints, %d market data endpoints\n", len(tEndpoints), len(mEndpoints))
-	fmt.Printf("Generated %d operation summaries, %d param descriptions\n", len(summaries), len(paramDescs))
+	nParams := 0
+	for _, op := range ops {
+		nParams += len(op.params)
+	}
+	fmt.Printf("Generated %d operations, %d param descriptions\n", len(ops), nParams)
 }
 
 // --- Spec loading ---
@@ -968,25 +974,64 @@ func mapGet(m map[string]any, key string) map[string]any {
 
 // --- Description generation ---
 
-func collectDescriptions(endpoints []*endpointInfo, schemas []*schemaInfo, spec map[string]any, summaries, descs map[string]string) {
+type opDesc struct {
+	operationID string
+	goName      string
+	summary     string
+	params      []*flagDesc
+}
+
+type flagDesc struct {
+	oasName     string
+	goFieldName string
+	flagName    string
+	flagType    string
+	defaultVal  string
+	description string
+	enumValues  []string
+	isPathParam bool
+}
+
+func collectDescriptions(endpoints []*endpointInfo, schemas []*schemaInfo, spec map[string]any) []*opDesc {
 	compSchemas := mapGet(mapGet(spec, "components"), "schemas")
+	var ops []*opDesc
 
 	for _, ep := range endpoints {
-		summaries[ep.operationID] = normalizeSummary(ep.method, ep.summary, ep.returnsArray)
+		op := &opDesc{
+			operationID: ep.operationID,
+			goName:      toGoName(ep.operationID),
+			summary:     normalizeSummary(ep.method, ep.summary, ep.returnsArray),
+		}
 
 		for _, p := range ep.queryParams {
 			desc := p.description
 			if desc == "" {
 				desc = humanize(p.name, p.enumValues)
 			}
-			descs[ep.operationID+"."+p.name] = normalizeDesc(desc)
+			op.params = append(op.params, &flagDesc{
+				oasName:     p.name,
+				goFieldName: toGoFieldName(p.name),
+				flagName:    strings.ReplaceAll(p.name, "_", "-"),
+				flagType:    goTypeToFlagType(p.goType),
+				defaultVal:  p.defaultVal,
+				description: normalizeDesc(desc),
+				enumValues:  p.enumValues,
+			})
 		}
+
 		for _, p := range ep.pathParams {
 			desc := p.description
 			if desc == "" {
 				desc = humanize(p.name, p.enumValues)
 			}
-			descs[ep.operationID+"."+p.name] = normalizeDesc(desc)
+			op.params = append(op.params, &flagDesc{
+				oasName:     p.name,
+				goFieldName: toGoFieldName(p.name),
+				flagName:    strings.ReplaceAll(p.name, "_", "-"),
+				flagType:    goTypeToFlagType(p.goType),
+				description: normalizeDesc(desc),
+				isPathParam: true,
+			})
 		}
 
 		bodyProps := getBodyProps(ep, schemas)
@@ -995,8 +1040,62 @@ func collectDescriptions(endpoints []*endpointInfo, schemas []*schemaInfo, spec 
 			if desc == "" {
 				desc = humanize(propName, propertyEnums(propSchema, compSchemas))
 			}
-			descs[ep.operationID+"."+propName] = normalizeDesc(desc)
+			op.params = append(op.params, &flagDesc{
+				oasName:     propName,
+				goFieldName: toGoFieldName(propName),
+				flagName:    strings.ReplaceAll(propName, "_", "-"),
+				flagType:    bodyPropFlagType(propSchema, compSchemas),
+				description: normalizeDesc(desc),
+				enumValues:  propertyEnums(propSchema, compSchemas),
+			})
 		}
+
+		sort.Slice(op.params, func(i, j int) bool {
+			return op.params[i].oasName < op.params[j].oasName
+		})
+
+		ops = append(ops, op)
+	}
+
+	return ops
+}
+
+func goTypeToFlagType(goType string) string {
+	switch goType {
+	case "int":
+		return "int"
+	case "bool":
+		return "bool"
+	case "float64":
+		return "float64"
+	default:
+		return "string"
+	}
+}
+
+func bodyPropFlagType(prop map[string]any, compSchemas map[string]any) string {
+	if ref, ok := prop["$ref"].(string); ok && compSchemas != nil {
+		name := refBaseName(ref)
+		if target, ok := compSchemas[name].(map[string]any); ok {
+			if _, hasEnum := target["enum"].([]any); hasEnum {
+				return "string"
+			}
+			return goTypeToFlagType(schemaToFlagType(target))
+		}
+	}
+	return goTypeToFlagType(schemaToFlagType(prop))
+}
+
+func schemaToFlagType(s map[string]any) string {
+	switch t, _ := s["type"].(string); t {
+	case "integer":
+		return "int"
+	case "boolean":
+		return "bool"
+	case "number":
+		return "float64"
+	default:
+		return "string"
 	}
 }
 
@@ -1174,37 +1273,94 @@ func humanize(name string, enumValues []string) string {
 	return s
 }
 
-func writeDescriptionsFile(summaries, descs map[string]string) string {
+func writeTypedDescriptionsFile(ops []*opDesc) string {
 	var buf bytes.Buffer
 	fmt.Fprintf(&buf, "// Code generated from api/specs; DO NOT EDIT.\n\n")
 	fmt.Fprintf(&buf, "package api\n\n")
 
-	fmt.Fprintf(&buf, "// OperationSummary maps operationId to a normalized CLI-friendly summary.\n")
-	fmt.Fprintf(&buf, "var OperationSummary = map[string]string{\n")
-	keys := sortedKeys(summaries)
-	for _, k := range keys {
-		fmt.Fprintf(&buf, "\t%q: %q,\n", k, summaries[k])
-	}
+	fmt.Fprintf(&buf, "// FlagDef describes a CLI flag derived from the OpenAPI spec.\n")
+	fmt.Fprintf(&buf, "type FlagDef struct {\n")
+	fmt.Fprintf(&buf, "\tName        string   // kebab-case CLI flag name\n")
+	fmt.Fprintf(&buf, "\tOASName     string   // original OAS property/parameter name\n")
+	fmt.Fprintf(&buf, "\tType        string   // \"string\", \"bool\", \"int\", \"float64\"\n")
+	fmt.Fprintf(&buf, "\tDefault     string\n")
+	fmt.Fprintf(&buf, "\tDescription string\n")
+	fmt.Fprintf(&buf, "\tCompletions []string // enum values for shell completion\n")
 	fmt.Fprintf(&buf, "}\n\n")
 
-	fmt.Fprintf(&buf, "// ParamDescription maps operationId.paramName to a normalized description.\n")
-	fmt.Fprintf(&buf, "var ParamDescription = map[string]string{\n")
-	keys = sortedKeys(descs)
-	for _, k := range keys {
-		fmt.Fprintf(&buf, "\t%q: %q,\n", k, descs[k])
+	for _, op := range ops {
+		typeName := lcFirst(op.goName) + "Op"
+
+		fmt.Fprintf(&buf, "type %s struct {\n", typeName)
+		fmt.Fprintf(&buf, "\tSummary string\n")
+		seen := map[string]bool{}
+		for _, p := range op.params {
+			if seen[p.goFieldName] {
+				continue
+			}
+			seen[p.goFieldName] = true
+			fmt.Fprintf(&buf, "\t%s string\n", p.goFieldName)
+		}
+		fmt.Fprintf(&buf, "}\n\n")
+
+		seen = map[string]bool{}
+		fmt.Fprintf(&buf, "var %sOp = %s{\n", op.goName, typeName)
+		fmt.Fprintf(&buf, "\tSummary: %q,\n", op.summary)
+		for _, p := range op.params {
+			if seen[p.goFieldName] {
+				continue
+			}
+			seen[p.goFieldName] = true
+			fmt.Fprintf(&buf, "\t%s: %q,\n", p.goFieldName, p.description)
+		}
+		fmt.Fprintf(&buf, "}\n\n")
+
+		hasFlags := false
+		for _, p := range op.params {
+			if !p.isPathParam {
+				hasFlags = true
+				break
+			}
+		}
+		if hasFlags {
+			seen = map[string]bool{}
+			fmt.Fprintf(&buf, "var %sFlags = []FlagDef{\n", op.goName)
+			for _, p := range op.params {
+				if p.isPathParam || seen[p.oasName] {
+					continue
+				}
+				seen[p.oasName] = true
+				fmt.Fprintf(&buf, "\t{Name: %q, OASName: %q, Type: %q", p.flagName, p.oasName, p.flagType)
+				if p.defaultVal != "" {
+					fmt.Fprintf(&buf, ", Default: %q", p.defaultVal)
+				}
+				fmt.Fprintf(&buf, ", Description: %q", p.description)
+				if len(p.enumValues) > 0 {
+					fmt.Fprintf(&buf, ", Completions: []string{")
+					for i, v := range p.enumValues {
+						if i > 0 {
+							buf.WriteString(", ")
+						}
+						fmt.Fprintf(&buf, "%q", v)
+					}
+					buf.WriteString("}")
+				}
+				fmt.Fprintf(&buf, "},\n")
+			}
+			fmt.Fprintf(&buf, "}\n\n")
+		}
 	}
-	fmt.Fprintf(&buf, "}\n")
 
 	return buf.String()
 }
 
-func sortedKeys(m map[string]string) []string {
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
+func lcFirst(s string) string {
+	if s == "" {
+		return s
 	}
-	sort.Strings(keys)
-	return keys
+	r := []rune(s)
+	r[0] = unicode.ToLower(r[0])
+	return string(r)
 }
 
 // --- File writing ---

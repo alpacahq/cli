@@ -14,7 +14,7 @@ var assetCmd = &cobra.Command{
 
 var assetListCmd = &cobra.Command{
 	Use:   "list",
-	Short: api.OperationSummary["get-v2-assets"],
+	Short: api.GetV2AssetsOp.Summary,
 	Example: `  alpaca asset list
   alpaca asset list --class us_equity --status active
   alpaca asset list --exchange NYSE`,
@@ -35,7 +35,7 @@ var assetListCmd = &cobra.Command{
 
 var assetGetCmd = &cobra.Command{
 	Use:   "get <symbol>",
-	Short: api.OperationSummary["get-v2-assets-symbol_or_asset_id"],
+	Short: api.GetV2AssetsSymbolOrAssetIDOp.Summary,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		asset, err := tradingClient.GetV2AssetsSymbolOrAssetID(args[0])
@@ -48,7 +48,7 @@ var assetGetCmd = &cobra.Command{
 
 var treasuryListCmd = &cobra.Command{
 	Use:   "treasury",
-	Short: api.OperationSummary["UsTreasuries"],
+	Short: api.UsTreasuriesOp.Summary,
 	Example: `  alpaca asset treasury
   alpaca asset treasury --status active`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -65,7 +65,7 @@ var treasuryListCmd = &cobra.Command{
 
 var bondListCmd = &cobra.Command{
 	Use:   "bond",
-	Short: api.OperationSummary["UsCorporates"],
+	Short: api.UsCorporatesOp.Summary,
 	Example: `  alpaca asset bond
   alpaca asset bond --status active`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -81,19 +81,20 @@ var bondListCmd = &cobra.Command{
 }
 
 func init() {
-	assetListCmd.Flags().String("status", "", "Filter: active or inactive")
-	_ = assetListCmd.RegisterFlagCompletionFunc("status", cobra.FixedCompletions(api.AssetsStatusValues, cobra.ShellCompDirectiveNoFileComp))
-	assetListCmd.Flags().String("class", "", "Asset class: us_equity, us_option, crypto, fixed_income")
-	_ = assetListCmd.RegisterFlagCompletionFunc("class", cobra.FixedCompletions([]string{"us_equity", "crypto", "us_option", "fixed_income"}, cobra.ShellCompDirectiveNoFileComp))
-	assetListCmd.Flags().String("exchange", "", "Exchange: NYSE, NASDAQ, etc.")
-	_ = assetListCmd.RegisterFlagCompletionFunc("exchange", cobra.FixedCompletions([]string{"NYSE", "NASDAQ", "AMEX", "ARCA", "BATS", "OTC", "FTXU", "CBSE", "ERSX"}, cobra.ShellCompDirectiveNoFileComp))
+	cmdutil.RegisterFlags(assetListCmd, api.GetV2AssetsFlags, &cmdutil.FlagOpts{
+		Exclude: map[string]bool{"attributes": true},
+		Aliases: map[string]string{"asset_class": "class"},
+	})
 
-	treasuryListCmd.Flags().String("status", "", "Bond status: active or inactive")
-	_ = treasuryListCmd.RegisterFlagCompletionFunc("status", cobra.FixedCompletions(api.AssetsStatusValues, cobra.ShellCompDirectiveNoFileComp))
-	treasuryListCmd.Flags().String("cusips", "", "Filter by CUSIPs (comma-separated)")
-	bondListCmd.Flags().String("status", "", "Bond status: active or inactive")
-	_ = bondListCmd.RegisterFlagCompletionFunc("status", cobra.FixedCompletions(api.AssetsStatusValues, cobra.ShellCompDirectiveNoFileComp))
-	bondListCmd.Flags().String("cusips", "", "Filter by CUSIPs (comma-separated)")
+	cmdutil.RegisterFlags(treasuryListCmd, api.UsTreasuriesFlags, &cmdutil.FlagOpts{
+		Exclude: map[string]bool{"isins": true, "subtype": true},
+		Aliases: map[string]string{"bond_status": "status"},
+	})
+
+	cmdutil.RegisterFlags(bondListCmd, api.UsCorporatesFlags, &cmdutil.FlagOpts{
+		Exclude: map[string]bool{"isins": true, "tickers": true},
+		Aliases: map[string]string{"bond_status": "status"},
+	})
 
 	assetCmd.AddCommand(assetListCmd)
 	assetCmd.AddCommand(assetGetCmd)

@@ -16,7 +16,7 @@ var optionCmd = &cobra.Command{
 
 var optionChainCmd = &cobra.Command{
 	Use:   "chain <underlying>",
-	Short: api.OperationSummary["get-options-contracts"],
+	Short: api.GetOptionsContractsOp.Summary,
 	Long:  "List option contracts for an underlying symbol. For market data (greeks, pricing), use `data option chain`.",
 	Example: `  alpaca option chain AAPL
   alpaca option chain AAPL --expiry 2025-06-20 --type call
@@ -46,7 +46,7 @@ var optionChainCmd = &cobra.Command{
 
 var optionGetCmd = &cobra.Command{
 	Use:   "get <symbol-or-id>",
-	Short: api.OperationSummary["get-option-contract-symbol_or_id"],
+	Short: api.GetOptionContractSymbolOrIDOp.Summary,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		contract, err := tradingClient.GetOptionContractSymbolOrID(args[0])
@@ -59,7 +59,7 @@ var optionGetCmd = &cobra.Command{
 
 var optionExerciseCmd = &cobra.Command{
 	Use:   "exercise <symbol-or-id>",
-	Short: api.OperationSummary["optionExercise"],
+	Short: api.OptionExerciseOp.Summary,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		warnLive()
@@ -74,7 +74,7 @@ var optionExerciseCmd = &cobra.Command{
 
 var optionDoNotExerciseCmd = &cobra.Command{
 	Use:   "do-not-exercise <symbol-or-id>",
-	Short: api.OperationSummary["optionDoNotExercise"],
+	Short: api.OptionDoNotExerciseOp.Summary,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		warnLive()
@@ -88,16 +88,16 @@ var optionDoNotExerciseCmd = &cobra.Command{
 }
 
 func init() {
-	optionChainCmd.Flags().String("expiry", "", "Exact expiration date (YYYY-MM-DD)")
-	optionChainCmd.Flags().String("expiry-gte", "", "Expiration date on or after (YYYY-MM-DD)")
-	optionChainCmd.Flags().String("expiry-lte", "", "Expiration date on or before (YYYY-MM-DD)")
-	optionChainCmd.Flags().String("type", "", "Option type: call or put")
-	_ = optionChainCmd.RegisterFlagCompletionFunc("type", cobra.FixedCompletions(api.OptionContractTypeValues, cobra.ShellCompDirectiveNoFileComp))
-	optionChainCmd.Flags().Float64("strike-gte", 0, "Minimum strike price")
-	optionChainCmd.Flags().Float64("strike-lte", 0, "Maximum strike price")
-	optionChainCmd.Flags().String("root-symbol", "", "Root symbol for options")
-	optionChainCmd.Flags().Int("limit", 0, "Max results")
-	optionChainCmd.Flags().Bool("show-deliverables", false, "Include deliverables info")
+	cmdutil.RegisterFlags(optionChainCmd, api.GetOptionsContractsFlags, &cmdutil.FlagOpts{
+		Exclude: map[string]bool{"underlying_symbols": true, "ppind": true, "page_token": true},
+		Aliases: map[string]string{
+			"expiration_date":     "expiry",
+			"expiration_date_gte": "expiry-gte",
+			"expiration_date_lte": "expiry-lte",
+			"strike_price_gte":    "strike-gte",
+			"strike_price_lte":    "strike-lte",
+		},
+	})
 
 	optionCmd.AddCommand(optionChainCmd)
 	optionCmd.AddCommand(optionGetCmd)

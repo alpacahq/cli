@@ -13,7 +13,7 @@ import (
 
 var clockCmd = &cobra.Command{
 	Use:   "clock",
-	Short: api.OperationSummary["LegacyClock"],
+	Short: api.LegacyClockOp.Summary,
 	Example: `  alpaca clock
   alpaca clock --markets XNYS,XNAS`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -52,7 +52,7 @@ var clockCmd = &cobra.Command{
 
 var calendarCmd = &cobra.Command{
 	Use:   "calendar",
-	Short: api.OperationSummary["LegacyCalendar"],
+	Short: api.LegacyCalendarOp.Summary,
 	Example: `  alpaca calendar
   alpaca calendar --start 2025-01-01 --end 2025-12-31
   alpaca calendar --market XNYS --start 2025-01-01`,
@@ -90,7 +90,7 @@ var portfolioCmd = &cobra.Command{
 
 var portfolioHistoryCmd = &cobra.Command{
 	Use:   "history",
-	Short: api.OperationSummary["getAccountPortfolioHistory"],
+	Short: api.GetAccountPortfolioHistoryOp.Summary,
 	Example: `  alpaca portfolio history
   alpaca portfolio history --period 1M --timeframe 1D`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -113,7 +113,7 @@ var portfolioHistoryCmd = &cobra.Command{
 
 var newsCmd = &cobra.Command{
 	Use:   "news",
-	Short: api.OperationSummary["News"],
+	Short: api.NewsOp.Summary,
 	Example: `  alpaca news
   alpaca news --symbols AAPL,MSFT --limit 10`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -141,28 +141,21 @@ var newsCmd = &cobra.Command{
 }
 
 func init() {
-	clockCmd.Flags().String("markets", "", "Market MICs for v3 multi-market clock (e.g. XNYS,XNAS)")
+	cmdutil.RegisterFlags(clockCmd, api.ClockFlags, &cmdutil.FlagOpts{
+		Exclude: map[string]bool{"time": true},
+	})
 
-	calendarCmd.Flags().String("start", "", "Start date (YYYY-MM-DD)")
-	calendarCmd.Flags().String("end", "", "End date (YYYY-MM-DD)")
+	cmdutil.RegisterFlags(calendarCmd, api.LegacyCalendarFlags, &cmdutil.FlagOpts{
+		Exclude: map[string]bool{"date_type": true},
+	})
 	calendarCmd.Flags().String("market", "", "Market MIC for v3 calendar (e.g. XNYS)")
 
-	portfolioHistoryCmd.Flags().String("period", "", "Period: 1D, 1W, 1M, 3M, 1A (1 year), all")
-	_ = portfolioHistoryCmd.RegisterFlagCompletionFunc("period", cobra.FixedCompletions([]string{"1D", "1W", "1M", "3M", "1A", "all"}, cobra.ShellCompDirectiveNoFileComp))
-	portfolioHistoryCmd.Flags().String("timeframe", "", "Timeframe: 1Min, 5Min, 15Min, 1H, 1D")
-	_ = portfolioHistoryCmd.RegisterFlagCompletionFunc("timeframe", cobra.FixedCompletions([]string{"1Min", "5Min", "15Min", "1H", "1D"}, cobra.ShellCompDirectiveNoFileComp))
-	portfolioHistoryCmd.Flags().String("start", "", "Start date (RFC3339)")
-	portfolioHistoryCmd.Flags().String("end", "", "End date (RFC3339)")
-	portfolioHistoryCmd.Flags().String("intraday-reporting", "", "Intraday reporting: market_hours, extended_hours, continuous")
-	_ = portfolioHistoryCmd.RegisterFlagCompletionFunc("intraday-reporting", cobra.FixedCompletions(api.GetAccountPortfolioHistoryParamsIntradayReportingValues, cobra.ShellCompDirectiveNoFileComp))
-	portfolioHistoryCmd.Flags().String("pnl-reset", "", "P&L reset mode: no_reset, per_day")
-	_ = portfolioHistoryCmd.RegisterFlagCompletionFunc("pnl-reset", cobra.FixedCompletions(api.GetAccountPortfolioHistoryParamsPNLResetValues, cobra.ShellCompDirectiveNoFileComp))
+	cmdutil.RegisterFlags(portfolioHistoryCmd, api.GetAccountPortfolioHistoryFlags, &cmdutil.FlagOpts{
+		Exclude: map[string]bool{"extended_hours": true, "cashflow_types": true},
+	})
 	portfolioCmd.AddCommand(portfolioHistoryCmd)
 
-	newsCmd.Flags().String("symbols", "", "Filter by symbols (comma-separated)")
-	cmdutil.AddDateRangeFlags(newsCmd)
-	newsCmd.Flags().Int("limit", 0, "Max articles (default: 10)")
-	cmdutil.AddSortFlag(newsCmd, api.SortValues)
-	newsCmd.Flags().Bool("include-content", false, "Include full article content")
-	newsCmd.Flags().Bool("exclude-contentless", false, "Exclude articles without content")
+	cmdutil.RegisterFlags(newsCmd, api.NewsFlags, &cmdutil.FlagOpts{
+		Exclude: map[string]bool{"page_token": true},
+	})
 }

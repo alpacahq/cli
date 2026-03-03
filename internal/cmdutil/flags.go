@@ -2,10 +2,56 @@ package cmdutil
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
+	"github.com/alpacahq/cli/internal/api"
 	"github.com/spf13/cobra"
 )
+
+// FlagOpts configures RegisterFlags behavior. All map keys use OAS names.
+type FlagOpts struct {
+	Exclude  map[string]bool   // OAS param names to skip
+	Aliases  map[string]string // OAS name → CLI flag name override
+	Defaults map[string]string // OAS name → default value override
+}
+
+// RegisterFlags registers CLI flags from generated FlagDef definitions.
+func RegisterFlags(cmd *cobra.Command, defs []api.FlagDef, opts *FlagOpts) {
+	for _, d := range defs {
+		if opts != nil && opts.Exclude[d.OASName] {
+			continue
+		}
+
+		name := d.Name
+		defaultVal := d.Default
+		if opts != nil {
+			if alias, ok := opts.Aliases[d.OASName]; ok {
+				name = alias
+			}
+			if def, ok := opts.Defaults[d.OASName]; ok {
+				defaultVal = def
+			}
+		}
+
+		switch d.Type {
+		case "bool":
+			cmd.Flags().Bool(name, defaultVal == "true", d.Description)
+		case "int":
+			defInt, _ := strconv.Atoi(defaultVal)
+			cmd.Flags().Int(name, defInt, d.Description)
+		case "float64":
+			defFloat, _ := strconv.ParseFloat(defaultVal, 64)
+			cmd.Flags().Float64(name, defFloat, d.Description)
+		default:
+			cmd.Flags().String(name, defaultVal, d.Description)
+		}
+
+		if len(d.Completions) > 0 {
+			_ = cmd.RegisterFlagCompletionFunc(name, cobra.FixedCompletions(d.Completions, cobra.ShellCompDirectiveNoFileComp))
+		}
+	}
+}
 
 func Str(cmd *cobra.Command, name string) string {
 	v, _ := cmd.Flags().GetString(name)
