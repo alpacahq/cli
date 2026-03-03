@@ -65,7 +65,6 @@ var optionExerciseCmd = &cobra.Command{
 	Short: api.OptionExerciseOp.Summary,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		warnLive()
 		_, err := tradingClient.OptionExercise(args[0])
 		if err != nil {
 			return err
@@ -80,7 +79,6 @@ var optionDoNotExerciseCmd = &cobra.Command{
 	Short: api.OptionDoNotExerciseOp.Summary,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		warnLive()
 		_, err := tradingClient.OptionDoNotExercise(args[0])
 		if err != nil {
 			return err

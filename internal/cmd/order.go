@@ -24,7 +24,6 @@ var orderSubmitCmd = &cobra.Command{
   alpaca order submit AAPL --notional 1000 --side buy --type market`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		warnLive()
 		body := &api.PostOrderRequest{
 			Symbol:         args[0],
 			Qty:            cmdutil.Str(cmd, "qty"),
@@ -139,7 +138,6 @@ var orderCancelCmd = &cobra.Command{
 	Short: api.DeleteOrderByOrderIDOp.Summary,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		warnLive()
 		_, err := tradingClient.DeleteOrderByOrderID(args[0])
 		if err != nil {
 			return err
@@ -153,7 +151,6 @@ var orderCancelAllCmd = &cobra.Command{
 	Use:   "cancel-all",
 	Short: api.DeleteAllOrdersOp.Summary,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		warnLive()
 		canceled, err := tradingClient.DeleteAllOrders()
 		if err != nil {
 			return err

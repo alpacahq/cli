@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/alpacahq/cli/internal/api"
@@ -230,25 +229,8 @@ func getOutput() string {
 	return outputTable
 }
 
-func isLive() bool {
-	if cfg == nil {
-		return false
-	}
-	return strings.Contains(cfg.BaseURL, "api.alpaca.markets") && !strings.Contains(cfg.BaseURL, "paper")
-}
-
 func verboseLog(format string, args ...any) {
 	if verboseFlag {
 		fmt.Fprintf(os.Stderr, format+"\n", args...)
 	}
-}
-
-func warnLive() {
-	if !isLive() || quietFlag {
-		return
-	}
-	if cfg != nil && cfg.SuppressWarnings {
-		return
-	}
-	_, _ = color.New(color.FgYellow).Fprintln(os.Stderr, "⚠ Live trading account. This order will use real money.")
 }

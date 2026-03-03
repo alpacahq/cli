@@ -193,25 +193,6 @@ func TestLoad_OutputFlagOverridesConfig(t *testing.T) {
 	}
 }
 
-func TestProfileSuppressWarnings(t *testing.T) {
-	withTempDir(t)
-
-	_ = SaveProfile("quiet", &Profile{
-		APIKey:           "key",
-		SecretKey:        "secret",
-		SuppressWarnings: true,
-	})
-	_ = SaveGlobalConfig(&Config{DefaultProfile: "quiet"})
-
-	r, err := Load("", "")
-	if err != nil {
-		t.Fatalf("Load: %v", err)
-	}
-	if !r.SuppressWarnings {
-		t.Error("expected SuppressWarnings = true")
-	}
-}
-
 func TestProfileFilePermissions(t *testing.T) {
 	withTempDir(t)
 

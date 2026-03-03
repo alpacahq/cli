@@ -16,26 +16,23 @@ type Config struct {
 }
 
 type Profile struct {
-	APIKey           string `yaml:"api_key"`
-	SecretKey        string `yaml:"secret_key"`
-	BaseURL          string `yaml:"base_url"`
-	DataURL          string `yaml:"data_url"`
-	SuppressWarnings bool   `yaml:"suppress_warnings,omitempty"`
-
+	APIKey    string `yaml:"api_key"`
+	SecretKey string `yaml:"secret_key"`
+	BaseURL   string `yaml:"base_url"`
+	DataURL   string `yaml:"data_url"`
 	// Deprecated: kept for backwards compat with existing profile files.
 	// New profiles store base_url directly.
 	Environment string `yaml:"environment,omitempty"`
 }
 
 type Resolved struct {
-	APIKey           string
-	SecretKey        string
-	BaseURL          string
-	DataURL          string
-	Output           string
-	Color            string
-	ProfileName      string
-	SuppressWarnings bool
+	APIKey      string
+	SecretKey   string
+	BaseURL     string
+	DataURL     string
+	Output      string
+	Color       string
+	ProfileName string
 }
 
 func Dir() string {
@@ -52,14 +49,13 @@ func Load(profileFlag, outputFlag string) (*Resolved, error) {
 	profile := loadProfile(profileName)
 
 	r := &Resolved{
-		ProfileName:      profileName,
-		APIKey:           resolve(os.Getenv("ALPACA_API_KEY"), profile.APIKey),
-		SecretKey:        resolve(os.Getenv("ALPACA_SECRET_KEY"), profile.SecretKey),
-		BaseURL:          resolve(os.Getenv("ALPACA_BASE_URL"), profile.BaseURL),
-		DataURL:          resolve(os.Getenv("ALPACA_DATA_URL"), profile.DataURL),
-		Output:           resolve(outputFlag, os.Getenv("ALPACA_OUTPUT"), cfg.Output, "table"),
-		Color:            resolve(cfg.Color, "auto"),
-		SuppressWarnings: profile.SuppressWarnings,
+		ProfileName: profileName,
+		APIKey:      resolve(os.Getenv("ALPACA_API_KEY"), profile.APIKey),
+		SecretKey:   resolve(os.Getenv("ALPACA_SECRET_KEY"), profile.SecretKey),
+		BaseURL:     resolve(os.Getenv("ALPACA_BASE_URL"), profile.BaseURL),
+		DataURL:     resolve(os.Getenv("ALPACA_DATA_URL"), profile.DataURL),
+		Output:      resolve(outputFlag, os.Getenv("ALPACA_OUTPUT"), cfg.Output, "table"),
+		Color:       resolve(cfg.Color, "auto"),
 	}
 
 	// Backwards compat: old profiles may have environment instead of base_url

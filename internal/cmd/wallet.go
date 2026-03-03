@@ -67,7 +67,6 @@ var walletTransferCreateCmd = &cobra.Command{
 		if err := cmdutil.RequireAll(cmd, "amount", "address", "asset"); err != nil {
 			return err
 		}
-		warnLive()
 		body := &api.CreateCryptoTransferRequest{
 			Amount:  cmdutil.Str(cmd, "amount"),
 			Address: cmdutil.Str(cmd, "address"),

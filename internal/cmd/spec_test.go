@@ -239,62 +239,6 @@ func isParamOrPropMatch(enumKey, flagName string) bool {
 	return specName == flagNorm
 }
 
-// TestMutatingCommandsHaveWarnLive verifies that every command calling a
-// mutating API method also calls warnLive().
-// Exemptions must be listed explicitly with a reason.
-func TestMutatingCommandsHaveWarnLive(t *testing.T) {
-	exempted := map[string]string{
-		"PatchAccountConfig":                 "config update, low-risk",
-		"PostWatchlist":                      "watchlist ops are non-financial",
-		"UpdateWatchlistByID":                "watchlist ops are non-financial",
-		"AddAssetToWatchlist":                "watchlist ops are non-financial",
-		"DeleteWatchlistByID":                "watchlist ops are non-financial",
-		"RemoveAssetFromWatchlist":           "watchlist ops are non-financial",
-		"UpdateWatchlistByName":              "watchlist ops are non-financial",
-		"AddAssetToWatchlistByName":          "watchlist ops are non-financial",
-		"DeleteWatchlistByName":              "watchlist ops are non-financial",
-		"CreateWhitelistedAddress":           "address management, not a trade",
-		"DeleteWhitelistedAddress":           "address management, not a trade",
-		"CreateWhitelistedPerpAddress":       "address management, not a trade",
-		"DeleteWhitelistedPerpAddress":       "address management, not a trade",
-		"SetCryptoPerpAccountLeverage":       "config setting, not a trade",
-		"CreateCryptoPerpTransferForAccount": "internal wallet transfer",
-	}
-
-	dir := cmdDir()
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	methodCall := regexp.MustCompile(`(?:tradingClient|dataClient)\.\s*(\w+)\s*\(`)
-
-	for _, e := range entries {
-		if e.IsDir() || !strings.HasSuffix(e.Name(), ".go") || strings.HasSuffix(e.Name(), "_test.go") {
-			continue
-		}
-		data, err := os.ReadFile(filepath.Join(dir, e.Name()))
-		if err != nil {
-			t.Fatal(err)
-		}
-		src := string(data)
-
-		matches := methodCall.FindAllStringSubmatch(src, -1)
-		for _, m := range matches {
-			method := m[1]
-			if !api.TradingMutatingMethods[method] {
-				continue
-			}
-			if _, ok := exempted[method]; ok {
-				continue
-			}
-			if !strings.Contains(src, "warnLive()") {
-				t.Errorf("%s calls mutating method %s but has no warnLive()", e.Name(), method)
-			}
-		}
-	}
-}
-
 // TestValidateMethods verifies generated Validate() methods work correctly.
 func TestValidateMethods(t *testing.T) {
 	t.Run("CreateCryptoTransferRequest/empty", func(t *testing.T) {

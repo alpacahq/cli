@@ -47,7 +47,6 @@ var positionCloseCmd = &cobra.Command{
   alpaca position close AAPL --pct 50`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		warnLive()
 		params := &api.DeleteOpenPositionParams{
 			Qty:        cmdutil.Float64(cmd, "qty"),
 			Percentage: cmdutil.Float64(cmd, "pct"),
@@ -65,7 +64,6 @@ var positionCloseAllCmd = &cobra.Command{
 	Use:   "close-all",
 	Short: api.DeleteAllOpenPositionsOp.Summary,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		warnLive()
 		canceled, err := tradingClient.DeleteAllOpenPositions(&api.DeleteAllOpenPositionsParams{
 			CancelOrders: cmdutil.Bool(cmd, "cancel-orders"),
 		})
