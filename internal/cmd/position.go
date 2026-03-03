@@ -66,11 +66,6 @@ var positionCloseAllCmd = &cobra.Command{
 	Short: "Close all open positions",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		warnLive()
-		if isLive() {
-			if err := requireConfirmation("Close ALL open positions on your live account?"); err != nil {
-				return err
-			}
-		}
 		cancelled, err := tradingClient.DeleteAllOpenPositions(&api.DeleteAllOpenPositionsParams{
 			CancelOrders: cmdutil.Bool(cmd, "cancel-orders"),
 		})

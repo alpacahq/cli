@@ -11,7 +11,7 @@ import (
 
 var screenerCmd = &cobra.Command{
 	Use:   "screener",
-	Short: "Stock screener and market movers",
+	Short: "Stock and crypto screener and market movers",
 }
 
 var screenerMostActivesCmd = &cobra.Command{

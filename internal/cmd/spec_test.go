@@ -240,7 +240,7 @@ func isParamOrPropMatch(enumKey, flagName string) bool {
 }
 
 // TestMutatingCommandsHaveWarnLive verifies that every command calling a
-// mutating API method also calls warnLive() or requireConfirmation().
+// mutating API method also calls warnLive().
 // Exemptions must be listed explicitly with a reason.
 func TestMutatingCommandsHaveWarnLive(t *testing.T) {
 	exempted := map[string]string{
@@ -288,8 +288,8 @@ func TestMutatingCommandsHaveWarnLive(t *testing.T) {
 			if _, ok := exempted[method]; ok {
 				continue
 			}
-			if !strings.Contains(src, "warnLive()") && !strings.Contains(src, "requireConfirmation(") {
-				t.Errorf("%s calls mutating method %s but has no warnLive() or requireConfirmation()", e.Name(), method)
+			if !strings.Contains(src, "warnLive()") {
+				t.Errorf("%s calls mutating method %s but has no warnLive()", e.Name(), method)
 			}
 		}
 	}

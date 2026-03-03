@@ -62,7 +62,7 @@ var walletTransferGetCmd = &cobra.Command{
 
 var walletTransferCreateCmd = &cobra.Command{
 	Use:   "create",
-	Short: "Create a crypto transfer",
+	Short: "Create a crypto withdrawal to a whitelisted address",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if err := cmdutil.RequireAll(cmd, "amount", "address", "asset"); err != nil {
 			return err
@@ -138,8 +138,8 @@ var walletWhitelistDeleteCmd = &cobra.Command{
 func init() {
 	walletListCmd.Flags().String("asset", "", "Filter by crypto asset (e.g. BTC, ETH)")
 
-	walletTransferCreateCmd.Flags().String("amount", "", "Transfer amount")
-	walletTransferCreateCmd.Flags().String("address", "", "Destination address")
+	walletTransferCreateCmd.Flags().String("amount", "", "Amount to withdraw")
+	walletTransferCreateCmd.Flags().String("address", "", "Destination address (must be whitelisted)")
 	walletTransferCreateCmd.Flags().String("asset", "", "Crypto asset (e.g. BTC, ETH)")
 
 	walletWhitelistAddCmd.Flags().String("address", "", "Crypto address to whitelist")

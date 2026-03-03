@@ -83,7 +83,7 @@ var bondListCmd = &cobra.Command{
 func init() {
 	assetListCmd.Flags().String("status", "", "Filter: active or inactive")
 	_ = assetListCmd.RegisterFlagCompletionFunc("status", cobra.FixedCompletions(api.AssetsStatusValues, cobra.ShellCompDirectiveNoFileComp))
-	assetListCmd.Flags().String("class", "", "Asset class: us_equity, crypto")
+	assetListCmd.Flags().String("class", "", "Asset class: us_equity, us_option, crypto, fixed_income")
 	_ = assetListCmd.RegisterFlagCompletionFunc("class", cobra.FixedCompletions([]string{"us_equity", "crypto", "us_option", "fixed_income"}, cobra.ShellCompDirectiveNoFileComp))
 	assetListCmd.Flags().String("exchange", "", "Exchange: NYSE, NASDAQ, etc.")
 	_ = assetListCmd.RegisterFlagCompletionFunc("exchange", cobra.FixedCompletions([]string{"NYSE", "NASDAQ", "AMEX", "ARCA", "BATS", "OTC", "FTXU", "CBSE", "ERSX"}, cobra.ShellCompDirectiveNoFileComp))

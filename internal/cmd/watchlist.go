@@ -130,7 +130,7 @@ var watchlistRemoveCmd = &cobra.Command{
 func init() {
 	watchlistCreateCmd.Flags().String("symbols", "", "Comma-separated symbols to add")
 	watchlistUpdateCmd.Flags().String("name", "", "New watchlist name")
-	watchlistUpdateCmd.Flags().String("symbols", "", "New comma-separated symbols list")
+	watchlistUpdateCmd.Flags().String("symbols", "", "Replace watchlist symbols with this list (comma-separated)")
 
 	watchlistCmd.AddCommand(watchlistListCmd)
 	watchlistCmd.AddCommand(watchlistGetCmd)

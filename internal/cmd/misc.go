@@ -13,7 +13,7 @@ import (
 
 var clockCmd = &cobra.Command{
 	Use:   "clock",
-	Short: "Show market clock",
+	Short: "Show market status, open/close times",
 	Example: `  alpaca clock
   alpaca clock --markets XNYS,XNAS`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -85,7 +85,7 @@ var calendarCmd = &cobra.Command{
 
 var portfolioCmd = &cobra.Command{
 	Use:   "portfolio",
-	Short: "Portfolio analytics",
+	Short: "Portfolio equity and P&L history",
 }
 
 var portfolioHistoryCmd = &cobra.Command{
@@ -147,7 +147,7 @@ func init() {
 	calendarCmd.Flags().String("end", "", "End date (YYYY-MM-DD)")
 	calendarCmd.Flags().String("market", "", "Market MIC for v3 calendar (e.g. XNYS)")
 
-	portfolioHistoryCmd.Flags().String("period", "", "Period: 1D, 1W, 1M, 3M, 1A, all")
+	portfolioHistoryCmd.Flags().String("period", "", "Period: 1D, 1W, 1M, 3M, 1A (1 year), all")
 	_ = portfolioHistoryCmd.RegisterFlagCompletionFunc("period", cobra.FixedCompletions([]string{"1D", "1W", "1M", "3M", "1A", "all"}, cobra.ShellCompDirectiveNoFileComp))
 	portfolioHistoryCmd.Flags().String("timeframe", "", "Timeframe: 1Min, 5Min, 15Min, 1H, 1D")
 	_ = portfolioHistoryCmd.RegisterFlagCompletionFunc("timeframe", cobra.FixedCompletions([]string{"1Min", "5Min", "15Min", "1H", "1D"}, cobra.ShellCompDirectiveNoFileComp))

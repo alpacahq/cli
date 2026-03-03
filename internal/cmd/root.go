@@ -27,7 +27,6 @@ var (
 	csvFlag       bool
 	quietFlag     bool
 	verboseFlag   bool
-	confirmFlag   bool
 	profileFlag   string
 	timeoutFlag   int
 )
@@ -149,7 +148,6 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&profileFlag, "profile", "p", "", "Config profile to use")
 	rootCmd.PersistentFlags().BoolVarP(&verboseFlag, "verbose", "v", false, "Show HTTP request details on stderr")
 	rootCmd.PersistentFlags().BoolVarP(&quietFlag, "quiet", "q", false, "Suppress non-data output (warnings, hints, color)")
-	rootCmd.PersistentFlags().BoolVar(&confirmFlag, "confirm", false, "Authorize destructive operations (cancel-all, close-all on live)")
 	rootCmd.PersistentFlags().IntVar(&timeoutFlag, "timeout", 30, "HTTP request timeout in seconds")
 
 	rootCmd.Flags().Bool("help-all", false, "Print full reference for every command")
@@ -243,9 +241,3 @@ func warnLive() {
 	_, _ = color.New(color.FgYellow).Fprintln(os.Stderr, "⚠ Live trading account. This order will use real money.")
 }
 
-func requireConfirmation(prompt string) error {
-	if confirmFlag {
-		return nil
-	}
-	return fmt.Errorf("%s\nHint: pass --confirm to proceed", prompt)
-}

@@ -151,11 +151,7 @@ var orderCancelAllCmd = &cobra.Command{
 	Use:   "cancel-all",
 	Short: "Cancel all open orders",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if isLive() {
-			if err := requireConfirmation("Cancel ALL open orders on your live account?"); err != nil {
-				return err
-			}
-		}
+		warnLive()
 		cancelled, err := tradingClient.DeleteAllOrders()
 		if err != nil {
 			return err
@@ -201,7 +197,7 @@ var orderReplaceCmd = &cobra.Command{
 
 func init() {
 	orderSubmitCmd.Flags().String("qty", "", "Number of shares")
-	orderSubmitCmd.Flags().String("notional", "", "Dollar amount (fractional)")
+	orderSubmitCmd.Flags().String("notional", "", "Dollar amount to trade (for fractional shares)")
 	orderSubmitCmd.Flags().String("side", "", "buy or sell")
 	_ = orderSubmitCmd.RegisterFlagCompletionFunc("side", cobra.FixedCompletions(api.OrderSideValues, cobra.ShellCompDirectiveNoFileComp))
 	orderSubmitCmd.Flags().String("type", "market", "Order type: market, limit, stop, stop_limit, trailing_stop")
@@ -211,7 +207,7 @@ func init() {
 	orderSubmitCmd.Flags().String("limit-price", "", "Limit price")
 	orderSubmitCmd.Flags().String("stop-price", "", "Stop price")
 	orderSubmitCmd.Flags().String("trail-percent", "", "Trailing stop percent")
-	orderSubmitCmd.Flags().String("trail-price", "", "Trailing stop price offset")
+	orderSubmitCmd.Flags().String("trail-price", "", "Trailing stop dollar offset from current price")
 	orderSubmitCmd.Flags().Bool("extended-hours", false, "Allow extended hours trading")
 	orderSubmitCmd.Flags().String("take-profit", "", "Take profit limit price (bracket order)")
 	orderSubmitCmd.Flags().String("stop-loss", "", "Stop loss price (bracket order)")
@@ -241,7 +237,7 @@ func init() {
 	orderReplaceCmd.Flags().String("stop-price", "", "New stop price")
 	orderReplaceCmd.Flags().String("tif", "", "New time in force")
 	_ = orderReplaceCmd.RegisterFlagCompletionFunc("tif", cobra.FixedCompletions(api.TimeInForceValues, cobra.ShellCompDirectiveNoFileComp))
-	orderReplaceCmd.Flags().String("trail", "", "New trail value")
+	orderReplaceCmd.Flags().String("trail", "", "New trailing stop value (percent or dollar amount)")
 	orderReplaceCmd.Flags().String("client-order-id", "", "New client order ID")
 
 	orderCmd.AddCommand(orderSubmitCmd)
