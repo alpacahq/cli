@@ -16,7 +16,7 @@ var optionCmd = &cobra.Command{
 
 var optionChainCmd = &cobra.Command{
 	Use:   "chain <underlying>",
-	Short: "Get option chain for an underlying symbol (contracts)",
+	Short: api.OperationSummary["get-options-contracts"],
 	Long:  "List option contracts for an underlying symbol. For market data (greeks, pricing), use `data option chain`.",
 	Example: `  alpaca option chain AAPL
   alpaca option chain AAPL --expiry 2025-06-20 --type call
@@ -46,7 +46,7 @@ var optionChainCmd = &cobra.Command{
 
 var optionGetCmd = &cobra.Command{
 	Use:   "get <symbol-or-id>",
-	Short: "Get option contract details",
+	Short: api.OperationSummary["get-option-contract-symbol_or_id"],
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		contract, err := tradingClient.GetOptionContractSymbolOrID(args[0])
@@ -59,7 +59,7 @@ var optionGetCmd = &cobra.Command{
 
 var optionExerciseCmd = &cobra.Command{
 	Use:   "exercise <symbol-or-id>",
-	Short: "Exercise an option position",
+	Short: api.OperationSummary["optionExercise"],
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		warnLive()
@@ -74,7 +74,7 @@ var optionExerciseCmd = &cobra.Command{
 
 var optionDoNotExerciseCmd = &cobra.Command{
 	Use:   "do-not-exercise <symbol-or-id>",
-	Short: "Mark an option position as do-not-exercise",
+	Short: api.OperationSummary["optionDoNotExercise"],
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		warnLive()

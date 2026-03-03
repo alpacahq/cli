@@ -14,7 +14,7 @@ var assetCmd = &cobra.Command{
 
 var assetListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List available assets",
+	Short: api.OperationSummary["get-v2-assets"],
 	Example: `  alpaca asset list
   alpaca asset list --class us_equity --status active
   alpaca asset list --exchange NYSE`,
@@ -35,7 +35,7 @@ var assetListCmd = &cobra.Command{
 
 var assetGetCmd = &cobra.Command{
 	Use:   "get <symbol>",
-	Short: "Get asset details",
+	Short: api.OperationSummary["get-v2-assets-symbol_or_asset_id"],
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		asset, err := tradingClient.GetV2AssetsSymbolOrAssetID(args[0])
@@ -48,7 +48,7 @@ var assetGetCmd = &cobra.Command{
 
 var treasuryListCmd = &cobra.Command{
 	Use:   "treasury",
-	Short: "List US Treasury bonds",
+	Short: api.OperationSummary["UsTreasuries"],
 	Example: `  alpaca asset treasury
   alpaca asset treasury --status active`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -65,7 +65,7 @@ var treasuryListCmd = &cobra.Command{
 
 var bondListCmd = &cobra.Command{
 	Use:   "bond",
-	Short: "List US Corporate bonds",
+	Short: api.OperationSummary["UsCorporates"],
 	Example: `  alpaca asset bond
   alpaca asset bond --status active`,
 	RunE: func(cmd *cobra.Command, args []string) error {

@@ -14,7 +14,7 @@ var accountCmd = &cobra.Command{
 
 var accountGetCmd = &cobra.Command{
 	Use:   "get",
-	Short: "Show account details",
+	Short: api.OperationSummary["getAccount"],
 	RunE: func(cmd *cobra.Command, args []string) error {
 		account, err := tradingClient.GetAccount()
 		if err != nil {
@@ -26,7 +26,7 @@ var accountGetCmd = &cobra.Command{
 
 var accountConfigGetCmd = &cobra.Command{
 	Use:   "get",
-	Short: "Show account configuration",
+	Short: api.OperationSummary["getAccountConfig"],
 	RunE: func(cmd *cobra.Command, args []string) error {
 		config, err := tradingClient.GetAccountConfig()
 		if err != nil {
@@ -38,7 +38,7 @@ var accountConfigGetCmd = &cobra.Command{
 
 var accountConfigSetCmd = &cobra.Command{
 	Use:   "set",
-	Short: "Update account configuration",
+	Short: api.OperationSummary["patchAccountConfig"],
 	Example: `  alpaca account config set --no-shorting true
   alpaca account config set --dtbp-check entry`,
 	RunE: func(cmd *cobra.Command, args []string) error {

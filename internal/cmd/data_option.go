@@ -14,7 +14,7 @@ var dataOptionCmd = &cobra.Command{
 
 var dataOptionBarsCmd = &cobra.Command{
 	Use:   "bars",
-	Short: "Get historical option bars",
+	Short: api.OperationSummary["optionBars"],
 	Example: `  alpaca data option bars --symbols AAPL250620C00200000 --start 2025-01-01
   alpaca data option bars --symbols AAPL250620C00200000,AAPL250620P00200000 --timeframe 1Day`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -41,7 +41,7 @@ var dataOptionBarsCmd = &cobra.Command{
 
 var dataOptionTradesCmd = &cobra.Command{
 	Use:   "trades",
-	Short: "Get historical option trades",
+	Short: api.OperationSummary["OptionTrades"],
 	Example: `  alpaca data option trades --symbols AAPL250620C00200000 --start 2025-01-01`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbols, err := cmdutil.RequireStr(cmd, "symbols")
@@ -66,7 +66,7 @@ var dataOptionTradesCmd = &cobra.Command{
 
 var dataOptionSnapshotCmd = &cobra.Command{
 	Use:   "snapshot",
-	Short: "Get option snapshots",
+	Short: api.OperationSummary["OptionSnapshots"],
 	Example: `  alpaca data option snapshot --symbols AAPL250620C00200000
   alpaca data option snapshot --symbols AAPL250620C00200000,AAPL250620P00200000`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -89,7 +89,7 @@ var dataOptionSnapshotCmd = &cobra.Command{
 
 var dataOptionChainCmd = &cobra.Command{
 	Use:   "chain <underlying>",
-	Short: "Get option chain snapshots with greeks and pricing",
+	Short: api.OperationSummary["OptionChain"],
 	Example: `  alpaca data option chain AAPL
   alpaca data option chain SPY --expiry 2025-06-20 --type call`,
 	Args: cobra.ExactArgs(1),
@@ -115,7 +115,7 @@ var dataOptionChainCmd = &cobra.Command{
 
 var dataOptionLatestQuotesCmd = &cobra.Command{
 	Use:   "latest-quotes",
-	Short: "Get latest option quotes",
+	Short: api.OperationSummary["OptionLatestQuotes"],
 	Example: `  alpaca data option latest-quotes --symbols AAPL250620C00200000`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbols, err := cmdutil.RequireStr(cmd, "symbols")
@@ -137,7 +137,7 @@ var dataOptionLatestQuotesCmd = &cobra.Command{
 
 var dataOptionLatestTradesCmd = &cobra.Command{
 	Use:   "latest-trades",
-	Short: "Get latest option trades",
+	Short: api.OperationSummary["OptionLatestTrades"],
 	Example: `  alpaca data option latest-trades --symbols AAPL250620C00200000`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbols, err := cmdutil.RequireStr(cmd, "symbols")

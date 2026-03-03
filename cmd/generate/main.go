@@ -36,8 +36,15 @@ func main() {
 	writeGo(filepath.Join(outDir, "marketdata_types.go"), genTypes("market-data-api.json", mSchemas))
 	writeGo(filepath.Join(outDir, "marketdata_client.go"), genClient("MarketData", "market-data-api.json", mSchemas, mEndpoints, true))
 
+	summaries := map[string]string{}
+	paramDescs := map[string]string{}
+	collectDescriptions(tEndpoints, tSchemas, tSpec, summaries, paramDescs)
+	collectDescriptions(mEndpoints, mSchemas, mSpec, summaries, paramDescs)
+	writeGo(filepath.Join(outDir, "descriptions.go"), writeDescriptionsFile(summaries, paramDescs))
+
 	fmt.Printf("Generated %d trading types, %d market data types\n", len(tSchemas), len(mSchemas))
 	fmt.Printf("Generated %d trading endpoints, %d market data endpoints\n", len(tEndpoints), len(mEndpoints))
+	fmt.Printf("Generated %d operation summaries, %d param descriptions\n", len(summaries), len(paramDescs))
 }
 
 // --- Spec loading ---
@@ -174,12 +181,13 @@ type endpointInfo struct {
 }
 
 type paramInfo struct {
-	name       string
-	goName     string
-	goType     string
-	required   bool
-	enumValues []string
-	defaultVal string
+	name        string
+	goName      string
+	goType      string
+	required    bool
+	enumValues  []string
+	defaultVal  string
+	description string
 }
 
 func extractEndpoints(spec map[string]any) []*endpointInfo {
@@ -259,6 +267,7 @@ func extractEndpoints(spec map[string]any) []*endpointInfo {
 					}
 				}
 			pi := paramInfo{name: name, goName: toGoFieldName(name), goType: goType, required: req}
+			pi.description, _ = p["description"].(string)
 			if pSchema != nil {
 				if ev, ok := pSchema["enum"].([]any); ok {
 					for _, v := range ev {
@@ -955,6 +964,247 @@ func mapGet(m map[string]any, key string) map[string]any {
 	}
 	v, _ := m[key].(map[string]any)
 	return v
+}
+
+// --- Description generation ---
+
+func collectDescriptions(endpoints []*endpointInfo, schemas []*schemaInfo, spec map[string]any, summaries, descs map[string]string) {
+	compSchemas := mapGet(mapGet(spec, "components"), "schemas")
+
+	for _, ep := range endpoints {
+		summaries[ep.operationID] = normalizeSummary(ep.method, ep.summary, ep.returnsArray)
+
+		for _, p := range ep.queryParams {
+			desc := p.description
+			if desc == "" {
+				desc = humanize(p.name, p.enumValues)
+			}
+			descs[ep.operationID+"."+p.name] = normalizeDesc(desc)
+		}
+		for _, p := range ep.pathParams {
+			desc := p.description
+			if desc == "" {
+				desc = humanize(p.name, p.enumValues)
+			}
+			descs[ep.operationID+"."+p.name] = normalizeDesc(desc)
+		}
+
+		bodyProps := getBodyProps(ep, schemas)
+		for propName, propSchema := range bodyProps {
+			desc := propertyDesc(propSchema, compSchemas)
+			if desc == "" {
+				desc = humanize(propName, propertyEnums(propSchema, compSchemas))
+			}
+			descs[ep.operationID+"."+propName] = normalizeDesc(desc)
+		}
+	}
+}
+
+func getBodyProps(ep *endpointInfo, schemas []*schemaInfo) map[string]map[string]any {
+	if ep.bodyInline != nil {
+		raw, _ := ep.bodyInline["properties"].(map[string]any)
+		result := make(map[string]map[string]any, len(raw))
+		for k, v := range raw {
+			if m, ok := v.(map[string]any); ok {
+				result[k] = m
+			}
+		}
+		return result
+	}
+	if ep.bodyRef != "" {
+		for _, s := range schemas {
+			if s.goName == ep.bodyRef {
+				return s.props
+			}
+		}
+	}
+	return nil
+}
+
+func propertyDesc(prop map[string]any, compSchemas map[string]any) string {
+	if desc, ok := prop["description"].(string); ok {
+		return desc
+	}
+	if ref, ok := prop["$ref"].(string); ok && compSchemas != nil {
+		name := refBaseName(ref)
+		if target, ok := compSchemas[name].(map[string]any); ok {
+			if desc, ok := target["description"].(string); ok {
+				return desc
+			}
+		}
+	}
+	return ""
+}
+
+func propertyEnums(prop map[string]any, compSchemas map[string]any) []string {
+	vals := extractEnumValues(prop)
+	if len(vals) > 0 {
+		return vals
+	}
+	if ref, ok := prop["$ref"].(string); ok && compSchemas != nil {
+		name := refBaseName(ref)
+		if target, ok := compSchemas[name].(map[string]any); ok {
+			return extractEnumValues(target)
+		}
+	}
+	return nil
+}
+
+func extractEnumValues(schema map[string]any) []string {
+	raw, ok := schema["enum"].([]any)
+	if !ok {
+		return nil
+	}
+	var vals []string
+	for _, v := range raw {
+		if v == nil {
+			continue
+		}
+		if s := fmt.Sprint(v); s != "" {
+			vals = append(vals, s)
+		}
+	}
+	sort.Strings(vals)
+	return vals
+}
+
+func normalizeDesc(s string) string {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return s
+	}
+	s = strings.TrimRight(s, ".")
+	s = strings.ReplaceAll(s, "`", "")
+	if strings.HasPrefix(s, "The ") {
+		s = s[4:]
+	}
+	if len(s) > 120 {
+		s = firstSentence(s)
+	}
+	if len(s) > 120 {
+		s = s[:117] + "..."
+	}
+	if len(s) > 1 && unicode.IsUpper(rune(s[0])) {
+		if unicode.IsLower(rune(s[1])) {
+			s = strings.ToLower(s[:1]) + s[1:]
+		}
+	}
+	return s
+}
+
+func firstSentence(s string) string {
+	if i := strings.Index(s, ". "); i > 0 {
+		return s[:i]
+	}
+	if i := strings.Index(s, "\n"); i > 0 {
+		return s[:i]
+	}
+	return s
+}
+
+var imperativeVerbs = map[string]bool{
+	"get": true, "list": true, "create": true, "delete": true,
+	"update": true, "close": true, "cancel": true, "submit": true,
+	"replace": true, "remove": true, "add": true, "set": true,
+	"retrieve": true, "fetch": true, "request": true, "do": true,
+	"exercise": true, "return": true, "returns": true, "check": true,
+	"show": true, "estimate": true, "mark": true,
+}
+
+func normalizeSummary(method, summary string, returnsArray bool) string {
+	s := strings.TrimRight(strings.TrimSpace(summary), ".")
+	if s == "" {
+		return s
+	}
+	s = titleToSentence(s)
+
+	words := strings.Fields(s)
+	first := strings.ToLower(words[0])
+	if !imperativeVerbs[first] {
+		verb := httpMethodVerb(method, returnsArray)
+		if len(s) > 1 && unicode.IsUpper(rune(s[0])) && unicode.IsUpper(rune(s[1])) {
+			s = verb + " " + s
+		} else {
+			s = verb + " " + strings.ToLower(s[:1]) + s[1:]
+		}
+	}
+	return s
+}
+
+func titleToSentence(s string) string {
+	words := strings.Fields(s)
+	for i := 1; i < len(words); i++ {
+		w := words[i]
+		if strings.ToUpper(w) == w && len(w) > 1 {
+			continue
+		}
+		words[i] = strings.ToLower(w)
+	}
+	return strings.Join(words, " ")
+}
+
+func httpMethodVerb(method string, returnsArray bool) string {
+	switch method {
+	case "GET":
+		if returnsArray {
+			return "List"
+		}
+		return "Get"
+	case "POST":
+		return "Create"
+	case "DELETE":
+		return "Delete"
+	case "PATCH":
+		return "Update"
+	case "PUT":
+		return "Update"
+	default:
+		return "Get"
+	}
+}
+
+func humanize(name string, enumValues []string) string {
+	if len(enumValues) > 0 {
+		return strings.Join(enumValues, ", ")
+	}
+	s := strings.ReplaceAll(name, "_", " ")
+	if len(s) > 0 {
+		s = strings.ToUpper(s[:1]) + s[1:]
+	}
+	return s
+}
+
+func writeDescriptionsFile(summaries, descs map[string]string) string {
+	var buf bytes.Buffer
+	fmt.Fprintf(&buf, "// Code generated from api/specs; DO NOT EDIT.\n\n")
+	fmt.Fprintf(&buf, "package api\n\n")
+
+	fmt.Fprintf(&buf, "// OperationSummary maps operationId to a normalized CLI-friendly summary.\n")
+	fmt.Fprintf(&buf, "var OperationSummary = map[string]string{\n")
+	keys := sortedKeys(summaries)
+	for _, k := range keys {
+		fmt.Fprintf(&buf, "\t%q: %q,\n", k, summaries[k])
+	}
+	fmt.Fprintf(&buf, "}\n\n")
+
+	fmt.Fprintf(&buf, "// ParamDescription maps operationId.paramName to a normalized description.\n")
+	fmt.Fprintf(&buf, "var ParamDescription = map[string]string{\n")
+	keys = sortedKeys(descs)
+	for _, k := range keys {
+		fmt.Fprintf(&buf, "\t%q: %q,\n", k, descs[k])
+	}
+	fmt.Fprintf(&buf, "}\n")
+
+	return buf.String()
+}
+
+func sortedKeys(m map[string]string) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
 }
 
 // --- File writing ---

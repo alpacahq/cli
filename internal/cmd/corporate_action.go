@@ -15,7 +15,7 @@ var corporateActionCmd = &cobra.Command{
 
 var corporateActionListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List corporate action announcements",
+	Short: api.OperationSummary["get-v2-corporate_actions-announcements"],
 	Example: `  alpaca corporate-action list --types reverse_split --start 2025-01-01 --end 2025-12-31
   alpaca corporate-action list --types cash_dividend --symbols AAPL --start 2025-01-01 --end 2025-06-30`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -42,7 +42,7 @@ var corporateActionListCmd = &cobra.Command{
 
 var corporateActionGetCmd = &cobra.Command{
 	Use:   "get <id>",
-	Short: "Get a specific corporate action announcement",
+	Short: api.OperationSummary["get-v2-corporate_actions-announcements-id"],
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		data, err := tradingClient.GetV2CorporateActionsAnnouncementsID(args[0])

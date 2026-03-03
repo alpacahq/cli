@@ -16,7 +16,7 @@ var positionCmd = &cobra.Command{
 
 var positionListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List all open positions",
+	Short: api.OperationSummary["getAllOpenPositions"],
 	RunE: func(cmd *cobra.Command, args []string) error {
 		positions, err := tradingClient.GetAllOpenPositions()
 		if err != nil {
@@ -28,7 +28,7 @@ var positionListCmd = &cobra.Command{
 
 var positionGetCmd = &cobra.Command{
 	Use:   "get <symbol>",
-	Short: "Get position for a symbol",
+	Short: api.OperationSummary["getOpenPosition"],
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		pos, err := tradingClient.GetOpenPosition(args[0])
@@ -41,7 +41,7 @@ var positionGetCmd = &cobra.Command{
 
 var positionCloseCmd = &cobra.Command{
 	Use:   "close <symbol>",
-	Short: "Close a position",
+	Short: api.OperationSummary["deleteOpenPosition"],
 	Example: `  alpaca position close AAPL
   alpaca position close AAPL --qty 5
   alpaca position close AAPL --pct 50`,
@@ -63,7 +63,7 @@ var positionCloseCmd = &cobra.Command{
 
 var positionCloseAllCmd = &cobra.Command{
 	Use:   "close-all",
-	Short: "Close all open positions",
+	Short: api.OperationSummary["deleteAllOpenPositions"],
 	RunE: func(cmd *cobra.Command, args []string) error {
 		warnLive()
 		cancelled, err := tradingClient.DeleteAllOpenPositions(&api.DeleteAllOpenPositionsParams{

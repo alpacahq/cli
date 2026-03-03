@@ -331,3 +331,76 @@ func TestValidateMethods(t *testing.T) {
 		}
 	})
 }
+
+// TestDescriptionKeysExist verifies that every api.OperationSummary and
+// api.ParamDescription key referenced in command source files actually
+// exists in the generated maps. Catches typos and stale references.
+func TestDescriptionKeysExist(t *testing.T) {
+	summaryRef := regexp.MustCompile(`api\.OperationSummary\["([^"]+)"\]`)
+	paramRef := regexp.MustCompile(`api\.ParamDescription\["([^"]+)"\]`)
+
+	dir := cmdDir()
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, e := range entries {
+		if e.IsDir() || !strings.HasSuffix(e.Name(), ".go") || strings.HasSuffix(e.Name(), "_test.go") {
+			continue
+		}
+		data, err := os.ReadFile(filepath.Join(dir, e.Name()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		src := string(data)
+
+		for _, m := range summaryRef.FindAllStringSubmatch(src, -1) {
+			key := m[1]
+			if _, ok := api.OperationSummary[key]; !ok {
+				t.Errorf("%s: api.OperationSummary[%q] does not exist", e.Name(), key)
+			}
+		}
+		for _, m := range paramRef.FindAllStringSubmatch(src, -1) {
+			key := m[1]
+			if _, ok := api.ParamDescription[key]; !ok {
+				t.Errorf("%s: api.ParamDescription[%q] does not exist", e.Name(), key)
+			}
+		}
+	}
+}
+
+// TestNoEmptyDescriptions verifies that no referenced description resolves
+// to an empty string, which would produce blank help text.
+func TestNoEmptyDescriptions(t *testing.T) {
+	summaryRef := regexp.MustCompile(`api\.OperationSummary\["([^"]+)"\]`)
+	paramRef := regexp.MustCompile(`api\.ParamDescription\["([^"]+)"\]`)
+
+	dir := cmdDir()
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, e := range entries {
+		if e.IsDir() || !strings.HasSuffix(e.Name(), ".go") || strings.HasSuffix(e.Name(), "_test.go") {
+			continue
+		}
+		data, err := os.ReadFile(filepath.Join(dir, e.Name()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		src := string(data)
+
+		for _, m := range summaryRef.FindAllStringSubmatch(src, -1) {
+			if api.OperationSummary[m[1]] == "" {
+				t.Errorf("%s: api.OperationSummary[%q] is empty", e.Name(), m[1])
+			}
+		}
+		for _, m := range paramRef.FindAllStringSubmatch(src, -1) {
+			if api.ParamDescription[m[1]] == "" {
+				t.Errorf("%s: api.ParamDescription[%q] is empty", e.Name(), m[1])
+			}
+		}
+	}
+}

@@ -16,7 +16,7 @@ var screenerCmd = &cobra.Command{
 
 var screenerMostActivesCmd = &cobra.Command{
 	Use:   "most-actives",
-	Short: "Most active stocks by volume or trade count",
+	Short: api.OperationSummary["MostActives"],
 	Example: `  alpaca screener most-actives
   alpaca screener most-actives --by trades --top 10`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -36,7 +36,7 @@ var screenerMostActivesCmd = &cobra.Command{
 
 var screenerMoversCmd = &cobra.Command{
 	Use:   "movers",
-	Short: "Top market movers (gainers and losers)",
+	Short: api.OperationSummary["Movers"],
 	Example: `  alpaca screener movers
   alpaca screener movers --market crypto --top 5`,
 	RunE: func(cmd *cobra.Command, args []string) error {

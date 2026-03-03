@@ -17,7 +17,7 @@ var orderCmd = &cobra.Command{
 
 var orderSubmitCmd = &cobra.Command{
 	Use:   "submit <symbol>",
-	Short: "Submit a new order",
+	Short: api.OperationSummary["postOrder"],
 	Example: `  alpaca order submit AAPL --qty 10 --side buy --type market
   alpaca order submit AAPL --qty 5 --side buy --type limit --limit-price 185.00
   alpaca order submit AAPL --qty 10 --side sell --type stop --stop-price 175.00
@@ -62,7 +62,7 @@ var orderSubmitCmd = &cobra.Command{
 
 var orderListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List orders",
+	Short: api.OperationSummary["getAllOrders"],
 	Example: `  alpaca order list
   alpaca order list --status closed --limit 20
   alpaca order list --symbols AAPL,MSFT --start 2025-01-01`,
@@ -104,7 +104,7 @@ var orderListCmd = &cobra.Command{
 
 var orderGetCmd = &cobra.Command{
 	Use:   "get [order-id]",
-	Short: "Get order details by ID or client order ID",
+	Short: api.OperationSummary["getOrderByOrderID"],
 	Example: `  alpaca order get 61e69015-8549-4baf-b96f-9c4f3e8d0c35
   alpaca order get --client-id my-order-123`,
 	Args: cobra.MaximumNArgs(1),
@@ -134,7 +134,7 @@ var orderGetCmd = &cobra.Command{
 
 var orderCancelCmd = &cobra.Command{
 	Use:   "cancel <order-id>",
-	Short: "Cancel an order",
+	Short: api.OperationSummary["deleteOrderByOrderID"],
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		warnLive()
@@ -149,7 +149,7 @@ var orderCancelCmd = &cobra.Command{
 
 var orderCancelAllCmd = &cobra.Command{
 	Use:   "cancel-all",
-	Short: "Cancel all open orders",
+	Short: api.OperationSummary["deleteAllOrders"],
 	RunE: func(cmd *cobra.Command, args []string) error {
 		warnLive()
 		cancelled, err := tradingClient.DeleteAllOrders()
@@ -162,7 +162,7 @@ var orderCancelAllCmd = &cobra.Command{
 
 var orderReplaceCmd = &cobra.Command{
 	Use:   "replace <order-id>",
-	Short: "Replace (modify) an existing order",
+	Short: api.OperationSummary["patchOrderByOrderId"],
 	Example: `  alpaca order replace <order-id> --qty 20 --limit-price 190.00`,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -196,49 +196,49 @@ var orderReplaceCmd = &cobra.Command{
 }
 
 func init() {
-	orderSubmitCmd.Flags().String("qty", "", "Number of shares")
-	orderSubmitCmd.Flags().String("notional", "", "Dollar amount to trade (for fractional shares)")
-	orderSubmitCmd.Flags().String("side", "", "buy or sell")
+	orderSubmitCmd.Flags().String("qty", "", api.ParamDescription["postOrder.qty"])
+	orderSubmitCmd.Flags().String("notional", "", api.ParamDescription["postOrder.notional"])
+	orderSubmitCmd.Flags().String("side", "", api.ParamDescription["postOrder.side"])
 	_ = orderSubmitCmd.RegisterFlagCompletionFunc("side", cobra.FixedCompletions(api.OrderSideValues, cobra.ShellCompDirectiveNoFileComp))
-	orderSubmitCmd.Flags().String("type", "market", "Order type: market, limit, stop, stop_limit, trailing_stop")
+	orderSubmitCmd.Flags().String("type", "market", api.ParamDescription["postOrder.type"])
 	_ = orderSubmitCmd.RegisterFlagCompletionFunc("type", cobra.FixedCompletions(api.OrderTypeValues, cobra.ShellCompDirectiveNoFileComp))
-	orderSubmitCmd.Flags().String("tif", "", "Time in force: day, gtc, ioc, fok, opg, cls (default: day)")
+	orderSubmitCmd.Flags().String("tif", "", api.ParamDescription["postOrder.time_in_force"])
 	_ = orderSubmitCmd.RegisterFlagCompletionFunc("tif", cobra.FixedCompletions(api.TimeInForceValues, cobra.ShellCompDirectiveNoFileComp))
-	orderSubmitCmd.Flags().String("limit-price", "", "Limit price")
-	orderSubmitCmd.Flags().String("stop-price", "", "Stop price")
-	orderSubmitCmd.Flags().String("trail-percent", "", "Trailing stop percent")
-	orderSubmitCmd.Flags().String("trail-price", "", "Trailing stop dollar offset from current price")
-	orderSubmitCmd.Flags().Bool("extended-hours", false, "Allow extended hours trading")
-	orderSubmitCmd.Flags().String("take-profit", "", "Take profit limit price (bracket order)")
-	orderSubmitCmd.Flags().String("stop-loss", "", "Stop loss price (bracket order)")
-	orderSubmitCmd.Flags().String("client-order-id", "", "Client-specified order ID")
-	orderSubmitCmd.Flags().String("order-class", "", "Order class: simple, bracket, oco, oto, mleg")
+	orderSubmitCmd.Flags().String("limit-price", "", api.ParamDescription["postOrder.limit_price"])
+	orderSubmitCmd.Flags().String("stop-price", "", api.ParamDescription["postOrder.stop_price"])
+	orderSubmitCmd.Flags().String("trail-percent", "", api.ParamDescription["postOrder.trail_percent"])
+	orderSubmitCmd.Flags().String("trail-price", "", api.ParamDescription["postOrder.trail_price"])
+	orderSubmitCmd.Flags().Bool("extended-hours", false, api.ParamDescription["postOrder.extended_hours"])
+	orderSubmitCmd.Flags().String("take-profit", "", api.ParamDescription["postOrder.take_profit"])
+	orderSubmitCmd.Flags().String("stop-loss", "", api.ParamDescription["postOrder.stop_loss"])
+	orderSubmitCmd.Flags().String("client-order-id", "", api.ParamDescription["postOrder.client_order_id"])
+	orderSubmitCmd.Flags().String("order-class", "", api.ParamDescription["postOrder.order_class"])
 	_ = orderSubmitCmd.RegisterFlagCompletionFunc("order-class", cobra.FixedCompletions(api.OrderClassValues, cobra.ShellCompDirectiveNoFileComp))
-	orderSubmitCmd.Flags().String("position-intent", "", "Position intent: buy_to_open, buy_to_close, sell_to_open, sell_to_close")
+	orderSubmitCmd.Flags().String("position-intent", "", api.ParamDescription["postOrder.position_intent"])
 	_ = orderSubmitCmd.RegisterFlagCompletionFunc("position-intent", cobra.FixedCompletions(api.PositionIntentValues, cobra.ShellCompDirectiveNoFileComp))
 	orderSubmitCmd.Flags().Bool("dry-run", false, "Print the request body without submitting")
 
-	orderListCmd.Flags().String("status", "", "Filter: open, closed, all (default: open)")
+	orderListCmd.Flags().String("status", "", api.ParamDescription["getAllOrders.status"])
 	_ = orderListCmd.RegisterFlagCompletionFunc("status", cobra.FixedCompletions(api.GetAllOrdersParamsStatusValues, cobra.ShellCompDirectiveNoFileComp))
-	orderListCmd.Flags().String("symbols", "", "Filter by symbols (comma-separated)")
+	orderListCmd.Flags().String("symbols", "", api.ParamDescription["getAllOrders.symbols"])
 	cmdutil.AddDateRangeFlags(orderListCmd)
 	cmdutil.AddLimitFlag(orderListCmd)
 	cmdutil.AddSortFlag(orderListCmd, api.SortValues)
-	orderListCmd.Flags().Bool("nested", false, "Expand multi-leg order legs")
-	orderListCmd.Flags().String("side", "", "Filter by side: buy or sell")
+	orderListCmd.Flags().Bool("nested", false, api.ParamDescription["getAllOrders.nested"])
+	orderListCmd.Flags().String("side", "", api.ParamDescription["getAllOrders.side"])
 	_ = orderListCmd.RegisterFlagCompletionFunc("side", cobra.FixedCompletions(api.OrderSideValues, cobra.ShellCompDirectiveNoFileComp))
-	orderListCmd.Flags().String("class", "", "Filter by asset class: us_equity, us_option, crypto")
+	orderListCmd.Flags().String("class", "", api.ParamDescription["getAllOrders.asset_class"])
 	_ = orderListCmd.RegisterFlagCompletionFunc("class", cobra.FixedCompletions(api.AssetClassValues, cobra.ShellCompDirectiveNoFileComp))
-	orderListCmd.Flags().String("before-order-id", "", "Cursor: orders before this order ID")
-	orderListCmd.Flags().String("after-order-id", "", "Cursor: orders after this order ID")
+	orderListCmd.Flags().String("before-order-id", "", api.ParamDescription["getAllOrders.before_order_id"])
+	orderListCmd.Flags().String("after-order-id", "", api.ParamDescription["getAllOrders.after_order_id"])
 
-	orderReplaceCmd.Flags().String("qty", "", "New quantity")
-	orderReplaceCmd.Flags().String("limit-price", "", "New limit price")
-	orderReplaceCmd.Flags().String("stop-price", "", "New stop price")
-	orderReplaceCmd.Flags().String("tif", "", "New time in force")
+	orderReplaceCmd.Flags().String("qty", "", api.ParamDescription["patchOrderByOrderId.qty"])
+	orderReplaceCmd.Flags().String("limit-price", "", api.ParamDescription["patchOrderByOrderId.limit_price"])
+	orderReplaceCmd.Flags().String("stop-price", "", api.ParamDescription["patchOrderByOrderId.stop_price"])
+	orderReplaceCmd.Flags().String("tif", "", api.ParamDescription["patchOrderByOrderId.time_in_force"])
 	_ = orderReplaceCmd.RegisterFlagCompletionFunc("tif", cobra.FixedCompletions(api.TimeInForceValues, cobra.ShellCompDirectiveNoFileComp))
-	orderReplaceCmd.Flags().String("trail", "", "New trailing stop value (percent or dollar amount)")
-	orderReplaceCmd.Flags().String("client-order-id", "", "New client order ID")
+	orderReplaceCmd.Flags().String("trail", "", api.ParamDescription["patchOrderByOrderId.trail"])
+	orderReplaceCmd.Flags().String("client-order-id", "", api.ParamDescription["patchOrderByOrderId.client_order_id"])
 
 	orderCmd.AddCommand(orderSubmitCmd)
 	orderCmd.AddCommand(orderListCmd)

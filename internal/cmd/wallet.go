@@ -16,7 +16,7 @@ var walletCmd = &cobra.Command{
 
 var walletListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List crypto funding wallets",
+	Short: api.OperationSummary["listCryptoFundingWallets"],
 	RunE: func(cmd *cobra.Command, args []string) error {
 		wallet, err := tradingClient.ListCryptoFundingWallets(&api.ListCryptoFundingWalletsParams{
 			Asset: cmdutil.Str(cmd, "asset"),
@@ -37,7 +37,7 @@ var walletTransferCmd = &cobra.Command{
 
 var walletTransferListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List crypto funding transfers",
+	Short: api.OperationSummary["listCryptoFundingTransfers"],
 	RunE: func(cmd *cobra.Command, args []string) error {
 		transfers, err := tradingClient.ListCryptoFundingTransfers()
 		if err != nil {
@@ -49,7 +49,7 @@ var walletTransferListCmd = &cobra.Command{
 
 var walletTransferGetCmd = &cobra.Command{
 	Use:   "get <id>",
-	Short: "Get a specific crypto transfer",
+	Short: api.OperationSummary["getCryptoFundingTransfer"],
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		transfer, err := tradingClient.GetCryptoFundingTransfer(args[0])
@@ -62,7 +62,7 @@ var walletTransferGetCmd = &cobra.Command{
 
 var walletTransferCreateCmd = &cobra.Command{
 	Use:   "create",
-	Short: "Create a crypto withdrawal to a whitelisted address",
+	Short: api.OperationSummary["createCryptoTransferForAccount"],
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if err := cmdutil.RequireAll(cmd, "amount", "address", "asset"); err != nil {
 			return err
@@ -91,7 +91,7 @@ var walletWhitelistCmd = &cobra.Command{
 
 var walletWhitelistListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List whitelisted crypto addresses",
+	Short: api.OperationSummary["listWhitelistedAddress"],
 	RunE: func(cmd *cobra.Command, args []string) error {
 		addrs, err := tradingClient.ListWhitelistedAddress()
 		if err != nil {
@@ -103,7 +103,7 @@ var walletWhitelistListCmd = &cobra.Command{
 
 var walletWhitelistAddCmd = &cobra.Command{
 	Use:   "add",
-	Short: "Add a whitelisted crypto address",
+	Short: api.OperationSummary["createWhitelistedAddress"],
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if err := cmdutil.RequireAll(cmd, "address", "asset"); err != nil {
 			return err
@@ -123,7 +123,7 @@ var walletWhitelistAddCmd = &cobra.Command{
 
 var walletWhitelistDeleteCmd = &cobra.Command{
 	Use:   "delete <id>",
-	Short: "Remove a whitelisted crypto address",
+	Short: api.OperationSummary["deleteWhitelistedAddress"],
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		_, err := tradingClient.DeleteWhitelistedAddress(args[0])

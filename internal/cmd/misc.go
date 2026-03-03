@@ -13,7 +13,7 @@ import (
 
 var clockCmd = &cobra.Command{
 	Use:   "clock",
-	Short: "Show market status, open/close times",
+	Short: api.OperationSummary["LegacyClock"],
 	Example: `  alpaca clock
   alpaca clock --markets XNYS,XNAS`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -52,7 +52,7 @@ var clockCmd = &cobra.Command{
 
 var calendarCmd = &cobra.Command{
 	Use:   "calendar",
-	Short: "Show trading calendar",
+	Short: api.OperationSummary["LegacyCalendar"],
 	Example: `  alpaca calendar
   alpaca calendar --start 2025-01-01 --end 2025-12-31
   alpaca calendar --market XNYS --start 2025-01-01`,
@@ -90,7 +90,7 @@ var portfolioCmd = &cobra.Command{
 
 var portfolioHistoryCmd = &cobra.Command{
 	Use:   "history",
-	Short: "Get portfolio value history",
+	Short: api.OperationSummary["getAccountPortfolioHistory"],
 	Example: `  alpaca portfolio history
   alpaca portfolio history --period 1M --timeframe 1D`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -113,7 +113,7 @@ var portfolioHistoryCmd = &cobra.Command{
 
 var newsCmd = &cobra.Command{
 	Use:   "news",
-	Short: "Get market news",
+	Short: api.OperationSummary["News"],
 	Example: `  alpaca news
   alpaca news --symbols AAPL,MSFT --limit 10`,
 	RunE: func(cmd *cobra.Command, args []string) error {

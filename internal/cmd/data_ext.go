@@ -19,7 +19,7 @@ var dataForexCmd = &cobra.Command{
 
 var dataForexRatesCmd = &cobra.Command{
 	Use:   "rates",
-	Short: "Get historical forex rates",
+	Short: api.OperationSummary["Rates"],
 	Example: `  alpaca data forex rates --pairs EUR/USD,GBP/USD --start 2025-01-01
   alpaca data forex rates --pairs USD/JPY --timeframe 1Hour`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -46,7 +46,7 @@ var dataForexRatesCmd = &cobra.Command{
 
 var dataForexLatestCmd = &cobra.Command{
 	Use:   "latest",
-	Short: "Get latest forex rates",
+	Short: api.OperationSummary["LatestRates"],
 	Example: `  alpaca data forex latest --pairs EUR/USD,GBP/USD`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		pairs, err := cmdutil.RequireStr(cmd, "pairs")
@@ -69,7 +69,7 @@ var dataForexLatestCmd = &cobra.Command{
 
 var dataCryptoOrderbookCmd = &cobra.Command{
 	Use:   "crypto-orderbook",
-	Short: "Get latest crypto orderbooks",
+	Short: api.OperationSummary["CryptoLatestOrderbooks"],
 	Example: `  alpaca data crypto-orderbook --symbols BTC/USD,ETH/USD`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbols, err := cmdutil.RequireStr(cmd, "symbols")
@@ -92,7 +92,7 @@ var dataCryptoOrderbookCmd = &cobra.Command{
 
 var dataAuctionsCmd = &cobra.Command{
 	Use:   "auctions",
-	Short: "Get stock auction data",
+	Short: api.OperationSummary["StockAuctions"],
 	Example: `  alpaca data auctions --symbols AAPL --start 2025-01-01
   alpaca data auctions --symbols AAPL,MSFT --limit 10`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -121,7 +121,7 @@ var dataAuctionsCmd = &cobra.Command{
 
 var dataCorporateActionsCmd = &cobra.Command{
 	Use:   "corporate-actions",
-	Short: "Get corporate actions data (market data API)",
+	Short: api.OperationSummary["CorporateActions"],
 	Example: `  alpaca data corporate-actions --symbols AAPL --types forward_split --start 2025-01-01`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		resp, err := dataClient.CorporateActions(&api.CorporateActionsParams{
@@ -144,7 +144,7 @@ var dataCorporateActionsCmd = &cobra.Command{
 
 var dataFixedIncomeCmd = &cobra.Command{
 	Use:   "fixed-income",
-	Short: "Get fixed income latest prices",
+	Short: api.OperationSummary["FixedIncomeLatestPrices"],
 	Example: `  alpaca data fixed-income --symbols 912797KR1,912797LB5`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbols, err := cmdutil.RequireStr(cmd, "symbols")

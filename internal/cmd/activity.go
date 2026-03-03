@@ -16,7 +16,7 @@ var activityCmd = &cobra.Command{
 
 var activityListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List account activities",
+	Short: api.OperationSummary["getAccountActivities"],
 	Example: `  alpaca activity list
   alpaca activity list --types FILL --limit 20
   alpaca activity list --types DIV --start 2025-01-01
