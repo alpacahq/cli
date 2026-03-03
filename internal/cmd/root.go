@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/client"
@@ -28,6 +29,7 @@ var (
 	verboseFlag   bool
 	confirmFlag   bool
 	profileFlag   string
+	timeoutFlag   int
 )
 
 func SetVersion(v string) {
@@ -62,13 +64,20 @@ func Execute() error {
 }
 
 func printJSONError(apiErr *client.APIError) {
+	m := map[string]any{
+		"error":  apiErr.Message,
+		"code":   apiErr.Code,
+		"status": apiErr.StatusCode,
+		"hint":   apiErr.Hint(),
+	}
+	if apiErr.Method != "" {
+		m["method"] = apiErr.Method
+	}
+	if apiErr.Path != "" {
+		m["path"] = apiErr.Path
+	}
 	enc := json.NewEncoder(os.Stderr)
-	_ = enc.Encode(map[string]any{
-		"error":   apiErr.Message,
-		"code":    apiErr.Code,
-		"status":  apiErr.StatusCode,
-		"hint":    apiErr.Hint(),
-	})
+	_ = enc.Encode(m)
 }
 
 var rootCmd = &cobra.Command{
@@ -112,6 +121,9 @@ var rootCmd = &cobra.Command{
 			apiClient = client.New(cfg)
 			apiClient.Verbose = verboseFlag
 			apiClient.Quiet = quietFlag
+			if timeoutFlag != 30 {
+				apiClient.SetTimeout(time.Duration(timeoutFlag) * time.Second)
+			}
 			tradingClient = api.NewTradingClient(apiClient)
 			dataClient = api.NewMarketDataClient(apiClient)
 		}
@@ -128,6 +140,37 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verboseFlag, "verbose", "v", false, "Show HTTP request details on stderr")
 	rootCmd.PersistentFlags().BoolVarP(&quietFlag, "quiet", "q", false, "Suppress non-data output (warnings, hints, color)")
 	rootCmd.PersistentFlags().BoolVar(&confirmFlag, "confirm", false, "Authorize destructive operations (cancel-all, close-all on live)")
+	rootCmd.PersistentFlags().IntVar(&timeoutFlag, "timeout", 30, "HTTP request timeout in seconds")
+
+	tradingGroup := &cobra.Group{ID: "trading", Title: "Trading"}
+	dataGroup := &cobra.Group{ID: "data", Title: "Market Data"}
+	accountGroup := &cobra.Group{ID: "account", Title: "Account & Assets"}
+	utilGroup := &cobra.Group{ID: "util", Title: "Utilities"}
+
+	rootCmd.AddGroup(tradingGroup, dataGroup, accountGroup, utilGroup)
+
+	orderCmd.GroupID = "trading"
+	positionCmd.GroupID = "trading"
+	optionCmd.GroupID = "trading"
+
+	dataCmd.GroupID = "data"
+	screenerCmd.GroupID = "data"
+	newsCmd.GroupID = "data"
+
+	accountCmd.GroupID = "account"
+	activityCmd.GroupID = "account"
+	assetCmd.GroupID = "account"
+	portfolioCmd.GroupID = "account"
+	corporateActionCmd.GroupID = "account"
+	watchlistCmd.GroupID = "account"
+	walletCmd.GroupID = "account"
+
+	profileCmd.GroupID = "util"
+	clockCmd.GroupID = "util"
+	calendarCmd.GroupID = "util"
+	apiCmd.GroupID = "util"
+	updateCmd.GroupID = "util"
+	versionCmd.GroupID = "util"
 
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(profileCmd)

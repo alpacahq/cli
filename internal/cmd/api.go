@@ -3,6 +3,8 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
 	"github.com/alpacahq/cli/internal/cmdutil"
@@ -31,7 +33,8 @@ var apiGetCmd = &cobra.Command{
 var apiPostCmd = &cobra.Command{
 	Use:   "post <path>",
 	Short: "POST request",
-	Example: `  alpaca api post /v2/orders --data '{"symbol":"AAPL","qty":"1","side":"buy","type":"market","time_in_force":"day"}'`,
+	Example: `  alpaca api post /v2/orders --data '{"symbol":"AAPL","qty":"1","side":"buy","type":"market","time_in_force":"day"}'
+  echo '{"symbol":"AAPL","qty":"1","side":"buy","type":"market","time_in_force":"day"}' | alpaca api post /v2/orders`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return rawAPI(cmd, "POST", args[0])
@@ -72,12 +75,25 @@ func rawAPI(cmd *cobra.Command, method, path string) error {
 	}
 
 	var body any
-	if dataFlag != "" {
+	switch {
+	case dataFlag != "":
 		var m map[string]any
 		if err := json.Unmarshal([]byte(dataFlag), &m); err != nil {
 			return fmt.Errorf("invalid JSON in --data: %w", err)
 		}
 		body = m
+	case stdinHasData():
+		raw, err := io.ReadAll(os.Stdin)
+		if err != nil {
+			return fmt.Errorf("reading stdin: %w", err)
+		}
+		if len(raw) > 0 {
+			var m map[string]any
+			if err := json.Unmarshal(raw, &m); err != nil {
+				return fmt.Errorf("invalid JSON on stdin: %w", err)
+			}
+			body = m
+		}
 	}
 
 	data, err := apiClient.RawRequest(method, fullURL, body)
@@ -86,6 +102,14 @@ func rawAPI(cmd *cobra.Command, method, path string) error {
 	}
 
 	return output.JSON(cmd.OutOrStdout(), data)
+}
+
+func stdinHasData() bool {
+	stat, err := os.Stdin.Stat()
+	if err != nil {
+		return false
+	}
+	return (stat.Mode() & os.ModeCharDevice) == 0
 }
 
 func init() {

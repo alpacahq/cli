@@ -48,6 +48,10 @@ var orderSubmitCmd = &cobra.Command{
 
 		applyBracket(body, cmdutil.Str(cmd, "take-profit"), cmdutil.Str(cmd, "stop-loss"))
 
+		if cmdutil.Bool(cmd, "dry-run") {
+			return output.JSON(cmd.OutOrStdout(), body)
+		}
+
 		order, err := tradingClient.PostOrder(body)
 		if err != nil {
 			return err
@@ -216,6 +220,7 @@ func init() {
 	_ = orderSubmitCmd.RegisterFlagCompletionFunc("order-class", cobra.FixedCompletions(api.OrderClassValues, cobra.ShellCompDirectiveNoFileComp))
 	orderSubmitCmd.Flags().String("position-intent", "", "Position intent: buy_to_open, buy_to_close, sell_to_open, sell_to_close")
 	_ = orderSubmitCmd.RegisterFlagCompletionFunc("position-intent", cobra.FixedCompletions(api.PositionIntentValues, cobra.ShellCompDirectiveNoFileComp))
+	orderSubmitCmd.Flags().Bool("dry-run", false, "Print the request body without submitting")
 
 	orderListCmd.Flags().String("status", "", "Filter: open, closed, all (default: open)")
 	_ = orderListCmd.RegisterFlagCompletionFunc("status", cobra.FixedCompletions(api.GetAllOrdersParamsStatusValues, cobra.ShellCompDirectiveNoFileComp))

@@ -31,12 +31,15 @@ type Client struct {
 	UserAgent string
 	Verbose   bool
 	Quiet     bool
+	Timeout   time.Duration
 }
 
 type APIError struct {
 	StatusCode int    `json:"status"`
 	Code       int    `json:"code"`
 	Message    string `json:"message"`
+	Method     string `json:"method,omitempty"`
+	Path       string `json:"path,omitempty"`
 	hint       string
 	retryAfter time.Duration
 }
@@ -86,7 +89,13 @@ func New(cfg *config.Resolved) *Client {
 		APIKey:    cfg.APIKey,
 		Secret:    cfg.SecretKey,
 		UserAgent: "alpaca-cli/" + Version,
+		Timeout:   30 * time.Second,
 	}
+}
+
+func (c *Client) SetTimeout(d time.Duration) {
+	c.Timeout = d
+	c.HTTP.Timeout = d
 }
 
 func (c *Client) Get(path string, params url.Values) (json.RawMessage, error) {
@@ -203,7 +212,7 @@ func (c *Client) do(method, reqURL string, body any) (json.RawMessage, error) {
 	}
 
 	if resp.StatusCode >= 400 {
-		apiErr := &APIError{StatusCode: resp.StatusCode}
+		apiErr := &APIError{StatusCode: resp.StatusCode, Method: method, Path: reqURL}
 		if json.Unmarshal(respBody, apiErr) != nil || apiErr.Message == "" {
 			apiErr.Message = strings.TrimSpace(string(respBody))
 			if apiErr.Message == "" {

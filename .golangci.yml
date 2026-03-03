@@ -1,0 +1,26 @@
+linters:
+  enable:
+    - errcheck
+    - govet
+    - staticcheck
+    - unused
+    - gosimple
+    - ineffassign
+    - goconst
+    - misspell
+    - gofumpt
+
+linters-settings:
+  goconst:
+    min-occurrences: 3
+  misspell:
+    locale: US
+
+issues:
+  exclude-dirs:
+    - internal/api
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - goconst
+        - errcheck

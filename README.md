@@ -189,6 +189,8 @@ Credentials are stored in `~/.config/alpaca/profiles/`.
 | `ALPACA_CONFIG_DIR` | Config directory (default: `~/.config/alpaca`) |
 | `ALPACA_VERBOSE` | Enable verbose HTTP tracing (any non-empty value) |
 
+Global flags: `--json`, `--csv`, `--profile`, `--verbose`, `--quiet`, `--confirm`, `--timeout`.
+
 Precedence: flags > env vars > profile config > defaults.
 
 ## Shell Completions
@@ -255,9 +257,40 @@ alpaca account get --verbose
 # stderr: GET https://paper-api.alpaca.markets/v2/account → 200 (142ms)
 ```
 
+### Dry Run
+
+Preview an order without submitting:
+
+```bash
+alpaca order submit AAPL --side buy --qty 10 --type limit --limit-price 185.00 --dry-run
+```
+
+### Stdin Pipe Support
+
+Pipe JSON payloads into `alpaca api post/patch`:
+
+```bash
+echo '{"symbol":"AAPL","qty":"1","side":"buy","type":"market","time_in_force":"day"}' \
+  | alpaca api post /v2/orders --json
+```
+
+If both `--data` and stdin are provided, `--data` takes precedence.
+
+### Timeout
+
+Override the default 30-second HTTP timeout:
+
+```bash
+alpaca data bars AAPL --start 2020-01-01 --end 2025-01-01 --timeout 120
+```
+
 ### Resilience
 
 The CLI automatically retries on 429 (rate limit) and 5xx errors with exponential backoff (max 3 attempts). The `Retry-After` header is respected for rate limits.
+
+### JSON Output Stability
+
+JSON output mirrors the Alpaca API response directly. Fields will not be removed or renamed without a major version bump. New fields may be added at any time (treat JSON output as forward-compatible).
 
 ### Example: Agent Workflow
 
@@ -273,6 +306,12 @@ is_open=$(echo "$clock" | jq -r '.is_open')
 if [ "$is_open" = "true" ]; then
   alpaca order submit AAPL --side buy --qty 10 --type market --json --quiet
 fi
+
+# Preview before submitting
+alpaca order submit AAPL --side buy --qty 10 --type limit --limit-price 185.00 --dry-run
+
+# Pipe complex payloads
+cat order.json | alpaca api post /v2/orders --json --quiet
 
 # Handle errors programmatically
 if ! result=$(alpaca order get abc123 --json --quiet 2>err.json); then

@@ -50,7 +50,7 @@ var updateCmd = &cobra.Command{
 		}
 
 		if downloadURL == "" {
-			return fmt.Errorf("no binary available for %s/%s — use `go install github.com/alpacahq/cli/cmd/alpaca@latest`", runtime.GOOS, runtime.GOARCH)
+			return fmt.Errorf("no prebuilt binary available for %s/%s\nHint: install via Go instead:\n  go install github.com/alpacahq/cli/cmd/alpaca@%s", runtime.GOOS, runtime.GOARCH, latest)
 		}
 
 		fmt.Printf("Downloading %s...\n", latest)
@@ -82,7 +82,7 @@ var updateCmd = &cobra.Command{
 		}
 
 		if err := os.WriteFile(execPath, binary, 0755); err != nil {
-			return fmt.Errorf("replacing binary: %w\nTry: go install github.com/alpacahq/cli/cmd/alpaca@latest", err)
+			return fmt.Errorf("replacing binary at %s: %w\nHint: try one of:\n  sudo alpaca update\n  go install github.com/alpacahq/cli/cmd/alpaca@latest\n  Download from https://github.com/%s/%s/releases", execPath, err, repoOwner, repoName)
 		}
 
 		color.Green("Updated to %s", latest)
