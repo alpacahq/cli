@@ -231,6 +231,12 @@ func isLive() bool {
 	return strings.Contains(cfg.BaseURL, "api.alpaca.markets") && !strings.Contains(cfg.BaseURL, "paper")
 }
 
+func verboseLog(format string, args ...any) {
+	if verboseFlag {
+		fmt.Fprintf(os.Stderr, format+"\n", args...)
+	}
+}
+
 func warnLive() {
 	if !isLive() || quietFlag {
 		return

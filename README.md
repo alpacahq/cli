@@ -39,9 +39,9 @@ alpaca clock
 
 **Paper trading is the default.** When you run `alpaca profile login`, credentials are stored for paper trading (`paper-api.alpaca.markets`) unless you explicitly pass `--live`.
 
-- Destructive operations (`order cancel-all`, `position close-all`) on live accounts require `--confirm` to proceed.
+- Destructive operations (`order cancel-all`, `position close-all`) print a warning when targeting a live account.
 - `order submit` prints a warning when targeting a live account.
-- Suppress informational warnings with `suppress_warnings: true` in your profile config. Confirmation prompts for destructive operations cannot be suppressed.
+- Suppress warnings with `suppress_warnings: true` in your profile config.
 
 **Credential safety:**
 
@@ -189,7 +189,7 @@ Credentials are stored in `~/.config/alpaca/profiles/`.
 | `ALPACA_CONFIG_DIR` | Config directory (default: `~/.config/alpaca`) |
 | `ALPACA_VERBOSE` | Enable verbose HTTP tracing (any non-empty value) |
 
-Global flags: `--json`, `--csv`, `--profile`, `--verbose`, `--quiet`, `--confirm`, `--timeout`.
+Global flags: `--json`, `--csv`, `--profile`, `--verbose`, `--quiet`, `--timeout`.
 
 Precedence: flags > env vars > profile config > defaults.
 
@@ -233,11 +233,11 @@ When `--json` or `--quiet` is set, errors are JSON on stderr:
 
 ### Unattended Operations
 
-The CLI is fully non-interactive. Destructive operations on live accounts require `--confirm`:
+The CLI is fully non-interactive. Destructive operations on live accounts print a warning to stderr (suppress with `--quiet` or `suppress_warnings: true`):
 
 ```bash
-alpaca order cancel-all --confirm
-alpaca position close-all --confirm
+alpaca order cancel-all
+alpaca position close-all
 ```
 
 ### Exit Codes

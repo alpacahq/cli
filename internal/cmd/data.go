@@ -201,16 +201,19 @@ func latestParams(cmd *cobra.Command) url.Values {
 
 func extractBars(data json.RawMessage, symbol string) json.RawMessage {
 	var m map[string]json.RawMessage
-	if json.Unmarshal(data, &m) != nil {
+	if err := json.Unmarshal(data, &m); err != nil {
+		verboseLog("extractBars: unmarshal top-level: %v", err)
 		return data
 	}
 
 	if bars, ok := m["bars"]; ok {
 		var multi map[string]json.RawMessage
-		if json.Unmarshal(bars, &multi) == nil {
+		if err := json.Unmarshal(bars, &multi); err == nil {
 			if symBars, ok := multi[symbol]; ok {
 				return symBars
 			}
+		} else {
+			verboseLog("extractBars: unmarshal bars: %v", err)
 		}
 		return bars
 	}
@@ -220,15 +223,18 @@ func extractBars(data json.RawMessage, symbol string) json.RawMessage {
 
 func extractArray(data json.RawMessage, symbol, key string) json.RawMessage {
 	var m map[string]json.RawMessage
-	if json.Unmarshal(data, &m) != nil {
+	if err := json.Unmarshal(data, &m); err != nil {
+		verboseLog("extractArray: unmarshal top-level: %v", err)
 		return data
 	}
 	if arr, ok := m[key]; ok {
 		var multi map[string]json.RawMessage
-		if json.Unmarshal(arr, &multi) == nil {
+		if err := json.Unmarshal(arr, &multi); err == nil {
 			if symArr, ok := multi[symbol]; ok {
 				return symArr
 			}
+		} else {
+			verboseLog("extractArray: unmarshal %s: %v", key, err)
 		}
 		return arr
 	}

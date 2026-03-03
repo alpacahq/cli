@@ -244,16 +244,30 @@ func applyBracket(body *api.PostOrderRequest, takeProfit, stopLoss string) {
 func expandOrderLegs(orders []api.Order) []map[string]any {
 	var rows []map[string]any
 	for _, o := range orders {
-		b, _ := json.Marshal(o)
+		b, err := json.Marshal(o)
+		if err != nil {
+			verboseLog("expandOrderLegs: marshal order: %v", err)
+			continue
+		}
 		var row map[string]any
-		_ = json.Unmarshal(b, &row)
+		if err := json.Unmarshal(b, &row); err != nil {
+			verboseLog("expandOrderLegs: unmarshal order: %v", err)
+			continue
+		}
 		delete(row, "legs")
 		rows = append(rows, row)
 
 		for i, leg := range o.Legs {
-			b, _ = json.Marshal(leg)
+			b, err = json.Marshal(leg)
+			if err != nil {
+				verboseLog("expandOrderLegs: marshal leg: %v", err)
+				continue
+			}
 			var legRow map[string]any
-			_ = json.Unmarshal(b, &legRow)
+			if err := json.Unmarshal(b, &legRow); err != nil {
+				verboseLog("expandOrderLegs: unmarshal leg: %v", err)
+				continue
+			}
 			prefix := " ├─ "
 			if i == len(o.Legs)-1 {
 				prefix = " └─ "
