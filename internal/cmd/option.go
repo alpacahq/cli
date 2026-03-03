@@ -28,12 +28,15 @@ var optionChainCmd = &cobra.Command{
 			ShowDeliverables:  cmdutil.Bool(cmd, "show-deliverables"),
 			ExpirationDate:    cmdutil.Str(cmd, "expiry"),
 			Type:              cmdutil.Str(cmd, "type"),
+			Style:             cmdutil.Str(cmd, "style"),
+			Status:            cmdutil.Str(cmd, "status"),
 			StrikePriceGte:    cmdutil.Float64(cmd, "strike-gte"),
 			StrikePriceLte:    cmdutil.Float64(cmd, "strike-lte"),
 			ExpirationDateGte: cmdutil.Str(cmd, "expiry-gte"),
 			ExpirationDateLte: cmdutil.Str(cmd, "expiry-lte"),
 			RootSymbol:        cmdutil.Str(cmd, "root-symbol"),
 			Limit:             cmdutil.Int(cmd, "limit"),
+			PageToken:         cmdutil.Str(cmd, "page-token"),
 		}
 
 		data, err := tradingClient.GetOptionsContracts(params)
@@ -89,7 +92,7 @@ var optionDoNotExerciseCmd = &cobra.Command{
 
 func init() {
 	cmdutil.RegisterFlags(optionChainCmd, api.GetOptionsContractsFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"underlying_symbols": true, "ppind": true, "page_token": true},
+		Exclude: map[string]bool{"underlying_symbols": true, "ppind": true},
 		Aliases: map[string]string{
 			"expiration_date":     "expiry",
 			"expiration_date_gte": "expiry-gte",

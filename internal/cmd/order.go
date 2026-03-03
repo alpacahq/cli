@@ -123,7 +123,9 @@ var orderGetCmd = &cobra.Command{
 				ClientOrderID: clientID,
 			})
 		} else {
-			order, err = tradingClient.GetOrderByOrderID(args[0], nil)
+			order, err = tradingClient.GetOrderByOrderID(args[0], &api.GetOrderByOrderIDParams{
+				Nested: cmdutil.Bool(cmd, "nested"),
+			})
 		}
 		if err != nil {
 			return err
@@ -218,6 +220,7 @@ func init() {
 
 	orderCmd.AddCommand(orderSubmitCmd)
 	orderCmd.AddCommand(orderListCmd)
+	cmdutil.RegisterFlags(orderGetCmd, api.GetOrderByOrderIDFlags, nil)
 	orderGetCmd.Flags().String("client-id", "", "Look up order by client order ID")
 	orderCmd.AddCommand(orderGetCmd)
 	orderCmd.AddCommand(orderCancelCmd)

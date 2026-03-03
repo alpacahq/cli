@@ -22,6 +22,7 @@ var clockCmd = &cobra.Command{
 		if markets != "" {
 			resp, err := tradingClient.Clock(&api.ClockParams{
 				Markets: markets,
+				Time:    cmdutil.Str(cmd, "time"),
 			})
 			if err != nil {
 				return err
@@ -71,8 +72,9 @@ var calendarCmd = &cobra.Command{
 		}
 
 		params := &api.LegacyCalendarParams{
-			Start: cmdutil.Str(cmd, "start"),
-			End:   cmdutil.Str(cmd, "end"),
+			Start:    cmdutil.Str(cmd, "start"),
+			End:      cmdutil.Str(cmd, "end"),
+			DateType: cmdutil.Str(cmd, "date-type"),
 		}
 
 		data, err := tradingClient.LegacyCalendar(params)
@@ -101,6 +103,7 @@ var portfolioHistoryCmd = &cobra.Command{
 			End:               cmdutil.Str(cmd, "end"),
 			IntradayReporting: cmdutil.Str(cmd, "intraday-reporting"),
 			PNLReset:          cmdutil.Str(cmd, "pnl-reset"),
+			CashflowTypes:     cmdutil.Str(cmd, "cashflow-types"),
 		}
 
 		history, err := tradingClient.GetAccountPortfolioHistory(params)
@@ -125,6 +128,7 @@ var newsCmd = &cobra.Command{
 			IncludeContent:     cmdutil.Bool(cmd, "include-content"),
 			ExcludeContentless: cmdutil.Bool(cmd, "exclude-contentless"),
 			Limit:              cmdutil.Int(cmd, "limit"),
+			PageToken:          cmdutil.Str(cmd, "page-token"),
 		}
 		if params.Limit == 0 {
 			params.Limit = 10
@@ -141,21 +145,15 @@ var newsCmd = &cobra.Command{
 }
 
 func init() {
-	cmdutil.RegisterFlags(clockCmd, api.ClockFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"time": true},
-	})
+	cmdutil.RegisterFlags(clockCmd, api.ClockFlags, nil)
 
-	cmdutil.RegisterFlags(calendarCmd, api.LegacyCalendarFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"date_type": true},
-	})
+	cmdutil.RegisterFlags(calendarCmd, api.LegacyCalendarFlags, nil)
 	calendarCmd.Flags().String("market", "", "Market MIC for v3 calendar (e.g. XNYS)")
 
 	cmdutil.RegisterFlags(portfolioHistoryCmd, api.GetAccountPortfolioHistoryFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"extended_hours": true, "cashflow_types": true},
+		Exclude: map[string]bool{"extended_hours": true},
 	})
 	portfolioCmd.AddCommand(portfolioHistoryCmd)
 
-	cmdutil.RegisterFlags(newsCmd, api.NewsFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"page_token": true},
-	})
+	cmdutil.RegisterFlags(newsCmd, api.NewsFlags, nil)
 }

@@ -30,6 +30,7 @@ var dataOptionBarsCmd = &cobra.Command{
 			End:       cmdutil.Str(cmd, "end"),
 			Limit:     cmdutil.Int(cmd, "limit"),
 			Sort:      cmdutil.Str(cmd, "sort"),
+			PageToken: cmdutil.Str(cmd, "page-token"),
 		})
 		if err != nil {
 			return err
@@ -50,11 +51,12 @@ var dataOptionTradesCmd = &cobra.Command{
 		}
 
 		resp, err := dataClient.OptionTrades(&api.OptionTradesParams{
-			Symbols: symbols,
-			Start:   cmdutil.Str(cmd, "start"),
-			End:     cmdutil.Str(cmd, "end"),
-			Limit:   cmdutil.Int(cmd, "limit"),
-			Sort:    cmdutil.Str(cmd, "sort"),
+			Symbols:   symbols,
+			Start:     cmdutil.Str(cmd, "start"),
+			End:       cmdutil.Str(cmd, "end"),
+			Limit:     cmdutil.Int(cmd, "limit"),
+			Sort:      cmdutil.Str(cmd, "sort"),
+			PageToken: cmdutil.Str(cmd, "page-token"),
 		})
 		if err != nil {
 			return err
@@ -76,8 +78,9 @@ var dataOptionSnapshotCmd = &cobra.Command{
 		}
 
 		resp, err := dataClient.OptionSnapshots(&api.OptionSnapshotsParams{
-			Symbols: symbols,
-			Feed:    cmdutil.Str(cmd, "feed"),
+			Symbols:   symbols,
+			Feed:      cmdutil.Str(cmd, "feed"),
+			PageToken: cmdutil.Str(cmd, "page-token"),
 		})
 		if err != nil {
 			return err
@@ -104,6 +107,7 @@ var dataOptionChainCmd = &cobra.Command{
 			RootSymbol:        cmdutil.Str(cmd, "root-symbol"),
 			Type:              cmdutil.Str(cmd, "type"),
 			Limit:             cmdutil.Int(cmd, "limit"),
+			PageToken:         cmdutil.Str(cmd, "page-token"),
 		})
 		if err != nil {
 			return err
@@ -159,20 +163,17 @@ var dataOptionLatestTradesCmd = &cobra.Command{
 
 func init() {
 	cmdutil.RegisterFlags(dataOptionBarsCmd, api.OptionBarsFlags, &cmdutil.FlagOpts{
-		Exclude:  map[string]bool{"page_token": true},
 		Defaults: map[string]string{"timeframe": "1Day"},
 	})
 
-	cmdutil.RegisterFlags(dataOptionTradesCmd, api.OptionTradesFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"page_token": true},
-	})
+	cmdutil.RegisterFlags(dataOptionTradesCmd, api.OptionTradesFlags, nil)
 
 	cmdutil.RegisterFlags(dataOptionSnapshotCmd, api.OptionSnapshotsFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"limit": true, "page_token": true, "updated_since": true},
+		Exclude: map[string]bool{"limit": true, "updated_since": true},
 	})
 
 	cmdutil.RegisterFlags(dataOptionChainCmd, api.OptionChainFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"page_token": true, "updated_since": true},
+		Exclude: map[string]bool{"updated_since": true},
 		Aliases: map[string]string{
 			"expiration_date":     "expiry",
 			"expiration_date_gte": "expiry-gte",

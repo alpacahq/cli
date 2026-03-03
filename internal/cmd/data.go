@@ -66,7 +66,7 @@ var dataSnapshotCmd = &cobra.Command{
 	Short: "Get latest snapshot (bar + quote + trade)",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		data, err := dataClient.Snapshot(args[0], nil)
+		data, err := dataClient.Snapshot(args[0], latestParams(cmd))
 		if err != nil {
 			return err
 		}
@@ -85,7 +85,7 @@ var dataLatestTradeCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbol := args[0]
-		data, err := dataClient.LatestTrade(symbol, nil)
+		data, err := dataClient.LatestTrade(symbol, latestParams(cmd))
 		if err != nil {
 			return err
 		}
@@ -106,7 +106,7 @@ var dataLatestQuoteCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbol := args[0]
-		data, err := dataClient.LatestQuote(symbol, nil)
+		data, err := dataClient.LatestQuote(symbol, latestParams(cmd))
 		if err != nil {
 			return err
 		}
@@ -126,7 +126,7 @@ var dataLatestBarCmd = &cobra.Command{
 	Short: "Get latest bar",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		data, err := dataClient.LatestBar(args[0], nil)
+		data, err := dataClient.LatestBar(args[0], latestParams(cmd))
 		if err != nil {
 			return err
 		}
@@ -136,22 +136,31 @@ var dataLatestBarCmd = &cobra.Command{
 
 func init() {
 	cmdutil.RegisterFlags(dataBarsCmd, api.StockBarSingleFlags, &cmdutil.FlagOpts{
-		Exclude:  map[string]bool{"page_token": true},
 		Defaults: map[string]string{"timeframe": "1Day"},
 	})
 	_ = dataBarsCmd.RegisterFlagCompletionFunc("feed", cobra.FixedCompletions([]string{"iex", "sip", "otc", "delayed_sip"}, cobra.ShellCompDirectiveNoFileComp))
 	_ = dataBarsCmd.RegisterFlagCompletionFunc("timeframe", cobra.FixedCompletions([]string{"1Min", "5Min", "15Min", "1Hour", "1Day", "1Week", "1Month"}, cobra.ShellCompDirectiveNoFileComp))
 	_ = dataBarsCmd.RegisterFlagCompletionFunc("adjustment", cobra.FixedCompletions([]string{"raw", "split", "dividend", "all"}, cobra.ShellCompDirectiveNoFileComp))
 
-	cmdutil.RegisterFlags(dataQuotesCmd, api.StockQuoteSingleFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"page_token": true},
-	})
+	cmdutil.RegisterFlags(dataQuotesCmd, api.StockQuoteSingleFlags, nil)
 	_ = dataQuotesCmd.RegisterFlagCompletionFunc("feed", cobra.FixedCompletions([]string{"iex", "sip", "otc", "delayed_sip"}, cobra.ShellCompDirectiveNoFileComp))
 
-	cmdutil.RegisterFlags(dataTradesCmd, api.StockTradeSingleFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"page_token": true},
-	})
+	cmdutil.RegisterFlags(dataTradesCmd, api.StockTradeSingleFlags, nil)
 	_ = dataTradesCmd.RegisterFlagCompletionFunc("feed", cobra.FixedCompletions([]string{"iex", "sip", "otc", "delayed_sip"}, cobra.ShellCompDirectiveNoFileComp))
+
+	feedCompletions := cobra.FixedCompletions([]string{"iex", "sip", "otc", "delayed_sip"}, cobra.ShellCompDirectiveNoFileComp)
+
+	cmdutil.RegisterFlags(dataSnapshotCmd, api.StockSnapshotSingleFlags, nil)
+	_ = dataSnapshotCmd.RegisterFlagCompletionFunc("feed", feedCompletions)
+
+	cmdutil.RegisterFlags(dataLatestTradeCmd, api.StockLatestTradeSingleFlags, nil)
+	_ = dataLatestTradeCmd.RegisterFlagCompletionFunc("feed", feedCompletions)
+
+	cmdutil.RegisterFlags(dataLatestQuoteCmd, api.StockLatestQuoteSingleFlags, nil)
+	_ = dataLatestQuoteCmd.RegisterFlagCompletionFunc("feed", feedCompletions)
+
+	cmdutil.RegisterFlags(dataLatestBarCmd, api.StockLatestBarSingleFlags, nil)
+	_ = dataLatestBarCmd.RegisterFlagCompletionFunc("feed", feedCompletions)
 
 	dataLatestCmd.AddCommand(dataLatestTradeCmd)
 	dataLatestCmd.AddCommand(dataLatestQuoteCmd)
@@ -173,6 +182,19 @@ func dataParams(cmd *cobra.Command) url.Values {
 	}
 	if v := cmdutil.Int(cmd, "limit"); v != 0 {
 		params.Set("limit", fmt.Sprint(v))
+	}
+	if v := cmdutil.Str(cmd, "page-token"); v != "" {
+		params.Set("page_token", v)
+	}
+	return params
+}
+
+func latestParams(cmd *cobra.Command) url.Values {
+	params := url.Values{}
+	for _, key := range []string{"feed", "currency"} {
+		if v := cmdutil.Str(cmd, key); v != "" {
+			params.Set(key, v)
+		}
 	}
 	return params
 }

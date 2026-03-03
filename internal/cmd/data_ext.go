@@ -35,6 +35,7 @@ var dataForexRatesCmd = &cobra.Command{
 			End:           cmdutil.Str(cmd, "end"),
 			Limit:         cmdutil.Int(cmd, "limit"),
 			Sort:          cmdutil.Str(cmd, "sort"),
+			PageToken:     cmdutil.Str(cmd, "page-token"),
 		})
 		if err != nil {
 			return err
@@ -102,12 +103,15 @@ var dataAuctionsCmd = &cobra.Command{
 		}
 
 		resp, err := dataClient.StockAuctions(&api.StockAuctionsParams{
-			Symbols: symbols,
-			Start:   cmdutil.Str(cmd, "start"),
-			End:     cmdutil.Str(cmd, "end"),
-			Limit:   cmdutil.Int(cmd, "limit"),
-			Sort:    cmdutil.Str(cmd, "sort"),
-			Asof:    cmdutil.Str(cmd, "asof"),
+			Symbols:   symbols,
+			Start:     cmdutil.Str(cmd, "start"),
+			End:       cmdutil.Str(cmd, "end"),
+			Limit:     cmdutil.Int(cmd, "limit"),
+			Sort:      cmdutil.Str(cmd, "sort"),
+			Asof:      cmdutil.Str(cmd, "asof"),
+			Feed:      cmdutil.Str(cmd, "feed"),
+			Currency:  cmdutil.Str(cmd, "currency"),
+			PageToken: cmdutil.Str(cmd, "page-token"),
 		})
 		if err != nil {
 			return err
@@ -125,12 +129,15 @@ var dataCorporateActionsCmd = &cobra.Command{
 	Example: `  alpaca data corporate-actions --symbols AAPL --types forward_split --start 2025-01-01`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		resp, err := dataClient.CorporateActions(&api.CorporateActionsParams{
-			Symbols: cmdutil.Str(cmd, "symbols"),
-			Types:   cmdutil.Str(cmd, "types"),
-			Start:   cmdutil.Str(cmd, "start"),
-			End:     cmdutil.Str(cmd, "end"),
-			Limit:   cmdutil.Int(cmd, "limit"),
-			Sort:    cmdutil.Str(cmd, "sort"),
+			Symbols:   cmdutil.Str(cmd, "symbols"),
+			Cusips:    cmdutil.Str(cmd, "cusips"),
+			Types:     cmdutil.Str(cmd, "types"),
+			Start:     cmdutil.Str(cmd, "start"),
+			End:       cmdutil.Str(cmd, "end"),
+			Ids:       cmdutil.Str(cmd, "ids"),
+			Limit:     cmdutil.Int(cmd, "limit"),
+			Sort:      cmdutil.Str(cmd, "sort"),
+			PageToken: cmdutil.Str(cmd, "page-token"),
 		})
 		if err != nil {
 			return err
@@ -165,7 +172,6 @@ var dataFixedIncomeCmd = &cobra.Command{
 
 func init() {
 	cmdutil.RegisterFlags(dataForexRatesCmd, api.RatesFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"page_token": true},
 		Aliases: map[string]string{"currency_pairs": "pairs"},
 	})
 	cmdutil.RegisterFlags(dataForexLatestCmd, api.LatestRatesFlags, &cmdutil.FlagOpts{
@@ -176,13 +182,9 @@ func init() {
 
 	cmdutil.RegisterFlags(dataCryptoOrderbookCmd, api.CryptoLatestOrderbooksFlags, nil)
 
-	cmdutil.RegisterFlags(dataAuctionsCmd, api.StockAuctionsFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"currency": true, "feed": true, "page_token": true},
-	})
+	cmdutil.RegisterFlags(dataAuctionsCmd, api.StockAuctionsFlags, nil)
 
-	cmdutil.RegisterFlags(dataCorporateActionsCmd, api.CorporateActionsFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"cusips": true, "ids": true, "page_token": true},
-	})
+	cmdutil.RegisterFlags(dataCorporateActionsCmd, api.CorporateActionsFlags, nil)
 
 	cmdutil.RegisterFlags(dataFixedIncomeCmd, api.FixedIncomeLatestPricesFlags, &cmdutil.FlagOpts{
 		Aliases: map[string]string{"isins": "symbols"},
