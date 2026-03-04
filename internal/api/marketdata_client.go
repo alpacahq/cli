@@ -539,8 +539,8 @@ type OptionChainParams struct {
 	UpdatedSince      string
 	PageToken         string
 	Type              string
-	StrikePriceGte    float64
-	StrikePriceLte    float64
+	StrikePriceGte    string
+	StrikePriceLte    string
 	ExpirationDate    string
 	ExpirationDateGte string
 	ExpirationDateLte string
@@ -567,11 +567,11 @@ func (p *OptionChainParams) Values() url.Values {
 	if p.Type != "" {
 		v.Set("type", p.Type)
 	}
-	if p.StrikePriceGte != 0 {
-		v.Set("strike_price_gte", fmt.Sprintf("%g", p.StrikePriceGte))
+	if p.StrikePriceGte != "" {
+		v.Set("strike_price_gte", p.StrikePriceGte)
 	}
-	if p.StrikePriceLte != 0 {
-		v.Set("strike_price_lte", fmt.Sprintf("%g", p.StrikePriceLte))
+	if p.StrikePriceLte != "" {
+		v.Set("strike_price_lte", p.StrikePriceLte)
 	}
 	if p.ExpirationDate != "" {
 		v.Set("expiration_date", p.ExpirationDate)

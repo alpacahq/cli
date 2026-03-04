@@ -263,16 +263,14 @@ func extractEndpoints(spec map[string]any) []*endpointInfo {
 				req, _ := p["required"].(bool)
 				pSchema, _ := p["schema"].(map[string]any)
 				goType := "string"
-				if pSchema != nil {
-					switch t, _ := pSchema["type"].(string); t {
-					case "integer":
-						goType = "int"
-					case "boolean":
-						goType = "bool"
-					case "number":
-						goType = "float64"
-					}
+			if pSchema != nil {
+				switch t, _ := pSchema["type"].(string); t {
+				case "integer":
+					goType = "int"
+				case "boolean":
+					goType = "bool"
 				}
+			}
 			pi := paramInfo{name: name, goName: toGoFieldName(name), goType: goType, required: req}
 			pi.description, _ = p["description"].(string)
 			if pi.description == "" && pSchema != nil {
@@ -651,8 +649,6 @@ func genEndpointMethod(buf *bytes.Buffer, ep *endpointInfo, clientName, getMetho
 				fmt.Fprintf(buf, "\tif p.%s != 0 { v.Set(%q, fmt.Sprint(p.%s)) }\n", p.goName, p.name, p.goName)
 			case "bool":
 				fmt.Fprintf(buf, "\tif p.%s { v.Set(%q, \"true\") }\n", p.goName, p.name)
-			case "float64":
-				fmt.Fprintf(buf, "\tif p.%s != 0 { v.Set(%q, fmt.Sprintf(\"%%g\", p.%s)) }\n", p.goName, p.name, p.goName)
 			}
 		}
 		fmt.Fprintf(buf, "\treturn v\n}\n\n")
@@ -1070,8 +1066,6 @@ func goTypeToFlagType(goType string) string {
 		return "int"
 	case "bool":
 		return "bool"
-	case "float64":
-		return "float64"
 	default:
 		return "string"
 	}
@@ -1096,8 +1090,6 @@ func schemaToFlagType(s map[string]any) string {
 		return "int"
 	case "boolean":
 		return "bool"
-	case "number":
-		return "float64"
 	default:
 		return "string"
 	}
@@ -1299,7 +1291,7 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 	fmt.Fprintf(&buf, "type FlagDef struct {\n")
 	fmt.Fprintf(&buf, "\tName        string   // kebab-case CLI flag name\n")
 	fmt.Fprintf(&buf, "\tOASName     string   // original OAS property/parameter name\n")
-	fmt.Fprintf(&buf, "\tType        string   // \"string\", \"bool\", \"int\", \"float64\"\n")
+	fmt.Fprintf(&buf, "\tType        string   // \"string\", \"bool\", \"int\"\n")
 	fmt.Fprintf(&buf, "\tDefault     string\n")
 	fmt.Fprintf(&buf, "\tDescription string\n")
 	fmt.Fprintf(&buf, "\tCompletions []string // enum values for shell completion\n")

@@ -451,8 +451,8 @@ type GetOptionsContractsParams struct {
 	RootSymbol        string
 	Type              string
 	Style             string
-	StrikePriceGte    float64
-	StrikePriceLte    float64
+	StrikePriceGte    string
+	StrikePriceLte    string
 	PageToken         string
 	Limit             int
 	Ppind             bool
@@ -490,11 +490,11 @@ func (p *GetOptionsContractsParams) Values() url.Values {
 	if p.Style != "" {
 		v.Set("style", p.Style)
 	}
-	if p.StrikePriceGte != 0 {
-		v.Set("strike_price_gte", fmt.Sprintf("%g", p.StrikePriceGte))
+	if p.StrikePriceGte != "" {
+		v.Set("strike_price_gte", p.StrikePriceGte)
 	}
-	if p.StrikePriceLte != 0 {
-		v.Set("strike_price_lte", fmt.Sprintf("%g", p.StrikePriceLte))
+	if p.StrikePriceLte != "" {
+		v.Set("strike_price_lte", p.StrikePriceLte)
 	}
 	if p.PageToken != "" {
 		v.Set("page_token", p.PageToken)
@@ -967,8 +967,8 @@ func (c *TradingClient) GetOpenPosition(SymbolOrAssetID string) (*Position, erro
 }
 
 type DeleteOpenPositionParams struct {
-	Qty        float64
-	Percentage float64
+	Qty        string
+	Percentage string
 }
 
 func (p *DeleteOpenPositionParams) Values() url.Values {
@@ -976,11 +976,11 @@ func (p *DeleteOpenPositionParams) Values() url.Values {
 		return nil
 	}
 	v := url.Values{}
-	if p.Qty != 0 {
-		v.Set("qty", fmt.Sprintf("%g", p.Qty))
+	if p.Qty != "" {
+		v.Set("qty", p.Qty)
 	}
-	if p.Percentage != 0 {
-		v.Set("percentage", fmt.Sprintf("%g", p.Percentage))
+	if p.Percentage != "" {
+		v.Set("percentage", p.Percentage)
 	}
 	return v
 }

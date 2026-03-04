@@ -194,6 +194,7 @@ func init() {
 	clockCmd.GroupID = utilGroup.ID
 	calendarCmd.GroupID = utilGroup.ID
 	apiCmd.GroupID = utilGroup.ID
+	setupCmd.GroupID = utilGroup.ID
 	updateCmd.GroupID = utilGroup.ID
 	versionCmd.GroupID = utilGroup.ID
 
@@ -220,7 +221,7 @@ func init() {
 
 func needsAuth(cmd *cobra.Command) bool {
 	switch cmd.Name() {
-	case "version", "help", "completion", "update":
+	case "version", "help", "completion", "update", "setup":
 		return false
 	}
 	return true

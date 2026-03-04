@@ -12,7 +12,6 @@ func newTestCmd() *cobra.Command {
 	cmd.Flags().String("name", "default", "")
 	cmd.Flags().Bool("verbose", false, "")
 	cmd.Flags().Int("count", 0, "")
-	cmd.Flags().Float64("price", 0, "")
 	return cmd
 }
 
@@ -37,13 +36,6 @@ func TestInt(t *testing.T) {
 	}
 }
 
-func TestFloat64(t *testing.T) {
-	cmd := newTestCmd()
-	if got := Float64(cmd, "price"); got != 0 {
-		t.Errorf("Float64(price) = %f, want 0", got)
-	}
-}
-
 func TestChanged(t *testing.T) {
 	cmd := newTestCmd()
 	if got := Changed(cmd, "name"); got != false {
@@ -57,7 +49,7 @@ func TestRegisterFlags_TypeDispatch(t *testing.T) {
 		{Name: "name", OASName: "name", Type: "string", Default: "hello", Description: "A name"},
 		{Name: "count", OASName: "count", Type: "int", Default: "42", Description: "A count"},
 		{Name: "active", OASName: "active", Type: "bool", Default: "true", Description: "Active flag"},
-		{Name: "price", OASName: "price", Type: "float64", Default: "9.99", Description: "A price"},
+		{Name: "price", OASName: "price", Type: "string", Default: "9.99", Description: "A price"},
 	}
 	RegisterFlags(cmd, defs, nil)
 
@@ -69,7 +61,7 @@ func TestRegisterFlags_TypeDispatch(t *testing.T) {
 		{"name", "string", "hello"},
 		{"count", "int", "42"},
 		{"active", "bool", "true"},
-		{"price", "float64", "9.99"},
+		{"price", "string", "9.99"},
 	}
 	for _, tt := range tests {
 		f := cmd.Flags().Lookup(tt.flag)

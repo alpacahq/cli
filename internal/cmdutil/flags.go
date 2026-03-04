@@ -40,9 +40,6 @@ func RegisterFlags(cmd *cobra.Command, defs []api.FlagDef, opts *FlagOpts) {
 		case "int":
 			defInt, _ := strconv.Atoi(defaultVal)
 			cmd.Flags().Int(name, defInt, d.Description)
-		case "float64":
-			defFloat, _ := strconv.ParseFloat(defaultVal, 64)
-			cmd.Flags().Float64(name, defFloat, d.Description)
 		default:
 			cmd.Flags().String(name, defaultVal, d.Description)
 		}
@@ -86,11 +83,6 @@ func Bool(cmd *cobra.Command, name string) bool {
 
 func Int(cmd *cobra.Command, name string) int {
 	v, _ := cmd.Flags().GetInt(name)
-	return v
-}
-
-func Float64(cmd *cobra.Command, name string) float64 {
-	v, _ := cmd.Flags().GetFloat64(name)
 	return v
 }
 

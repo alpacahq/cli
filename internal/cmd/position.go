@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"net/url"
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
@@ -53,20 +52,16 @@ var positionCloseCmd = &cobra.Command{
   alpaca position close AAPL --pct 50`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		v := url.Values{}
-		if q := cmdutil.Str(cmd, "qty"); q != "" {
-			v.Set("qty", q)
-		}
-		if p := cmdutil.Str(cmd, "pct"); p != "" {
-			v.Set("percentage", p)
+		params := &api.DeleteOpenPositionParams{
+			Qty:        cmdutil.Str(cmd, "qty"),
+			Percentage: cmdutil.Str(cmd, "pct"),
 		}
 
-		path := fmt.Sprintf("/v2/positions/%s", args[0])
-		data, err := apiClient.Delete(path, v)
+		order, err := tradingClient.DeleteOpenPosition(args[0], params)
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), orderColumns(), data)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), orderColumns(), order)
 	},
 }
 
@@ -90,10 +85,9 @@ var positionCloseAllCmd = &cobra.Command{
 
 func init() {
 	cmdutil.RegisterFlags(positionCloseCmd, api.DeleteOpenPositionFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"symbol_or_asset_id": true, "qty": true, "percentage": true},
+		Exclude: map[string]bool{"symbol_or_asset_id": true},
+		Aliases: map[string]string{"percentage": "pct"},
 	})
-	positionCloseCmd.Flags().String("qty", "", "Number of shares to liquidate (up to 9 decimal points). Cannot use with --pct")
-	positionCloseCmd.Flags().String("pct", "", "Percentage of position to liquidate. Cannot use with --qty")
 	cmdutil.RegisterFlags(positionCloseAllCmd, api.DeleteAllOpenPositionsFlags, nil)
 
 	positionCmd.AddCommand(positionListCmd)

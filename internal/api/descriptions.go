@@ -6,7 +6,7 @@ package api
 type FlagDef struct {
 	Name        string // kebab-case CLI flag name
 	OASName     string // original OAS property/parameter name
-	Type        string // "string", "bool", "int", "float64"
+	Type        string // "string", "bool", "int"
 	Default     string
 	Description string
 	Completions []string // enum values for shell completion
@@ -525,8 +525,8 @@ var OptionChainFlags = []FlagDef{
 	{Name: "limit", OASName: "limit", Type: "int", Default: "100", Description: "number of maximum snapshots to return in a response."},
 	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
 	{Name: "root-symbol", OASName: "root_symbol", Type: "string", Description: "filter contracts by the root symbol"},
-	{Name: "strike-price-gte", OASName: "strike_price_gte", Type: "float64", Description: "filter contracts with strike price greater than or equal to the specified value"},
-	{Name: "strike-price-lte", OASName: "strike_price_lte", Type: "float64", Description: "filter contracts with strike price less than or equal to the specified value"},
+	{Name: "strike-price-gte", OASName: "strike_price_gte", Type: "string", Description: "filter contracts with strike price greater than or equal to the specified value"},
+	{Name: "strike-price-lte", OASName: "strike_price_lte", Type: "string", Description: "filter contracts with strike price less than or equal to the specified value"},
 	{Name: "type", OASName: "type", Type: "string", Description: "filter contracts by the type (call or put)", Completions: []string{"call", "put"}},
 	{Name: "updated-since", OASName: "updated_since", Type: "string", Description: "filter to snapshots that were updated since this timestamp, meaning that the timestamp of the trade or the quote is g..."},
 }
@@ -1352,8 +1352,8 @@ var DeleteOpenPositionOp = deleteOpenPositionOp{
 }
 
 var DeleteOpenPositionFlags = []FlagDef{
-	{Name: "percentage", OASName: "percentage", Type: "float64", Description: "percentage of position to liquidate"},
-	{Name: "qty", OASName: "qty", Type: "float64", Description: "the number of shares to liquidate. Can accept up to 9 decimal points. Cannot work with percentage"},
+	{Name: "percentage", OASName: "percentage", Type: "string", Description: "percentage of position to liquidate"},
+	{Name: "qty", OASName: "qty", Type: "string", Description: "the number of shares to liquidate. Can accept up to 9 decimal points. Cannot work with percentage"},
 }
 
 type deleteOrderByOrderIDOp struct {
@@ -1466,8 +1466,8 @@ var GetOptionsContractsFlags = []FlagDef{
 	{Name: "root-symbol", OASName: "root_symbol", Type: "string", Description: "filter contracts by the root symbol"},
 	{Name: "show-deliverables", OASName: "show_deliverables", Type: "bool", Description: "include deliverables array in the response"},
 	{Name: "status", OASName: "status", Type: "string", Description: "filter contracts by status (active/inactive). By default only active contracts are returned", Completions: []string{"active", "inactive"}},
-	{Name: "strike-price-gte", OASName: "strike_price_gte", Type: "float64", Description: "filter contracts with strike price greater than or equal to the specified value"},
-	{Name: "strike-price-lte", OASName: "strike_price_lte", Type: "float64", Description: "filter contracts with strike price less than or equal to the specified value"},
+	{Name: "strike-price-gte", OASName: "strike_price_gte", Type: "string", Description: "filter contracts with strike price greater than or equal to the specified value"},
+	{Name: "strike-price-lte", OASName: "strike_price_lte", Type: "string", Description: "filter contracts with strike price less than or equal to the specified value"},
 	{Name: "style", OASName: "style", Type: "string", Description: "filter contracts by the style (american/european)", Completions: []string{"american", "european"}},
 	{Name: "type", OASName: "type", Type: "string", Description: "filter contracts by the type (call/put)", Completions: []string{"call", "put"}},
 	{Name: "underlying-symbols", OASName: "underlying_symbols", Type: "string", Description: "filter contracts by one or more underlying symbols"},

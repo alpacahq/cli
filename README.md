@@ -10,6 +10,16 @@ go install github.com/alpacahq/cli/cmd/alpaca@latest
 
 Or download a prebuilt binary from [Releases](https://github.com/alpacahq/cli/releases).
 
+## Post-Install Setup
+
+After installing, run `setup` to install shell completions and man pages:
+
+```bash
+alpaca setup
+```
+
+This auto-detects your shell and installs to user-level directories (no `sudo` needed). It also runs automatically after `alpaca update`.
+
 ## Quick Start
 
 ```bash
@@ -146,6 +156,7 @@ alpaca position list --json
 | `alpaca api post <path>` | POST request to any endpoint |
 | `alpaca api patch <path>` | PATCH request to any endpoint |
 | `alpaca api delete <path>` | DELETE request to any endpoint |
+| `alpaca setup` | Install completions and man pages |
 | `alpaca update` | Self-update |
 | `alpaca version` | Print version |
 

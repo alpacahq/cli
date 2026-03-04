@@ -88,6 +88,15 @@ var updateCmd = &cobra.Command{
 		}
 
 		color.Green("Updated to %s", latest)
+
+		fmt.Println()
+		if err := installCompletions(detectShell()); err != nil {
+			verboseLog("completions install: %v", err)
+		}
+		if err := installManPages(); err != nil {
+			verboseLog("man pages install: %v", err)
+		}
+
 		return nil
 	},
 }
