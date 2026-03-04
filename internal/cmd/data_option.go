@@ -161,6 +161,33 @@ var dataOptionLatestTradesCmd = &cobra.Command{
 	},
 }
 
+var dataOptionExchangesCmd = &cobra.Command{
+	Use:     "exchanges",
+	Short:   api.OptionMetaExchangesOp.Summary,
+	Example: `  alpaca data option exchanges`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		resp, err := dataClient.OptionMetaExchanges()
+		if err != nil {
+			return err
+		}
+		return output.JSON(cmd.OutOrStdout(), resp)
+	},
+}
+
+var dataOptionConditionsCmd = &cobra.Command{
+	Use:     "conditions <ticktype>",
+	Short:   api.OptionMetaConditionsOp.Summary,
+	Example: `  alpaca data option conditions trade`,
+	Args:    cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		resp, err := dataClient.OptionMetaConditions(args[0])
+		if err != nil {
+			return err
+		}
+		return output.JSON(cmd.OutOrStdout(), resp)
+	},
+}
+
 func init() {
 	cmdutil.RegisterFlags(dataOptionBarsCmd, api.OptionBarsFlags, &cmdutil.FlagOpts{
 		Defaults: map[string]string{"timeframe": "1Day"},
@@ -192,4 +219,6 @@ func init() {
 	dataOptionCmd.AddCommand(dataOptionChainCmd)
 	dataOptionCmd.AddCommand(dataOptionLatestQuotesCmd)
 	dataOptionCmd.AddCommand(dataOptionLatestTradesCmd)
+	dataOptionCmd.AddCommand(dataOptionExchangesCmd)
+	dataOptionCmd.AddCommand(dataOptionConditionsCmd)
 }

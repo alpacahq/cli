@@ -170,6 +170,60 @@ var dataFixedIncomeCmd = &cobra.Command{
 	},
 }
 
+// --- Logo ---
+
+var dataLogoCmd = &cobra.Command{
+	Use:     "logo <symbol>",
+	Short:   api.LogosOp.Summary,
+	Example: `  alpaca data logo AAPL`,
+	Args:    cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		resp, err := dataClient.Logos(args[0], &api.LogosParams{
+			Placeholder: cmdutil.Bool(cmd, "placeholder"),
+		})
+		if err != nil {
+			return err
+		}
+		return output.JSON(cmd.OutOrStdout(), resp)
+	},
+}
+
+// --- Exchange & Condition Metadata ---
+
+var dataMetaCmd = &cobra.Command{
+	Use:   "meta",
+	Short: "Stock exchange and condition reference data",
+}
+
+var dataMetaExchangesCmd = &cobra.Command{
+	Use:     "exchanges",
+	Short:   api.StockMetaExchangesOp.Summary,
+	Example: `  alpaca data meta exchanges`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		resp, err := dataClient.StockMetaExchanges()
+		if err != nil {
+			return err
+		}
+		return output.JSON(cmd.OutOrStdout(), resp)
+	},
+}
+
+var dataMetaConditionsCmd = &cobra.Command{
+	Use:     "conditions <ticktype>",
+	Short:   api.StockMetaConditionsOp.Summary,
+	Example: `  alpaca data meta conditions trade`,
+	Args:    cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		resp, err := dataClient.StockMetaConditions(args[0], &api.StockMetaConditionsParams{
+			Tape: cmdutil.Str(cmd, "tape"),
+		})
+		if err != nil {
+			return err
+		}
+		return output.JSON(cmd.OutOrStdout(), resp)
+	},
+}
+
 func init() {
 	cmdutil.RegisterFlags(dataForexRatesCmd, api.RatesFlags, &cmdutil.FlagOpts{
 		Aliases: map[string]string{"currency_pairs": "pairs"},
@@ -190,12 +244,20 @@ func init() {
 		Aliases: map[string]string{"isins": "symbols"},
 	})
 
+	cmdutil.RegisterFlags(dataLogoCmd, api.LogosFlags, nil)
+
+	cmdutil.RegisterFlags(dataMetaConditionsCmd, api.StockMetaConditionsFlags, nil)
+	dataMetaCmd.AddCommand(dataMetaExchangesCmd)
+	dataMetaCmd.AddCommand(dataMetaConditionsCmd)
+
 	dataCmd.AddCommand(dataOptionCmd)
 	dataCmd.AddCommand(dataForexCmd)
 	dataCmd.AddCommand(dataCryptoOrderbookCmd)
 	dataCmd.AddCommand(dataAuctionsCmd)
 	dataCmd.AddCommand(dataCorporateActionsCmd)
 	dataCmd.AddCommand(dataFixedIncomeCmd)
+	dataCmd.AddCommand(dataLogoCmd)
+	dataCmd.AddCommand(dataMetaCmd)
 }
 
 func renderMapValues(w io.Writer, format string, cols []output.Column, data any) error {

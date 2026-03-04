@@ -11,6 +11,11 @@ import (
 	"github.com/fatih/color"
 )
 
+const (
+	formatJSON = "json"
+	formatCSV  = "csv"
+)
+
 type Column struct {
 	Header string
 	Field  string
@@ -19,13 +24,24 @@ type Column struct {
 
 func Render(w io.Writer, format string, columns []Column, data any) error {
 	switch format {
-	case "json":
+	case formatJSON:
 		return JSON(w, data)
-	case "csv":
+	case formatCSV:
 		return CSV(w, columns, data)
 	default:
 		return Table(w, columns, data)
 	}
+}
+
+func RenderWithHint(w io.Writer, format string, columns []Column, data any, emptyHint string) error {
+	if format != formatJSON && format != formatCSV && emptyHint != "" {
+		rows := toRows(data)
+		if len(rows) == 0 {
+			_, _ = fmt.Fprintln(w, emptyHint)
+			return nil
+		}
+	}
+	return Render(w, format, columns, data)
 }
 
 func JSON(w io.Writer, data any) error {
@@ -84,9 +100,9 @@ func CSV(w io.Writer, columns []Column, data any) error {
 
 func PrintSingle(w io.Writer, format string, columns []Column, data any) error {
 	switch format {
-	case "json":
+	case formatJSON:
 		return JSON(w, data)
-	case "csv":
+	case formatCSV:
 		return CSV(w, columns, data)
 	default:
 		row := toMap(data)

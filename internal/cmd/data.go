@@ -64,6 +64,7 @@ var dataTradesCmd = &cobra.Command{
 var dataSnapshotCmd = &cobra.Command{
 	Use:   "snapshot <symbol>",
 	Short: "Get latest snapshot (bar + quote + trade)",
+	Long:  "Returns the latest snapshot for a symbol. Output is always JSON due to complex nested structure.",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		data, err := dataClient.Snapshot(args[0], latestParams(cmd))
@@ -126,11 +127,19 @@ var dataLatestBarCmd = &cobra.Command{
 	Short: "Get latest bar",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		data, err := dataClient.LatestBar(args[0], latestParams(cmd))
+		symbol := args[0]
+		data, err := dataClient.LatestBar(symbol, latestParams(cmd))
 		if err != nil {
 			return err
 		}
-		return output.JSON(cmd.OutOrStdout(), data)
+
+		var m map[string]any
+		if err := json.Unmarshal(data, &m); err != nil {
+			return err
+		}
+
+		bar := extractBar(m, symbol)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), barColumns(), bar)
 	},
 }
 
@@ -239,6 +248,18 @@ func extractArray(data json.RawMessage, symbol, key string) json.RawMessage {
 		return arr
 	}
 	return data
+}
+
+func extractBar(m map[string]any, symbol string) map[string]any {
+	if bar, ok := m["bar"].(map[string]any); ok {
+		return bar
+	}
+	if bars, ok := m["bars"].(map[string]any); ok {
+		if b, ok := bars[symbol].(map[string]any); ok {
+			return b
+		}
+	}
+	return m
 }
 
 func extractTrade(m map[string]any, symbol string) map[string]any {

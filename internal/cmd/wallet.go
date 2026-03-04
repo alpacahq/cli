@@ -81,6 +81,30 @@ var walletTransferCreateCmd = &cobra.Command{
 	},
 }
 
+// --- transfer estimate ---
+
+var walletTransferEstimateCmd = &cobra.Command{
+	Use:   "estimate",
+	Short: api.GetCryptoTransferEstimateOp.Summary,
+	Example: `  alpaca wallet transfer estimate --asset BTC --amount 0.5 \
+    --from-address 0xabc... --to-address 0xdef...`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := cmdutil.RequireAll(cmd, "asset", "amount"); err != nil {
+			return err
+		}
+		resp, err := tradingClient.GetCryptoTransferEstimate(&api.GetCryptoTransferEstimateParams{
+			Asset:       cmdutil.Str(cmd, "asset"),
+			Amount:      cmdutil.Str(cmd, "amount"),
+			FromAddress: cmdutil.Str(cmd, "from-address"),
+			ToAddress:   cmdutil.Str(cmd, "to-address"),
+		})
+		if err != nil {
+			return err
+		}
+		return output.JSON(cmd.OutOrStdout(), resp)
+	},
+}
+
 // --- wallet whitelist ---
 
 var walletWhitelistCmd = &cobra.Command{
@@ -139,11 +163,13 @@ func init() {
 		Exclude: map[string]bool{"network": true},
 	})
 	cmdutil.RegisterFlags(walletTransferCreateCmd, api.CreateCryptoTransferForAccountFlags, nil)
+	cmdutil.RegisterFlags(walletTransferEstimateCmd, api.GetCryptoTransferEstimateFlags, nil)
 	cmdutil.RegisterFlags(walletWhitelistAddCmd, api.CreateWhitelistedAddressFlags, nil)
 
 	walletTransferCmd.AddCommand(walletTransferListCmd)
 	walletTransferCmd.AddCommand(walletTransferGetCmd)
 	walletTransferCmd.AddCommand(walletTransferCreateCmd)
+	walletTransferCmd.AddCommand(walletTransferEstimateCmd)
 
 	walletWhitelistCmd.AddCommand(walletWhitelistListCmd)
 	walletWhitelistCmd.AddCommand(walletWhitelistAddCmd)

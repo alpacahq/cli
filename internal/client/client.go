@@ -221,6 +221,12 @@ func (c *Client) do(method, reqURL string, body any) (json.RawMessage, error) {
 				apiErr.Message = http.StatusText(resp.StatusCode)
 			}
 		}
+		if resp.StatusCode == 401 {
+			var probe map[string]any
+			if json.Unmarshal(respBody, &probe) != nil {
+				apiErr.hint = "Received a non-API response (possible proxy or wrong URL). Verify your base URL with `alpaca profile status`."
+			}
+		}
 		if resp.StatusCode == 429 {
 			if ra := resp.Header.Get("Retry-After"); ra != "" {
 				if secs, err := strconv.Atoi(ra); err == nil {

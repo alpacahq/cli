@@ -24,6 +24,13 @@ func orderColumns() []output.Column {
 	}
 }
 
+func canceledOrderColumns() []output.Column {
+	return []output.Column{
+		{Header: "ID", Field: "id"},
+		{Header: "STATUS", Field: "status"},
+	}
+}
+
 func positionColumns() []output.Column {
 	return []output.Column{
 		{Header: "SYMBOL", Field: "symbol"},

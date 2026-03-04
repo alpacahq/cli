@@ -89,15 +89,20 @@ var orderListCmd = &cobra.Command{
 			return err
 		}
 
+		hint := "No open orders."
+		if params.Status != "open" {
+			hint = "No orders found."
+		}
+
 		if !nested {
-			return output.Render(cmd.OutOrStdout(), getOutput(), orderColumns(), orders)
+			return output.RenderWithHint(cmd.OutOrStdout(), getOutput(), orderColumns(), orders, hint)
 		}
 
 		format := getOutput()
 		if format == outputJSON {
 			return output.JSON(cmd.OutOrStdout(), orders)
 		}
-		return output.Render(cmd.OutOrStdout(), format, orderColumns(), expandOrderLegs(orders))
+		return output.RenderWithHint(cmd.OutOrStdout(), format, orderColumns(), expandOrderLegs(orders), hint)
 	},
 }
 
@@ -155,7 +160,7 @@ var orderCancelAllCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.JSON(cmd.OutOrStdout(), canceled)
+		return output.RenderWithHint(cmd.OutOrStdout(), getOutput(), canceledOrderColumns(), canceled, "No open orders to cancel.")
 	},
 }
 

@@ -22,7 +22,7 @@ var positionListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), positionColumns(), positions)
+		return output.RenderWithHint(cmd.OutOrStdout(), getOutput(), positionColumns(), positions, "No open positions.")
 	},
 }
 

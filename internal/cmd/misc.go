@@ -93,6 +93,7 @@ var portfolioCmd = &cobra.Command{
 var portfolioHistoryCmd = &cobra.Command{
 	Use:   "history",
 	Short: api.GetAccountPortfolioHistoryOp.Summary,
+	Long:  "Returns portfolio equity and P&L history. Output is always JSON due to complex time-series structure.",
 	Example: `  alpaca portfolio history
   alpaca portfolio history --period 1M --timeframe 1D`,
 	RunE: func(cmd *cobra.Command, args []string) error {
