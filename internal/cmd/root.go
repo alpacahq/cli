@@ -32,6 +32,7 @@ var (
 	csvFlag       bool
 	quietFlag     bool
 	verboseFlag   bool
+	debugFlag     bool
 	profileFlag   string
 	timeoutFlag   int
 )
@@ -39,6 +40,10 @@ var (
 func SetVersion(v string) {
 	version = v
 	client.Version = v
+}
+
+func Root() *cobra.Command {
+	return rootCmd
 }
 
 func Execute() error {
@@ -115,6 +120,9 @@ var rootCmd = &cobra.Command{
 		if os.Getenv("ALPACA_VERBOSE") != "" {
 			verboseFlag = true
 		}
+		if os.Getenv("ALPACA_DEBUG") != "" {
+			debugFlag = true
+		}
 
 		var err error
 		outputOverride := ""
@@ -133,7 +141,8 @@ var rootCmd = &cobra.Command{
 				return err
 			}
 			apiClient = client.New(cfg)
-			apiClient.Verbose = verboseFlag
+			apiClient.Verbose = verboseFlag || debugFlag
+			apiClient.Debug = debugFlag
 			apiClient.Quiet = quietFlag
 			if timeoutFlag != 30 {
 				apiClient.SetTimeout(time.Duration(timeoutFlag) * time.Second)
@@ -152,6 +161,7 @@ func init() {
 	rootCmd.MarkFlagsMutuallyExclusive("json", "csv")
 	rootCmd.PersistentFlags().StringVarP(&profileFlag, "profile", "p", "", "Config profile to use")
 	rootCmd.PersistentFlags().BoolVarP(&verboseFlag, "verbose", "v", false, "Show HTTP request details on stderr")
+	rootCmd.PersistentFlags().BoolVar(&debugFlag, "debug", false, "Show full HTTP request/response bodies on stderr (implies --verbose)")
 	rootCmd.PersistentFlags().BoolVarP(&quietFlag, "quiet", "q", false, "Suppress non-data output (warnings, hints, color)")
 	rootCmd.PersistentFlags().IntVar(&timeoutFlag, "timeout", 30, "HTTP request timeout in seconds")
 

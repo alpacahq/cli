@@ -36,7 +36,10 @@ var assetListCmd = &cobra.Command{
 var assetGetCmd = &cobra.Command{
 	Use:   "get <symbol>",
 	Short: api.GetV2AssetsSymbolOrAssetIDOp.Summary,
-	Args:  cobra.ExactArgs(1),
+	Example: `  alpaca asset get AAPL
+  alpaca asset get BTC/USD
+  alpaca asset get AAPL --json`,
+	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		asset, err := tradingClient.GetV2AssetsSymbolOrAssetID(args[0])
 		if err != nil {

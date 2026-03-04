@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"net/url"
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
@@ -17,6 +18,9 @@ var positionCmd = &cobra.Command{
 var positionListCmd = &cobra.Command{
 	Use:   "list",
 	Short: api.GetAllOpenPositionsOp.Summary,
+	Example: `  alpaca position list
+  alpaca position list --json
+  alpaca position list --csv`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		positions, err := tradingClient.GetAllOpenPositions()
 		if err != nil {
@@ -29,7 +33,9 @@ var positionListCmd = &cobra.Command{
 var positionGetCmd = &cobra.Command{
 	Use:   "get <symbol>",
 	Short: api.GetOpenPositionOp.Summary,
-	Args:  cobra.ExactArgs(1),
+	Example: `  alpaca position get AAPL
+  alpaca position get BTC/USD --json`,
+	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		pos, err := tradingClient.GetOpenPosition(args[0])
 		if err != nil {
@@ -47,16 +53,20 @@ var positionCloseCmd = &cobra.Command{
   alpaca position close AAPL --pct 50`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		params := &api.DeleteOpenPositionParams{
-			Qty:        cmdutil.Float64(cmd, "qty"),
-			Percentage: cmdutil.Float64(cmd, "pct"),
+		v := url.Values{}
+		if q := cmdutil.Str(cmd, "qty"); q != "" {
+			v.Set("qty", q)
+		}
+		if p := cmdutil.Str(cmd, "pct"); p != "" {
+			v.Set("percentage", p)
 		}
 
-		order, err := tradingClient.DeleteOpenPosition(args[0], params)
+		path := fmt.Sprintf("/v2/positions/%s", args[0])
+		data, err := apiClient.Delete(path, v)
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), orderColumns(), order)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), orderColumns(), data)
 	},
 }
 
@@ -80,9 +90,10 @@ var positionCloseAllCmd = &cobra.Command{
 
 func init() {
 	cmdutil.RegisterFlags(positionCloseCmd, api.DeleteOpenPositionFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"symbol_or_asset_id": true},
-		Aliases: map[string]string{"percentage": "pct"},
+		Exclude: map[string]bool{"symbol_or_asset_id": true, "qty": true, "percentage": true},
 	})
+	positionCloseCmd.Flags().String("qty", "", "Number of shares to liquidate (up to 9 decimal points). Cannot use with --pct")
+	positionCloseCmd.Flags().String("pct", "", "Percentage of position to liquidate. Cannot use with --qty")
 	cmdutil.RegisterFlags(positionCloseAllCmd, api.DeleteAllOpenPositionsFlags, nil)
 
 	positionCmd.AddCommand(positionListCmd)

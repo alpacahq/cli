@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"reflect"
 	"strings"
 	"text/tabwriter"
 
@@ -45,6 +46,13 @@ func RenderWithHint(w io.Writer, format string, columns []Column, data any, empt
 }
 
 func JSON(w io.Writer, data any) error {
+	if data != nil {
+		v := reflect.ValueOf(data)
+		if v.Kind() == reflect.Slice && v.IsNil() {
+			_, err := io.WriteString(w, "[]\n")
+			return err
+		}
+	}
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 	return enc.Encode(data)

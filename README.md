@@ -184,18 +184,68 @@ Credentials are stored in `~/.config/alpaca/profiles/`.
 | `ALPACA_OUTPUT` | Default output format (`table`, `json`, `csv`) |
 | `ALPACA_CONFIG_DIR` | Config directory (default: `~/.config/alpaca`) |
 | `ALPACA_VERBOSE` | Enable verbose HTTP tracing (any non-empty value) |
+| `ALPACA_DEBUG` | Full HTTP request/response bodies on stderr (implies verbose) |
 
-Global flags: `--json`, `--csv`, `--profile`, `--verbose`, `--quiet`, `--timeout`.
+Global flags: `--json`, `--csv`, `--profile`, `--verbose`, `--debug`, `--quiet`, `--timeout`.
 
 Precedence: flags > env vars > profile config > defaults.
 
 ## Shell Completions
 
+### Bash
+
 ```bash
-alpaca completion bash > ~/.bash_completion.d/alpaca  # Bash
-alpaca completion zsh > "${fpath[1]}/_alpaca"          # Zsh
-alpaca completion fish > ~/.config/fish/completions/alpaca.fish  # Fish
+mkdir -p ~/.bash_completion.d
+alpaca completion bash > ~/.bash_completion.d/alpaca
+source ~/.bash_completion.d/alpaca
 ```
+
+Add `source ~/.bash_completion.d/alpaca` to your `~/.bashrc` (or `~/.bash_profile` on macOS) to load on every session.
+
+### Zsh
+
+```bash
+# Ensure completions directory is in fpath (add to ~/.zshrc before compinit)
+alpaca completion zsh > "${fpath[1]}/_alpaca"
+```
+
+If `echo $fpath` is empty or the directory doesn't exist, create one:
+
+```bash
+mkdir -p ~/.zsh/completions
+echo 'fpath=(~/.zsh/completions $fpath)' >> ~/.zshrc
+echo 'autoload -Uz compinit && compinit' >> ~/.zshrc
+alpaca completion zsh > ~/.zsh/completions/_alpaca
+source ~/.zshrc
+```
+
+### Fish
+
+```bash
+alpaca completion fish > ~/.config/fish/completions/alpaca.fish
+```
+
+Fish loads completions automatically from this directory — no restart required.
+
+### PowerShell
+
+```powershell
+alpaca completion powershell > alpaca.ps1
+. ./alpaca.ps1
+```
+
+To persist, add the output to your PowerShell profile (`$PROFILE`).
+
+### Verify it works
+
+After installing, open a new shell and type:
+
+```bash
+alpaca <TAB>            # Should show subcommands
+alpaca order submit AAPL --side <TAB>  # Should show buy/sell
+```
+
+If completions don't appear, check that your shell is sourcing the file and that `compinit` (zsh) or `complete` (bash) is loaded.
 
 Enum-valued flags auto-complete with valid values (e.g. `--side` → `buy`/`sell`, `--type` → `market`/`limit`/`stop`/etc.).
 
@@ -247,6 +297,19 @@ Debug API calls with `--verbose` or `ALPACA_VERBOSE=1`:
 alpaca account get --verbose
 # stderr: GET https://paper-api.alpaca.markets/v2/account → 200 (142ms)
 ```
+
+For full request/response headers and bodies, use `--debug`:
+
+```bash
+alpaca account get --debug
+# stderr: → GET https://paper-api.alpaca.markets/v2/account
+# stderr: → User-Agent: alpaca-cli/0.1.0
+# stderr: GET https://... → 200 (142ms)
+# stderr: ← Content-Type: application/json
+# stderr: ← {"id":"...","equity":"10000.00",...}
+```
+
+Credentials are always scrubbed from debug output.
 
 ### Dry Run
 

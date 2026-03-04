@@ -36,7 +36,9 @@ var dataBarsCmd = &cobra.Command{
 var dataQuotesCmd = &cobra.Command{
 	Use:   "quotes <symbol>",
 	Short: "Get historical quotes",
-	Args:  cobra.ExactArgs(1),
+	Example: `  alpaca data quotes AAPL --start 2025-01-01
+  alpaca data quotes AAPL --start 2025-01-01 --end 2025-01-31 --limit 50`,
+	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbol := args[0]
 		data, err := dataClient.Quotes(symbol, dataParams(cmd))
@@ -50,7 +52,9 @@ var dataQuotesCmd = &cobra.Command{
 var dataTradesCmd = &cobra.Command{
 	Use:   "trades <symbol>",
 	Short: "Get historical trades",
-	Args:  cobra.ExactArgs(1),
+	Example: `  alpaca data trades AAPL --start 2025-01-01
+  alpaca data trades AAPL --start 2025-01-01 --limit 100`,
+	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbol := args[0]
 		data, err := dataClient.Trades(symbol, dataParams(cmd))
@@ -65,7 +69,9 @@ var dataSnapshotCmd = &cobra.Command{
 	Use:   "snapshot <symbol>",
 	Short: "Get latest snapshot (bar + quote + trade)",
 	Long:  "Returns the latest snapshot for a symbol. Output is always JSON due to complex nested structure.",
-	Args:  cobra.ExactArgs(1),
+	Example: `  alpaca data snapshot AAPL
+  alpaca data snapshot BTC/USD --feed sip`,
+	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		data, err := dataClient.Snapshot(args[0], latestParams(cmd))
 		if err != nil {
@@ -83,7 +89,9 @@ var dataLatestCmd = &cobra.Command{
 var dataLatestTradeCmd = &cobra.Command{
 	Use:   "trade <symbol>",
 	Short: "Get latest trade",
-	Args:  cobra.ExactArgs(1),
+	Example: `  alpaca data latest trade AAPL
+  alpaca data latest trade AAPL --feed sip`,
+	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbol := args[0]
 		data, err := dataClient.LatestTrade(symbol, latestParams(cmd))
@@ -104,7 +112,9 @@ var dataLatestTradeCmd = &cobra.Command{
 var dataLatestQuoteCmd = &cobra.Command{
 	Use:   "quote <symbol>",
 	Short: "Get latest quote",
-	Args:  cobra.ExactArgs(1),
+	Example: `  alpaca data latest quote AAPL
+  alpaca data latest quote AAPL --json`,
+	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbol := args[0]
 		data, err := dataClient.LatestQuote(symbol, latestParams(cmd))
@@ -125,7 +135,9 @@ var dataLatestQuoteCmd = &cobra.Command{
 var dataLatestBarCmd = &cobra.Command{
 	Use:   "bar <symbol>",
 	Short: "Get latest bar",
-	Args:  cobra.ExactArgs(1),
+	Example: `  alpaca data latest bar AAPL
+  alpaca data latest bar BTC/USD`,
+	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbol := args[0]
 		data, err := dataClient.LatestBar(symbol, latestParams(cmd))

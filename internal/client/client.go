@@ -32,6 +32,7 @@ type Client struct {
 	Secret    string
 	UserAgent string
 	Verbose   bool
+	Debug     bool
 	Quiet     bool
 	Timeout   time.Duration
 }
@@ -151,6 +152,8 @@ func (c *Client) doWithRetry(method, reqURL string, body any) (json.RawMessage, 
 		delay := retryDelay(apiErr, attempt)
 		if c.Verbose {
 			fmt.Fprintf(os.Stderr, "  retrying in %s (attempt %d/%d)\n", delay, attempt+1, maxRetries)
+		} else if !c.Quiet && apiErr.StatusCode == 429 {
+			fmt.Fprintf(os.Stderr, "Rate limited, retrying in %s...\n", delay)
 		}
 		time.Sleep(delay)
 	}
@@ -173,13 +176,15 @@ func retryDelay(apiErr *APIError, attempt int) time.Duration {
 func (c *Client) do(method, reqURL string, body any) (json.RawMessage, error) {
 	start := time.Now()
 
+	var reqData []byte
 	var bodyReader io.Reader
 	if body != nil {
-		data, err := json.Marshal(body)
+		var err error
+		reqData, err = json.Marshal(body)
 		if err != nil {
 			return nil, fmt.Errorf("encoding request body: %w", err)
 		}
-		bodyReader = bytes.NewReader(data)
+		bodyReader = bytes.NewReader(reqData)
 	}
 
 	req, err := http.NewRequest(method, reqURL, bodyReader)
@@ -194,6 +199,14 @@ func (c *Client) do(method, reqURL string, body any) (json.RawMessage, error) {
 	}
 	req.Header.Set("User-Agent", c.UserAgent)
 
+	if c.Debug {
+		fmt.Fprintf(os.Stderr, "→ %s %s\n", method, c.scrub(reqURL))
+		c.debugHeaders("→", req.Header)
+		if len(reqData) > 0 {
+			fmt.Fprintf(os.Stderr, "→ %s\n", string(reqData))
+		}
+	}
+
 	resp, err := c.HTTP.Do(req)
 	if err != nil {
 		return nil, &APIError{
@@ -204,13 +217,20 @@ func (c *Client) do(method, reqURL string, body any) (json.RawMessage, error) {
 	defer func() { _ = resp.Body.Close() }()
 
 	elapsed := time.Since(start)
-	if c.Verbose {
+	if c.Verbose || c.Debug {
 		fmt.Fprintf(os.Stderr, "%s %s → %d (%dms)\n", method, c.scrub(reqURL), resp.StatusCode, elapsed.Milliseconds())
 	}
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("reading response: %w", err)
+	}
+
+	if c.Debug {
+		c.debugHeaders("←", resp.Header)
+		if len(respBody) > 0 {
+			fmt.Fprintf(os.Stderr, "← %s\n", c.scrub(string(respBody)))
+		}
 	}
 
 	if resp.StatusCode >= 400 {
@@ -242,6 +262,14 @@ func (c *Client) do(method, reqURL string, body any) (json.RawMessage, error) {
 	}
 
 	return json.RawMessage(respBody), nil
+}
+
+func (c *Client) debugHeaders(prefix string, h http.Header) {
+	for name, vals := range h {
+		for _, v := range vals {
+			fmt.Fprintf(os.Stderr, "%s %s: %s\n", prefix, name, c.scrub(v))
+		}
+	}
 }
 
 func (c *Client) scrub(s string) string {

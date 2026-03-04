@@ -118,7 +118,9 @@ var profileLoginCmd = &cobra.Command{
 var profileLogoutCmd = &cobra.Command{
 	Use:   "logout [name]",
 	Short: "Remove a profile",
-	Args:  cobra.MaximumNArgs(1),
+	Example: `  alpaca profile logout
+  alpaca profile logout live`,
+	Args: cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		name := "paper"
 		if len(args) > 0 {
@@ -136,8 +138,9 @@ var profileLogoutCmd = &cobra.Command{
 }
 
 var profileStatusCmd = &cobra.Command{
-	Use:   "status",
-	Short: "Show the active profile",
+	Use:     "status",
+	Short:   "Show the active profile",
+	Example: `  alpaca profile status`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		resolved, err := config.Load(profileFlag, "")
 		if err != nil {
@@ -164,8 +167,9 @@ var profileStatusCmd = &cobra.Command{
 }
 
 var profileListCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List all profiles",
+	Use:     "list",
+	Short:   "List all profiles",
+	Example: `  alpaca profile list`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		profiles, err := config.ListProfiles()
 		if err != nil {

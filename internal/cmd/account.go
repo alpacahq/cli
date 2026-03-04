@@ -15,6 +15,8 @@ var accountCmd = &cobra.Command{
 var accountGetCmd = &cobra.Command{
 	Use:   "get",
 	Short: api.GetAccountOp.Summary,
+	Example: `  alpaca account get
+  alpaca account get --json`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		account, err := tradingClient.GetAccount()
 		if err != nil {
@@ -27,6 +29,8 @@ var accountGetCmd = &cobra.Command{
 var accountConfigGetCmd = &cobra.Command{
 	Use:   "get",
 	Short: api.GetAccountConfigOp.Summary,
+	Example: `  alpaca account config get
+  alpaca account config get --json`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		config, err := tradingClient.GetAccountConfig()
 		if err != nil {
