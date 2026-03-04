@@ -263,19 +263,19 @@ func extractEndpoints(spec map[string]any) []*endpointInfo {
 				req, _ := p["required"].(bool)
 				pSchema, _ := p["schema"].(map[string]any)
 				goType := "string"
-			if pSchema != nil {
-				switch t, _ := pSchema["type"].(string); t {
-				case "integer":
-					goType = "int"
-				case "boolean":
-					goType = "bool"
+				if pSchema != nil {
+					switch t, _ := pSchema["type"].(string); t {
+					case "integer":
+						goType = "int"
+					case "boolean":
+						goType = "bool"
+					}
 				}
-			}
-			pi := paramInfo{name: name, goName: toGoFieldName(name), goType: goType, required: req}
-			pi.description, _ = p["description"].(string)
-			if pi.description == "" && pSchema != nil {
-				pi.description = schemaDesc(pSchema, compSchemas)
-			}
+				pi := paramInfo{name: name, goName: toGoFieldName(name), goType: goType, required: req}
+				pi.description, _ = p["description"].(string)
+				if pi.description == "" && pSchema != nil {
+					pi.description = schemaDesc(pSchema, compSchemas)
+				}
 				if pSchema != nil {
 					if ev, ok := pSchema["enum"].([]any); ok {
 						for _, v := range ev {
@@ -718,22 +718,34 @@ func genEndpointMethod(buf *bytes.Buffer, ep *endpointInfo, clientName, getMetho
 			fmt.Fprintf(buf, "\tdata, err := c.Raw.Delete(path, nil)\n")
 		}
 	case "POST":
+		paramsArg := "nil"
+		if hasParams {
+			paramsArg = "params.Values()"
+		}
 		if bodyType != "" {
-			fmt.Fprintf(buf, "\tdata, err := c.Raw.Post(path, body)\n")
+			fmt.Fprintf(buf, "\tdata, err := c.Raw.Post(path, %s, body)\n", paramsArg)
 		} else {
-			fmt.Fprintf(buf, "\tdata, err := c.Raw.Post(path, nil)\n")
+			fmt.Fprintf(buf, "\tdata, err := c.Raw.Post(path, %s, nil)\n", paramsArg)
 		}
 	case "PUT":
+		paramsArg := "nil"
+		if hasParams {
+			paramsArg = "params.Values()"
+		}
 		if bodyType != "" {
-			fmt.Fprintf(buf, "\tdata, err := c.Raw.Put(path, body)\n")
+			fmt.Fprintf(buf, "\tdata, err := c.Raw.Put(path, %s, body)\n", paramsArg)
 		} else {
-			fmt.Fprintf(buf, "\tdata, err := c.Raw.Put(path, nil)\n")
+			fmt.Fprintf(buf, "\tdata, err := c.Raw.Put(path, %s, nil)\n", paramsArg)
 		}
 	case "PATCH":
+		paramsArg := "nil"
+		if hasParams {
+			paramsArg = "params.Values()"
+		}
 		if bodyType != "" {
-			fmt.Fprintf(buf, "\tdata, err := c.Raw.Patch(path, body)\n")
+			fmt.Fprintf(buf, "\tdata, err := c.Raw.Patch(path, %s, body)\n", paramsArg)
 		} else {
-			fmt.Fprintf(buf, "\tdata, err := c.Raw.Patch(path, nil)\n")
+			fmt.Fprintf(buf, "\tdata, err := c.Raw.Patch(path, %s, nil)\n", paramsArg)
 		}
 	}
 

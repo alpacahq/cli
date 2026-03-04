@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"strings"
 	"testing"
@@ -88,7 +89,7 @@ func TestPostSendsBody(t *testing.T) {
 	})
 
 	body := map[string]string{"symbol": "AAPL", "qty": "10"}
-	_, err := c.Post("/v2/orders", body)
+	_, err := c.Post("/v2/orders", nil, body)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -330,9 +331,9 @@ func TestHTTPMethods(t *testing.T) {
 		method string
 	}{
 		{"Get", func(c *Client) (json.RawMessage, error) { return c.Get("/path", nil) }, "GET"},
-		{"Post", func(c *Client) (json.RawMessage, error) { return c.Post("/path", nil) }, "POST"},
-		{"Put", func(c *Client) (json.RawMessage, error) { return c.Put("/path", nil) }, "PUT"},
-		{"Patch", func(c *Client) (json.RawMessage, error) { return c.Patch("/path", nil) }, "PATCH"},
+		{"Post", func(c *Client) (json.RawMessage, error) { return c.Post("/path", nil, nil) }, "POST"},
+		{"Put", func(c *Client) (json.RawMessage, error) { return c.Put("/path", nil, nil) }, "PUT"},
+		{"Patch", func(c *Client) (json.RawMessage, error) { return c.Patch("/path", nil, nil) }, "PATCH"},
 		{"Delete", func(c *Client) (json.RawMessage, error) { return c.Delete("/path", nil) }, "DELETE"},
 	}
 
@@ -481,7 +482,7 @@ func TestAPIErrorMethodAndPath(t *testing.T) {
 		_, _ = w.Write([]byte(`{"message":"bad request"}`))
 	})
 
-	_, err := c.Post("/v2/orders", map[string]string{"qty": "-1"})
+	_, err := c.Post("/v2/orders", nil, map[string]string{"qty": "-1"})
 	apiErr, ok := err.(*APIError)
 	if !ok {
 		t.Fatalf("expected *APIError, got %T", err)
@@ -502,6 +503,64 @@ func TestAPIErrorMethodAndPath(t *testing.T) {
 	}
 	if path, ok := m["path"].(string); !ok || !strings.Contains(path, "/v2/orders") {
 		t.Errorf("JSON path = %v, want to contain /v2/orders", m["path"])
+	}
+}
+
+// TestPostPutPatchPassQueryParams verifies that Post, Put, and Patch include
+// query parameters in the request URL.
+func TestPostPutPatchPassQueryParams(t *testing.T) {
+	tests := []struct {
+		name   string
+		call   func(c *Client, params url.Values) (json.RawMessage, error)
+		method string
+	}{
+		{"Post", func(c *Client, p url.Values) (json.RawMessage, error) { return c.Post("/path", p, nil) }, "POST"},
+		{"Put", func(c *Client, p url.Values) (json.RawMessage, error) { return c.Put("/path", p, nil) }, "PUT"},
+		{"Patch", func(c *Client, p url.Values) (json.RawMessage, error) { return c.Patch("/path", p, nil) }, "PATCH"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var gotQuery string
+			c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
+				gotQuery = r.URL.RawQuery
+				w.WriteHeader(200)
+				_, _ = w.Write([]byte(`{}`))
+			})
+
+			params := url.Values{}
+			params.Set("name", "Tech Stocks")
+			params.Set("extra", "val")
+
+			_, err := tt.call(c, params)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if !strings.Contains(gotQuery, "name=Tech+Stocks") {
+				t.Errorf("%s did not pass query params; got query %q", tt.method, gotQuery)
+			}
+			if !strings.Contains(gotQuery, "extra=val") {
+				t.Errorf("%s missing extra param; got query %q", tt.method, gotQuery)
+			}
+		})
+	}
+}
+
+// TestPostPutPatchNilParams verifies that nil params produce no query string.
+func TestPostPutPatchNilParams(t *testing.T) {
+	var gotQuery string
+	c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
+		gotQuery = r.URL.RawQuery
+		w.WriteHeader(200)
+		_, _ = w.Write([]byte(`{}`))
+	})
+
+	_, err := c.Post("/path", nil, map[string]string{"key": "val"})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if gotQuery != "" {
+		t.Errorf("expected empty query string for nil params, got %q", gotQuery)
 	}
 }
 

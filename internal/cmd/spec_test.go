@@ -486,3 +486,44 @@ func TestTypedDescriptionsCompile(t *testing.T) {
 		}
 	}
 }
+
+// TestGeneratedPostPutPatchPassQueryParams scans the generated trading and market
+// data client files and verifies that every method accepting a *Params argument
+// for POST/PUT/PATCH also passes params.Values() in its body.
+func TestGeneratedPostPutPatchPassQueryParams(t *testing.T) {
+	root := projectRoot()
+	clientFiles := []string{
+		filepath.Join(root, "internal", "api", "trading_client.go"),
+		filepath.Join(root, "internal", "api", "marketdata_client.go"),
+	}
+
+	funcSig := regexp.MustCompile(`^func \(c \*\w+Client\) (\w+)\(params \*\w+Params`)
+	callLine := regexp.MustCompile(`c\.Raw\.(Post|Put|Patch)\(`)
+	paramsUsed := regexp.MustCompile(`params\.Values\(\)`)
+
+	for _, path := range clientFiles {
+		data, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("reading %s: %v", path, err)
+		}
+		lines := strings.Split(string(data), "\n")
+
+		for i, line := range lines {
+			if m := funcSig.FindStringSubmatch(line); m != nil {
+				funcName := m[1]
+				for j := i + 1; j < len(lines); j++ {
+					body := lines[j]
+					if strings.TrimSpace(body) == "}" && !strings.HasPrefix(body, "\t\t") {
+						break
+					}
+					if callLine.MatchString(body) && !paramsUsed.MatchString(body) {
+						t.Errorf(
+							"%s:%d: %s calls Post/Put/Patch without params.Values() — query params would be dropped",
+							filepath.Base(path), j+1, funcName,
+						)
+					}
+				}
+			}
+		}
+	}
+}

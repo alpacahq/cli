@@ -106,18 +106,18 @@ func (c *Client) Get(path string, params url.Values) (json.RawMessage, error) {
 	return c.doWithRetry("GET", u, nil)
 }
 
-func (c *Client) Post(path string, body any) (json.RawMessage, error) {
-	u := c.tradingURL(path, nil)
+func (c *Client) Post(path string, params url.Values, body any) (json.RawMessage, error) {
+	u := c.tradingURL(path, params)
 	return c.doWithRetry("POST", u, body)
 }
 
-func (c *Client) Put(path string, body any) (json.RawMessage, error) {
-	u := c.tradingURL(path, nil)
+func (c *Client) Put(path string, params url.Values, body any) (json.RawMessage, error) {
+	u := c.tradingURL(path, params)
 	return c.doWithRetry("PUT", u, body)
 }
 
-func (c *Client) Patch(path string, body any) (json.RawMessage, error) {
-	u := c.tradingURL(path, nil)
+func (c *Client) Patch(path string, params url.Values, body any) (json.RawMessage, error) {
+	u := c.tradingURL(path, params)
 	return c.doWithRetry("PATCH", u, body)
 }
 

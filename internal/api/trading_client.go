@@ -149,7 +149,7 @@ func (c *TradingClient) GetAccountConfig() (*AccountConfigurations, error) {
 // PatchAccountConfig — Account Configurations
 func (c *TradingClient) PatchAccountConfig(body *AccountConfigurations) (*AccountConfigurations, error) {
 	path := "/v2/account/configurations"
-	data, err := c.Raw.Patch(path, body)
+	data, err := c.Raw.Patch(path, nil, body)
 	if err != nil {
 		return nil, err
 	}
@@ -629,7 +629,7 @@ type PostOrderRequest struct {
 // PostOrder — Create an Order
 func (c *TradingClient) PostOrder(body *PostOrderRequest) (*Order, error) {
 	path := "/v2/orders"
-	data, err := c.Raw.Post(path, body)
+	data, err := c.Raw.Post(path, nil, body)
 	if err != nil {
 		return nil, err
 	}
@@ -677,7 +677,7 @@ func (c *TradingClient) GetOrderByOrderID(OrderID string, params *GetOrderByOrde
 // PatchOrderByOrderID — Replace Order by ID
 func (c *TradingClient) PatchOrderByOrderID(OrderID string, body *PatchOrderRequest) (*Order, error) {
 	path := fmt.Sprintf("/v2/orders/%s", OrderID)
-	data, err := c.Raw.Patch(path, body)
+	data, err := c.Raw.Patch(path, nil, body)
 	if err != nil {
 		return nil, err
 	}
@@ -778,7 +778,7 @@ func (p *SetCryptoPerpAccountLeverageParams) Values() url.Values {
 // SetCryptoPerpAccountLeverage — Set Account Leverage for an Asset
 func (c *TradingClient) SetCryptoPerpAccountLeverage(params *SetCryptoPerpAccountLeverageParams) (json.RawMessage, error) {
 	path := "/v2/perpetuals/leverage"
-	data, err := c.Raw.Post(path, nil)
+	data, err := c.Raw.Post(path, params.Values(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -862,7 +862,7 @@ func (c *TradingClient) ListCryptoPerpFundingTransfers() ([]CryptoTransfer, erro
 // CreateCryptoPerpTransferForAccount — Request a New Withdrawal
 func (c *TradingClient) CreateCryptoPerpTransferForAccount(body *CreateCryptoTransferRequest) (*CryptoTransfer, error) {
 	path := "/v2/perpetuals/wallets/transfers"
-	data, err := c.Raw.Post(path, body)
+	data, err := c.Raw.Post(path, nil, body)
 	if err != nil {
 		return nil, err
 	}
@@ -900,7 +900,7 @@ type CreateWhitelistedPerpAddressRequest struct {
 // CreateWhitelistedPerpAddress — Request a new whitelisted address
 func (c *TradingClient) CreateWhitelistedPerpAddress(body *CreateWhitelistedPerpAddressRequest) (*WhitelistedAddress, error) {
 	path := "/v2/perpetuals/wallets/whitelists"
-	data, err := c.Raw.Post(path, body)
+	data, err := c.Raw.Post(path, nil, body)
 	if err != nil {
 		return nil, err
 	}
@@ -999,7 +999,7 @@ func (c *TradingClient) DeleteOpenPosition(SymbolOrAssetID string, params *Delet
 // OptionDoNotExercise — Do Not Exercise an Options Position
 func (c *TradingClient) OptionDoNotExercise(SymbolOrContractID string) (json.RawMessage, error) {
 	path := fmt.Sprintf("/v2/positions/%s/do-not-exercise", SymbolOrContractID)
-	data, err := c.Raw.Post(path, nil)
+	data, err := c.Raw.Post(path, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -1009,7 +1009,7 @@ func (c *TradingClient) OptionDoNotExercise(SymbolOrContractID string) (json.Raw
 // OptionExercise — Exercise an Options Position
 func (c *TradingClient) OptionExercise(SymbolOrContractID string) (json.RawMessage, error) {
 	path := fmt.Sprintf("/v2/positions/%s/exercise", SymbolOrContractID)
-	data, err := c.Raw.Post(path, nil)
+	data, err := c.Raw.Post(path, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -1099,7 +1099,7 @@ func (c *TradingClient) ListCryptoFundingTransfers() ([]CryptoTransfer, error) {
 // CreateCryptoTransferForAccount — Request a New Withdrawal
 func (c *TradingClient) CreateCryptoTransferForAccount(body *CreateCryptoTransferRequest) (*CryptoTransfer, error) {
 	path := "/v2/wallets/transfers"
-	data, err := c.Raw.Post(path, body)
+	data, err := c.Raw.Post(path, nil, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1137,7 +1137,7 @@ type CreateWhitelistedAddressRequest struct {
 // CreateWhitelistedAddress — Request a new whitelisted address
 func (c *TradingClient) CreateWhitelistedAddress(body *CreateWhitelistedAddressRequest) (*WhitelistedAddress, error) {
 	path := "/v2/wallets/whitelists"
-	data, err := c.Raw.Post(path, body)
+	data, err := c.Raw.Post(path, nil, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1169,7 +1169,7 @@ func (c *TradingClient) GetWatchlists() ([]WatchlistWithoutAsset, error) {
 // PostWatchlist — Create Watchlist
 func (c *TradingClient) PostWatchlist(body *UpdateWatchlistRequest) (*Watchlist, error) {
 	path := "/v2/watchlists"
-	data, err := c.Raw.Post(path, body)
+	data, err := c.Raw.Post(path, nil, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1191,7 +1191,7 @@ func (c *TradingClient) GetWatchlistByID(WatchlistID string) (*Watchlist, error)
 // AddAssetToWatchlist — Add Asset to Watchlist
 func (c *TradingClient) AddAssetToWatchlist(WatchlistID string, body *AddAssetToWatchlistRequest) (*Watchlist, error) {
 	path := fmt.Sprintf("/v2/watchlists/%s", WatchlistID)
-	data, err := c.Raw.Post(path, body)
+	data, err := c.Raw.Post(path, nil, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1202,7 +1202,7 @@ func (c *TradingClient) AddAssetToWatchlist(WatchlistID string, body *AddAssetTo
 // UpdateWatchlistByID — Update Watchlist By Id
 func (c *TradingClient) UpdateWatchlistByID(WatchlistID string, body *UpdateWatchlistRequest) (*Watchlist, error) {
 	path := fmt.Sprintf("/v2/watchlists/%s", WatchlistID)
-	data, err := c.Raw.Put(path, body)
+	data, err := c.Raw.Put(path, nil, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1279,7 +1279,7 @@ type AddAssetToWatchlistByNameRequest struct {
 // AddAssetToWatchlistByName — Add Asset to Watchlist By Name
 func (c *TradingClient) AddAssetToWatchlistByName(params *AddAssetToWatchlistByNameParams, body *AddAssetToWatchlistByNameRequest) (*Watchlist, error) {
 	path := "/v2/watchlists:by_name"
-	data, err := c.Raw.Post(path, body)
+	data, err := c.Raw.Post(path, params.Values(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -1305,7 +1305,7 @@ func (p *UpdateWatchlistByNameParams) Values() url.Values {
 // UpdateWatchlistByName — Update Watchlist By Name
 func (c *TradingClient) UpdateWatchlistByName(params *UpdateWatchlistByNameParams, body *UpdateWatchlistRequest) (*Watchlist, error) {
 	path := "/v2/watchlists:by_name"
-	data, err := c.Raw.Put(path, body)
+	data, err := c.Raw.Put(path, params.Values(), body)
 	if err != nil {
 		return nil, err
 	}
