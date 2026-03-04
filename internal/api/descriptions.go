@@ -23,7 +23,7 @@ type calendarOp struct {
 var CalendarOp = calendarOp{
 	Summary:  "Get market calendar",
 	End:      "last date to retrieve data for (inclusive). Default: one week from the start date",
-	Market:   "market",
+	Market:   "market identifier. MIC, BIC or acronym",
 	Start:    "first date to retrieve data for (inclusive). Default: today",
 	Timezone: "timezone of the times. Default: the timezone of the market",
 }
@@ -366,11 +366,11 @@ type latestRatesOp struct {
 
 var LatestRatesOp = latestRatesOp{
 	Summary:       "Get latest rates for currency pairs",
-	CurrencyPairs: "currency pairs",
+	CurrencyPairs: "A comma-separated string with currency pairs",
 }
 
 var LatestRatesFlags = []FlagDef{
-	{Name: "currency-pairs", OASName: "currency_pairs", Type: "string", Description: "currency pairs"},
+	{Name: "currency-pairs", OASName: "currency_pairs", Type: "string", Description: "A comma-separated string with currency pairs"},
 }
 
 type legacyCalendarOp struct {
@@ -651,23 +651,23 @@ type ratesOp struct {
 
 var RatesOp = ratesOp{
 	Summary:       "Get historical rates for currency pairs",
-	CurrencyPairs: "currency pairs",
+	CurrencyPairs: "A comma-separated string with currency pairs",
 	End:           "inclusive end of the interval",
 	Limit:         "maximum number of data points to return in the response page.",
 	PageToken:     "pagination token from which to continue",
 	Sort:          "sort data in ascending or descending order",
 	Start:         "inclusive start of the interval",
-	Timeframe:     "timeframe",
+	Timeframe:     "sampling interval of the currency rates",
 }
 
 var RatesFlags = []FlagDef{
-	{Name: "currency-pairs", OASName: "currency_pairs", Type: "string", Description: "currency pairs"},
+	{Name: "currency-pairs", OASName: "currency_pairs", Type: "string", Description: "A comma-separated string with currency pairs"},
 	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
 	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
 	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
 	{Name: "sort", OASName: "sort", Type: "string", Description: "sort data in ascending or descending order"},
 	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
-	{Name: "timeframe", OASName: "timeframe", Type: "string", Description: "timeframe"},
+	{Name: "timeframe", OASName: "timeframe", Type: "string", Description: "sampling interval of the currency rates"},
 }
 
 type stockAuctionSingleOp struct {
@@ -1172,14 +1172,14 @@ type usCorporatesOp struct {
 
 var UsCorporatesOp = usCorporatesOp{
 	Summary:    "Get US corporates",
-	BondStatus: "bond status",
+	BondStatus: "status of the bond",
 	Cusips:     "A comma-separated list of CUSIPs with a limit of 1000",
 	Isins:      "A comma-separated list of ISINs with a limit of 1000",
 	Tickers:    "A comma-separated list of tickers with a limit of 1000",
 }
 
 var UsCorporatesFlags = []FlagDef{
-	{Name: "bond-status", OASName: "bond_status", Type: "string", Description: "bond status"},
+	{Name: "bond-status", OASName: "bond_status", Type: "string", Description: "status of the bond"},
 	{Name: "cusips", OASName: "cusips", Type: "string", Description: "A comma-separated list of CUSIPs with a limit of 1000"},
 	{Name: "isins", OASName: "isins", Type: "string", Description: "A comma-separated list of ISINs with a limit of 1000"},
 	{Name: "tickers", OASName: "tickers", Type: "string", Description: "A comma-separated list of tickers with a limit of 1000"},
@@ -1195,17 +1195,17 @@ type usTreasuriesOp struct {
 
 var UsTreasuriesOp = usTreasuriesOp{
 	Summary:    "Get US treasuries",
-	BondStatus: "bond status",
+	BondStatus: "status of the bond",
 	Cusips:     "A comma-separated list of CUSIPs with a limit of 1000",
 	Isins:      "A comma-separated list of ISINs with a limit of 1000",
-	Subtype:    "subtype",
+	Subtype:    "subtype of the treasury",
 }
 
 var UsTreasuriesFlags = []FlagDef{
-	{Name: "bond-status", OASName: "bond_status", Type: "string", Description: "bond status"},
+	{Name: "bond-status", OASName: "bond_status", Type: "string", Description: "status of the bond"},
 	{Name: "cusips", OASName: "cusips", Type: "string", Description: "A comma-separated list of CUSIPs with a limit of 1000"},
 	{Name: "isins", OASName: "isins", Type: "string", Description: "A comma-separated list of ISINs with a limit of 1000"},
-	{Name: "subtype", OASName: "subtype", Type: "string", Description: "subtype"},
+	{Name: "subtype", OASName: "subtype", Type: "string", Description: "subtype of the treasury"},
 }
 
 type addAssetToWatchlistOp struct {

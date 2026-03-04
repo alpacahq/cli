@@ -206,6 +206,7 @@ func extractEndpoints(spec map[string]any) []*endpointInfo {
 			}
 		}
 	}
+	compSchemas := mapGet(mapGet(spec, "components"), "schemas")
 
 	var result []*endpointInfo
 	for path, methods := range paths {
@@ -272,8 +273,11 @@ func extractEndpoints(spec map[string]any) []*endpointInfo {
 						goType = "float64"
 					}
 				}
-				pi := paramInfo{name: name, goName: toGoFieldName(name), goType: goType, required: req}
-				pi.description, _ = p["description"].(string)
+			pi := paramInfo{name: name, goName: toGoFieldName(name), goType: goType, required: req}
+			pi.description, _ = p["description"].(string)
+			if pi.description == "" && pSchema != nil {
+				pi.description = schemaDesc(pSchema, compSchemas)
+			}
 				if pSchema != nil {
 					if ev, ok := pSchema["enum"].([]any); ok {
 						for _, v := range ev {
@@ -1118,6 +1122,21 @@ func getBodyProps(ep *endpointInfo, schemas []*schemaInfo) map[string]map[string
 		}
 	}
 	return nil
+}
+
+func schemaDesc(schema map[string]any, compSchemas map[string]any) string {
+	if desc, ok := schema["description"].(string); ok {
+		return desc
+	}
+	if ref, ok := schema["$ref"].(string); ok && compSchemas != nil {
+		name := refBaseName(ref)
+		if target, ok := compSchemas[name].(map[string]any); ok {
+			if desc, ok := target["description"].(string); ok {
+				return desc
+			}
+		}
+	}
+	return ""
 }
 
 func propertyDesc(prop map[string]any, compSchemas map[string]any) string {
