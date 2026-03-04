@@ -18,6 +18,8 @@ const (
 	shellZsh        = "zsh"
 	shellFish       = "fish"
 	shellPowerShell = "powershell"
+
+	osWindows = "windows"
 )
 
 var setupCmd = &cobra.Command{
@@ -44,6 +46,10 @@ Installed to user-level directories (no sudo required):
 			shell = detectShell()
 		}
 
+		if !isSupportedShell(shell) {
+			return fmt.Errorf("unsupported shell %q\nSupported: bash, zsh, fish, powershell\nUse --shell to specify your shell explicitly", shell)
+		}
+
 		if !manOnly {
 			if err := installCompletions(shell); err != nil {
 				fmt.Fprintf(os.Stderr, "Warning: completions install failed: %v\n", err)
@@ -51,7 +57,9 @@ Installed to user-level directories (no sudo required):
 		}
 
 		if !compOnly {
-			if err := installManPages(); err != nil {
+			if runtime.GOOS == osWindows {
+				fmt.Fprintln(os.Stderr, "Skipping man pages (not supported on Windows).")
+			} else if err := installManPages(); err != nil {
 				fmt.Fprintf(os.Stderr, "Warning: man pages install failed: %v\n", err)
 			}
 		}
@@ -81,10 +89,19 @@ func mustBool(cmd *cobra.Command, name string) bool {
 	return v
 }
 
+func isSupportedShell(shell string) bool {
+	switch shell {
+	case shellBash, shellZsh, shellFish, shellPowerShell:
+		return true
+	default:
+		return false
+	}
+}
+
 func detectShell() string {
 	sh := os.Getenv("SHELL")
 	if sh == "" {
-		if runtime.GOOS == "windows" {
+		if runtime.GOOS == osWindows {
 			return shellPowerShell
 		}
 		return shellBash

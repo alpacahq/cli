@@ -4,6 +4,14 @@ CLI for [Alpaca](https://alpaca.markets) Trading API. Trade stocks & crypto, acc
 
 ## Install
 
+**Homebrew** (macOS / Linux):
+
+```bash
+brew install alpacahq/tap/alpaca
+```
+
+**Go**:
+
 ```bash
 go install github.com/alpacahq/cli/cmd/alpaca@latest
 ```
@@ -19,6 +27,20 @@ alpaca setup
 ```
 
 This auto-detects your shell and installs to user-level directories (no `sudo` needed). It also runs automatically after `alpaca update`.
+
+**Supported platforms:**
+
+| OS | Shells | Man pages |
+|----|--------|-----------|
+| macOS | bash, zsh, fish, PowerShell | Yes |
+| Linux | bash, zsh, fish, PowerShell | Yes |
+| Windows | PowerShell | No |
+
+Override auto-detection with `--shell`:
+
+```bash
+alpaca setup --shell fish
+```
 
 ## Quick Start
 

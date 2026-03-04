@@ -69,7 +69,7 @@ var updateCmd = &cobra.Command{
 		}
 
 		binaryName := "alpaca"
-		if runtime.GOOS == "windows" {
+		if runtime.GOOS == osWindows {
 			binaryName = "alpaca.exe"
 		}
 

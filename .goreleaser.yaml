@@ -1,5 +1,10 @@
 version: 2
 
+before:
+  hooks:
+    - go mod tidy
+    - go run ./cmd/doc
+
 builds:
   - main: ./cmd/alpaca
     binary: alpaca
@@ -20,6 +25,10 @@ archives:
     format_overrides:
       - goos: windows
         formats: [zip]
+    files:
+      - README.md
+      - LICENSE*
+      - man/*.1
 
 checksum:
   name_template: "checksums.txt"
@@ -30,4 +39,19 @@ changelog:
     exclude:
       - "^docs:"
       - "^test:"
+
+brews:
+  - repository:
+      owner: alpacahq
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    homepage: https://github.com/alpacahq/cli
+    description: CLI for Alpaca Trading API
+    license: Apache-2.0
+    install: |
+      bin.install "alpaca"
+      generate_completions_from_executable(bin/"alpaca", "completion")
+      man1.install Dir["man/*.1"]
+    test: |
+      system bin/"alpaca", "version"
 
