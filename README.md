@@ -1,10 +1,18 @@
-# alpaca
+# Alpaca CLI
 
 CLI for [Alpaca](https://alpaca.markets) Trading API. Trade stocks & crypto, access market data, and manage your account from the command line.
+
+> **Alpha Preview** — This CLI is under active development and available as an early alpha release for testing and feedback. Commands, flags, and output formats are subject to change. Use in production workflows at your own risk.
+
+## Design Philosophy
+
+The CLI is driven by OpenAPI specs — types, clients, param structs, flag definitions, enum completions, and validation are all generated from `api/specs/*.json`.
 
 ## Install
 
 **Homebrew** (macOS / Linux):
+
+> Homebrew support has not yet been fully configured. Please use `go install`
 
 ```bash
 brew install alpacahq/tap/alpaca
