@@ -2,8 +2,10 @@ package client
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -372,5 +374,216 @@ func TestErrorString(t *testing.T) {
 				t.Errorf("Error() = %q, want %q", got, tt.want)
 			}
 		})
+	}
+}
+
+// TestErrorPathInfrastructure verifies that HTTP error codes produce the
+// correct exit code, hint, message, and JSON structure through the full
+// client → APIError path. Only non-retryable codes are tested via HTTP to
+// avoid retry delays; retryable codes (429, 500) are tested in struct tests.
+func TestErrorPathInfrastructure(t *testing.T) {
+	tests := []struct {
+		name     string
+		status   int
+		body     string
+		wantExit int
+		wantHint string // lowercase substring; empty = expect no hint
+		wantMsg  string // lowercase substring in message
+	}{
+		{
+			name:     "401_unauthorized",
+			status:   401,
+			body:     `{"message":"unauthorized"}`,
+			wantExit: ExitAuthError,
+			wantHint: "credentials",
+			wantMsg:  "unauthorized",
+		},
+		{
+			name:     "403_forbidden",
+			status:   403,
+			body:     `{"message":"forbidden"}`,
+			wantExit: ExitAuthError,
+			wantHint: "denied",
+			wantMsg:  "forbidden",
+		},
+		{
+			name:     "404_not_found",
+			status:   404,
+			body:     `{"message":"order not found"}`,
+			wantExit: ExitAPIError,
+			wantMsg:  "not found",
+		},
+		{
+			name:     "422_validation",
+			status:   422,
+			body:     `{"code":42210001,"message":"qty must be positive"}`,
+			wantExit: ExitAPIError,
+			wantMsg:  "qty must be positive",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(tt.status)
+				_, _ = w.Write([]byte(tt.body))
+			})
+
+			_, err := c.Get("/v2/test", nil)
+			if err == nil {
+				t.Fatal("expected error")
+			}
+
+			apiErr, ok := err.(*APIError)
+			if !ok {
+				t.Fatalf("expected *APIError, got %T", err)
+			}
+
+			if apiErr.ExitCode() != tt.wantExit {
+				t.Errorf("ExitCode() = %d, want %d", apiErr.ExitCode(), tt.wantExit)
+			}
+
+			hint := apiErr.Hint()
+			if tt.wantHint != "" && !strings.Contains(strings.ToLower(hint), tt.wantHint) {
+				t.Errorf("Hint() = %q, want substring %q", hint, tt.wantHint)
+			}
+			if tt.wantHint == "" && hint != "" {
+				t.Errorf("expected no hint for %d, got %q", tt.status, hint)
+			}
+
+			if !strings.Contains(strings.ToLower(apiErr.Message), strings.ToLower(tt.wantMsg)) {
+				t.Errorf("Message = %q, want substring %q", apiErr.Message, tt.wantMsg)
+			}
+
+			data, marshalErr := json.Marshal(apiErr)
+			if marshalErr != nil {
+				t.Fatalf("json.Marshal: %v", marshalErr)
+			}
+			var m map[string]any
+			if err := json.Unmarshal(data, &m); err != nil {
+				t.Fatalf("json.Unmarshal: %v", err)
+			}
+			if int(m["status"].(float64)) != tt.status {
+				t.Errorf("JSON status = %v, want %d", m["status"], tt.status)
+			}
+			if m["message"] == nil || m["message"] == "" {
+				t.Error("JSON missing 'message' field")
+			}
+		})
+	}
+}
+
+// TestAPIErrorMethodAndPath verifies that the Method and Path fields are
+// populated correctly in API errors and round-trip through JSON.
+func TestAPIErrorMethodAndPath(t *testing.T) {
+	c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(400)
+		_, _ = w.Write([]byte(`{"message":"bad request"}`))
+	})
+
+	_, err := c.Post("/v2/orders", map[string]string{"qty": "-1"})
+	apiErr, ok := err.(*APIError)
+	if !ok {
+		t.Fatalf("expected *APIError, got %T", err)
+	}
+
+	if apiErr.Method != "POST" {
+		t.Errorf("Method = %q, want POST", apiErr.Method)
+	}
+	if !strings.Contains(apiErr.Path, "/v2/orders") {
+		t.Errorf("Path = %q, want to contain /v2/orders", apiErr.Path)
+	}
+
+	data, _ := json.Marshal(apiErr)
+	var m map[string]any
+	_ = json.Unmarshal(data, &m)
+	if m["method"] != "POST" {
+		t.Errorf("JSON method = %v, want POST", m["method"])
+	}
+	if path, ok := m["path"].(string); !ok || !strings.Contains(path, "/v2/orders") {
+		t.Errorf("JSON path = %v, want to contain /v2/orders", m["path"])
+	}
+}
+
+// TestNetworkErrorHasHint verifies that connection failures produce an
+// APIError with a helpful hint about checking connectivity.
+func TestNetworkErrorHasHint(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+	}))
+	serverURL := srv.URL
+	srv.Close()
+
+	c := &Client{
+		HTTP:      &http.Client{Timeout: 2 * time.Second},
+		BaseURL:   serverURL,
+		APIKey:    "test",
+		Secret:    "test",
+		UserAgent: "alpaca-cli/test",
+	}
+
+	_, err := c.Get("/v2/account", nil)
+	if err == nil {
+		t.Fatal("expected connection error")
+	}
+
+	apiErr, ok := err.(*APIError)
+	if !ok {
+		t.Fatalf("expected *APIError, got %T: %v", err, err)
+	}
+
+	if !strings.Contains(strings.ToLower(apiErr.Hint()), "internet connection") {
+		t.Errorf("expected connection hint, got: %q", apiErr.Hint())
+	}
+}
+
+// TestVerboseOutputScrubsSecrets verifies that verbose mode never leaks API
+// keys or secrets to stderr, even when they appear in request URLs. This is
+// a regression test: if someone adds header or body logging without scrubbing,
+// this test will catch it.
+func TestVerboseOutputScrubsSecrets(t *testing.T) {
+	const apiKey = "PKTESTKEY123456789"
+	const secret = "SECRETTESTVALUE987654"
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		_, _ = w.Write([]byte(`{"ok":true}`))
+	}))
+	t.Cleanup(srv.Close)
+
+	c := &Client{
+		HTTP:      &http.Client{Timeout: 5 * time.Second},
+		BaseURL:   srv.URL,
+		DataURL:   srv.URL,
+		APIKey:    apiKey,
+		Secret:    secret,
+		UserAgent: "alpaca-cli/test",
+		Verbose:   true,
+	}
+
+	origStderr := os.Stderr
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	os.Stderr = w
+
+	// Embed the API key in the URL to stress-test scrubbing
+	_, _ = c.Get("/v2/account?token="+apiKey, nil)
+
+	_ = w.Close()
+	os.Stderr = origStderr
+
+	captured, _ := io.ReadAll(r)
+	output := string(captured)
+
+	if output == "" {
+		t.Fatal("expected verbose output on stderr, got nothing")
+	}
+	if strings.Contains(output, apiKey) {
+		t.Errorf("verbose output leaks API key:\n%s", output)
+	}
+	if strings.Contains(output, secret) {
+		t.Errorf("verbose output leaks secret:\n%s", output)
 	}
 }

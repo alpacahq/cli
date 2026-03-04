@@ -361,6 +361,43 @@ func TestNoEmptyFlagDescriptions(t *testing.T) {
 	}
 }
 
+// TestRenderCallsUseColumnDefinitions scans all command source files and
+// verifies that every output.Render and output.PrintSingle call includes
+// column definitions (a *Columns() function or a `cols` parameter). This
+// catches the antipattern of passing raw data through the table/CSV renderer
+// without defining columns — which produces blank or garbled output.
+func TestRenderCallsUseColumnDefinitions(t *testing.T) {
+	renderCall := regexp.MustCompile(`output\.(Render|PrintSingle)\(`)
+	columnsRef := regexp.MustCompile(`\w+Columns\(\)|\bcols\b`)
+
+	dir := cmdDir()
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, e := range entries {
+		if e.IsDir() || !strings.HasSuffix(e.Name(), ".go") || strings.HasSuffix(e.Name(), "_test.go") {
+			continue
+		}
+		data, err := os.ReadFile(filepath.Join(dir, e.Name()))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		lines := strings.Split(string(data), "\n")
+		for i, line := range lines {
+			if !renderCall.MatchString(line) {
+				continue
+			}
+			if !columnsRef.MatchString(line) {
+				t.Errorf("%s:%d: output.Render/PrintSingle call missing column definitions:\n  %s",
+					e.Name(), i+1, strings.TrimSpace(line))
+			}
+		}
+	}
+}
+
 // TestTypedDescriptionsCompile verifies that the typed description structs
 // referenced in command source code have non-empty Summary fields.
 // Field references are caught at compile time; this test catches empty values.

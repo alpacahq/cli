@@ -68,3 +68,73 @@ func TestOutputFormats_CSV(t *testing.T) {
 		t.Errorf("CSV header should contain commas, got: %s", lines[0])
 	}
 }
+
+func TestAPIError_NonExistentPosition(t *testing.T) {
+	_, stderr, code := alpacaFail(t, "position", "get", "ZZZZZZZZZ", "--json")
+	if code == 0 {
+		t.Fatal("expected non-zero exit code for non-existent position")
+	}
+	errMap := parseJSONMap(t, stderr)
+	if errMap["error"] == nil || errMap["error"] == "" {
+		t.Error("expected 'error' field in JSON error")
+	}
+}
+
+func TestAPIError_NonExistentOrderCancel(t *testing.T) {
+	_, stderr, code := alpacaFail(t,
+		"order", "cancel", "00000000-0000-0000-0000-000000000001",
+		"--json",
+	)
+	if code == 0 {
+		t.Fatal("expected non-zero exit code for canceling non-existent order")
+	}
+	errMap := parseJSONMap(t, stderr)
+	if errMap["error"] == nil || errMap["error"] == "" {
+		t.Error("expected 'error' field in JSON error")
+	}
+}
+
+func TestAPIError_NonExistentAsset(t *testing.T) {
+	_, stderr, code := alpacaFail(t, "asset", "get", "ZZZZZZZZZ", "--json")
+	if code == 0 {
+		t.Fatal("expected non-zero exit code for non-existent asset")
+	}
+	errMap := parseJSONMap(t, stderr)
+	if errMsg, ok := errMap["error"].(string); !ok || errMsg == "" {
+		t.Error("expected non-empty error message")
+	}
+}
+
+func TestExitCode_APIErrorIs1(t *testing.T) {
+	_, _, code := alpacaFail(t,
+		"order", "get", "00000000-0000-0000-0000-000000000000",
+	)
+	if code != 1 {
+		t.Errorf("expected exit code 1 for 404 API error, got %d", code)
+	}
+}
+
+func TestAPIError_JSONErrorStructure(t *testing.T) {
+	_, stderr, code := alpacaFail(t,
+		"order", "get", "00000000-0000-0000-0000-000000000000",
+		"--json",
+	)
+	if code == 0 {
+		t.Fatal("expected non-zero exit code")
+	}
+
+	errMap := parseJSONMap(t, stderr)
+
+	for _, field := range []string{"error", "status"} {
+		if _, ok := errMap[field]; !ok {
+			t.Errorf("JSON error missing required field %q", field)
+		}
+	}
+
+	if errMsg, ok := errMap["error"].(string); !ok || errMsg == "" {
+		t.Errorf("expected non-empty error message, got %v", errMap["error"])
+	}
+	if status, ok := errMap["status"].(float64); !ok || status < 400 {
+		t.Errorf("expected HTTP status >= 400, got %v", errMap["status"])
+	}
+}
