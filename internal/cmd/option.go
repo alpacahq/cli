@@ -19,24 +19,25 @@ var optionChainCmd = &cobra.Command{
 	Short: api.GetOptionsContractsOp.Summary,
 	Long:  "List option contracts for an underlying symbol. For market data (greeks, pricing), use `data option chain`.",
 	Example: `  alpaca option chain AAPL
-  alpaca option chain AAPL --expiry 2025-06-20 --type call
-  alpaca option chain SPY --strike-gte 400 --strike-lte 450`,
+  alpaca option chain AAPL --expiration-date 2025-06-20 --type call
+  alpaca option chain SPY --strike-price-gte 400 --strike-price-lte 450`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		params := &api.GetOptionsContractsParams{
 			UnderlyingSymbols: args[0],
 			ShowDeliverables:  cmdutil.Bool(cmd, "show-deliverables"),
-			ExpirationDate:    cmdutil.Str(cmd, "expiry"),
+			ExpirationDate:    cmdutil.Str(cmd, "expiration-date"),
 			Type:              cmdutil.Str(cmd, "type"),
 			Style:             cmdutil.Str(cmd, "style"),
 			Status:            cmdutil.Str(cmd, "status"),
-			StrikePriceGte:    cmdutil.Str(cmd, "strike-gte"),
-			StrikePriceLte:    cmdutil.Str(cmd, "strike-lte"),
-			ExpirationDateGte: cmdutil.Str(cmd, "expiry-gte"),
-			ExpirationDateLte: cmdutil.Str(cmd, "expiry-lte"),
+			StrikePriceGte:    cmdutil.Str(cmd, "strike-price-gte"),
+			StrikePriceLte:    cmdutil.Str(cmd, "strike-price-lte"),
+			ExpirationDateGte: cmdutil.Str(cmd, "expiration-date-gte"),
+			ExpirationDateLte: cmdutil.Str(cmd, "expiration-date-lte"),
 			RootSymbol:        cmdutil.Str(cmd, "root-symbol"),
 			Limit:             cmdutil.Int(cmd, "limit"),
 			PageToken:         cmdutil.Str(cmd, "page-token"),
+			Ppind:             cmdutil.Bool(cmd, "ppind"),
 		}
 
 		data, err := tradingClient.GetOptionsContracts(params)
@@ -90,14 +91,7 @@ var optionDoNotExerciseCmd = &cobra.Command{
 
 func init() {
 	cmdutil.RegisterFlags(optionChainCmd, api.GetOptionsContractsFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"underlying_symbols": true, "ppind": true},
-		Aliases: map[string]string{
-			"expiration_date":     "expiry",
-			"expiration_date_gte": "expiry-gte",
-			"expiration_date_lte": "expiry-lte",
-			"strike_price_gte":    "strike-gte",
-			"strike_price_lte":    "strike-lte",
-		},
+		Exclude: map[string]bool{"underlying_symbols": true},
 	})
 
 	optionCmd.AddCommand(optionChainCmd)

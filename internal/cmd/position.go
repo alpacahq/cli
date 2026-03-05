@@ -49,12 +49,12 @@ var positionCloseCmd = &cobra.Command{
 	Short: api.DeleteOpenPositionOp.Summary,
 	Example: `  alpaca position close AAPL
   alpaca position close AAPL --qty 5
-  alpaca position close AAPL --pct 50`,
+  alpaca position close AAPL --percentage 50`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		params := &api.DeleteOpenPositionParams{
 			Qty:        cmdutil.Str(cmd, "qty"),
-			Percentage: cmdutil.Str(cmd, "pct"),
+			Percentage: cmdutil.Str(cmd, "percentage"),
 		}
 
 		order, err := tradingClient.DeleteOpenPosition(args[0], params)
@@ -84,10 +84,7 @@ var positionCloseAllCmd = &cobra.Command{
 }
 
 func init() {
-	cmdutil.RegisterFlags(positionCloseCmd, api.DeleteOpenPositionFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"symbol_or_asset_id": true},
-		Aliases: map[string]string{"percentage": "pct"},
-	})
+	cmdutil.RegisterFlags(positionCloseCmd, api.DeleteOpenPositionFlags, nil)
 	cmdutil.RegisterFlags(positionCloseAllCmd, api.DeleteAllOpenPositionsFlags, nil)
 
 	positionCmd.AddCommand(positionListCmd)

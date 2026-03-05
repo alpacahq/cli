@@ -16,18 +16,19 @@ var corporateActionCmd = &cobra.Command{
 var corporateActionListCmd = &cobra.Command{
 	Use:   "list",
 	Short: api.GetV2CorporateActionsAnnouncementsOp.Summary,
-	Example: `  alpaca corporate-action list --types reverse_split --start 2025-01-01 --end 2025-12-31
-  alpaca corporate-action list --types cash_dividend --symbols AAPL --start 2025-01-01 --end 2025-06-30`,
+	Example: `  alpaca corporate-action list --ca-types reverse_split --since 2025-01-01 --until 2025-12-31
+  alpaca corporate-action list --ca-types cash_dividend --symbol AAPL --since 2025-01-01 --until 2025-06-30`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := cmdutil.RequireAll(cmd, "types", "start", "end"); err != nil {
+		if err := cmdutil.RequireAll(cmd, "ca-types", "since", "until"); err != nil {
 			return err
 		}
 
 		params := &api.GetV2CorporateActionsAnnouncementsParams{
-			CaTypes:  cmdutil.Str(cmd, "types"),
-			Since:    cmdutil.Str(cmd, "start"),
-			Until:    cmdutil.Str(cmd, "end"),
-			Symbol:   cmdutil.Str(cmd, "symbols"),
+			CaTypes:  cmdutil.Str(cmd, "ca-types"),
+			Since:    cmdutil.Str(cmd, "since"),
+			Until:    cmdutil.Str(cmd, "until"),
+			Symbol:   cmdutil.Str(cmd, "symbol"),
+			Cusip:    cmdutil.Str(cmd, "cusip"),
 			DateType: cmdutil.Str(cmd, "date-type"),
 		}
 
@@ -54,15 +55,7 @@ var corporateActionGetCmd = &cobra.Command{
 }
 
 func init() {
-	cmdutil.RegisterFlags(corporateActionListCmd, api.GetV2CorporateActionsAnnouncementsFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"cusip": true},
-		Aliases: map[string]string{
-			"ca_types": "types",
-			"since":    "start",
-			"until":    "end",
-			"symbol":   "symbols",
-		},
-	})
+	cmdutil.RegisterFlags(corporateActionListCmd, api.GetV2CorporateActionsAnnouncementsFlags, nil)
 
 	corporateActionCmd.AddCommand(corporateActionListCmd)
 	corporateActionCmd.AddCommand(corporateActionGetCmd)

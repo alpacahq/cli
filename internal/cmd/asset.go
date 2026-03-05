@@ -16,13 +16,14 @@ var assetListCmd = &cobra.Command{
 	Use:   "list",
 	Short: api.GetV2AssetsOp.Summary,
 	Example: `  alpaca asset list
-  alpaca asset list --class us_equity --status active
+  alpaca asset list --asset-class us_equity --status active
   alpaca asset list --exchange NYSE`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		params := &api.GetV2AssetsParams{
 			Status:     cmdutil.Str(cmd, "status"),
-			AssetClass: cmdutil.Str(cmd, "class"),
+			AssetClass: cmdutil.Str(cmd, "asset-class"),
 			Exchange:   cmdutil.Str(cmd, "exchange"),
+			Attributes: cmdutil.Str(cmd, "attributes"),
 		}
 
 		assets, err := tradingClient.GetV2Assets(params)
@@ -53,11 +54,13 @@ var treasuryListCmd = &cobra.Command{
 	Use:   "treasury",
 	Short: api.UsTreasuriesOp.Summary,
 	Example: `  alpaca asset treasury
-  alpaca asset treasury --status active`,
+  alpaca asset treasury --bond-status active`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		resp, err := tradingClient.UsTreasuries(&api.UsTreasuriesParams{
-			BondStatus: cmdutil.Str(cmd, "status"),
+			BondStatus: cmdutil.Str(cmd, "bond-status"),
 			Cusips:     cmdutil.Str(cmd, "cusips"),
+			Isins:      cmdutil.Str(cmd, "isins"),
+			Subtype:    cmdutil.Str(cmd, "subtype"),
 		})
 		if err != nil {
 			return err
@@ -70,11 +73,13 @@ var bondListCmd = &cobra.Command{
 	Use:   "bond",
 	Short: api.UsCorporatesOp.Summary,
 	Example: `  alpaca asset bond
-  alpaca asset bond --status active`,
+  alpaca asset bond --bond-status active`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		resp, err := tradingClient.UsCorporates(&api.UsCorporatesParams{
-			BondStatus: cmdutil.Str(cmd, "status"),
+			BondStatus: cmdutil.Str(cmd, "bond-status"),
 			Cusips:     cmdutil.Str(cmd, "cusips"),
+			Isins:      cmdutil.Str(cmd, "isins"),
+			Tickers:    cmdutil.Str(cmd, "tickers"),
 		})
 		if err != nil {
 			return err
@@ -84,20 +89,11 @@ var bondListCmd = &cobra.Command{
 }
 
 func init() {
-	cmdutil.RegisterFlags(assetListCmd, api.GetV2AssetsFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"attributes": true},
-		Aliases: map[string]string{"asset_class": "class"},
-	})
+	cmdutil.RegisterFlags(assetListCmd, api.GetV2AssetsFlags, nil)
 
-	cmdutil.RegisterFlags(treasuryListCmd, api.UsTreasuriesFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"isins": true, "subtype": true},
-		Aliases: map[string]string{"bond_status": "status"},
-	})
+	cmdutil.RegisterFlags(treasuryListCmd, api.UsTreasuriesFlags, nil)
 
-	cmdutil.RegisterFlags(bondListCmd, api.UsCorporatesFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"isins": true, "tickers": true},
-		Aliases: map[string]string{"bond_status": "status"},
-	})
+	cmdutil.RegisterFlags(bondListCmd, api.UsCorporatesFlags, nil)
 
 	assetCmd.AddCommand(assetListCmd)
 	assetCmd.AddCommand(assetGetCmd)

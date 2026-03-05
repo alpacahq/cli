@@ -14,7 +14,7 @@ func TestOrderLifecycle(t *testing.T) {
 		"--side", "buy",
 		"--type", "limit",
 		"--limit-price", "1.00",
-		"--tif", "gtc",
+		"--time-in-force", "gtc",
 		"--json",
 	)
 
@@ -72,7 +72,7 @@ func TestOrderCancelAll(t *testing.T) {
 			"--side", "buy",
 			"--type", "limit",
 			"--limit-price", "1.00",
-			"--tif", "gtc",
+			"--time-in-force", "gtc",
 			"--json",
 		)
 	}

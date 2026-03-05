@@ -19,7 +19,8 @@ var walletListCmd = &cobra.Command{
 	Short: api.ListCryptoFundingWalletsOp.Summary,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		wallet, err := tradingClient.ListCryptoFundingWallets(&api.ListCryptoFundingWalletsParams{
-			Asset: cmdutil.Str(cmd, "asset"),
+			Asset:   cmdutil.Str(cmd, "asset"),
+			Network: cmdutil.Str(cmd, "network"),
 		})
 		if err != nil {
 			return err
@@ -159,9 +160,7 @@ var walletWhitelistDeleteCmd = &cobra.Command{
 }
 
 func init() {
-	cmdutil.RegisterFlags(walletListCmd, api.ListCryptoFundingWalletsFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"network": true},
-	})
+	cmdutil.RegisterFlags(walletListCmd, api.ListCryptoFundingWalletsFlags, nil)
 	cmdutil.RegisterFlags(walletTransferCreateCmd, api.CreateCryptoTransferForAccountFlags, nil)
 	cmdutil.RegisterFlags(walletTransferEstimateCmd, api.GetCryptoTransferEstimateFlags, nil)
 	cmdutil.RegisterFlags(walletWhitelistAddCmd, api.CreateWhitelistedAddressFlags, nil)

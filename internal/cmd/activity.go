@@ -18,31 +18,31 @@ var activityListCmd = &cobra.Command{
 	Use:   "list",
 	Short: api.GetAccountActivitiesOp.Summary,
 	Example: `  alpaca activity list
-  alpaca activity list --types FILL --limit 20
-  alpaca activity list --types DIV --start 2025-01-01
-  alpaca activity list --types FILL,TRANS --sort desc`,
+  alpaca activity list --activity-types FILL --page-size 20
+  alpaca activity list --activity-types DIV --after 2025-01-01
+  alpaca activity list --activity-types FILL,TRANS --direction desc`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		actType := cmdutil.Str(cmd, "types")
+		actType := cmdutil.Str(cmd, "activity-types")
 
 		var data json.RawMessage
 		var err error
 
 		if actType != "" {
 			data, err = tradingClient.GetAccountActivitiesByActivityType(actType, &api.GetAccountActivitiesByActivityTypeParams{
-				After:     cmdutil.Str(cmd, "start"),
-				Until:     cmdutil.Str(cmd, "end"),
+				After:     cmdutil.Str(cmd, "after"),
+				Until:     cmdutil.Str(cmd, "until"),
 				Date:      cmdutil.Str(cmd, "date"),
-				Direction: cmdutil.Str(cmd, "sort"),
-				PageSize:  cmdutil.Int(cmd, "limit"),
+				Direction: cmdutil.Str(cmd, "direction"),
+				PageSize:  cmdutil.Int(cmd, "page-size"),
 				PageToken: cmdutil.Str(cmd, "page-token"),
 			})
 		} else {
 			data, err = tradingClient.GetAccountActivities(&api.GetAccountActivitiesParams{
-				After:     cmdutil.Str(cmd, "start"),
-				Until:     cmdutil.Str(cmd, "end"),
+				After:     cmdutil.Str(cmd, "after"),
+				Until:     cmdutil.Str(cmd, "until"),
 				Date:      cmdutil.Str(cmd, "date"),
-				Direction: cmdutil.Str(cmd, "sort"),
-				PageSize:  cmdutil.Int(cmd, "limit"),
+				Direction: cmdutil.Str(cmd, "direction"),
+				PageSize:  cmdutil.Int(cmd, "page-size"),
 				Category:  cmdutil.Str(cmd, "category"),
 				PageToken: cmdutil.Str(cmd, "page-token"),
 			})
@@ -71,15 +71,7 @@ var activityListCmd = &cobra.Command{
 }
 
 func init() {
-	cmdutil.RegisterFlags(activityListCmd, api.GetAccountActivitiesFlags, &cmdutil.FlagOpts{
-		Aliases: map[string]string{
-			"activity_types": "types",
-			"after":          "start",
-			"until":          "end",
-			"direction":      "sort",
-			"page_size":      "limit",
-		},
-	})
+	cmdutil.RegisterFlags(activityListCmd, api.GetAccountActivitiesFlags, nil)
 
 	activityCmd.AddCommand(activityListCmd)
 }

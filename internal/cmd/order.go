@@ -30,7 +30,7 @@ var orderSubmitCmd = &cobra.Command{
 			Notional:       cmdutil.Str(cmd, "notional"),
 			Side:           api.OrderSide(cmdutil.Str(cmd, "side")),
 			Type:           api.OrderType(cmdutil.Str(cmd, "type")),
-			TimeInForce:    api.TimeInForce(cmdutil.Str(cmd, "tif")),
+			TimeInForce:    api.TimeInForce(cmdutil.Str(cmd, "time-in-force")),
 			LimitPrice:     cmdutil.Str(cmd, "limit-price"),
 			StopPrice:      cmdutil.Str(cmd, "stop-price"),
 			TrailPercent:   cmdutil.Str(cmd, "trail-percent"),
@@ -64,19 +64,19 @@ var orderListCmd = &cobra.Command{
 	Short: api.GetAllOrdersOp.Summary,
 	Example: `  alpaca order list
   alpaca order list --status closed --limit 20
-  alpaca order list --symbols AAPL,MSFT --start 2025-01-01`,
+  alpaca order list --symbols AAPL,MSFT --after 2025-01-01`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		nested := cmdutil.Bool(cmd, "nested")
 		params := &api.GetAllOrdersParams{
 			Status:        cmdutil.Str(cmd, "status"),
 			Symbols:       cmdutil.Str(cmd, "symbols"),
-			After:         cmdutil.Str(cmd, "start"),
-			Until:         cmdutil.Str(cmd, "end"),
+			After:         cmdutil.Str(cmd, "after"),
+			Until:         cmdutil.Str(cmd, "until"),
 			Limit:         cmdutil.Int(cmd, "limit"),
-			Direction:     cmdutil.Str(cmd, "sort"),
+			Direction:     cmdutil.Str(cmd, "direction"),
 			Nested:        nested,
 			Side:          cmdutil.Str(cmd, "side"),
-			AssetClass:    cmdutil.Str(cmd, "class"),
+			AssetClass:    cmdutil.Str(cmd, "asset-class"),
 			BeforeOrderID: cmdutil.Str(cmd, "before-order-id"),
 			AfterOrderID:  cmdutil.Str(cmd, "after-order-id"),
 		}
@@ -181,8 +181,8 @@ var orderReplaceCmd = &cobra.Command{
 		if cmdutil.Changed(cmd, "stop-price") {
 			body.StopPrice = cmdutil.Str(cmd, "stop-price")
 		}
-		if cmdutil.Changed(cmd, "tif") {
-			body.TimeInForce = api.TimeInForce(cmdutil.Str(cmd, "tif"))
+		if cmdutil.Changed(cmd, "time-in-force") {
+			body.TimeInForce = api.TimeInForce(cmdutil.Str(cmd, "time-in-force"))
 		}
 		if cmdutil.Changed(cmd, "trail") {
 			body.Trail = cmdutil.Str(cmd, "trail")
@@ -202,22 +202,14 @@ var orderReplaceCmd = &cobra.Command{
 func init() {
 	cmdutil.RegisterFlags(orderSubmitCmd, api.PostOrderFlags, &cmdutil.FlagOpts{
 		Exclude:  map[string]bool{"symbol": true, "advanced_instructions": true, "legs": true},
-		Aliases:  map[string]string{"time_in_force": "tif"},
 		Defaults: map[string]string{"type": "market"},
 	})
 	orderSubmitCmd.Flags().Bool("dry-run", false, "Print the request body without submitting")
 
-	cmdutil.RegisterFlags(orderListCmd, api.GetAllOrdersFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"after": true, "until": true, "limit": true, "direction": true},
-		Aliases: map[string]string{"asset_class": "class"},
-	})
-	cmdutil.AddDateRangeFlags(orderListCmd)
-	cmdutil.AddLimitFlag(orderListCmd)
-	cmdutil.AddSortFlag(orderListCmd, api.SortValues)
+	cmdutil.RegisterFlags(orderListCmd, api.GetAllOrdersFlags, nil)
 
 	cmdutil.RegisterFlags(orderReplaceCmd, api.PatchOrderByOrderIDFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"order_id": true, "advanced_instructions": true},
-		Aliases: map[string]string{"time_in_force": "tif"},
+		Exclude: map[string]bool{"advanced_instructions": true},
 	})
 
 	orderCmd.AddCommand(orderSubmitCmd)

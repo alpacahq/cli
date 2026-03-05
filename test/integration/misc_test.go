@@ -7,7 +7,7 @@ import (
 )
 
 func TestActivity(t *testing.T) {
-	out := alpaca(t, "activity", "list", "--limit", "5", "--json")
+	out := alpaca(t, "activity", "list", "--page-size", "5", "--json")
 	_ = parseJSONArray(t, out)
 }
 
@@ -20,7 +20,7 @@ func TestPortfolioHistory(t *testing.T) {
 }
 
 func TestAssetList(t *testing.T) {
-	out := alpaca(t, "asset", "list", "--status", "active", "--class", "us_equity", "--json")
+	out := alpaca(t, "asset", "list", "--status", "active", "--asset-class", "us_equity", "--json")
 	assets := parseJSONArray(t, out)
 	if len(assets) == 0 {
 		t.Fatal("expected at least one asset")

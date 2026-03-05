@@ -161,12 +161,12 @@ func TestHardcodedCompletionsMatchSpec(t *testing.T) {
 
 	// Known divergences: CLI intentionally uses a different set than the spec.
 	knownDivergences := map[string]string{
-		"class":      "CLI includes fixed_income which the spec omits",
-		"exchange":   "CLI uses a broader set of exchanges",
-		"feed":       "stock data feed differs from spec (otc, delayed_sip)",
-		"timeframe":  "no spec enum; free-form in API",
-		"period":     "no spec enum; free-form in API",
-		"adjustment": "no spec enum",
+		"asset-class": "CLI includes fixed_income which the spec omits",
+		"exchange":    "CLI uses a broader set of exchanges",
+		"feed":        "stock data feed differs from spec (otc, delayed_sip)",
+		"timeframe":   "no spec enum; free-form in API",
+		"period":      "no spec enum; free-form in API",
+		"adjustment":  "no spec enum",
 	}
 
 	hardcoded := regexp.MustCompile(

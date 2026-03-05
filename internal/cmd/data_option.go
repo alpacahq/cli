@@ -78,9 +78,11 @@ var dataOptionSnapshotCmd = &cobra.Command{
 		}
 
 		resp, err := dataClient.OptionSnapshots(&api.OptionSnapshotsParams{
-			Symbols:   symbols,
-			Feed:      cmdutil.Str(cmd, "feed"),
-			PageToken: cmdutil.Str(cmd, "page-token"),
+			Symbols:      symbols,
+			Feed:         cmdutil.Str(cmd, "feed"),
+			UpdatedSince: cmdutil.Str(cmd, "updated-since"),
+			Limit:        cmdutil.Int(cmd, "limit"),
+			PageToken:    cmdutil.Str(cmd, "page-token"),
 		})
 		if err != nil {
 			return err
@@ -94,18 +96,19 @@ var dataOptionChainCmd = &cobra.Command{
 	Use:   "chain <underlying>",
 	Short: api.OptionChainOp.Summary,
 	Example: `  alpaca data option chain AAPL
-  alpaca data option chain SPY --expiry 2025-06-20 --type call`,
+  alpaca data option chain SPY --expiration-date 2025-06-20 --type call`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		resp, err := dataClient.OptionChain(args[0], &api.OptionChainParams{
 			Feed:              cmdutil.Str(cmd, "feed"),
-			ExpirationDate:    cmdutil.Str(cmd, "expiry"),
-			ExpirationDateGte: cmdutil.Str(cmd, "expiry-gte"),
-			ExpirationDateLte: cmdutil.Str(cmd, "expiry-lte"),
-			StrikePriceGte:    cmdutil.Str(cmd, "strike-gte"),
-			StrikePriceLte:    cmdutil.Str(cmd, "strike-lte"),
+			ExpirationDate:    cmdutil.Str(cmd, "expiration-date"),
+			ExpirationDateGte: cmdutil.Str(cmd, "expiration-date-gte"),
+			ExpirationDateLte: cmdutil.Str(cmd, "expiration-date-lte"),
+			StrikePriceGte:    cmdutil.Str(cmd, "strike-price-gte"),
+			StrikePriceLte:    cmdutil.Str(cmd, "strike-price-lte"),
 			RootSymbol:        cmdutil.Str(cmd, "root-symbol"),
 			Type:              cmdutil.Str(cmd, "type"),
+			UpdatedSince:      cmdutil.Str(cmd, "updated-since"),
 			Limit:             cmdutil.Int(cmd, "limit"),
 			PageToken:         cmdutil.Str(cmd, "page-token"),
 		})
@@ -195,20 +198,9 @@ func init() {
 
 	cmdutil.RegisterFlags(dataOptionTradesCmd, api.OptionTradesFlags, nil)
 
-	cmdutil.RegisterFlags(dataOptionSnapshotCmd, api.OptionSnapshotsFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"limit": true, "updated_since": true},
-	})
+	cmdutil.RegisterFlags(dataOptionSnapshotCmd, api.OptionSnapshotsFlags, nil)
 
-	cmdutil.RegisterFlags(dataOptionChainCmd, api.OptionChainFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"updated_since": true},
-		Aliases: map[string]string{
-			"expiration_date":     "expiry",
-			"expiration_date_gte": "expiry-gte",
-			"expiration_date_lte": "expiry-lte",
-			"strike_price_gte":    "strike-gte",
-			"strike_price_lte":    "strike-lte",
-		},
-	})
+	cmdutil.RegisterFlags(dataOptionChainCmd, api.OptionChainFlags, nil)
 
 	cmdutil.RegisterFlags(dataOptionLatestQuotesCmd, api.OptionLatestQuotesFlags, nil)
 	cmdutil.RegisterFlags(dataOptionLatestTradesCmd, api.OptionLatestTradesFlags, nil)

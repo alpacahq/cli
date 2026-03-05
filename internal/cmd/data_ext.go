@@ -20,10 +20,10 @@ var dataForexCmd = &cobra.Command{
 var dataForexRatesCmd = &cobra.Command{
 	Use:   "rates",
 	Short: api.RatesOp.Summary,
-	Example: `  alpaca data forex rates --pairs EUR/USD,GBP/USD --start 2025-01-01
-  alpaca data forex rates --pairs USD/JPY --timeframe 1Hour`,
+	Example: `  alpaca data forex rates --currency-pairs EUR/USD,GBP/USD --start 2025-01-01
+  alpaca data forex rates --currency-pairs USD/JPY --timeframe 1Hour`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		pairs, err := cmdutil.RequireStr(cmd, "pairs")
+		pairs, err := cmdutil.RequireStr(cmd, "currency-pairs")
 		if err != nil {
 			return err
 		}
@@ -48,9 +48,9 @@ var dataForexRatesCmd = &cobra.Command{
 var dataForexLatestCmd = &cobra.Command{
 	Use:     "latest",
 	Short:   api.LatestRatesOp.Summary,
-	Example: `  alpaca data forex latest --pairs EUR/USD,GBP/USD`,
+	Example: `  alpaca data forex latest --currency-pairs EUR/USD,GBP/USD`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		pairs, err := cmdutil.RequireStr(cmd, "pairs")
+		pairs, err := cmdutil.RequireStr(cmd, "currency-pairs")
 		if err != nil {
 			return err
 		}
@@ -152,9 +152,9 @@ var dataCorporateActionsCmd = &cobra.Command{
 var dataFixedIncomeCmd = &cobra.Command{
 	Use:     "fixed-income",
 	Short:   api.FixedIncomeLatestPricesOp.Summary,
-	Example: `  alpaca data fixed-income --symbols 912797KR1,912797LB5`,
+	Example: `  alpaca data fixed-income --isins 912797KR1,912797LB5`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbols, err := cmdutil.RequireStr(cmd, "symbols")
+		symbols, err := cmdutil.RequireStr(cmd, "isins")
 		if err != nil {
 			return err
 		}
@@ -225,12 +225,8 @@ var dataMetaConditionsCmd = &cobra.Command{
 }
 
 func init() {
-	cmdutil.RegisterFlags(dataForexRatesCmd, api.RatesFlags, &cmdutil.FlagOpts{
-		Aliases: map[string]string{"currency_pairs": "pairs"},
-	})
-	cmdutil.RegisterFlags(dataForexLatestCmd, api.LatestRatesFlags, &cmdutil.FlagOpts{
-		Aliases: map[string]string{"currency_pairs": "pairs"},
-	})
+	cmdutil.RegisterFlags(dataForexRatesCmd, api.RatesFlags, nil)
+	cmdutil.RegisterFlags(dataForexLatestCmd, api.LatestRatesFlags, nil)
 	dataForexCmd.AddCommand(dataForexRatesCmd)
 	dataForexCmd.AddCommand(dataForexLatestCmd)
 
@@ -240,9 +236,7 @@ func init() {
 
 	cmdutil.RegisterFlags(dataCorporateActionsCmd, api.CorporateActionsFlags, nil)
 
-	cmdutil.RegisterFlags(dataFixedIncomeCmd, api.FixedIncomeLatestPricesFlags, &cmdutil.FlagOpts{
-		Aliases: map[string]string{"isins": "symbols"},
-	})
+	cmdutil.RegisterFlags(dataFixedIncomeCmd, api.FixedIncomeLatestPricesFlags, nil)
 
 	cmdutil.RegisterFlags(dataLogoCmd, api.LogosFlags, nil)
 

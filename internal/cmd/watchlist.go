@@ -206,9 +206,7 @@ func init() {
 	cmdutil.RegisterFlags(watchlistCreateCmd, api.PostWatchlistFlags, &cmdutil.FlagOpts{
 		Exclude: map[string]bool{"name": true},
 	})
-	cmdutil.RegisterFlags(watchlistUpdateCmd, api.UpdateWatchlistByIDFlags, &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"watchlist_id": true},
-	})
+	cmdutil.RegisterFlags(watchlistUpdateCmd, api.UpdateWatchlistByIDFlags, nil)
 
 	cmdutil.RegisterFlags(watchlistUpdateByNameCmd, api.UpdateWatchlistByNameFlags, &cmdutil.FlagOpts{
 		Exclude: map[string]bool{"name": true},
