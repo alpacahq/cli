@@ -33,6 +33,5 @@ When a change affects CLI behavior — new commands, changed flags, modified out
 
 - `README.md` — canonical user-facing documentation
 - `skills/alpaca-cli/SKILL.md` — agent-facing install, auth, and usage skill ([Agent Skills](https://agentskills.io) format)
-- `skills/alpaca-cli/references/commands.md` — command reference with examples
 
 Code is always the source of truth. If a doc contradicts the code, update the doc.

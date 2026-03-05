@@ -175,9 +175,15 @@ alpaca update              # download and install latest version
 alpaca update --check      # check without installing
 ```
 
-## Common tasks
+## Discovering commands
 
-For a full command reference with examples, see [references/commands.md](references/commands.md).
+```bash
+alpaca --help-all                    # dump all commands, subcommands, and flags
+alpaca order --help                  # help for a command group
+alpaca order submit --help           # help for a specific command
+```
+
+Use `--help-all` to find the right command. Use `<command> --help` for flag details. These are always current — never rely on stale documentation when the CLI is installed.
 
 ## Troubleshooting
 
