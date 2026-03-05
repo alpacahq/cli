@@ -26,3 +26,13 @@ make lint      # golangci-lint run ./...
 ```
 
 Fix any failures you introduce before moving on.
+
+## Keep docs in sync
+
+When a change affects CLI behavior — new commands, changed flags, modified output formats, auth flow changes, or environment variable additions — check these files and update any that are now stale:
+
+- `README.md` — canonical user-facing documentation
+- `skills/alpaca-cli/SKILL.md` — agent-facing install, auth, and usage skill ([Agent Skills](https://agentskills.io) format)
+- `skills/alpaca-cli/references/commands.md` — command reference with examples
+
+Code is always the source of truth. If a doc contradicts the code, update the doc.
