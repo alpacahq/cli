@@ -48,9 +48,10 @@ alpaca position close-all --json --quiet             # close everything
 ### Options
 
 ```bash
-alpaca option chain AAPL --json --quiet              # options chain
-alpaca option get <contract-id> --json --quiet       # contract details
-alpaca option exercise <contract-id> --json --quiet  # exercise
+alpaca option chain AAPL --json --quiet                    # options chain
+alpaca option get <contract-id> --json --quiet             # contract details
+alpaca option exercise <contract-id> --json --quiet        # exercise
+alpaca option do-not-exercise <contract-id> --json --quiet # mark do-not-exercise
 ```
 
 ## Market Data
@@ -74,8 +75,27 @@ alpaca data snapshot AAPL --json --quiet
 
 ```bash
 alpaca data option chain AAPL --json --quiet          # greeks and pricing
+alpaca data option bars --json --quiet                # option historical bars
+alpaca data option trades --json --quiet              # option historical trades
+alpaca data option snapshot --json --quiet            # option snapshots
 alpaca data option latest-quotes --json --quiet
 alpaca data option latest-trades --json --quiet
+alpaca data option exchanges --json --quiet           # option exchanges
+alpaca data option conditions --json --quiet          # option trade conditions
+```
+
+### Additional data
+
+```bash
+alpaca data forex rates --json --quiet               # historical forex rates
+alpaca data forex latest --json --quiet              # latest forex rates
+alpaca data crypto-orderbook --json --quiet          # crypto orderbooks
+alpaca data auctions --json --quiet                  # stock auction data
+alpaca data corporate-actions --json --quiet         # corporate actions (market data)
+alpaca data fixed-income --json --quiet              # fixed income prices
+alpaca data logo AAPL --json --quiet                 # company logo URL
+alpaca data meta exchanges --json --quiet            # exchange code reference
+alpaca data meta conditions trade --json --quiet     # trade condition codes
 ```
 
 ### Screeners and news
@@ -102,12 +122,30 @@ alpaca clock --json --quiet                          # is market open?
 alpaca calendar --json --quiet                       # trading calendar
 ```
 
-## Assets
+## Assets and watchlists
 
 ```bash
 alpaca asset list --json --quiet                     # browse equities/crypto
 alpaca asset get AAPL --json --quiet                 # asset details
 alpaca asset treasury --json --quiet                 # US Treasury bonds
+alpaca asset bond --json --quiet                     # US Corporate bonds
+
+# Watchlists (by ID)
+alpaca watchlist list --json --quiet
+alpaca watchlist create "My List" --symbols AAPL,MSFT --json --quiet
+alpaca watchlist get <id> --json --quiet
+alpaca watchlist add <id> GOOG --json --quiet
+alpaca watchlist remove <id> MSFT --json --quiet
+alpaca watchlist delete <id>
+
+# Watchlists (by name)
+alpaca watchlist get-by-name "My List" --json --quiet
+alpaca watchlist add-by-name "My List" NVDA --json --quiet
+alpaca watchlist update-by-name "My List" --symbols AAPL,GOOG --json --quiet
+alpaca watchlist delete-by-name "My List"
+
+# Wallet / crypto transfers
+alpaca wallet transfer estimate --amount 0.1 --asset BTC --address 0x... --json --quiet
 ```
 
 ## Raw API access

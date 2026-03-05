@@ -83,7 +83,7 @@ var CorporateActionsFlags = []FlagDef{
 	{Name: "ids", OASName: "ids", Type: "string", Description: "A comma-separated list of corporate action IDs"},
 	{Name: "limit", OASName: "limit", Type: "int", Default: "100", Description: "maximum number of corporate actions to return in a response."},
 	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Description: "sort data in ascending or descending order"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
 	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
 	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of symbols"},
 	{Name: "types", OASName: "types", Type: "string", Description: "A comma-separated list of types"},
@@ -117,7 +117,7 @@ var CryptoBarsFlags = []FlagDef{
 	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
 	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
 	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Description: "sort data in ascending or descending order"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
 	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
 	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols"},
 	{Name: "timeframe", OASName: "timeframe", Type: "string", Description: "timeframe represented by each bar in aggregation.\nYou can use any of the following values:\n - [1-59]Min or [1-59]T, e.g"},
@@ -293,7 +293,7 @@ var CryptoQuotesFlags = []FlagDef{
 	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
 	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
 	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Description: "sort data in ascending or descending order"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
 	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
 	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols"},
 }
@@ -340,7 +340,7 @@ var CryptoTradesFlags = []FlagDef{
 	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
 	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
 	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Description: "sort data in ascending or descending order"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
 	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
 	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols"},
 }
@@ -521,7 +521,7 @@ var OptionChainFlags = []FlagDef{
 	{Name: "expiration-date", OASName: "expiration_date", Type: "string", Description: "filter contracts by the exact expiration date (format: YYYY-MM-DD)"},
 	{Name: "expiration-date-gte", OASName: "expiration_date_gte", Type: "string", Description: "filter contracts with expiration date greater than or equal to the specified date"},
 	{Name: "expiration-date-lte", OASName: "expiration_date_lte", Type: "string", Description: "filter contracts with expiration date less than or equal to the specified date"},
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data"},
+	{Name: "feed", OASName: "feed", Type: "string", Default: "opra", Description: "source feed of the data", Completions: []string{"indicative", "opra"}},
 	{Name: "limit", OASName: "limit", Type: "int", Default: "100", Description: "number of maximum snapshots to return in a response."},
 	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
 	{Name: "root-symbol", OASName: "root_symbol", Type: "string", Description: "filter contracts by the root symbol"},
@@ -544,7 +544,7 @@ var OptionLatestQuotesOp = optionLatestQuotesOp{
 }
 
 var OptionLatestQuotesFlags = []FlagDef{
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data"},
+	{Name: "feed", OASName: "feed", Type: "string", Default: "opra", Description: "source feed of the data", Completions: []string{"indicative", "opra"}},
 	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of contract symbols with a limit of 100"},
 }
 
@@ -561,7 +561,7 @@ var OptionLatestTradesOp = optionLatestTradesOp{
 }
 
 var OptionLatestTradesFlags = []FlagDef{
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data"},
+	{Name: "feed", OASName: "feed", Type: "string", Default: "opra", Description: "source feed of the data", Completions: []string{"indicative", "opra"}},
 	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of contract symbols with a limit of 100"},
 }
 
@@ -602,7 +602,7 @@ var OptionSnapshotsOp = optionSnapshotsOp{
 }
 
 var OptionSnapshotsFlags = []FlagDef{
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data"},
+	{Name: "feed", OASName: "feed", Type: "string", Default: "opra", Description: "source feed of the data", Completions: []string{"indicative", "opra"}},
 	{Name: "limit", OASName: "limit", Type: "int", Default: "100", Description: "number of maximum snapshots to return in a response."},
 	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
 	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of contract symbols with a limit of 100"},
@@ -633,7 +633,7 @@ var OptionTradesFlags = []FlagDef{
 	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
 	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
 	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Description: "sort data in ascending or descending order"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
 	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
 	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of contract symbols with a limit of 100"},
 }
@@ -665,9 +665,9 @@ var RatesFlags = []FlagDef{
 	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
 	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
 	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Description: "sort data in ascending or descending order"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
 	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
-	{Name: "timeframe", OASName: "timeframe", Type: "string", Description: "sampling interval of the currency rates"},
+	{Name: "timeframe", OASName: "timeframe", Type: "string", Default: "1Min", Description: "sampling interval of the currency rates"},
 }
 
 type stockAuctionSingleOp struct {
@@ -700,10 +700,10 @@ var StockAuctionSingleFlags = []FlagDef{
 	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)"},
 	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
 	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
-	{Name: "feed", OASName: "feed", Type: "string", Description: "only sip is valid for auctions"},
+	{Name: "feed", OASName: "feed", Type: "string", Default: "sip", Description: "only sip is valid for auctions"},
 	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
 	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Description: "sort data in ascending or descending order"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
 	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
 }
 
@@ -737,10 +737,10 @@ var StockAuctionsFlags = []FlagDef{
 	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)"},
 	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
 	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
-	{Name: "feed", OASName: "feed", Type: "string", Description: "only sip is valid for auctions"},
+	{Name: "feed", OASName: "feed", Type: "string", Default: "sip", Description: "only sip is valid for auctions"},
 	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
 	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Description: "sort data in ascending or descending order"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
 	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
 	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols"},
 }
@@ -780,10 +780,10 @@ var StockBarSingleFlags = []FlagDef{
 	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)"},
 	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
 	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data."},
+	{Name: "feed", OASName: "feed", Type: "string", Default: "sip", Description: "source feed of the data.", Completions: []string{"boats", "iex", "otc", "sip"}},
 	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
 	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Description: "sort data in ascending or descending order"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
 	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
 	{Name: "timeframe", OASName: "timeframe", Type: "string", Description: "timeframe represented by each bar in aggregation.\nYou can use any of the following values:\n - [1-59]Min or [1-59]T, e.g"},
 }
@@ -823,10 +823,10 @@ var StockBarsFlags = []FlagDef{
 	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)"},
 	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
 	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data."},
+	{Name: "feed", OASName: "feed", Type: "string", Default: "sip", Description: "source feed of the data.", Completions: []string{"boats", "iex", "otc", "sip"}},
 	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
 	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Description: "sort data in ascending or descending order"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
 	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
 	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols"},
 	{Name: "timeframe", OASName: "timeframe", Type: "string", Description: "timeframe represented by each bar in aggregation.\nYou can use any of the following values:\n - [1-59]Min or [1-59]T, e.g"},
@@ -848,7 +848,7 @@ var StockLatestBarSingleOp = stockLatestBarSingleOp{
 
 var StockLatestBarSingleFlags = []FlagDef{
 	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data."},
+	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}},
 }
 
 type stockLatestBarsOp struct {
@@ -867,7 +867,7 @@ var StockLatestBarsOp = stockLatestBarsOp{
 
 var StockLatestBarsFlags = []FlagDef{
 	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data."},
+	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}},
 	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols"},
 }
 
@@ -887,7 +887,7 @@ var StockLatestQuoteSingleOp = stockLatestQuoteSingleOp{
 
 var StockLatestQuoteSingleFlags = []FlagDef{
 	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data."},
+	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}},
 }
 
 type stockLatestQuotesOp struct {
@@ -906,7 +906,7 @@ var StockLatestQuotesOp = stockLatestQuotesOp{
 
 var StockLatestQuotesFlags = []FlagDef{
 	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data."},
+	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}},
 	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols"},
 }
 
@@ -926,7 +926,7 @@ var StockLatestTradeSingleOp = stockLatestTradeSingleOp{
 
 var StockLatestTradeSingleFlags = []FlagDef{
 	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data."},
+	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}},
 }
 
 type stockLatestTradesOp struct {
@@ -945,7 +945,7 @@ var StockLatestTradesOp = stockLatestTradesOp{
 
 var StockLatestTradesFlags = []FlagDef{
 	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data."},
+	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}},
 	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols"},
 }
 
@@ -1003,10 +1003,10 @@ var StockQuoteSingleFlags = []FlagDef{
 	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)"},
 	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
 	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data."},
+	{Name: "feed", OASName: "feed", Type: "string", Default: "sip", Description: "source feed of the data.", Completions: []string{"boats", "iex", "otc", "sip"}},
 	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
 	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Description: "sort data in ascending or descending order"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
 	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
 }
 
@@ -1040,10 +1040,10 @@ var StockQuotesFlags = []FlagDef{
 	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)"},
 	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
 	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data."},
+	{Name: "feed", OASName: "feed", Type: "string", Default: "sip", Description: "source feed of the data.", Completions: []string{"boats", "iex", "otc", "sip"}},
 	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
 	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Description: "sort data in ascending or descending order"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
 	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
 	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols"},
 }
@@ -1064,7 +1064,7 @@ var StockSnapshotSingleOp = stockSnapshotSingleOp{
 
 var StockSnapshotSingleFlags = []FlagDef{
 	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data."},
+	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}},
 }
 
 type stockSnapshotsOp struct {
@@ -1083,7 +1083,7 @@ var StockSnapshotsOp = stockSnapshotsOp{
 
 var StockSnapshotsFlags = []FlagDef{
 	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data."},
+	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}},
 	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols"},
 }
 
@@ -1117,10 +1117,10 @@ var StockTradeSingleFlags = []FlagDef{
 	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)"},
 	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
 	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data."},
+	{Name: "feed", OASName: "feed", Type: "string", Default: "sip", Description: "source feed of the data.", Completions: []string{"boats", "iex", "otc", "sip"}},
 	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
 	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Description: "sort data in ascending or descending order"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
 	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
 }
 
@@ -1154,10 +1154,10 @@ var StockTradesFlags = []FlagDef{
 	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)"},
 	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
 	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data."},
+	{Name: "feed", OASName: "feed", Type: "string", Default: "sip", Description: "source feed of the data.", Completions: []string{"boats", "iex", "otc", "sip"}},
 	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
 	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Description: "sort data in ascending or descending order"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
 	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
 	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols"},
 }
@@ -1179,7 +1179,7 @@ var UsCorporatesOp = usCorporatesOp{
 }
 
 var UsCorporatesFlags = []FlagDef{
-	{Name: "bond-status", OASName: "bond_status", Type: "string", Description: "status of the bond"},
+	{Name: "bond-status", OASName: "bond_status", Type: "string", Description: "status of the bond", Completions: []string{"matured", "outstanding", "pre_issuance"}},
 	{Name: "cusips", OASName: "cusips", Type: "string", Description: "A comma-separated list of CUSIPs with a limit of 1000"},
 	{Name: "isins", OASName: "isins", Type: "string", Description: "A comma-separated list of ISINs with a limit of 1000"},
 	{Name: "tickers", OASName: "tickers", Type: "string", Description: "A comma-separated list of tickers with a limit of 1000"},
@@ -1202,10 +1202,10 @@ var UsTreasuriesOp = usTreasuriesOp{
 }
 
 var UsTreasuriesFlags = []FlagDef{
-	{Name: "bond-status", OASName: "bond_status", Type: "string", Description: "status of the bond"},
+	{Name: "bond-status", OASName: "bond_status", Type: "string", Description: "status of the bond", Completions: []string{"matured", "outstanding", "pre_issuance"}},
 	{Name: "cusips", OASName: "cusips", Type: "string", Description: "A comma-separated list of CUSIPs with a limit of 1000"},
 	{Name: "isins", OASName: "isins", Type: "string", Description: "A comma-separated list of ISINs with a limit of 1000"},
-	{Name: "subtype", OASName: "subtype", Type: "string", Description: "subtype of the treasury"},
+	{Name: "subtype", OASName: "subtype", Type: "string", Description: "subtype of the treasury", Completions: []string{"bill", "bond", "floating", "note", "strips", "tips"}},
 }
 
 type addAssetToWatchlistOp struct {
@@ -1963,7 +1963,7 @@ var OptionBarsFlags = []FlagDef{
 	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
 	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
 	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Description: "sort data in ascending or descending order"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
 	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
 	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of contract symbols with a limit of 100"},
 	{Name: "timeframe", OASName: "timeframe", Type: "string", Description: "timeframe represented by each bar in aggregation.\nYou can use any of the following values:\n - [1-59]Min or [1-59]T, e.g"},

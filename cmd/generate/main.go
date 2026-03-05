@@ -148,26 +148,19 @@ func extractSchemas(spec map[string]any) []*schemaInfo {
 
 func dedup(schemas []*schemaInfo) {
 	seen := map[string]int{}
-	for _, s := range schemas {
+	for i, s := range schemas {
 		if idx, ok := seen[s.goName]; ok {
 			prev := schemas[idx]
 			if unicode.IsUpper(rune(prev.name[0])) {
 				s.goName = s.goName + "V3"
 			} else {
+				delete(seen, prev.goName)
 				prev.goName = prev.goName + "V3"
+				seen[prev.goName] = idx
 			}
 		}
-		seen[s.goName] = indexOf(schemas, s)
+		seen[s.goName] = i
 	}
-}
-
-func indexOf(schemas []*schemaInfo, target *schemaInfo) int {
-	for i, s := range schemas {
-		if s == target {
-			return i
-		}
-	}
-	return -1
 }
 
 // --- Endpoint extraction ---
@@ -255,6 +248,7 @@ func extractEndpoints(spec map[string]any) []*endpointInfo {
 					if resolved, ok := compParams[refName]; ok {
 						p = resolved
 					} else {
+						fmt.Fprintf(os.Stderr, "Warning: unresolved parameter $ref %q in %s %s\n", ref, method, path)
 						continue
 					}
 				}
@@ -262,6 +256,13 @@ func extractEndpoints(spec map[string]any) []*endpointInfo {
 				in, _ := p["in"].(string)
 				req, _ := p["required"].(bool)
 				pSchema, _ := p["schema"].(map[string]any)
+				if pSchema != nil {
+					if ref, ok := pSchema["$ref"].(string); ok && compSchemas != nil {
+						if resolved, ok := compSchemas[refBaseName(ref)].(map[string]any); ok {
+							pSchema = resolved
+						}
+					}
+				}
 				goType := "string"
 				if pSchema != nil {
 					switch t, _ := pSchema["type"].(string); t {
@@ -316,11 +317,15 @@ func extractEndpoints(spec map[string]any) []*endpointInfo {
 			}
 
 			if responses, ok := op["responses"].(map[string]any); ok {
-				for code, respRaw := range responses {
-					if len(code) == 0 || code[0] != '2' {
-						continue
+				var codes []string
+				for code := range responses {
+					if len(code) > 0 && code[0] == '2' {
+						codes = append(codes, code)
 					}
-					resp, ok := respRaw.(map[string]any)
+				}
+				sort.Strings(codes)
+				for _, code := range codes {
+					resp, ok := responses[code].(map[string]any)
 					if !ok {
 						continue
 					}

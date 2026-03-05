@@ -280,6 +280,8 @@ func (p *UsCorporatesParams) Values() url.Values {
 	return v
 }
 
+var UsCorporatesParamsBondStatusValues = []string{"matured", "outstanding", "pre_issuance"}
+
 // UsCorporates — Get US corporates
 func (c *TradingClient) UsCorporates(params *UsCorporatesParams) (*UsCorporatesResp, error) {
 	path := "/v2/assets/fixed_income/us_corporates"
@@ -317,6 +319,10 @@ func (p *UsTreasuriesParams) Values() url.Values {
 	}
 	return v
 }
+
+var UsTreasuriesParamsSubtypeValues = []string{"bill", "bond", "floating", "note", "strips", "tips"}
+
+var UsTreasuriesParamsBondStatusValues = []string{"matured", "outstanding", "pre_issuance"}
 
 // UsTreasuries — Get US treasuries
 func (c *TradingClient) UsTreasuries(params *UsTreasuriesParams) (*UsTreasuriesResp, error) {

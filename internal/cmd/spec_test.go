@@ -276,18 +276,31 @@ func TestValidateMethods(t *testing.T) {
 	})
 }
 
-// TestNoEmptyFlagDescriptions verifies that every generated FlagDef has
-// a non-empty Description (which would produce blank help text) and a
-// valid Name (no underscores, no empty strings).
+// TestNoEmptyFlagDescriptions scans the generated descriptions.go for all
+// FlagDef variables, then verifies every flag used by command source has
+// a non-empty Description and valid Name. No manual map needed — new flag
+// sets are discovered automatically.
 func TestNoEmptyFlagDescriptions(t *testing.T) {
-	flagRef := regexp.MustCompile(`api\.(\w+)Flags`)
+	root := projectRoot()
+	descData, err := os.ReadFile(filepath.Join(root, "internal", "api", "descriptions.go"))
+	if err != nil {
+		t.Fatal(err)
+	}
 
+	// Discover all generated flag set variables: var XxxFlags = []FlagDef{
+	flagSetDecl := regexp.MustCompile(`var (\w+Flags) = \[\]FlagDef\{`)
+	generatedSets := map[string]bool{}
+	for _, m := range flagSetDecl.FindAllStringSubmatch(string(descData), -1) {
+		generatedSets[m[1]] = true
+	}
+
+	// Find which flag sets are referenced in command source
+	flagRef := regexp.MustCompile(`api\.(\w+Flags)`)
 	dir := cmdDir()
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	referenced := map[string]bool{}
 	for _, e := range entries {
 		if e.IsDir() || !strings.HasSuffix(e.Name(), ".go") || strings.HasSuffix(e.Name(), "_test.go") {
@@ -298,64 +311,41 @@ func TestNoEmptyFlagDescriptions(t *testing.T) {
 			t.Fatal(err)
 		}
 		for _, m := range flagRef.FindAllStringSubmatch(string(data), -1) {
-			referenced[m[1]+"Flags"] = true
+			referenced[m[1]] = true
 		}
 	}
 
-	allFlags := map[string][]api.FlagDef{
-		"PostOrderFlags":                          api.PostOrderFlags,
-		"GetAllOrdersFlags":                       api.GetAllOrdersFlags,
-		"PatchOrderByOrderIDFlags":                api.PatchOrderByOrderIDFlags,
-		"DeleteOpenPositionFlags":                 api.DeleteOpenPositionFlags,
-		"DeleteAllOpenPositionsFlags":             api.DeleteAllOpenPositionsFlags,
-		"PostWatchlistFlags":                      api.PostWatchlistFlags,
-		"UpdateWatchlistByIDFlags":                api.UpdateWatchlistByIDFlags,
-		"GetAccountActivitiesFlags":               api.GetAccountActivitiesFlags,
-		"GetV2AssetsFlags":                        api.GetV2AssetsFlags,
-		"UsTreasuriesFlags":                       api.UsTreasuriesFlags,
-		"UsCorporatesFlags":                       api.UsCorporatesFlags,
-		"GetV2CorporateActionsAnnouncementsFlags": api.GetV2CorporateActionsAnnouncementsFlags,
-		"MostActivesFlags":                        api.MostActivesFlags,
-		"MoversFlags":                             api.MoversFlags,
-		"GetOptionsContractsFlags":                api.GetOptionsContractsFlags,
-		"ListCryptoFundingWalletsFlags":           api.ListCryptoFundingWalletsFlags,
-		"CreateCryptoTransferForAccountFlags":     api.CreateCryptoTransferForAccountFlags,
-		"CreateWhitelistedAddressFlags":           api.CreateWhitelistedAddressFlags,
-		"ClockFlags":                              api.ClockFlags,
-		"LegacyCalendarFlags":                     api.LegacyCalendarFlags,
-		"GetAccountPortfolioHistoryFlags":         api.GetAccountPortfolioHistoryFlags,
-		"NewsFlags":                               api.NewsFlags,
-		"RatesFlags":                              api.RatesFlags,
-		"LatestRatesFlags":                        api.LatestRatesFlags,
-		"CryptoLatestOrderbooksFlags":             api.CryptoLatestOrderbooksFlags,
-		"StockAuctionsFlags":                      api.StockAuctionsFlags,
-		"CorporateActionsFlags":                   api.CorporateActionsFlags,
-		"FixedIncomeLatestPricesFlags":            api.FixedIncomeLatestPricesFlags,
-		"OptionBarsFlags":                         api.OptionBarsFlags,
-		"OptionTradesFlags":                       api.OptionTradesFlags,
-		"OptionSnapshotsFlags":                    api.OptionSnapshotsFlags,
-		"OptionChainFlags":                        api.OptionChainFlags,
-		"OptionLatestQuotesFlags":                 api.OptionLatestQuotesFlags,
-		"OptionLatestTradesFlags":                 api.OptionLatestTradesFlags,
-		"StockBarSingleFlags":                     api.StockBarSingleFlags,
-		"StockQuoteSingleFlags":                   api.StockQuoteSingleFlags,
-		"StockTradeSingleFlags":                   api.StockTradeSingleFlags,
-		"PatchAccountConfigFlags":                 api.PatchAccountConfigFlags,
+	// Verify every referenced flag set exists in generated code
+	for name := range referenced {
+		if !generatedSets[name] {
+			t.Errorf("command source references api.%s but it doesn't exist in descriptions.go", name)
+		}
 	}
 
-	for name, defs := range allFlags {
-		if !referenced[name] {
+	// Structurally scan each FlagDef in descriptions.go for empty descriptions/names
+	flagEntry := regexp.MustCompile(`\{Name: "([^"]*)"[^}]*Description: "([^"]*)"`)
+	src := string(descData)
+	lines := strings.Split(src, "\n")
+	var currentSet string
+	setDecl := regexp.MustCompile(`^var (\w+Flags) = \[\]FlagDef\{`)
+	for _, line := range lines {
+		if m := setDecl.FindStringSubmatch(line); m != nil {
+			currentSet = m[1]
 			continue
 		}
-		for _, d := range defs {
-			if d.Description == "" {
-				t.Errorf("%s: flag %q has empty description", name, d.Name)
+		if currentSet == "" || !referenced[currentSet] {
+			continue
+		}
+		if m := flagEntry.FindStringSubmatch(line); m != nil {
+			name, desc := m[1], m[2]
+			if name == "" {
+				t.Errorf("%s: FlagDef has empty Name", currentSet)
 			}
-			if d.Name == "" {
-				t.Errorf("%s: FlagDef has empty Name", name)
+			if desc == "" {
+				t.Errorf("%s: flag %q has empty description", currentSet, name)
 			}
-			if strings.Contains(d.Name, "_") {
-				t.Errorf("%s: flag %q contains underscore (should be kebab-case)", name, d.Name)
+			if strings.Contains(name, "_") {
+				t.Errorf("%s: flag %q contains underscore (should be kebab-case)", currentSet, name)
 			}
 		}
 	}

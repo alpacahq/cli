@@ -1,6 +1,7 @@
 package cmdutil
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/alpacahq/cli/internal/api"
@@ -184,5 +185,83 @@ func TestRegisterFlags_EmptyDefs(t *testing.T) {
 
 	if cmd.Flags().HasFlags() {
 		t.Error("expected no flags with empty defs")
+	}
+}
+
+func TestRequireStr(t *testing.T) {
+	cmd := newTestCmd()
+	if _, err := RequireStr(cmd, "name"); err != nil {
+		t.Errorf("expected no error for flag with default, got: %v", err)
+	}
+
+	cmd.Flags().Set("name", "")
+	if _, err := RequireStr(cmd, "name"); err == nil {
+		t.Error("expected error for empty required flag")
+	}
+}
+
+func TestRequireAll(t *testing.T) {
+	cmd := &cobra.Command{Use: "test"}
+	cmd.Flags().String("a", "", "")
+	cmd.Flags().String("b", "", "")
+	cmd.Flags().String("c", "filled", "")
+
+	err := RequireAll(cmd, "a", "b", "c")
+	if err == nil {
+		t.Fatal("expected error when a and b are empty")
+	}
+	msg := err.Error()
+	if !strings.Contains(msg, "--a") || !strings.Contains(msg, "--b") {
+		t.Errorf("error should list both missing flags, got: %s", msg)
+	}
+	if strings.Contains(msg, "--c") {
+		t.Errorf("error should not list --c (has value), got: %s", msg)
+	}
+}
+
+func TestRequireAll_AllPresent(t *testing.T) {
+	cmd := &cobra.Command{Use: "test"}
+	cmd.Flags().String("x", "val", "")
+
+	if err := RequireAll(cmd, "x"); err != nil {
+		t.Errorf("expected no error, got: %v", err)
+	}
+}
+
+func TestAddSortFlag(t *testing.T) {
+	cmd := &cobra.Command{Use: "test"}
+	AddSortFlag(cmd, []string{"asc", "desc"})
+
+	f := cmd.Flags().Lookup("sort")
+	if f == nil {
+		t.Fatal("sort flag not registered")
+	}
+	if f.DefValue != "" {
+		t.Errorf("sort default = %q, want empty", f.DefValue)
+	}
+}
+
+func TestAddDateRangeFlags(t *testing.T) {
+	cmd := &cobra.Command{Use: "test"}
+	AddDateRangeFlags(cmd)
+
+	for _, name := range []string{"start", "end"} {
+		f := cmd.Flags().Lookup(name)
+		if f == nil {
+			t.Errorf("%s flag not registered", name)
+		}
+	}
+}
+
+func TestAddLimitFlag(t *testing.T) {
+	cmd := &cobra.Command{Use: "test"}
+	AddLimitFlag(cmd)
+
+	f := cmd.Flags().Lookup("limit")
+	if f == nil {
+		t.Fatal("limit flag not registered")
+	}
+	if f.DefValue != "0" {
+		t.Errorf("limit default = %q, want 0", f.DefValue)
 	}
 }

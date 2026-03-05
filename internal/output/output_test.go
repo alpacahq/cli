@@ -95,6 +95,12 @@ func TestColorPL(t *testing.T) {
 	if got := colorPL("0"); got != "0" {
 		t.Errorf("zero: got %q", got)
 	}
+	if got := colorPL("0.00"); got != "0.00" {
+		t.Errorf("0.00: got %q", got)
+	}
+	if got := colorPL(""); got != "" {
+		t.Errorf("empty: got %q", got)
+	}
 }
 
 func TestDollarPL(t *testing.T) {
@@ -103,5 +109,123 @@ func TestDollarPL(t *testing.T) {
 	}
 	if got := DollarPL("0"); got != "$0" {
 		t.Errorf("zero: got %q", got)
+	}
+}
+
+func TestPercentPL(t *testing.T) {
+	if got := PercentPL(""); got != "0.00%" {
+		t.Errorf("empty: got %q", got)
+	}
+	if got := PercentPL("0"); got != "0%" {
+		t.Errorf("zero: got %q", got)
+	}
+}
+
+func TestRender_JSON(t *testing.T) {
+	var buf bytes.Buffer
+	cols := []Column{{Header: "NAME", Field: "name"}}
+	data := json.RawMessage(`[{"name":"AAPL"}]`)
+	if err := Render(&buf, "json", cols, data); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(buf.String(), "AAPL") {
+		t.Errorf("expected AAPL in JSON output, got: %s", buf.String())
+	}
+}
+
+func TestRender_Table(t *testing.T) {
+	var buf bytes.Buffer
+	cols := []Column{{Header: "SYMBOL", Field: "symbol"}}
+	data := json.RawMessage(`[{"symbol":"MSFT"}]`)
+	if err := Render(&buf, "table", cols, data); err != nil {
+		t.Fatal(err)
+	}
+	out := buf.String()
+	if !strings.Contains(out, "SYMBOL") || !strings.Contains(out, "MSFT") {
+		t.Errorf("expected table with SYMBOL/MSFT, got: %s", out)
+	}
+}
+
+func TestRender_CSV(t *testing.T) {
+	var buf bytes.Buffer
+	cols := []Column{{Header: "ID", Field: "id"}}
+	data := json.RawMessage(`[{"id":"123"}]`)
+	if err := Render(&buf, "csv", cols, data); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(buf.String(), "123") {
+		t.Errorf("expected 123, got: %s", buf.String())
+	}
+}
+
+func TestRenderWithHint_EmptyTable(t *testing.T) {
+	var buf bytes.Buffer
+	cols := []Column{{Header: "NAME", Field: "name"}}
+	data := json.RawMessage(`[]`)
+	if err := RenderWithHint(&buf, "table", cols, data, "No items found."); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(buf.String(), "No items found.") {
+		t.Errorf("expected hint, got: %s", buf.String())
+	}
+}
+
+func TestRenderWithHint_EmptyJSON(t *testing.T) {
+	var buf bytes.Buffer
+	cols := []Column{{Header: "NAME", Field: "name"}}
+	data := json.RawMessage(`[]`)
+	if err := RenderWithHint(&buf, "json", cols, data, "No items found."); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(buf.String(), "[]") {
+		t.Errorf("expected empty JSON array, got: %s", buf.String())
+	}
+}
+
+func TestRenderWithHint_NonEmpty(t *testing.T) {
+	var buf bytes.Buffer
+	cols := []Column{{Header: "NAME", Field: "name"}}
+	data := json.RawMessage(`[{"name":"test"}]`)
+	if err := RenderWithHint(&buf, "table", cols, data, "Should not appear"); err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(buf.String(), "Should not appear") {
+		t.Error("hint should not appear for non-empty data")
+	}
+}
+
+func TestPrintSingle_Table(t *testing.T) {
+	var buf bytes.Buffer
+	cols := []Column{
+		{Header: "Symbol", Field: "symbol"},
+		{Header: "Price", Field: "price"},
+	}
+	data := json.RawMessage(`{"symbol":"AAPL","price":150.5}`)
+	if err := PrintSingle(&buf, "table", cols, data); err != nil {
+		t.Fatal(err)
+	}
+	out := buf.String()
+	if !strings.Contains(out, "Symbol:") || !strings.Contains(out, "AAPL") {
+		t.Errorf("expected key-value format, got: %s", out)
+	}
+}
+
+func TestPrintSingle_JSON(t *testing.T) {
+	var buf bytes.Buffer
+	cols := []Column{{Header: "Symbol", Field: "symbol"}}
+	data := json.RawMessage(`{"symbol":"AAPL"}`)
+	if err := PrintSingle(&buf, "json", cols, data); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(buf.String(), "AAPL") {
+		t.Errorf("expected AAPL, got: %s", buf.String())
+	}
+}
+
+func TestPrintSingle_NoData(t *testing.T) {
+	var buf bytes.Buffer
+	cols := []Column{{Header: "Name", Field: "name"}}
+	if err := PrintSingle(&buf, "table", cols, nil); err == nil {
+		t.Error("expected error for nil data")
 	}
 }

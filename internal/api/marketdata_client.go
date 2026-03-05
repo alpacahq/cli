@@ -29,7 +29,7 @@ type CorporateActionsParams struct {
 	Ids       string
 	Limit     int // default: 100
 	PageToken string
-	Sort      string
+	Sort      string // default: asc
 }
 
 func (p *CorporateActionsParams) Values() url.Values {
@@ -66,6 +66,8 @@ func (p *CorporateActionsParams) Values() url.Values {
 	}
 	return v
 }
+
+var CorporateActionsParamsSortValues = []string{"asc", "desc"}
 
 // CorporateActions — Corporate actions
 func (c *MarketDataClient) CorporateActions(params *CorporateActionsParams) (*CorporateActionsResp, error) {
@@ -262,11 +264,11 @@ func (c *MarketDataClient) LatestRates(params *LatestRatesParams) (*ForexLatestR
 
 type RatesParams struct {
 	CurrencyPairs string
-	Timeframe     string
+	Timeframe     string // default: 1Min
 	Start         string
 	End           string
-	Limit         int // default: 1000
-	Sort          string
+	Limit         int    // default: 1000
+	Sort          string // default: asc
 	PageToken     string
 }
 
@@ -298,6 +300,8 @@ func (p *RatesParams) Values() url.Values {
 	}
 	return v
 }
+
+var RatesParamsSortValues = []string{"asc", "desc"}
 
 // Rates — Historical rates for currency pairs
 func (c *MarketDataClient) Rates(params *RatesParams) (*ForexRatesResp, error) {
@@ -398,7 +402,7 @@ type OptionBarsParams struct {
 	End       string
 	Limit     int // default: 1000
 	PageToken string
-	Sort      string
+	Sort      string // default: asc
 }
 
 func (p *OptionBarsParams) Values() url.Values {
@@ -429,6 +433,8 @@ func (p *OptionBarsParams) Values() url.Values {
 	}
 	return v
 }
+
+var OptionBarsParamsSortValues = []string{"asc", "desc"}
 
 // OptionBars — Historical bars
 func (c *MarketDataClient) OptionBars(params *OptionBarsParams) (*OptionBarsResp, error) {
@@ -463,7 +469,7 @@ func (c *MarketDataClient) OptionMetaExchanges() (json.RawMessage, error) {
 
 type OptionLatestQuotesParams struct {
 	Symbols string
-	Feed    string
+	Feed    string // default: opra
 }
 
 func (p *OptionLatestQuotesParams) Values() url.Values {
@@ -480,6 +486,8 @@ func (p *OptionLatestQuotesParams) Values() url.Values {
 	return v
 }
 
+var OptionLatestQuotesParamsFeedValues = []string{"indicative", "opra"}
+
 // OptionLatestQuotes — Latest quotes
 func (c *MarketDataClient) OptionLatestQuotes(params *OptionLatestQuotesParams) (*OptionLatestQuotesResp, error) {
 	path := "/v1beta1/options/quotes/latest"
@@ -493,7 +501,7 @@ func (c *MarketDataClient) OptionLatestQuotes(params *OptionLatestQuotesParams) 
 
 type OptionSnapshotsParams struct {
 	Symbols      string
-	Feed         string
+	Feed         string // default: opra
 	UpdatedSince string
 	Limit        int // default: 100
 	PageToken    string
@@ -522,6 +530,8 @@ func (p *OptionSnapshotsParams) Values() url.Values {
 	return v
 }
 
+var OptionSnapshotsParamsFeedValues = []string{"indicative", "opra"}
+
 // OptionSnapshots — Snapshots
 func (c *MarketDataClient) OptionSnapshots(params *OptionSnapshotsParams) (*OptionSnapshotsResp, error) {
 	path := "/v1beta1/options/snapshots"
@@ -534,8 +544,8 @@ func (c *MarketDataClient) OptionSnapshots(params *OptionSnapshotsParams) (*Opti
 }
 
 type OptionChainParams struct {
-	Feed              string
-	Limit             int // default: 100
+	Feed              string // default: opra
+	Limit             int    // default: 100
 	UpdatedSince      string
 	PageToken         string
 	Type              string
@@ -588,6 +598,8 @@ func (p *OptionChainParams) Values() url.Values {
 	return v
 }
 
+var OptionChainParamsFeedValues = []string{"indicative", "opra"}
+
 var OptionChainParamsTypeValues = []string{"call", "put"}
 
 // OptionChain — Option chain
@@ -607,7 +619,7 @@ type OptionTradesParams struct {
 	End       string
 	Limit     int // default: 1000
 	PageToken string
-	Sort      string
+	Sort      string // default: asc
 }
 
 func (p *OptionTradesParams) Values() url.Values {
@@ -636,6 +648,8 @@ func (p *OptionTradesParams) Values() url.Values {
 	return v
 }
 
+var OptionTradesParamsSortValues = []string{"asc", "desc"}
+
 // OptionTrades — Historical trades
 func (c *MarketDataClient) OptionTrades(params *OptionTradesParams) (*OptionTradesResp, error) {
 	path := "/v1beta1/options/trades"
@@ -649,7 +663,7 @@ func (c *MarketDataClient) OptionTrades(params *OptionTradesParams) (*OptionTrad
 
 type OptionLatestTradesParams struct {
 	Symbols string
-	Feed    string
+	Feed    string // default: opra
 }
 
 func (p *OptionLatestTradesParams) Values() url.Values {
@@ -665,6 +679,8 @@ func (p *OptionLatestTradesParams) Values() url.Values {
 	}
 	return v
 }
+
+var OptionLatestTradesParamsFeedValues = []string{"indicative", "opra"}
 
 // OptionLatestTrades — Latest trades
 func (c *MarketDataClient) OptionLatestTrades(params *OptionLatestTradesParams) (*OptionLatestTradesResp, error) {
@@ -742,7 +758,7 @@ type CryptoBarsParams struct {
 	End       string
 	Limit     int // default: 1000
 	PageToken string
-	Sort      string
+	Sort      string // default: asc
 }
 
 func (p *CryptoBarsParams) Values() url.Values {
@@ -773,6 +789,8 @@ func (p *CryptoBarsParams) Values() url.Values {
 	}
 	return v
 }
+
+var CryptoBarsParamsSortValues = []string{"asc", "desc"}
 
 // CryptoBars — Historical bars
 func (c *MarketDataClient) CryptoBars(Loc string, params *CryptoBarsParams) (*CryptoBarsResp, error) {
@@ -895,7 +913,7 @@ type CryptoQuotesParams struct {
 	End       string
 	Limit     int // default: 1000
 	PageToken string
-	Sort      string
+	Sort      string // default: asc
 }
 
 func (p *CryptoQuotesParams) Values() url.Values {
@@ -923,6 +941,8 @@ func (p *CryptoQuotesParams) Values() url.Values {
 	}
 	return v
 }
+
+var CryptoQuotesParamsSortValues = []string{"asc", "desc"}
 
 // CryptoQuotes — Historical quotes
 func (c *MarketDataClient) CryptoQuotes(Loc string, params *CryptoQuotesParams) (*CryptoQuotesResp, error) {
@@ -967,7 +987,7 @@ type CryptoTradesParams struct {
 	End       string
 	Limit     int // default: 1000
 	PageToken string
-	Sort      string
+	Sort      string // default: asc
 }
 
 func (p *CryptoTradesParams) Values() url.Values {
@@ -996,6 +1016,8 @@ func (p *CryptoTradesParams) Values() url.Values {
 	return v
 }
 
+var CryptoTradesParamsSortValues = []string{"asc", "desc"}
+
 // CryptoTrades — Historical trades
 func (c *MarketDataClient) CryptoTrades(Loc string, params *CryptoTradesParams) (*CryptoTradesResp, error) {
 	path := fmt.Sprintf("/v1beta3/crypto/%s/trades", Loc)
@@ -1013,10 +1035,10 @@ type StockAuctionsParams struct {
 	End       string
 	Limit     int // default: 1000
 	Asof      string
-	Feed      string
+	Feed      string // default: sip
 	Currency  string
 	PageToken string
-	Sort      string
+	Sort      string // default: asc
 }
 
 func (p *StockAuctionsParams) Values() url.Values {
@@ -1054,6 +1076,8 @@ func (p *StockAuctionsParams) Values() url.Values {
 	return v
 }
 
+var StockAuctionsParamsSortValues = []string{"asc", "desc"}
+
 // StockAuctions — Historical auctions
 func (c *MarketDataClient) StockAuctions(params *StockAuctionsParams) (*StockAuctionsResp, error) {
 	path := "/v2/stocks/auctions"
@@ -1073,10 +1097,10 @@ type StockBarsParams struct {
 	Limit      int    // default: 1000
 	Adjustment string // default: raw
 	Asof       string
-	Feed       string
+	Feed       string // default: sip
 	Currency   string
 	PageToken  string
-	Sort       string
+	Sort       string // default: asc
 }
 
 func (p *StockBarsParams) Values() url.Values {
@@ -1120,6 +1144,10 @@ func (p *StockBarsParams) Values() url.Values {
 	return v
 }
 
+var StockBarsParamsFeedValues = []string{"boats", "iex", "otc", "sip"}
+
+var StockBarsParamsSortValues = []string{"asc", "desc"}
+
 // StockBars — Historical bars
 func (c *MarketDataClient) StockBars(params *StockBarsParams) (*StockBarsResp, error) {
 	path := "/v2/stocks/bars"
@@ -1153,6 +1181,8 @@ func (p *StockLatestBarsParams) Values() url.Values {
 	}
 	return v
 }
+
+var StockLatestBarsParamsFeedValues = []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}
 
 // StockLatestBars — Latest bars
 func (c *MarketDataClient) StockLatestBars(params *StockLatestBarsParams) (*StockLatestBarsResp, error) {
@@ -1208,10 +1238,10 @@ type StockQuotesParams struct {
 	End       string
 	Limit     int // default: 1000
 	Asof      string
-	Feed      string
+	Feed      string // default: sip
 	Currency  string
 	PageToken string
-	Sort      string
+	Sort      string // default: asc
 }
 
 func (p *StockQuotesParams) Values() url.Values {
@@ -1249,6 +1279,10 @@ func (p *StockQuotesParams) Values() url.Values {
 	return v
 }
 
+var StockQuotesParamsFeedValues = []string{"boats", "iex", "otc", "sip"}
+
+var StockQuotesParamsSortValues = []string{"asc", "desc"}
+
 // StockQuotes — Historical quotes
 func (c *MarketDataClient) StockQuotes(params *StockQuotesParams) (*StockQuotesResp, error) {
 	path := "/v2/stocks/quotes"
@@ -1282,6 +1316,8 @@ func (p *StockLatestQuotesParams) Values() url.Values {
 	}
 	return v
 }
+
+var StockLatestQuotesParamsFeedValues = []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}
 
 // StockLatestQuotes — Latest quotes
 func (c *MarketDataClient) StockLatestQuotes(params *StockLatestQuotesParams) (*StockLatestQuotesResp, error) {
@@ -1317,6 +1353,8 @@ func (p *StockSnapshotsParams) Values() url.Values {
 	return v
 }
 
+var StockSnapshotsParamsFeedValues = []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}
+
 // StockSnapshots — Snapshots
 func (c *MarketDataClient) StockSnapshots(params *StockSnapshotsParams) (json.RawMessage, error) {
 	path := "/v2/stocks/snapshots"
@@ -1333,10 +1371,10 @@ type StockTradesParams struct {
 	End       string
 	Limit     int // default: 1000
 	Asof      string
-	Feed      string
+	Feed      string // default: sip
 	Currency  string
 	PageToken string
-	Sort      string
+	Sort      string // default: asc
 }
 
 func (p *StockTradesParams) Values() url.Values {
@@ -1374,6 +1412,10 @@ func (p *StockTradesParams) Values() url.Values {
 	return v
 }
 
+var StockTradesParamsFeedValues = []string{"boats", "iex", "otc", "sip"}
+
+var StockTradesParamsSortValues = []string{"asc", "desc"}
+
 // StockTrades — Historical trades
 func (c *MarketDataClient) StockTrades(params *StockTradesParams) (*StockTradesResp, error) {
 	path := "/v2/stocks/trades"
@@ -1408,6 +1450,8 @@ func (p *StockLatestTradesParams) Values() url.Values {
 	return v
 }
 
+var StockLatestTradesParamsFeedValues = []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}
+
 // StockLatestTrades — Latest trades
 func (c *MarketDataClient) StockLatestTrades(params *StockLatestTradesParams) (*StockLatestTradesResp, error) {
 	path := "/v2/stocks/trades/latest"
@@ -1424,10 +1468,10 @@ type StockAuctionSingleParams struct {
 	End       string
 	Limit     int // default: 1000
 	Asof      string
-	Feed      string
+	Feed      string // default: sip
 	Currency  string
 	PageToken string
-	Sort      string
+	Sort      string // default: asc
 }
 
 func (p *StockAuctionSingleParams) Values() url.Values {
@@ -1462,6 +1506,8 @@ func (p *StockAuctionSingleParams) Values() url.Values {
 	return v
 }
 
+var StockAuctionSingleParamsSortValues = []string{"asc", "desc"}
+
 // StockAuctionSingle — Historical auctions (single)
 func (c *MarketDataClient) StockAuctionSingle(Symbol string, params *StockAuctionSingleParams) (*StockAuctionsRespSingle, error) {
 	path := fmt.Sprintf("/v2/stocks/%s/auctions", Symbol)
@@ -1480,10 +1526,10 @@ type StockBarSingleParams struct {
 	Limit      int    // default: 1000
 	Adjustment string // default: raw
 	Asof       string
-	Feed       string
+	Feed       string // default: sip
 	Currency   string
 	PageToken  string
-	Sort       string
+	Sort       string // default: asc
 }
 
 func (p *StockBarSingleParams) Values() url.Values {
@@ -1524,6 +1570,10 @@ func (p *StockBarSingleParams) Values() url.Values {
 	return v
 }
 
+var StockBarSingleParamsFeedValues = []string{"boats", "iex", "otc", "sip"}
+
+var StockBarSingleParamsSortValues = []string{"asc", "desc"}
+
 // StockBarSingle — Historical bars (single symbol)
 func (c *MarketDataClient) StockBarSingle(Symbol string, params *StockBarSingleParams) (*StockBarsRespSingle, error) {
 	path := fmt.Sprintf("/v2/stocks/%s/bars", Symbol)
@@ -1554,6 +1604,8 @@ func (p *StockLatestBarSingleParams) Values() url.Values {
 	return v
 }
 
+var StockLatestBarSingleParamsFeedValues = []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}
+
 // StockLatestBarSingle — Latest bar (single symbol)
 func (c *MarketDataClient) StockLatestBarSingle(Symbol string, params *StockLatestBarSingleParams) (*StockLatestBarsRespSingle, error) {
 	path := fmt.Sprintf("/v2/stocks/%s/bars/latest", Symbol)
@@ -1570,10 +1622,10 @@ type StockQuoteSingleParams struct {
 	End       string
 	Limit     int // default: 1000
 	Asof      string
-	Feed      string
+	Feed      string // default: sip
 	Currency  string
 	PageToken string
-	Sort      string
+	Sort      string // default: asc
 }
 
 func (p *StockQuoteSingleParams) Values() url.Values {
@@ -1608,6 +1660,10 @@ func (p *StockQuoteSingleParams) Values() url.Values {
 	return v
 }
 
+var StockQuoteSingleParamsFeedValues = []string{"boats", "iex", "otc", "sip"}
+
+var StockQuoteSingleParamsSortValues = []string{"asc", "desc"}
+
 // StockQuoteSingle — Historical quotes (single symbol)
 func (c *MarketDataClient) StockQuoteSingle(Symbol string, params *StockQuoteSingleParams) (*StockQuotesRespSingle, error) {
 	path := fmt.Sprintf("/v2/stocks/%s/quotes", Symbol)
@@ -1637,6 +1693,8 @@ func (p *StockLatestQuoteSingleParams) Values() url.Values {
 	}
 	return v
 }
+
+var StockLatestQuoteSingleParamsFeedValues = []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}
 
 // StockLatestQuoteSingle — Latest quote (single symbol)
 func (c *MarketDataClient) StockLatestQuoteSingle(Symbol string, params *StockLatestQuoteSingleParams) (*StockLatestQuotesRespSingle, error) {
@@ -1668,6 +1726,8 @@ func (p *StockSnapshotSingleParams) Values() url.Values {
 	return v
 }
 
+var StockSnapshotSingleParamsFeedValues = []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}
+
 // StockSnapshotSingle — Snapshot (single symbol)
 func (c *MarketDataClient) StockSnapshotSingle(Symbol string, params *StockSnapshotSingleParams) (json.RawMessage, error) {
 	path := fmt.Sprintf("/v2/stocks/%s/snapshot", Symbol)
@@ -1683,10 +1743,10 @@ type StockTradeSingleParams struct {
 	End       string
 	Limit     int // default: 1000
 	Asof      string
-	Feed      string
+	Feed      string // default: sip
 	Currency  string
 	PageToken string
-	Sort      string
+	Sort      string // default: asc
 }
 
 func (p *StockTradeSingleParams) Values() url.Values {
@@ -1721,6 +1781,10 @@ func (p *StockTradeSingleParams) Values() url.Values {
 	return v
 }
 
+var StockTradeSingleParamsFeedValues = []string{"boats", "iex", "otc", "sip"}
+
+var StockTradeSingleParamsSortValues = []string{"asc", "desc"}
+
 // StockTradeSingle — Historical trades (single symbol)
 func (c *MarketDataClient) StockTradeSingle(Symbol string, params *StockTradeSingleParams) (*StockTradesRespSingle, error) {
 	path := fmt.Sprintf("/v2/stocks/%s/trades", Symbol)
@@ -1750,6 +1814,8 @@ func (p *StockLatestTradeSingleParams) Values() url.Values {
 	}
 	return v
 }
+
+var StockLatestTradeSingleParamsFeedValues = []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}
 
 // StockLatestTradeSingle — Latest trade (single symbol)
 func (c *MarketDataClient) StockLatestTradeSingle(Symbol string, params *StockLatestTradeSingleParams) (*StockLatestTradesRespSingle, error) {

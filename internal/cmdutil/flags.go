@@ -2,6 +2,7 @@ package cmdutil
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -38,7 +39,14 @@ func RegisterFlags(cmd *cobra.Command, defs []api.FlagDef, opts *FlagOpts) {
 		case "bool":
 			cmd.Flags().Bool(name, defaultVal == "true", d.Description)
 		case "int":
-			defInt, _ := strconv.Atoi(defaultVal)
+			defInt := 0
+			if defaultVal != "" {
+				var err error
+				defInt, err = strconv.Atoi(defaultVal)
+				if err != nil {
+					log.Fatalf("RegisterFlags: invalid int default %q for flag %q: %v", defaultVal, name, err)
+				}
+			}
 			cmd.Flags().Int(name, defInt, d.Description)
 		default:
 			cmd.Flags().String(name, defaultVal, d.Description)

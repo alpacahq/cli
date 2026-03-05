@@ -12,7 +12,7 @@ The CLI is driven by OpenAPI specs — types, clients, param structs, flag defin
 
 **Homebrew** (macOS / Linux):
 
-> Homebrew support has not yet been fully configured. Please use `go install`
+> Homebrew tap (`alpacahq/homebrew-tap`) is being set up. Until it's published, use `go install` or download a binary from Releases.
 
 ```bash
 brew install alpacahq/tap/alpaca
@@ -130,12 +130,17 @@ alpaca position list --json
 | `alpaca data option chain <symbol>` | Option chain (greeks and pricing) |
 | `alpaca data option latest-quotes` | Latest option quotes |
 | `alpaca data option latest-trades` | Latest option trades |
+| `alpaca data option exchanges` | Option exchanges |
+| `alpaca data option conditions` | Option trade conditions |
 | `alpaca data forex rates` | Historical forex rates |
 | `alpaca data forex latest` | Latest forex rates |
 | `alpaca data crypto-orderbook` | Latest crypto orderbooks |
 | `alpaca data auctions` | Stock auction data |
 | `alpaca data corporate-actions` | Corporate actions (market data) |
 | `alpaca data fixed-income` | Fixed income prices |
+| `alpaca data logo <symbol>` | Company logo URL |
+| `alpaca data meta exchanges` | Exchange code reference |
+| `alpaca data meta conditions <ticktype>` | Trade/quote condition codes |
 | `alpaca screener most-actives` | Most active stocks |
 | `alpaca screener movers` | Top market movers |
 | `alpaca news` | Market news |
@@ -162,10 +167,15 @@ alpaca position list --json
 | `alpaca watchlist delete <id>` | Delete a watchlist |
 | `alpaca watchlist add <id> <symbol>` | Add symbol to watchlist |
 | `alpaca watchlist remove <id> <symbol>` | Remove symbol from watchlist |
+| `alpaca watchlist get-by-name <name>` | Get watchlist by name |
+| `alpaca watchlist update-by-name <name>` | Update watchlist by name |
+| `alpaca watchlist delete-by-name <name>` | Delete watchlist by name |
+| `alpaca watchlist add-by-name <name> <symbol>` | Add symbol to watchlist by name |
 | `alpaca wallet list` | List crypto wallets |
 | `alpaca wallet transfer list` | List crypto transfers |
 | `alpaca wallet transfer get <id>` | Get a crypto transfer |
 | `alpaca wallet transfer create` | Create a crypto transfer |
+| `alpaca wallet transfer estimate` | Estimate transfer fees |
 | `alpaca wallet whitelist list` | List whitelisted addresses |
 | `alpaca wallet whitelist add` | Add a whitelisted address |
 | `alpaca wallet whitelist delete <id>` | Remove a whitelisted address |
