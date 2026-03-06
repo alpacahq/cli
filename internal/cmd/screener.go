@@ -55,8 +55,9 @@ var screenerMoversCmd = &cobra.Command{
 		}
 
 		w := cmd.OutOrStdout()
-		if getOutput() == outputJSON || getOutput() == outputCSV {
-			return output.Render(w, getOutput(), screenerMoverColumns(), resp)
+		format := getOutput()
+		if format == outputJSON || format == outputCSV {
+			return output.Render(w, format, screenerMoverColumns(), resp)
 		}
 
 		cmd.Println("GAINERS")

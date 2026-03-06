@@ -164,7 +164,7 @@ var dataLatestTradeCmd = &cobra.Command{
 			return err
 		}
 
-		trade := extractTrade(m, symbol)
+		trade := extractSingle(m, symbol, "trade", "trades")
 		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), tradeColumns(), trade)
 	},
 }
@@ -187,7 +187,7 @@ var dataLatestQuoteCmd = &cobra.Command{
 			return err
 		}
 
-		quote := extractQuote(m, symbol)
+		quote := extractSingle(m, symbol, "quote", "quotes")
 		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), quoteColumns(), quote)
 	},
 }
@@ -210,7 +210,7 @@ var dataLatestBarCmd = &cobra.Command{
 			return err
 		}
 
-		bar := extractBar(m, symbol)
+		bar := extractSingle(m, symbol, "bar", "bars")
 		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), barColumns(), bar)
 	},
 }
@@ -221,23 +221,23 @@ func addPaginationFlags(cmd *cobra.Command) {
 }
 
 func init() {
+	feedCompletions := cobra.FixedCompletions([]string{"iex", "sip", "otc", "delayed_sip"}, cobra.ShellCompDirectiveNoFileComp)
+
 	cmdutil.RegisterFlags(dataBarsCmd, api.StockBarSingleFlags, &cmdutil.FlagOpts{
 		Defaults: map[string]string{"timeframe": "1Day"},
 	})
 	addPaginationFlags(dataBarsCmd)
-	_ = dataBarsCmd.RegisterFlagCompletionFunc("feed", cobra.FixedCompletions([]string{"iex", "sip", "otc", "delayed_sip"}, cobra.ShellCompDirectiveNoFileComp))
+	_ = dataBarsCmd.RegisterFlagCompletionFunc("feed", feedCompletions)
 	_ = dataBarsCmd.RegisterFlagCompletionFunc("timeframe", cobra.FixedCompletions([]string{"1Min", "5Min", "15Min", "1Hour", "1Day", "1Week", "1Month"}, cobra.ShellCompDirectiveNoFileComp))
 	_ = dataBarsCmd.RegisterFlagCompletionFunc("adjustment", cobra.FixedCompletions([]string{"raw", "split", "dividend", "all"}, cobra.ShellCompDirectiveNoFileComp))
 
 	cmdutil.RegisterFlags(dataQuotesCmd, api.StockQuoteSingleFlags, nil)
-	_ = dataQuotesCmd.RegisterFlagCompletionFunc("feed", cobra.FixedCompletions([]string{"iex", "sip", "otc", "delayed_sip"}, cobra.ShellCompDirectiveNoFileComp))
+	_ = dataQuotesCmd.RegisterFlagCompletionFunc("feed", feedCompletions)
 	addPaginationFlags(dataQuotesCmd)
 
 	cmdutil.RegisterFlags(dataTradesCmd, api.StockTradeSingleFlags, nil)
-	_ = dataTradesCmd.RegisterFlagCompletionFunc("feed", cobra.FixedCompletions([]string{"iex", "sip", "otc", "delayed_sip"}, cobra.ShellCompDirectiveNoFileComp))
+	_ = dataTradesCmd.RegisterFlagCompletionFunc("feed", feedCompletions)
 	addPaginationFlags(dataTradesCmd)
-
-	feedCompletions := cobra.FixedCompletions([]string{"iex", "sip", "otc", "delayed_sip"}, cobra.ShellCompDirectiveNoFileComp)
 
 	cmdutil.RegisterFlags(dataSnapshotCmd, api.StockSnapshotSingleFlags, nil)
 	_ = dataSnapshotCmd.RegisterFlagCompletionFunc("feed", feedCompletions)
@@ -330,37 +330,13 @@ func extractArray(data json.RawMessage, symbol, key string) json.RawMessage {
 	return data
 }
 
-func extractBar(m map[string]any, symbol string) map[string]any {
-	if bar, ok := m["bar"].(map[string]any); ok {
-		return bar
+func extractSingle(m map[string]any, symbol, singular, plural string) map[string]any {
+	if v, ok := m[singular].(map[string]any); ok {
+		return v
 	}
-	if bars, ok := m["bars"].(map[string]any); ok {
-		if b, ok := bars[symbol].(map[string]any); ok {
-			return b
-		}
-	}
-	return m
-}
-
-func extractTrade(m map[string]any, symbol string) map[string]any {
-	if trade, ok := m["trade"].(map[string]any); ok {
-		return trade
-	}
-	if trades, ok := m["trades"].(map[string]any); ok {
-		if t, ok := trades[symbol].(map[string]any); ok {
-			return t
-		}
-	}
-	return m
-}
-
-func extractQuote(m map[string]any, symbol string) map[string]any {
-	if quote, ok := m["quote"].(map[string]any); ok {
-		return quote
-	}
-	if quotes, ok := m["quotes"].(map[string]any); ok {
-		if q, ok := quotes[symbol].(map[string]any); ok {
-			return q
+	if multi, ok := m[plural].(map[string]any); ok {
+		if v, ok := multi[symbol].(map[string]any); ok {
+			return v
 		}
 	}
 	return m

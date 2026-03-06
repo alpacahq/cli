@@ -69,7 +69,8 @@ var positionCloseAllCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		if getOutput() == outputJSON || getOutput() == outputCSV {
+		format := getOutput()
+		if format == outputJSON || format == outputCSV {
 			return output.JSON(cmd.OutOrStdout(), canceled)
 		}
 		_, _ = fmt.Fprintln(cmd.OutOrStdout(), "All positions closed.")

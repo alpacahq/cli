@@ -64,41 +64,41 @@ func TestExtractArray_MultiSymbol(t *testing.T) {
 	}
 }
 
-func TestExtractTrade_StockFormat(t *testing.T) {
+func TestExtractSingle_StockTrade(t *testing.T) {
 	m := map[string]any{"trade": map[string]any{"p": 150.5, "s": 100.0}}
-	trade := extractTrade(m, "AAPL")
+	trade := extractSingle(m, "AAPL", "trade", "trades")
 	if trade["p"].(float64) != 150.5 {
 		t.Errorf("expected price=150.5, got %v", trade["p"])
 	}
 }
 
-func TestExtractTrade_CryptoFormat(t *testing.T) {
+func TestExtractSingle_CryptoTrade(t *testing.T) {
 	m := map[string]any{
 		"trades": map[string]any{
 			"BTC/USD": map[string]any{"p": 50000.0, "s": 0.5},
 		},
 	}
-	trade := extractTrade(m, "BTC/USD")
+	trade := extractSingle(m, "BTC/USD", "trade", "trades")
 	if trade["p"].(float64) != 50000.0 {
 		t.Errorf("expected price=50000, got %v", trade["p"])
 	}
 }
 
-func TestExtractQuote_StockFormat(t *testing.T) {
+func TestExtractSingle_StockQuote(t *testing.T) {
 	m := map[string]any{"quote": map[string]any{"bp": 149.9, "ap": 150.1}}
-	quote := extractQuote(m, "AAPL")
+	quote := extractSingle(m, "AAPL", "quote", "quotes")
 	if quote["bp"].(float64) != 149.9 {
 		t.Errorf("expected bid=149.9, got %v", quote["bp"])
 	}
 }
 
-func TestExtractQuote_CryptoFormat(t *testing.T) {
+func TestExtractSingle_CryptoQuote(t *testing.T) {
 	m := map[string]any{
 		"quotes": map[string]any{
 			"ETH/USD": map[string]any{"bp": 3000.0, "ap": 3001.0},
 		},
 	}
-	quote := extractQuote(m, "ETH/USD")
+	quote := extractSingle(m, "ETH/USD", "quote", "quotes")
 	if quote["ap"].(float64) != 3001.0 {
 		t.Errorf("expected ask=3001, got %v", quote["ap"])
 	}
