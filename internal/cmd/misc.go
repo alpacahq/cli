@@ -71,7 +71,7 @@ var calendarCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), calendarColumns(), data)
+		return output.Render(cmd.OutOrStdout(), getOutput(), nil, data)
 	},
 }
 
@@ -128,7 +128,7 @@ var newsCmd = &cobra.Command{
 				params.PageToken = resp.NextPageToken
 			}
 			newsData, _ := json.Marshal(allNews)
-			return output.Render(cmd.OutOrStdout(), getOutput(), newsColumns(), json.RawMessage(newsData))
+			return output.Render(cmd.OutOrStdout(), getOutput(), nil, json.RawMessage(newsData))
 		}
 
 		resp, err := dataClient.News(params)
@@ -137,7 +137,7 @@ var newsCmd = &cobra.Command{
 		}
 
 		newsData, _ := json.Marshal(resp.News)
-		return output.Render(cmd.OutOrStdout(), getOutput(), newsColumns(), json.RawMessage(newsData))
+		return output.Render(cmd.OutOrStdout(), getOutput(), nil, json.RawMessage(newsData))
 	},
 }
 

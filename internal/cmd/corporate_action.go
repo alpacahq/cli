@@ -29,7 +29,7 @@ var corporateActionListCmd = &cobra.Command{
 			return err
 		}
 
-		return output.Render(cmd.OutOrStdout(), getOutput(), corporateActionColumns(), data)
+		return output.Render(cmd.OutOrStdout(), getOutput(), nil, data)
 	},
 }
 
@@ -42,7 +42,7 @@ var corporateActionGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), corporateActionColumns(), data)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, data)
 	},
 }
 

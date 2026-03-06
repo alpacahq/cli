@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"sort"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -67,6 +68,10 @@ func Table(w io.Writer, columns []Column, data any) error {
 		return nil
 	}
 
+	if len(columns) == 0 {
+		columns = columnsFromData(rows[0])
+	}
+
 	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
 
 	headers := make([]string, len(columns))
@@ -88,6 +93,10 @@ func Table(w io.Writer, columns []Column, data any) error {
 
 func CSV(w io.Writer, columns []Column, data any) error {
 	rows := toRows(data)
+	if len(columns) == 0 && len(rows) > 0 {
+		columns = columnsFromData(rows[0])
+	}
+
 	cw := csv.NewWriter(w)
 
 	headers := make([]string, len(columns))
@@ -118,6 +127,10 @@ func PrintSingle(w io.Writer, format string, columns []Column, data any) error {
 		row := toMap(data)
 		if row == nil {
 			return fmt.Errorf("no data")
+		}
+
+		if len(columns) == 0 {
+			columns = columnsFromData(row)
 		}
 
 		tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
@@ -212,6 +225,42 @@ func toMap(data any) map[string]any {
 		var m map[string]any
 		_ = json.Unmarshal(b, &m)
 		return m
+	}
+}
+
+// columnsFromData auto-discovers columns from a data row's keys.
+// Keys are sorted alphabetically. Timestamp fields get auto-formatting.
+func columnsFromData(row map[string]any) []Column {
+	keys := make([]string, 0, len(row))
+	for k := range row {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	cols := make([]Column, len(keys))
+	for i, k := range keys {
+		cols[i] = Column{
+			Header: strings.ToUpper(strings.ReplaceAll(k, "_", " ")),
+			Field:  k,
+		}
+		if IsTimestampField(k) {
+			cols[i].Format = FormatTimestamp
+		}
+	}
+	return cols
+}
+
+// IsTimestampField returns true for JSON field names that typically contain timestamps.
+func IsTimestampField(name string) bool {
+	switch {
+	case strings.HasSuffix(name, "_at"):
+		return true
+	case strings.HasSuffix(name, "_time"):
+		return true
+	case name == "t" || name == "transaction_time":
+		return true
+	default:
+		return false
 	}
 }
 

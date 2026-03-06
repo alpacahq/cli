@@ -24,7 +24,7 @@ var assetListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), assetListColumns(), assets)
+		return output.Render(cmd.OutOrStdout(), getOutput(), nil, assets)
 	},
 }
 
@@ -40,7 +40,7 @@ var assetGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), assetDetailColumns(), asset)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, asset)
 	},
 }
 
@@ -54,7 +54,7 @@ var treasuryListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), treasuryColumns(), resp.UsTreasuries)
+		return output.Render(cmd.OutOrStdout(), getOutput(), nil, resp.UsTreasuries)
 	},
 }
 
@@ -68,7 +68,7 @@ var bondListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), bondColumns(), resp.UsCorporates)
+		return output.Render(cmd.OutOrStdout(), getOutput(), nil, resp.UsCorporates)
 	},
 }
 

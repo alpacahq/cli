@@ -23,7 +23,7 @@ var watchlistListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.RenderWithHint(cmd.OutOrStdout(), getOutput(), watchlistColumns(), watchlists, "No watchlists. Create one with `alpaca watchlist create`.")
+		return output.RenderWithHint(cmd.OutOrStdout(), getOutput(), nil, watchlists, "No watchlists. Create one with `alpaca watchlist create`.")
 	},
 }
 
@@ -34,7 +34,7 @@ func watchlistFetchRunE(fetch func(key string) (*api.Watchlist, error)) func(*co
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), watchlistColumns(), wl)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, wl)
 	}
 }
 
@@ -56,7 +56,7 @@ func watchlistAddRunE(add func(key, symbol string) (*api.Watchlist, error)) func
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), watchlistColumns(), wl)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, wl)
 	}
 }
 
@@ -87,7 +87,7 @@ var watchlistCreateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), watchlistColumns(), wl)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, wl)
 	},
 }
 
@@ -109,7 +109,7 @@ var watchlistUpdateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), watchlistColumns(), wl)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, wl)
 	},
 }
 
@@ -188,7 +188,7 @@ var watchlistUpdateByNameCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), watchlistColumns(), wl)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, wl)
 	},
 }
 

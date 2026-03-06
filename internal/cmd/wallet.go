@@ -22,7 +22,7 @@ var walletListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), walletColumns(), wallet)
+		return output.Render(cmd.OutOrStdout(), getOutput(), nil, wallet)
 	},
 }
 
@@ -41,7 +41,7 @@ var walletTransferListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), transferColumns(), transfers)
+		return output.Render(cmd.OutOrStdout(), getOutput(), nil, transfers)
 	},
 }
 
@@ -54,7 +54,7 @@ var walletTransferGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), transferColumns(), transfer)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, transfer)
 	},
 }
 
@@ -75,7 +75,7 @@ var walletTransferCreateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), transferColumns(), transfer)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, transfer)
 	},
 }
 
@@ -94,7 +94,7 @@ var walletTransferEstimateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), transferEstimateColumns(), resp)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, resp)
 	},
 }
 
@@ -113,7 +113,7 @@ var walletWhitelistListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), whitelistColumns(), addrs)
+		return output.Render(cmd.OutOrStdout(), getOutput(), nil, addrs)
 	},
 }
 
@@ -133,7 +133,7 @@ var walletWhitelistAddCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), whitelistColumns(), addr)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, addr)
 	},
 }
 

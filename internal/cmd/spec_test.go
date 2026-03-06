@@ -357,13 +357,12 @@ func TestNoEmptyFlagDescriptions(t *testing.T) {
 }
 
 // TestRenderCallsUseColumnDefinitions scans all command source files and
-// verifies that every output.Render and output.PrintSingle call includes
-// column definitions (a *Columns() function or a `cols` parameter). This
-// catches the antipattern of passing raw data through the table/CSV renderer
-// without defining columns — which produces blank or garbled output.
+// verifies that every output.Render and output.PrintSingle call either
+// passes explicit column definitions or nil (for auto-discovery).
+// Catches accidental empty slices or missing arguments.
 func TestRenderCallsUseColumnDefinitions(t *testing.T) {
-	renderCall := regexp.MustCompile(`output\.(Render|PrintSingle)\(`)
-	columnsRef := regexp.MustCompile(`\w+Columns\(\)|\bcols\b|\bcolumns\(\)`)
+	renderCall := regexp.MustCompile(`output\.(Render|PrintSingle|RenderWithHint)\(`)
+	validColumns := regexp.MustCompile(`\w+Columns\(\)|\bcols\b|\bcolumns\(\)|\bnil\b`)
 
 	dir := cmdDir()
 	entries, err := os.ReadDir(dir)
@@ -385,8 +384,8 @@ func TestRenderCallsUseColumnDefinitions(t *testing.T) {
 			if !renderCall.MatchString(line) {
 				continue
 			}
-			if !columnsRef.MatchString(line) {
-				t.Errorf("%s:%d: output.Render/PrintSingle call missing column definitions:\n  %s",
+			if !validColumns.MatchString(line) {
+				t.Errorf("%s:%d: output.Render/PrintSingle call missing column definitions or nil:\n  %s",
 					e.Name(), i+1, strings.TrimSpace(line))
 			}
 		}

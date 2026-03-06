@@ -29,7 +29,7 @@ var optionChainCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), optionChainColumns(), data)
+		return output.Render(cmd.OutOrStdout(), getOutput(), nil, data)
 	},
 }
 
@@ -42,7 +42,7 @@ var optionGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), optionChainColumns(), contract)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, contract)
 	},
 }
 

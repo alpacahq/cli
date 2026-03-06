@@ -29,6 +29,10 @@ var CalendarOp = calendarOp{
 	Timezone: "timezone of the times. Default: the timezone of the market",
 }
 
+func (o calendarOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["Calendar"]
+}
+
 var CalendarFlags = []FlagDef{
 	{Name: "end", OASName: "end", Type: "string", Description: "last date to retrieve data for (inclusive). Default: one week from the start date", OpName: "Calendar"},
 	{Name: "start", OASName: "start", Type: "string", Description: "first date to retrieve data for (inclusive). Default: today", OpName: "Calendar"},
@@ -45,6 +49,10 @@ var ClockOp = clockOp{
 	Summary: "Get market clock",
 	Markets: "comma-separated list of markets",
 	Time:    "instead of the current time, use this time for the clock",
+}
+
+func (o clockOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["Clock"]
 }
 
 var ClockFlags = []FlagDef{
@@ -76,6 +84,10 @@ var CorporateActionsOp = corporateActionsOp{
 	Start:     "inclusive start of the interval",
 	Symbols:   "A comma-separated list of symbols",
 	Types:     "A comma-separated list of types",
+}
+
+func (o corporateActionsOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["CorporateActions"]
 }
 
 var CorporateActionsFlags = []FlagDef{
@@ -114,6 +126,10 @@ var CryptoBarsOp = cryptoBarsOp{
 	Timeframe: "timeframe represented by each bar in aggregation.\nYou can use any of the following values:\n - [1-59]Min or [1-59]T, e.g",
 }
 
+func (o cryptoBarsOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["CryptoBars"]
+}
+
 var CryptoBarsFlags = []FlagDef{
 	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", OpName: "CryptoBars"},
 	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", OpName: "CryptoBars"},
@@ -136,6 +152,10 @@ var CryptoLatestBarsOp = cryptoLatestBarsOp{
 	Symbols: "A comma-separated list of crypto symbols",
 }
 
+func (o cryptoLatestBarsOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["CryptoLatestBars"]
+}
+
 var CryptoLatestBarsFlags = []FlagDef{
 	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", OpName: "CryptoLatestBars"},
 }
@@ -150,6 +170,10 @@ var CryptoLatestOrderbooksOp = cryptoLatestOrderbooksOp{
 	Summary: "Get latest orderbook",
 	Loc:     "crypto location from where the latest market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU",
 	Symbols: "A comma-separated list of crypto symbols",
+}
+
+func (o cryptoLatestOrderbooksOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["CryptoLatestOrderbooks"]
 }
 
 var CryptoLatestOrderbooksFlags = []FlagDef{
@@ -168,6 +192,10 @@ var CryptoLatestQuotesOp = cryptoLatestQuotesOp{
 	Symbols: "A comma-separated list of crypto symbols",
 }
 
+func (o cryptoLatestQuotesOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["CryptoLatestQuotes"]
+}
+
 var CryptoLatestQuotesFlags = []FlagDef{
 	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", OpName: "CryptoLatestQuotes"},
 }
@@ -182,6 +210,10 @@ var CryptoLatestTradesOp = cryptoLatestTradesOp{
 	Summary: "Get latest trades",
 	Loc:     "crypto location from where the latest market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU",
 	Symbols: "A comma-separated list of crypto symbols",
+}
+
+func (o cryptoLatestTradesOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["CryptoLatestTrades"]
 }
 
 var CryptoLatestTradesFlags = []FlagDef{
@@ -200,6 +232,10 @@ var CryptoPerpLatestBarsOp = cryptoPerpLatestBarsOp{
 	Symbols: "A comma-separated list of crypto symbols",
 }
 
+func (o cryptoPerpLatestBarsOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["CryptoPerpLatestBars"]
+}
+
 var CryptoPerpLatestBarsFlags = []FlagDef{
 	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", OpName: "CryptoPerpLatestBars"},
 }
@@ -214,6 +250,10 @@ var CryptoPerpLatestFuturesPricingOp = cryptoPerpLatestFuturesPricingOp{
 	Summary: "Get latest pricing",
 	Loc:     "crypto perpetual location",
 	Symbols: "A comma-separated list of crypto symbols",
+}
+
+func (o cryptoPerpLatestFuturesPricingOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["CryptoPerpLatestFuturesPricing"]
 }
 
 var CryptoPerpLatestFuturesPricingFlags = []FlagDef{
@@ -232,6 +272,10 @@ var CryptoPerpLatestOrderbooksOp = cryptoPerpLatestOrderbooksOp{
 	Symbols: "A comma-separated list of crypto symbols",
 }
 
+func (o cryptoPerpLatestOrderbooksOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["CryptoPerpLatestOrderbooks"]
+}
+
 var CryptoPerpLatestOrderbooksFlags = []FlagDef{
 	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", OpName: "CryptoPerpLatestOrderbooks"},
 }
@@ -248,6 +292,10 @@ var CryptoPerpLatestQuotesOp = cryptoPerpLatestQuotesOp{
 	Symbols: "A comma-separated list of crypto symbols",
 }
 
+func (o cryptoPerpLatestQuotesOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["CryptoPerpLatestQuotes"]
+}
+
 var CryptoPerpLatestQuotesFlags = []FlagDef{
 	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", OpName: "CryptoPerpLatestQuotes"},
 }
@@ -262,6 +310,10 @@ var CryptoPerpLatestTradesOp = cryptoPerpLatestTradesOp{
 	Summary: "Get latest trades",
 	Loc:     "crypto perpetual location",
 	Symbols: "A comma-separated list of crypto symbols",
+}
+
+func (o cryptoPerpLatestTradesOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["CryptoPerpLatestTrades"]
 }
 
 var CryptoPerpLatestTradesFlags = []FlagDef{
@@ -290,6 +342,10 @@ var CryptoQuotesOp = cryptoQuotesOp{
 	Symbols:   "A comma-separated list of crypto symbols",
 }
 
+func (o cryptoQuotesOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["CryptoQuotes"]
+}
+
 var CryptoQuotesFlags = []FlagDef{
 	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", OpName: "CryptoQuotes"},
 	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", OpName: "CryptoQuotes"},
@@ -309,6 +365,10 @@ var CryptoSnapshotsOp = cryptoSnapshotsOp{
 	Summary: "Get snapshots",
 	Loc:     "crypto location from where the latest market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU",
 	Symbols: "A comma-separated list of crypto symbols",
+}
+
+func (o cryptoSnapshotsOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["CryptoSnapshots"]
 }
 
 var CryptoSnapshotsFlags = []FlagDef{
@@ -337,6 +397,10 @@ var CryptoTradesOp = cryptoTradesOp{
 	Symbols:   "A comma-separated list of crypto symbols",
 }
 
+func (o cryptoTradesOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["CryptoTrades"]
+}
+
 var CryptoTradesFlags = []FlagDef{
 	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", OpName: "CryptoTrades"},
 	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", OpName: "CryptoTrades"},
@@ -356,6 +420,10 @@ var FixedIncomeLatestPricesOp = fixedIncomeLatestPricesOp{
 	Isins:   "A comma-separated list of ISINs with a limit of 1000",
 }
 
+func (o fixedIncomeLatestPricesOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["FixedIncomeLatestPrices"]
+}
+
 var FixedIncomeLatestPricesFlags = []FlagDef{
 	{Name: "isins", OASName: "isins", Type: "string", Description: "A comma-separated list of ISINs with a limit of 1000", OpName: "FixedIncomeLatestPrices"},
 }
@@ -368,6 +436,10 @@ type latestRatesOp struct {
 var LatestRatesOp = latestRatesOp{
 	Summary:       "Get latest rates for currency pairs",
 	CurrencyPairs: "A comma-separated string with currency pairs",
+}
+
+func (o latestRatesOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["LatestRates"]
 }
 
 var LatestRatesFlags = []FlagDef{
@@ -402,6 +474,10 @@ var LegacyClockOp = legacyClockOp{
 	Summary: "Get US market clock",
 }
 
+func (o legacyClockOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["LegacyClock"]
+}
+
 type logosOp struct {
 	Summary     string
 	Placeholder string
@@ -430,6 +506,10 @@ var MostActivesOp = mostActivesOp{
 	Top:     "number of top most active stocks to fetch per day",
 }
 
+func (o mostActivesOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["MostActives"]
+}
+
 var MostActivesFlags = []FlagDef{
 	{Name: "by", OASName: "by", Type: "string", Default: "volume", Description: "metric used for ranking the most active stocks", Completions: []string{"trades", "volume"}, OpName: "MostActives"},
 	{Name: "top", OASName: "top", Type: "int", Default: "10", Description: "number of top most active stocks to fetch per day", OpName: "MostActives"},
@@ -445,6 +525,10 @@ var MoversOp = moversOp{
 	Summary:    "Get top market movers",
 	MarketType: "screen-specific market (stocks or crypto)",
 	Top:        "number of top market movers to fetch (gainers and losers)",
+}
+
+func (o moversOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["Movers"]
 }
 
 var MoversFlags = []FlagDef{
@@ -473,6 +557,10 @@ var NewsOp = newsOp{
 	Sort:               "sort articles by updated date",
 	Start:              "inclusive start of the interval",
 	Symbols:            "A comma-separated list of symbols for which to query news",
+}
+
+func (o newsOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["News"]
 }
 
 var NewsFlags = []FlagDef{
@@ -518,6 +606,10 @@ var OptionChainOp = optionChainOp{
 	UpdatedSince:      "filter to snapshots that were updated since this timestamp, meaning that the timestamp of the trade or the quote is g...",
 }
 
+func (o optionChainOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["OptionChain"]
+}
+
 var OptionChainFlags = []FlagDef{
 	{Name: "expiration-date", OASName: "expiration_date", Type: "string", Description: "filter contracts by the exact expiration date (format: YYYY-MM-DD)", OpName: "OptionChain"},
 	{Name: "expiration-date-gte", OASName: "expiration_date_gte", Type: "string", Description: "filter contracts with expiration date greater than or equal to the specified date", OpName: "OptionChain"},
@@ -544,6 +636,10 @@ var OptionLatestQuotesOp = optionLatestQuotesOp{
 	Symbols: "A comma-separated list of contract symbols with a limit of 100",
 }
 
+func (o optionLatestQuotesOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["OptionLatestQuotes"]
+}
+
 var OptionLatestQuotesFlags = []FlagDef{
 	{Name: "feed", OASName: "feed", Type: "string", Default: "opra", Description: "source feed of the data", Completions: []string{"indicative", "opra"}, OpName: "OptionLatestQuotes"},
 	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of contract symbols with a limit of 100", OpName: "OptionLatestQuotes"},
@@ -559,6 +655,10 @@ var OptionLatestTradesOp = optionLatestTradesOp{
 	Summary: "Get latest trades",
 	Feed:    "source feed of the data",
 	Symbols: "A comma-separated list of contract symbols with a limit of 100",
+}
+
+func (o optionLatestTradesOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["OptionLatestTrades"]
 }
 
 var OptionLatestTradesFlags = []FlagDef{
@@ -602,6 +702,10 @@ var OptionSnapshotsOp = optionSnapshotsOp{
 	UpdatedSince: "filter to snapshots that were updated since this timestamp, meaning that the timestamp of the trade or the quote is g...",
 }
 
+func (o optionSnapshotsOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["OptionSnapshots"]
+}
+
 var OptionSnapshotsFlags = []FlagDef{
 	{Name: "feed", OASName: "feed", Type: "string", Default: "opra", Description: "source feed of the data", Completions: []string{"indicative", "opra"}, OpName: "OptionSnapshots"},
 	{Name: "limit", OASName: "limit", Type: "int", Default: "100", Description: "number of maximum snapshots to return in a response.", OpName: "OptionSnapshots"},
@@ -628,6 +732,10 @@ var OptionTradesOp = optionTradesOp{
 	Sort:      "sort data in ascending or descending order",
 	Start:     "inclusive start of the interval",
 	Symbols:   "A comma-separated list of contract symbols with a limit of 100",
+}
+
+func (o optionTradesOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["OptionTrades"]
 }
 
 var OptionTradesFlags = []FlagDef{
@@ -659,6 +767,10 @@ var RatesOp = ratesOp{
 	Sort:          "sort data in ascending or descending order",
 	Start:         "inclusive start of the interval",
 	Timeframe:     "sampling interval of the currency rates",
+}
+
+func (o ratesOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["Rates"]
 }
 
 var RatesFlags = []FlagDef{
@@ -697,6 +809,10 @@ var StockAuctionSingleOp = stockAuctionSingleOp{
 	Symbol:    "symbol to query",
 }
 
+func (o stockAuctionSingleOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["StockAuctionSingle"]
+}
+
 var StockAuctionSingleFlags = []FlagDef{
 	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)", OpName: "StockAuctionSingle"},
 	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", OpName: "StockAuctionSingle"},
@@ -732,6 +848,10 @@ var StockAuctionsOp = stockAuctionsOp{
 	Sort:      "sort data in ascending or descending order",
 	Start:     "inclusive start of the interval",
 	Symbols:   "A comma-separated list of stock symbols",
+}
+
+func (o stockAuctionsOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["StockAuctions"]
 }
 
 var StockAuctionsFlags = []FlagDef{
@@ -774,6 +894,10 @@ var StockBarSingleOp = stockBarSingleOp{
 	Start:      "inclusive start of the interval",
 	Symbol:     "symbol to query",
 	Timeframe:  "timeframe represented by each bar in aggregation.\nYou can use any of the following values:\n - [1-59]Min or [1-59]T, e.g",
+}
+
+func (o stockBarSingleOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["StockBarSingle"]
 }
 
 var StockBarSingleFlags = []FlagDef{
@@ -819,6 +943,10 @@ var StockBarsOp = stockBarsOp{
 	Timeframe:  "timeframe represented by each bar in aggregation.\nYou can use any of the following values:\n - [1-59]Min or [1-59]T, e.g",
 }
 
+func (o stockBarsOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["StockBars"]
+}
+
 var StockBarsFlags = []FlagDef{
 	{Name: "adjustment", OASName: "adjustment", Type: "string", Default: "raw", Description: "specifies the adjustments for the bars.\n\n - raw: no adjustments\n - split: adjust price and volume for forward and rev...", OpName: "StockBars"},
 	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)", OpName: "StockBars"},
@@ -847,6 +975,10 @@ var StockLatestBarSingleOp = stockLatestBarSingleOp{
 	Symbol:   "symbol to query",
 }
 
+func (o stockLatestBarSingleOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["StockLatestBarSingle"]
+}
+
 var StockLatestBarSingleFlags = []FlagDef{
 	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", OpName: "StockLatestBarSingle"},
 	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}, OpName: "StockLatestBarSingle"},
@@ -864,6 +996,10 @@ var StockLatestBarsOp = stockLatestBarsOp{
 	Currency: "currency of all prices in ISO 4217 format. Default: USD",
 	Feed:     "source feed of the data.",
 	Symbols:  "A comma-separated list of stock symbols",
+}
+
+func (o stockLatestBarsOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["StockLatestBars"]
 }
 
 var StockLatestBarsFlags = []FlagDef{
@@ -886,6 +1022,10 @@ var StockLatestQuoteSingleOp = stockLatestQuoteSingleOp{
 	Symbol:   "symbol to query",
 }
 
+func (o stockLatestQuoteSingleOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["StockLatestQuoteSingle"]
+}
+
 var StockLatestQuoteSingleFlags = []FlagDef{
 	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", OpName: "StockLatestQuoteSingle"},
 	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}, OpName: "StockLatestQuoteSingle"},
@@ -903,6 +1043,10 @@ var StockLatestQuotesOp = stockLatestQuotesOp{
 	Currency: "currency of all prices in ISO 4217 format. Default: USD",
 	Feed:     "source feed of the data.",
 	Symbols:  "A comma-separated list of stock symbols",
+}
+
+func (o stockLatestQuotesOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["StockLatestQuotes"]
 }
 
 var StockLatestQuotesFlags = []FlagDef{
@@ -925,6 +1069,10 @@ var StockLatestTradeSingleOp = stockLatestTradeSingleOp{
 	Symbol:   "symbol to query",
 }
 
+func (o stockLatestTradeSingleOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["StockLatestTradeSingle"]
+}
+
 var StockLatestTradeSingleFlags = []FlagDef{
 	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", OpName: "StockLatestTradeSingle"},
 	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}, OpName: "StockLatestTradeSingle"},
@@ -942,6 +1090,10 @@ var StockLatestTradesOp = stockLatestTradesOp{
 	Currency: "currency of all prices in ISO 4217 format. Default: USD",
 	Feed:     "source feed of the data.",
 	Symbols:  "A comma-separated list of stock symbols",
+}
+
+func (o stockLatestTradesOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["StockLatestTrades"]
 }
 
 var StockLatestTradesFlags = []FlagDef{
@@ -1000,6 +1152,10 @@ var StockQuoteSingleOp = stockQuoteSingleOp{
 	Symbol:    "symbol to query",
 }
 
+func (o stockQuoteSingleOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["StockQuoteSingle"]
+}
+
 var StockQuoteSingleFlags = []FlagDef{
 	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)", OpName: "StockQuoteSingle"},
 	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", OpName: "StockQuoteSingle"},
@@ -1035,6 +1191,10 @@ var StockQuotesOp = stockQuotesOp{
 	Sort:      "sort data in ascending or descending order",
 	Start:     "inclusive start of the interval",
 	Symbols:   "A comma-separated list of stock symbols",
+}
+
+func (o stockQuotesOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["StockQuotes"]
 }
 
 var StockQuotesFlags = []FlagDef{
@@ -1114,6 +1274,10 @@ var StockTradeSingleOp = stockTradeSingleOp{
 	Symbol:    "symbol to query",
 }
 
+func (o stockTradeSingleOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["StockTradeSingle"]
+}
+
 var StockTradeSingleFlags = []FlagDef{
 	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)", OpName: "StockTradeSingle"},
 	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", OpName: "StockTradeSingle"},
@@ -1151,6 +1315,10 @@ var StockTradesOp = stockTradesOp{
 	Symbols:   "A comma-separated list of stock symbols",
 }
 
+func (o stockTradesOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["StockTrades"]
+}
+
 var StockTradesFlags = []FlagDef{
 	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)", OpName: "StockTrades"},
 	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", OpName: "StockTrades"},
@@ -1179,6 +1347,10 @@ var UsCorporatesOp = usCorporatesOp{
 	Tickers:    "A comma-separated list of tickers with a limit of 1000",
 }
 
+func (o usCorporatesOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["UsCorporates"]
+}
+
 var UsCorporatesFlags = []FlagDef{
 	{Name: "bond-status", OASName: "bond_status", Type: "string", Description: "status of the bond", Completions: []string{"matured", "outstanding", "pre_issuance"}, OpName: "UsCorporates"},
 	{Name: "cusips", OASName: "cusips", Type: "string", Description: "A comma-separated list of CUSIPs with a limit of 1000", OpName: "UsCorporates"},
@@ -1202,6 +1374,10 @@ var UsTreasuriesOp = usTreasuriesOp{
 	Subtype:    "subtype of the treasury",
 }
 
+func (o usTreasuriesOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["UsTreasuries"]
+}
+
 var UsTreasuriesFlags = []FlagDef{
 	{Name: "bond-status", OASName: "bond_status", Type: "string", Description: "status of the bond", Completions: []string{"matured", "outstanding", "pre_issuance"}, OpName: "UsTreasuries"},
 	{Name: "cusips", OASName: "cusips", Type: "string", Description: "A comma-separated list of CUSIPs with a limit of 1000", OpName: "UsTreasuries"},
@@ -1221,6 +1397,10 @@ var AddAssetToWatchlistOp = addAssetToWatchlistOp{
 	WatchlistID: "watchlist id",
 }
 
+func (o addAssetToWatchlistOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["AddAssetToWatchlist"]
+}
+
 var AddAssetToWatchlistFlags = []FlagDef{
 	{Name: "symbol", OASName: "symbol", Type: "string", Description: "the symbol name to add to the watchlist", OpName: "AddAssetToWatchlist"},
 }
@@ -1235,6 +1415,10 @@ var AddAssetToWatchlistByNameOp = addAssetToWatchlistByNameOp{
 	Summary: "Add asset to watchlist by name",
 	Name:    "name of the watchlist",
 	Symbol:  "the symbol name to add to the watchlist",
+}
+
+func (o addAssetToWatchlistByNameOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["AddAssetToWatchlistByName"]
 }
 
 var AddAssetToWatchlistByNameFlags = []FlagDef{
@@ -1254,6 +1438,10 @@ var CreateCryptoPerpTransferForAccountOp = createCryptoPerpTransferForAccountOp{
 	Address: "destination wallet address",
 	Amount:  "amount, denoted in the specified asset, to be withdrawn from the user’s wallet",
 	Asset:   "asset",
+}
+
+func (o createCryptoPerpTransferForAccountOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["CreateCryptoPerpTransferForAccount"]
 }
 
 var CreateCryptoPerpTransferForAccountFlags = []FlagDef{
@@ -1276,6 +1464,10 @@ var CreateCryptoTransferForAccountOp = createCryptoTransferForAccountOp{
 	Asset:   "asset",
 }
 
+func (o createCryptoTransferForAccountOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["CreateCryptoTransferForAccount"]
+}
+
 var CreateCryptoTransferForAccountFlags = []FlagDef{
 	{Name: "address", OASName: "address", Type: "string", Description: "destination wallet address", OpName: "CreateCryptoTransferForAccount"},
 	{Name: "amount", OASName: "amount", Type: "string", Description: "amount, denoted in the specified asset, to be withdrawn from the user’s wallet", OpName: "CreateCryptoTransferForAccount"},
@@ -1292,6 +1484,10 @@ var CreateWhitelistedAddressOp = createWhitelistedAddressOp{
 	Summary: "Request a new whitelisted address",
 	Address: "address to be whitelisted",
 	Asset:   "symbol of underlying asset for the whitelisted address",
+}
+
+func (o createWhitelistedAddressOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["CreateWhitelistedAddress"]
 }
 
 var CreateWhitelistedAddressFlags = []FlagDef{
@@ -1311,6 +1507,10 @@ var CreateWhitelistedPerpAddressOp = createWhitelistedPerpAddressOp{
 	Asset:   "symbol of underlying asset for the whitelisted address",
 }
 
+func (o createWhitelistedPerpAddressOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["CreateWhitelistedPerpAddress"]
+}
+
 var CreateWhitelistedPerpAddressFlags = []FlagDef{
 	{Name: "address", OASName: "address", Type: "string", Description: "address to be whitelisted", OpName: "CreateWhitelistedPerpAddress"},
 	{Name: "asset", OASName: "asset", Type: "string", Description: "symbol of underlying asset for the whitelisted address", OpName: "CreateWhitelistedPerpAddress"},
@@ -1326,6 +1526,10 @@ var DeleteAllOpenPositionsOp = deleteAllOpenPositionsOp{
 	CancelOrders: "if true is specified, cancel all open orders before liquidating all positions",
 }
 
+func (o deleteAllOpenPositionsOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["DeleteAllOpenPositions"]
+}
+
 var DeleteAllOpenPositionsFlags = []FlagDef{
 	{Name: "cancel-orders", OASName: "cancel_orders", Type: "bool", Description: "if true is specified, cancel all open orders before liquidating all positions", OpName: "DeleteAllOpenPositions"},
 }
@@ -1336,6 +1540,10 @@ type deleteAllOrdersOp struct {
 
 var DeleteAllOrdersOp = deleteAllOrdersOp{
 	Summary: "Delete all orders",
+}
+
+func (o deleteAllOrdersOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["DeleteAllOrders"]
 }
 
 type deleteOpenPositionOp struct {
@@ -1350,6 +1558,10 @@ var DeleteOpenPositionOp = deleteOpenPositionOp{
 	Percentage:      "percentage of position to liquidate",
 	Qty:             "the number of shares to liquidate. Can accept up to 9 decimal points. Cannot work with percentage",
 	SymbolOrAssetID: "symbol or assetId",
+}
+
+func (o deleteOpenPositionOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["DeleteOpenPosition"]
 }
 
 var DeleteOpenPositionFlags = []FlagDef{
@@ -1421,6 +1633,10 @@ var GetOptionContractSymbolOrIDOp = getOptionContractSymbolOrIDOp{
 	SymbolOrID: "symbol or contract ID",
 }
 
+func (o getOptionContractSymbolOrIDOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["GetOptionContractSymbolOrID"]
+}
+
 type getOptionsContractsOp struct {
 	Summary           string
 	ExpirationDate    string
@@ -1490,6 +1706,10 @@ var GetV2AssetsOp = getV2AssetsOp{
 	Status:     "e.g. “active”. By default, all statuses are included",
 }
 
+func (o getV2AssetsOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["GetV2Assets"]
+}
+
 var GetV2AssetsFlags = []FlagDef{
 	{Name: "asset-class", OASName: "asset_class", Type: "string", Description: "defaults to us_equity", OpName: "GetV2Assets"},
 	{Name: "attributes", OASName: "attributes", Type: "string", Default: "[]", Description: "comma separated values to query for more than one attribute", OpName: "GetV2Assets"},
@@ -1505,6 +1725,10 @@ type getV2AssetsSymbolOrAssetIDOp struct {
 var GetV2AssetsSymbolOrAssetIDOp = getV2AssetsSymbolOrAssetIDOp{
 	Summary:         "Get an asset by ID or symbol",
 	SymbolOrAssetID: "symbol or assetId. CUSIP is also accepted for US equities",
+}
+
+func (o getV2AssetsSymbolOrAssetIDOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["GetV2AssetsSymbolOrAssetID"]
 }
 
 type getV2CorporateActionsAnnouncementsOp struct {
@@ -1552,6 +1776,10 @@ type getAccountOp struct {
 
 var GetAccountOp = getAccountOp{
 	Summary: "Get account",
+}
+
+func (o getAccountOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["GetAccount"]
 }
 
 type getAccountActivitiesOp struct {
@@ -1628,6 +1856,10 @@ var GetAccountConfigOp = getAccountConfigOp{
 	Summary: "Get account configurations",
 }
 
+func (o getAccountConfigOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["GetAccountConfig"]
+}
+
 type getAccountPortfolioHistoryOp struct {
 	Summary           string
 	CashflowTypes     string
@@ -1652,6 +1884,10 @@ var GetAccountPortfolioHistoryOp = getAccountPortfolioHistoryOp{
 	Timeframe:         "resolution of time window",
 }
 
+func (o getAccountPortfolioHistoryOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["GetAccountPortfolioHistory"]
+}
+
 var GetAccountPortfolioHistoryFlags = []FlagDef{
 	{Name: "cashflow-types", OASName: "cashflow_types", Type: "string", Description: "cashflow activities to include in the report. One of 'ALL', 'NONE', or a comma-separated list of activity types", OpName: "GetAccountPortfolioHistory"},
 	{Name: "end", OASName: "end", Type: "string", Description: "timestamp the data is returned up to in RFC3339 format (including timezone specification)", OpName: "GetAccountPortfolioHistory"},
@@ -1669,6 +1905,10 @@ type getAllOpenPositionsOp struct {
 
 var GetAllOpenPositionsOp = getAllOpenPositionsOp{
 	Summary: "List all open positions",
+}
+
+func (o getAllOpenPositionsOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["GetAllOpenPositions"]
 }
 
 type getAllOrdersOp struct {
@@ -1701,6 +1941,10 @@ var GetAllOrdersOp = getAllOrdersOp{
 	Until:         "response will include only ones submitted until this timestamp (exclusive.)",
 }
 
+func (o getAllOrdersOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["GetAllOrders"]
+}
+
 var GetAllOrdersFlags = []FlagDef{
 	{Name: "after", OASName: "after", Type: "string", Description: "response will include only ones submitted after this timestamp (exclusive.)", OpName: "GetAllOrders"},
 	{Name: "after-order-id", OASName: "after_order_id", Type: "string", Description: "return orders submitted after the order with this ID (exclusive).\nMutually exclusive with before_order_id", OpName: "GetAllOrders"},
@@ -1723,6 +1967,10 @@ type getCryptoFundingTransferOp struct {
 var GetCryptoFundingTransferOp = getCryptoFundingTransferOp{
 	Summary:    "Retrieve a crypto funding transfer",
 	TransferID: "crypto transfer to retrieve",
+}
+
+func (o getCryptoFundingTransferOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["GetCryptoFundingTransfer"]
 }
 
 type getCryptoPerpAccountLeverageOp struct {
@@ -1755,6 +2003,10 @@ type getCryptoPerpFundingTransferOp struct {
 var GetCryptoPerpFundingTransferOp = getCryptoPerpFundingTransferOp{
 	Summary:    "Retrieve a crypto funding transfer",
 	TransferID: "crypto transfer to retrieve",
+}
+
+func (o getCryptoPerpFundingTransferOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["GetCryptoPerpFundingTransfer"]
 }
 
 type getCryptoPerpTransferEstimateOp struct {
@@ -1813,6 +2065,10 @@ var GetOpenPositionOp = getOpenPositionOp{
 	SymbolOrAssetID: "symbol or assetId",
 }
 
+func (o getOpenPositionOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["GetOpenPosition"]
+}
+
 type getOrderByClientOrderIDOp struct {
 	Summary       string
 	ClientOrderID string
@@ -1821,6 +2077,10 @@ type getOrderByClientOrderIDOp struct {
 var GetOrderByClientOrderIDOp = getOrderByClientOrderIDOp{
 	Summary:       "Get order by client order ID",
 	ClientOrderID: "client-assigned order ID",
+}
+
+func (o getOrderByClientOrderIDOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["GetOrderByClientOrderID"]
 }
 
 var GetOrderByClientOrderIDFlags = []FlagDef{
@@ -1839,6 +2099,10 @@ var GetOrderByOrderIDOp = getOrderByOrderIDOp{
 	OrderID: "order id",
 }
 
+func (o getOrderByOrderIDOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["GetOrderByOrderID"]
+}
+
 var GetOrderByOrderIDFlags = []FlagDef{
 	{Name: "nested", OASName: "nested", Type: "bool", Description: "if true, the result will roll up multi-leg orders under the legs field of primary order", OpName: "GetOrderByOrderID"},
 }
@@ -1853,6 +2117,10 @@ var GetWatchlistByIDOp = getWatchlistByIDOp{
 	WatchlistID: "watchlist id",
 }
 
+func (o getWatchlistByIDOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["GetWatchlistByID"]
+}
+
 type getWatchlistByNameOp struct {
 	Summary string
 	Name    string
@@ -1861,6 +2129,10 @@ type getWatchlistByNameOp struct {
 var GetWatchlistByNameOp = getWatchlistByNameOp{
 	Summary: "Get watchlist by name",
 	Name:    "name of the watchlist",
+}
+
+func (o getWatchlistByNameOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["GetWatchlistByName"]
 }
 
 var GetWatchlistByNameFlags = []FlagDef{
@@ -1875,12 +2147,20 @@ var GetWatchlistsOp = getWatchlistsOp{
 	Summary: "Get all watchlists",
 }
 
+func (o getWatchlistsOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["GetWatchlists"]
+}
+
 type listCryptoFundingTransfersOp struct {
 	Summary string
 }
 
 var ListCryptoFundingTransfersOp = listCryptoFundingTransfersOp{
 	Summary: "Retrieve crypto funding transfers",
+}
+
+func (o listCryptoFundingTransfersOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["ListCryptoFundingTransfers"]
 }
 
 type listCryptoFundingWalletsOp struct {
@@ -1893,6 +2173,10 @@ var ListCryptoFundingWalletsOp = listCryptoFundingWalletsOp{
 	Summary: "Retrieve crypto funding wallets",
 	Asset:   "asset",
 	Network: "optional network identifier",
+}
+
+func (o listCryptoFundingWalletsOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["ListCryptoFundingWallets"]
 }
 
 var ListCryptoFundingWalletsFlags = []FlagDef{
@@ -1908,6 +2192,10 @@ var ListCryptoPerpFundingTransfersOp = listCryptoPerpFundingTransfersOp{
 	Summary: "Retrieve crypto funding transfers",
 }
 
+func (o listCryptoPerpFundingTransfersOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["ListCryptoPerpFundingTransfers"]
+}
+
 type listCryptoPerpFundingWalletsOp struct {
 	Summary string
 	Asset   string
@@ -1916,6 +2204,10 @@ type listCryptoPerpFundingWalletsOp struct {
 var ListCryptoPerpFundingWalletsOp = listCryptoPerpFundingWalletsOp{
 	Summary: "Retrieve crypto funding wallets",
 	Asset:   "asset",
+}
+
+func (o listCryptoPerpFundingWalletsOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["ListCryptoPerpFundingWallets"]
 }
 
 var ListCryptoPerpFundingWalletsFlags = []FlagDef{
@@ -1930,12 +2222,20 @@ var ListWhitelistedAddressOp = listWhitelistedAddressOp{
 	Summary: "List an array of whitelisted addresses",
 }
 
+func (o listWhitelistedAddressOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["ListWhitelistedAddress"]
+}
+
 type listWhitelistedPerpAddressOp struct {
 	Summary string
 }
 
 var ListWhitelistedPerpAddressOp = listWhitelistedPerpAddressOp{
 	Summary: "List an array of whitelisted addresses",
+}
+
+func (o listWhitelistedPerpAddressOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["ListWhitelistedPerpAddress"]
 }
 
 type optionBarsOp struct {
@@ -1958,6 +2258,10 @@ var OptionBarsOp = optionBarsOp{
 	Start:     "inclusive start of the interval",
 	Symbols:   "A comma-separated list of contract symbols with a limit of 100",
 	Timeframe: "timeframe represented by each bar in aggregation.\nYou can use any of the following values:\n - [1-59]Min or [1-59]T, e.g",
+}
+
+func (o optionBarsOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["OptionBars"]
 }
 
 var OptionBarsFlags = []FlagDef{
@@ -2018,6 +2322,10 @@ var PatchAccountConfigOp = patchAccountConfigOp{
 	TradeConfirmEmail:       "all or none. If none, emails for order fills are not sent",
 }
 
+func (o patchAccountConfigOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["PatchAccountConfig"]
+}
+
 var PatchAccountConfigFlags = []FlagDef{
 	{Name: "disable-overnight-trading", OASName: "disable_overnight_trading", Type: "bool", Description: "if true, overnight trading is disabled", OpName: "PatchAccountConfig"},
 	{Name: "dtbp-check", OASName: "dtbp_check", Type: "string", Description: "both, entry, or exit. Controls Day Trading Margin Call (DTMC) checks", Completions: []string{"both", "entry", "exit"}, OpName: "PatchAccountConfig"},
@@ -2053,6 +2361,10 @@ var PatchOrderByOrderIDOp = patchOrderByOrderIDOp{
 	StopPrice:            "required if original order type is limit or stop_limit",
 	TimeInForce:          "time-In-Force values supported by Alpaca vary based on the order's security type",
 	Trail:                "the new value of the trail_price or trail_percent value (works only for type=“trailing_stop”)",
+}
+
+func (o patchOrderByOrderIDOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["PatchOrderByOrderID"]
 }
 
 var PatchOrderByOrderIDFlags = []FlagDef{
@@ -2109,6 +2421,10 @@ var PostOrderOp = postOrderOp{
 	Type:                 "order types supported by Alpaca vary based on the order's security type",
 }
 
+func (o postOrderOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["PostOrder"]
+}
+
 var PostOrderFlags = []FlagDef{
 	{Name: "advanced-instructions", OASName: "advanced_instructions", Type: "string", Description: "advanced instructions for Elite Smart Router: https://docs.alpaca.markets/docs/alpaca-elite-smart-router", OpName: "PostOrder"},
 	{Name: "client-order-id", OASName: "client_order_id", Type: "string", Description: "A unique identifier for the order. Automatically generated if not sent. (<= 128 characters)", OpName: "PostOrder"},
@@ -2142,6 +2458,10 @@ var PostWatchlistOp = postWatchlistOp{
 	Symbols: "symbols",
 }
 
+func (o postWatchlistOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["PostWatchlist"]
+}
+
 var PostWatchlistFlags = []FlagDef{
 	{Name: "name", OASName: "name", Type: "string", Description: "name", OpName: "PostWatchlist"},
 	{Name: "symbols", OASName: "symbols", Type: "string", Description: "symbols", OpName: "PostWatchlist"},
@@ -2157,6 +2477,10 @@ var RemoveAssetFromWatchlistOp = removeAssetFromWatchlistOp{
 	Summary:     "Delete symbol from watchlist",
 	Symbol:      "symbol name to remove from the watchlist content",
 	WatchlistID: "watchlist ID",
+}
+
+func (o removeAssetFromWatchlistOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["RemoveAssetFromWatchlist"]
 }
 
 type setCryptoPerpAccountLeverageOp struct {
@@ -2190,6 +2514,10 @@ var UpdateWatchlistByIDOp = updateWatchlistByIDOp{
 	WatchlistID: "watchlist id",
 }
 
+func (o updateWatchlistByIDOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["UpdateWatchlistByID"]
+}
+
 var UpdateWatchlistByIDFlags = []FlagDef{
 	{Name: "name", OASName: "name", Type: "string", Description: "name", OpName: "UpdateWatchlistByID"},
 	{Name: "symbols", OASName: "symbols", Type: "string", Description: "symbols", OpName: "UpdateWatchlistByID"},
@@ -2205,6 +2533,10 @@ var UpdateWatchlistByNameOp = updateWatchlistByNameOp{
 	Summary: "Update watchlist by name",
 	Name:    "name of the watchlist",
 	Symbols: "symbols",
+}
+
+func (o updateWatchlistByNameOp) ResponseFields() []ResponseField {
+	return ResponseSchemas["UpdateWatchlistByName"]
 }
 
 var UpdateWatchlistByNameFlags = []FlagDef{

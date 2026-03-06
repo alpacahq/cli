@@ -44,14 +44,14 @@ var activityListCmd = &cobra.Command{
 		}
 
 		if len(items) == 0 {
-			return output.Render(cmd.OutOrStdout(), out, tradeActivityColumns(), data)
+			return output.Render(cmd.OutOrStdout(), out, nil, data)
 		}
 
 		_, isTrade := items[0]["cum_qty"]
 		if isTrade {
-			return output.Render(cmd.OutOrStdout(), out, tradeActivityColumns(), data)
+			return output.Render(cmd.OutOrStdout(), out, nil, data)
 		}
-		return output.Render(cmd.OutOrStdout(), out, nonTradeActivityColumns(), data)
+		return output.Render(cmd.OutOrStdout(), out, nil, data)
 	},
 }
 

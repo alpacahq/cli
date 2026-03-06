@@ -1495,6 +1495,12 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 		}
 		fmt.Fprintf(&buf, "}\n\n")
 
+		if len(op.responseFields) > 0 {
+			fmt.Fprintf(&buf, "func (o %s) ResponseFields() []ResponseField {\n", typeName)
+			fmt.Fprintf(&buf, "\treturn ResponseSchemas[%q]\n", op.goName)
+			fmt.Fprintf(&buf, "}\n\n")
+		}
+
 		hasFlags := false
 		for _, p := range op.params {
 			if !p.isPathParam {
