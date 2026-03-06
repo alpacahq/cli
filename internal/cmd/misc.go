@@ -32,7 +32,7 @@ var clockCmd = &cobra.Command{
 			return err
 		}
 
-		if getOutput() == outputJSON {
+		if getOutput() == output.FormatJSON {
 			return output.JSON(cmd.OutOrStdout(), clock)
 		}
 

@@ -27,17 +27,46 @@ var watchlistListCmd = &cobra.Command{
 	},
 }
 
-var watchlistGetCmd = &cobra.Command{
-	Use:   "get <id>",
-	Short: api.GetWatchlistByIDOp.Summary,
-	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		wl, err := tradingClient.GetWatchlistByID(args[0])
+// watchlistFetchRunE builds a RunE that fetches a watchlist by key and prints it.
+func watchlistFetchRunE(fetch func(key string) (*api.Watchlist, error)) func(*cobra.Command, []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		wl, err := fetch(args[0])
 		if err != nil {
 			return err
 		}
 		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), watchlistColumns(), wl)
-	},
+	}
+}
+
+// watchlistDeleteRunE builds a RunE that deletes a watchlist by key.
+func watchlistDeleteRunE(del func(key string) error) func(*cobra.Command, []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		if err := del(args[0]); err != nil {
+			return err
+		}
+		_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Watchlist deleted.")
+		return nil
+	}
+}
+
+// watchlistAddRunE builds a RunE that adds a symbol to a watchlist by key.
+func watchlistAddRunE(add func(key, symbol string) (*api.Watchlist, error)) func(*cobra.Command, []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		wl, err := add(args[0], args[1])
+		if err != nil {
+			return err
+		}
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), watchlistColumns(), wl)
+	}
+}
+
+var watchlistGetCmd = &cobra.Command{
+	Use:   "get <id>",
+	Short: api.GetWatchlistByIDOp.Summary,
+	Args:  cobra.ExactArgs(1),
+	RunE: watchlistFetchRunE(func(key string) (*api.Watchlist, error) {
+		return tradingClient.GetWatchlistByID(key)
+	}),
 }
 
 var watchlistCreateCmd = &cobra.Command{
@@ -88,29 +117,19 @@ var watchlistDeleteCmd = &cobra.Command{
 	Use:   "delete <id>",
 	Short: api.DeleteWatchlistByIDOp.Summary,
 	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		_, err := tradingClient.DeleteWatchlistByID(args[0])
-		if err != nil {
-			return err
-		}
-		_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Watchlist deleted.")
-		return nil
-	},
+	RunE: watchlistDeleteRunE(func(key string) error {
+		_, err := tradingClient.DeleteWatchlistByID(key)
+		return err
+	}),
 }
 
 var watchlistAddCmd = &cobra.Command{
 	Use:   "add <id> <symbol>",
 	Short: api.AddAssetToWatchlistOp.Summary,
 	Args:  cobra.ExactArgs(2),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		wl, err := tradingClient.AddAssetToWatchlist(args[0], &api.AddAssetToWatchlistRequest{
-			Symbol: args[1],
-		})
-		if err != nil {
-			return err
-		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), watchlistColumns(), wl)
-	},
+	RunE: watchlistAddRunE(func(key, symbol string) (*api.Watchlist, error) {
+		return tradingClient.AddAssetToWatchlist(key, &api.AddAssetToWatchlistRequest{Symbol: symbol})
+	}),
 }
 
 var watchlistRemoveCmd = &cobra.Command{
@@ -132,15 +151,9 @@ var watchlistGetByNameCmd = &cobra.Command{
 	Short:   api.GetWatchlistByNameOp.Summary,
 	Example: `  alpaca watchlist get-by-name "Tech Stocks"`,
 	Args:    cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		wl, err := tradingClient.GetWatchlistByName(&api.GetWatchlistByNameParams{
-			Name: args[0],
-		})
-		if err != nil {
-			return err
-		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), watchlistColumns(), wl)
-	},
+	RunE: watchlistFetchRunE(func(key string) (*api.Watchlist, error) {
+		return tradingClient.GetWatchlistByName(&api.GetWatchlistByNameParams{Name: key})
+	}),
 }
 
 var watchlistDeleteByNameCmd = &cobra.Command{
@@ -148,16 +161,10 @@ var watchlistDeleteByNameCmd = &cobra.Command{
 	Short:   api.DeleteWatchlistByNameOp.Summary,
 	Example: `  alpaca watchlist delete-by-name "Tech Stocks"`,
 	Args:    cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		_, err := tradingClient.DeleteWatchlistByName(&api.DeleteWatchlistByNameParams{
-			Name: args[0],
-		})
-		if err != nil {
-			return err
-		}
-		_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Watchlist deleted.")
-		return nil
-	},
+	RunE: watchlistDeleteRunE(func(key string) error {
+		_, err := tradingClient.DeleteWatchlistByName(&api.DeleteWatchlistByNameParams{Name: key})
+		return err
+	}),
 }
 
 var watchlistUpdateByNameCmd = &cobra.Command{
@@ -190,16 +197,12 @@ var watchlistAddByNameCmd = &cobra.Command{
 	Short:   api.AddAssetToWatchlistByNameOp.Summary,
 	Example: `  alpaca watchlist add-by-name "Tech Stocks" NVDA`,
 	Args:    cobra.ExactArgs(2),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		wl, err := tradingClient.AddAssetToWatchlistByName(
-			&api.AddAssetToWatchlistByNameParams{Name: args[0]},
-			&api.AddAssetToWatchlistByNameRequest{Symbol: args[1]},
+	RunE: watchlistAddRunE(func(key, symbol string) (*api.Watchlist, error) {
+		return tradingClient.AddAssetToWatchlistByName(
+			&api.AddAssetToWatchlistByNameParams{Name: key},
+			&api.AddAssetToWatchlistByNameRequest{Symbol: symbol},
 		)
-		if err != nil {
-			return err
-		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), watchlistColumns(), wl)
-	},
+	}),
 }
 
 func init() {

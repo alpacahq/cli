@@ -88,7 +88,7 @@ var orderListCmd = &cobra.Command{
 		}
 
 		format := getOutput()
-		if format == outputJSON {
+		if format == output.FormatJSON {
 			return output.JSON(cmd.OutOrStdout(), orders)
 		}
 		return output.RenderWithHint(cmd.OutOrStdout(), format, orderColumns(), expandOrderLegs(orders), hint)
@@ -160,24 +160,15 @@ var orderReplaceCmd = &cobra.Command{
 	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		body := &api.PatchOrderRequest{}
+		p := cmdutil.NewPatchHelper(cmd)
 
-		if cmdutil.Changed(cmd, "qty") {
-			body.Qty = cmdutil.Str(cmd, "qty")
-		}
-		if cmdutil.Changed(cmd, "limit-price") {
-			body.LimitPrice = cmdutil.Str(cmd, "limit-price")
-		}
-		if cmdutil.Changed(cmd, "stop-price") {
-			body.StopPrice = cmdutil.Str(cmd, "stop-price")
-		}
+		p.Str("qty", &body.Qty)
+		p.Str("limit-price", &body.LimitPrice)
+		p.Str("stop-price", &body.StopPrice)
+		p.Str("trail", &body.Trail)
+		p.Str("client-order-id", &body.ClientOrderID)
 		if cmdutil.Changed(cmd, "time-in-force") {
 			body.TimeInForce = api.TimeInForce(cmdutil.Str(cmd, "time-in-force"))
-		}
-		if cmdutil.Changed(cmd, "trail") {
-			body.Trail = cmdutil.Str(cmd, "trail")
-		}
-		if cmdutil.Changed(cmd, "client-order-id") {
-			body.ClientOrderID = cmdutil.Str(cmd, "client-order-id")
 		}
 
 		order, err := tradingClient.PatchOrderByOrderID(args[0], body)

@@ -2,9 +2,63 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/output"
 )
+
+// columnsFromSchema builds output columns from ResponseSchemas for the given
+// operation. Only the listed fields are included, in the order specified.
+// Timestamp fields are auto-detected. Pass an empty fields list to include all.
+func columnsFromSchema(opName string, fields ...string) []output.Column {
+	schema, ok := api.ResponseSchemas[opName]
+	if !ok {
+		return nil
+	}
+	byName := make(map[string]api.ResponseField, len(schema))
+	for _, f := range schema {
+		byName[f.Name] = f
+	}
+
+	if len(fields) == 0 {
+		fields = make([]string, len(schema))
+		for i, f := range schema {
+			fields[i] = f.Name
+		}
+	}
+
+	cols := make([]output.Column, 0, len(fields))
+	for _, name := range fields {
+		col := output.Column{
+			Header: fieldHeader(name),
+			Field:  name,
+		}
+		if isTimestampField(name) {
+			col.Format = output.FormatTimestamp
+		}
+		_ = byName[name]
+		cols = append(cols, col)
+	}
+	return cols
+}
+
+func fieldHeader(name string) string {
+	return strings.ToUpper(strings.ReplaceAll(name, "_", " "))
+}
+
+func isTimestampField(name string) bool {
+	switch {
+	case strings.HasSuffix(name, "_at"):
+		return true
+	case strings.HasSuffix(name, "_time"):
+		return true
+	case name == "t" || name == "transaction_time":
+		return true
+	default:
+		return false
+	}
+}
 
 func orderColumns() []output.Column {
 	return []output.Column{
@@ -63,52 +117,28 @@ func accountColumns() []output.Column {
 }
 
 func accountConfigColumns() []output.Column {
-	return []output.Column{
-		{Header: "DTBP CHECK", Field: "dtbp_check"},
-		{Header: "FRACTIONAL TRADING", Field: "fractional_trading"},
-		{Header: "MAX MARGIN MULTIPLIER", Field: "max_margin_multiplier"},
-		{Header: "NO SHORTING", Field: "no_shorting"},
-		{Header: "PDT CHECK", Field: "pdt_check"},
-		{Header: "SUSPEND TRADE", Field: "suspend_trade"},
-		{Header: "TRADE CONFIRM EMAIL", Field: "trade_confirm_email"},
-	}
+	return columnsFromSchema("GetAccountConfig",
+		"dtbp_check", "fractional_trading", "max_margin_multiplier",
+		"no_shorting", "pdt_check", "suspend_trade", "trade_confirm_email",
+	)
 }
 
 func assetListColumns() []output.Column {
-	return []output.Column{
-		{Header: "SYMBOL", Field: "symbol"},
-		{Header: "NAME", Field: "name"},
-		{Header: "CLASS", Field: "class"},
-		{Header: "EXCHANGE", Field: "exchange"},
-		{Header: "STATUS", Field: "status"},
-		{Header: "TRADABLE", Field: "tradable"},
-		{Header: "SHORTABLE", Field: "shortable"},
-		{Header: "FRACTIONABLE", Field: "fractionable"},
-	}
+	return columnsFromSchema("GetV2Assets",
+		"symbol", "name", "class", "exchange", "status",
+		"tradable", "shortable", "fractionable",
+	)
 }
 
 func assetDetailColumns() []output.Column {
-	return []output.Column{
-		{Header: "SYMBOL", Field: "symbol"},
-		{Header: "NAME", Field: "name"},
-		{Header: "CLASS", Field: "class"},
-		{Header: "EXCHANGE", Field: "exchange"},
-		{Header: "STATUS", Field: "status"},
-		{Header: "TRADABLE", Field: "tradable"},
-		{Header: "SHORTABLE", Field: "shortable"},
-		{Header: "FRACTIONABLE", Field: "fractionable"},
-		{Header: "MARGINABLE", Field: "marginable"},
-		{Header: "EASY TO BORROW", Field: "easy_to_borrow"},
-	}
+	return columnsFromSchema("GetV2Assets",
+		"symbol", "name", "class", "exchange", "status",
+		"tradable", "shortable", "fractionable", "marginable", "easy_to_borrow",
+	)
 }
 
 func watchlistColumns() []output.Column {
-	return []output.Column{
-		{Header: "ID", Field: "id"},
-		{Header: "NAME", Field: "name"},
-		{Header: "CREATED", Field: "created_at", Format: output.FormatTimestamp},
-		{Header: "UPDATED", Field: "updated_at", Format: output.FormatTimestamp},
-	}
+	return columnsFromSchema("GetWatchlistByID", "id", "name", "created_at", "updated_at")
 }
 
 func optionChainColumns() []output.Column {

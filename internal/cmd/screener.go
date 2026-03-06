@@ -56,19 +56,19 @@ var screenerMoversCmd = &cobra.Command{
 
 		w := cmd.OutOrStdout()
 		format := getOutput()
-		if format == outputJSON || format == outputCSV {
+		if format == output.FormatJSON || format == output.FormatCSV {
 			return output.Render(w, format, screenerMoverColumns(), resp)
 		}
 
 		cmd.Println("GAINERS")
 		gainersJSON, _ := json.Marshal(resp.Gainers)
-		if err := output.Render(w, outputTable, screenerMoverColumns(), json.RawMessage(gainersJSON)); err != nil {
+		if err := output.Render(w, output.FormatTable, screenerMoverColumns(), json.RawMessage(gainersJSON)); err != nil {
 			return err
 		}
 
 		cmd.Println("\nLOSERS")
 		losersJSON, _ := json.Marshal(resp.Losers)
-		return output.Render(w, outputTable, screenerMoverColumns(), json.RawMessage(losersJSON))
+		return output.Render(w, output.FormatTable, screenerMoverColumns(), json.RawMessage(losersJSON))
 	},
 }
 

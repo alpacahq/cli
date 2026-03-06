@@ -227,7 +227,7 @@ func renderMapValues(w io.Writer, format string, cols []output.Column, data any)
 				return output.Render(w, format, cols, v)
 			}
 		}
-		if len(m) > 1 && format != "json" && !quietFlag {
+		if len(m) > 1 && format != output.FormatJSON && !quietFlag {
 			fmt.Fprintf(os.Stderr, "Hint: multi-symbol response (%d symbols); rendering as JSON. Use --json for structured output.\n", len(m))
 		}
 	}

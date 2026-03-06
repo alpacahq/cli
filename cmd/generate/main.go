@@ -614,7 +614,7 @@ func genClient(clientName, specFile string, schemas []*schemaInfo, endpoints []*
 	}
 
 	if isData {
-		genUnifiedMethods(&buf, clientName)
+		genUnifiedMethods(&buf, clientName, endpoints)
 	}
 
 	var mutating []string
@@ -900,18 +900,79 @@ type unifiedMethod struct {
 	cryptoPath string // symbol goes in query params
 }
 
-var unifiedMethods = []unifiedMethod{
-	{"Bars", "/v2/stocks/%s/bars", "/v1beta3/crypto/us/bars"},
-	{"Quotes", "/v2/stocks/%s/quotes", "/v1beta3/crypto/us/quotes"},
-	{"Trades", "/v2/stocks/%s/trades", "/v1beta3/crypto/us/trades"},
-	{"Snapshot", "/v2/stocks/%s/snapshot", "/v1beta3/crypto/us/snapshots"},
-	{"LatestBar", "/v2/stocks/%s/bars/latest", "/v1beta3/crypto/us/latest/bars"},
-	{"LatestQuote", "/v2/stocks/%s/quotes/latest", "/v1beta3/crypto/us/latest/quotes"},
-	{"LatestTrade", "/v2/stocks/%s/trades/latest", "/v1beta3/crypto/us/latest/trades"},
+// deriveUnifiedMethods finds matching stock single-symbol GET endpoints
+// (/v2/stocks/{symbol}/...) and crypto GET endpoints (/v1beta3/crypto/{loc}/...)
+// to generate convenience methods that route based on symbol format.
+func deriveUnifiedMethods(endpoints []*endpointInfo) []unifiedMethod {
+	stockSingle := map[string]string{}
+	cryptoEntities := map[string]string{}
+
+	for _, ep := range endpoints {
+		if ep.method != "GET" {
+			continue
+		}
+		const stockPrefix = "/v2/stocks/{symbol}/"
+		const cryptoPrefix = "/v1beta3/crypto/{loc}/"
+		if strings.HasPrefix(ep.path, stockPrefix) {
+			entity := ep.path[len(stockPrefix):]
+			stockSingle[entity] = ep.path
+		} else if strings.HasPrefix(ep.path, cryptoPrefix) {
+			entity := ep.path[len(cryptoPrefix):]
+			cryptoEntities[entity] = ep.path
+		}
+	}
+
+	var methods []unifiedMethod
+	for stockEntity, stockPath := range stockSingle {
+		cryptoEntity := findCryptoMatch(stockEntity, cryptoEntities)
+		if cryptoEntity == "" {
+			continue
+		}
+		name := entityToMethodName(stockEntity)
+		sp := strings.Replace(stockPath, "{symbol}", "%s", 1)
+		cp := strings.Replace(cryptoEntities[cryptoEntity], "{loc}", "us", 1)
+		methods = append(methods, unifiedMethod{name: name, stockPath: sp, cryptoPath: cp})
+	}
+
+	sort.Slice(methods, func(i, j int) bool { return methods[i].name < methods[j].name })
+	return methods
 }
 
-func genUnifiedMethods(buf *bytes.Buffer, clientName string) {
-	for _, um := range unifiedMethods {
+// findCryptoMatch finds the crypto entity that corresponds to a stock entity.
+// Stock "bars" matches crypto "bars"; stock "bars/latest" matches crypto "latest/bars";
+// stock "snapshot" matches crypto "snapshots" (plural).
+func findCryptoMatch(stockEntity string, cryptoEntities map[string]string) string {
+	if _, ok := cryptoEntities[stockEntity]; ok {
+		return stockEntity
+	}
+	if _, ok := cryptoEntities[stockEntity+"s"]; ok {
+		return stockEntity + "s"
+	}
+	// Stock "X/latest" → crypto "latest/X"
+	if strings.HasSuffix(stockEntity, "/latest") {
+		base := strings.TrimSuffix(stockEntity, "/latest")
+		reversed := "latest/" + base
+		if _, ok := cryptoEntities[reversed]; ok {
+			return reversed
+		}
+	}
+	return ""
+}
+
+// entityToMethodName converts a path entity like "bars", "bars/latest", "snapshot"
+// into a Go method name like "Bars", "LatestBar", "Snapshot".
+func entityToMethodName(entity string) string {
+	if strings.HasSuffix(entity, "/latest") {
+		base := strings.TrimSuffix(entity, "/latest")
+		base = strings.TrimSuffix(base, "s")
+		return "Latest" + toGoName(base)
+	}
+	return toGoName(entity)
+}
+
+func genUnifiedMethods(buf *bytes.Buffer, clientName string, endpoints []*endpointInfo) {
+	methods := deriveUnifiedMethods(endpoints)
+	for _, um := range methods {
 		fmt.Fprintf(buf, "// %s routes to the stock or crypto endpoint based on symbol format.\n", um.name)
 		fmt.Fprintf(buf, "func (c *%sClient) %s(symbol string, params url.Values) (json.RawMessage, error) {\n", clientName, um.name)
 		fmt.Fprintf(buf, "\tif params == nil { params = url.Values{} }\n")

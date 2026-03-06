@@ -1840,42 +1840,6 @@ func (c *MarketDataClient) Bars(symbol string, params url.Values) (json.RawMessa
 	return c.Raw.GetData(fmt.Sprintf("/v2/stocks/%s/bars", symbol), params)
 }
 
-// Quotes routes to the stock or crypto endpoint based on symbol format.
-func (c *MarketDataClient) Quotes(symbol string, params url.Values) (json.RawMessage, error) {
-	if params == nil {
-		params = url.Values{}
-	}
-	if strings.Contains(symbol, "/") {
-		params.Set("symbols", symbol)
-		return c.Raw.GetData("/v1beta3/crypto/us/quotes", params)
-	}
-	return c.Raw.GetData(fmt.Sprintf("/v2/stocks/%s/quotes", symbol), params)
-}
-
-// Trades routes to the stock or crypto endpoint based on symbol format.
-func (c *MarketDataClient) Trades(symbol string, params url.Values) (json.RawMessage, error) {
-	if params == nil {
-		params = url.Values{}
-	}
-	if strings.Contains(symbol, "/") {
-		params.Set("symbols", symbol)
-		return c.Raw.GetData("/v1beta3/crypto/us/trades", params)
-	}
-	return c.Raw.GetData(fmt.Sprintf("/v2/stocks/%s/trades", symbol), params)
-}
-
-// Snapshot routes to the stock or crypto endpoint based on symbol format.
-func (c *MarketDataClient) Snapshot(symbol string, params url.Values) (json.RawMessage, error) {
-	if params == nil {
-		params = url.Values{}
-	}
-	if strings.Contains(symbol, "/") {
-		params.Set("symbols", symbol)
-		return c.Raw.GetData("/v1beta3/crypto/us/snapshots", params)
-	}
-	return c.Raw.GetData(fmt.Sprintf("/v2/stocks/%s/snapshot", symbol), params)
-}
-
 // LatestBar routes to the stock or crypto endpoint based on symbol format.
 func (c *MarketDataClient) LatestBar(symbol string, params url.Values) (json.RawMessage, error) {
 	if params == nil {
@@ -1910,4 +1874,40 @@ func (c *MarketDataClient) LatestTrade(symbol string, params url.Values) (json.R
 		return c.Raw.GetData("/v1beta3/crypto/us/latest/trades", params)
 	}
 	return c.Raw.GetData(fmt.Sprintf("/v2/stocks/%s/trades/latest", symbol), params)
+}
+
+// Quotes routes to the stock or crypto endpoint based on symbol format.
+func (c *MarketDataClient) Quotes(symbol string, params url.Values) (json.RawMessage, error) {
+	if params == nil {
+		params = url.Values{}
+	}
+	if strings.Contains(symbol, "/") {
+		params.Set("symbols", symbol)
+		return c.Raw.GetData("/v1beta3/crypto/us/quotes", params)
+	}
+	return c.Raw.GetData(fmt.Sprintf("/v2/stocks/%s/quotes", symbol), params)
+}
+
+// Snapshot routes to the stock or crypto endpoint based on symbol format.
+func (c *MarketDataClient) Snapshot(symbol string, params url.Values) (json.RawMessage, error) {
+	if params == nil {
+		params = url.Values{}
+	}
+	if strings.Contains(symbol, "/") {
+		params.Set("symbols", symbol)
+		return c.Raw.GetData("/v1beta3/crypto/us/snapshots", params)
+	}
+	return c.Raw.GetData(fmt.Sprintf("/v2/stocks/%s/snapshot", symbol), params)
+}
+
+// Trades routes to the stock or crypto endpoint based on symbol format.
+func (c *MarketDataClient) Trades(symbol string, params url.Values) (json.RawMessage, error) {
+	if params == nil {
+		params = url.Values{}
+	}
+	if strings.Contains(symbol, "/") {
+		params.Set("symbols", symbol)
+		return c.Raw.GetData("/v1beta3/crypto/us/trades", params)
+	}
+	return c.Raw.GetData(fmt.Sprintf("/v2/stocks/%s/trades", symbol), params)
 }

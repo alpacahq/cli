@@ -47,50 +47,20 @@ var accountConfigSetCmd = &cobra.Command{
   alpaca account config set --dtbp-check entry`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		body := &api.AccountConfigurations{}
-		anyChanged := false
+		p := cmdutil.NewPatchHelper(cmd)
 
-		if cmdutil.Changed(cmd, "dtbp-check") {
-			body.DTBPCheck = cmdutil.Str(cmd, "dtbp-check")
-			anyChanged = true
-		}
-		if cmdutil.Changed(cmd, "no-shorting") {
-			body.NoShorting = cmdutil.Bool(cmd, "no-shorting")
-			anyChanged = true
-		}
-		if cmdutil.Changed(cmd, "pdt-check") {
-			body.PDTCheck = cmdutil.Str(cmd, "pdt-check")
-			anyChanged = true
-		}
-		if cmdutil.Changed(cmd, "fractional-trading") {
-			body.FractionalTrading = cmdutil.Bool(cmd, "fractional-trading")
-			anyChanged = true
-		}
-		if cmdutil.Changed(cmd, "suspend-trade") {
-			body.SuspendTrade = cmdutil.Bool(cmd, "suspend-trade")
-			anyChanged = true
-		}
-		if cmdutil.Changed(cmd, "trade-confirm-email") {
-			body.TradeConfirmEmail = cmdutil.Str(cmd, "trade-confirm-email")
-			anyChanged = true
-		}
-		if cmdutil.Changed(cmd, "max-margin-multiplier") {
-			body.MaxMarginMultiplier = cmdutil.Str(cmd, "max-margin-multiplier")
-			anyChanged = true
-		}
-		if cmdutil.Changed(cmd, "max-options-trading-level") {
-			body.MaxOptionsTradingLevel = cmdutil.Int(cmd, "max-options-trading-level")
-			anyChanged = true
-		}
-		if cmdutil.Changed(cmd, "disable-overnight-trading") {
-			body.DisableOvernightTrading = cmdutil.Bool(cmd, "disable-overnight-trading")
-			anyChanged = true
-		}
-		if cmdutil.Changed(cmd, "ptp-no-exception-entry") {
-			body.PtpNoExceptionEntry = cmdutil.Bool(cmd, "ptp-no-exception-entry")
-			anyChanged = true
-		}
+		p.Str("dtbp-check", &body.DTBPCheck)
+		p.Bool("no-shorting", &body.NoShorting)
+		p.Str("pdt-check", &body.PDTCheck)
+		p.Bool("fractional-trading", &body.FractionalTrading)
+		p.Bool("suspend-trade", &body.SuspendTrade)
+		p.Str("trade-confirm-email", &body.TradeConfirmEmail)
+		p.Str("max-margin-multiplier", &body.MaxMarginMultiplier)
+		p.Int("max-options-trading-level", &body.MaxOptionsTradingLevel)
+		p.Bool("disable-overnight-trading", &body.DisableOvernightTrading)
+		p.Bool("ptp-no-exception-entry", &body.PtpNoExceptionEntry)
 
-		if !anyChanged {
+		if !p.AnyChanged() {
 			return cmd.Help()
 		}
 

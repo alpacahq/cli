@@ -363,7 +363,7 @@ func TestNoEmptyFlagDescriptions(t *testing.T) {
 // without defining columns — which produces blank or garbled output.
 func TestRenderCallsUseColumnDefinitions(t *testing.T) {
 	renderCall := regexp.MustCompile(`output\.(Render|PrintSingle)\(`)
-	columnsRef := regexp.MustCompile(`\w+Columns\(\)|\bcols\b`)
+	columnsRef := regexp.MustCompile(`\w+Columns\(\)|\bcols\b|\bcolumns\(\)`)
 
 	dir := cmdDir()
 	entries, err := os.ReadDir(dir)

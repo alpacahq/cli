@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"net/url"
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
@@ -14,6 +15,43 @@ var dataCmd = &cobra.Command{
 	Short: "Access market data",
 }
 
+// runDataCmd builds a RunE for single-symbol data commands (bars, quotes, trades)
+// that share the same fetch → optional pagination → extract → render pattern.
+func runDataCmd(
+	paramsFromFlags func(cmd *cobra.Command) url.Values,
+	fetch func(symbol string, params url.Values) (json.RawMessage, error),
+	extract func(data json.RawMessage, symbol string) json.RawMessage,
+	columns func() []output.Column,
+) func(cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		symbol := args[0]
+		params := paramsFromFlags(cmd)
+
+		if cmdutil.Bool(cmd, "all") {
+			data, err := fetchAllDataPages(
+				func(pt string) (json.RawMessage, error) {
+					if pt != "" {
+						params.Set("page_token", pt)
+					}
+					return fetch(symbol, params)
+				},
+				func(raw json.RawMessage) json.RawMessage { return extract(raw, symbol) },
+				cmdutil.Int(cmd, "max"),
+			)
+			if err != nil {
+				return err
+			}
+			return output.Render(cmd.OutOrStdout(), getOutput(), columns(), data)
+		}
+
+		data, err := fetch(symbol, params)
+		if err != nil {
+			return err
+		}
+		return output.Render(cmd.OutOrStdout(), getOutput(), columns(), extract(data, symbol))
+	}
+}
+
 var dataBarsCmd = &cobra.Command{
 	Use:   "bars <symbol>",
 	Short: "Get historical price bars",
@@ -22,33 +60,12 @@ var dataBarsCmd = &cobra.Command{
   alpaca data bars AAPL --start 2025-01-01 --end 2025-06-01 --limit 100
   alpaca data bars AAPL --start 2025-01-01 --all`,
 	Args: cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		symbol := args[0]
-		params := stockBarSingleParamsFromFlags(cmd).Values()
-
-		if cmdutil.Bool(cmd, "all") {
-			data, err := fetchAllDataPages(
-				func(pt string) (json.RawMessage, error) {
-					if pt != "" {
-						params.Set("page_token", pt)
-					}
-					return dataClient.Bars(symbol, params)
-				},
-				func(raw json.RawMessage) json.RawMessage { return extractBars(raw, symbol) },
-				cmdutil.Int(cmd, "max"),
-			)
-			if err != nil {
-				return err
-			}
-			return output.Render(cmd.OutOrStdout(), getOutput(), barColumns(), data)
-		}
-
-		data, err := dataClient.Bars(symbol, params)
-		if err != nil {
-			return err
-		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), barColumns(), extractBars(data, symbol))
-	},
+	RunE: runDataCmd(
+		func(cmd *cobra.Command) url.Values { return stockBarSingleParamsFromFlags(cmd).Values() },
+		func(sym string, p url.Values) (json.RawMessage, error) { return dataClient.Bars(sym, p) },
+		extractBars,
+		barColumns,
+	),
 }
 
 var dataQuotesCmd = &cobra.Command{
@@ -58,33 +75,12 @@ var dataQuotesCmd = &cobra.Command{
   alpaca data quotes AAPL --start 2025-01-01 --end 2025-01-31 --limit 50
   alpaca data quotes AAPL --start 2025-01-01 --all --max 5000`,
 	Args: cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		symbol := args[0]
-		params := stockQuoteSingleParamsFromFlags(cmd).Values()
-
-		if cmdutil.Bool(cmd, "all") {
-			data, err := fetchAllDataPages(
-				func(pt string) (json.RawMessage, error) {
-					if pt != "" {
-						params.Set("page_token", pt)
-					}
-					return dataClient.Quotes(symbol, params)
-				},
-				func(raw json.RawMessage) json.RawMessage { return extractArray(raw, symbol, "quotes") },
-				cmdutil.Int(cmd, "max"),
-			)
-			if err != nil {
-				return err
-			}
-			return output.Render(cmd.OutOrStdout(), getOutput(), quoteColumns(), data)
-		}
-
-		data, err := dataClient.Quotes(symbol, stockQuoteSingleParamsFromFlags(cmd).Values())
-		if err != nil {
-			return err
-		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), quoteColumns(), extractArray(data, symbol, "quotes"))
-	},
+	RunE: runDataCmd(
+		func(cmd *cobra.Command) url.Values { return stockQuoteSingleParamsFromFlags(cmd).Values() },
+		func(sym string, p url.Values) (json.RawMessage, error) { return dataClient.Quotes(sym, p) },
+		func(data json.RawMessage, sym string) json.RawMessage { return extractArray(data, sym, "quotes") },
+		quoteColumns,
+	),
 }
 
 var dataTradesCmd = &cobra.Command{
@@ -94,33 +90,12 @@ var dataTradesCmd = &cobra.Command{
   alpaca data trades AAPL --start 2025-01-01 --limit 100
   alpaca data trades AAPL --start 2025-01-01 --all`,
 	Args: cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		symbol := args[0]
-		params := stockTradeSingleParamsFromFlags(cmd).Values()
-
-		if cmdutil.Bool(cmd, "all") {
-			data, err := fetchAllDataPages(
-				func(pt string) (json.RawMessage, error) {
-					if pt != "" {
-						params.Set("page_token", pt)
-					}
-					return dataClient.Trades(symbol, params)
-				},
-				func(raw json.RawMessage) json.RawMessage { return extractArray(raw, symbol, "trades") },
-				cmdutil.Int(cmd, "max"),
-			)
-			if err != nil {
-				return err
-			}
-			return output.Render(cmd.OutOrStdout(), getOutput(), tradeColumns(), data)
-		}
-
-		data, err := dataClient.Trades(symbol, stockTradeSingleParamsFromFlags(cmd).Values())
-		if err != nil {
-			return err
-		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), tradeColumns(), extractArray(data, symbol, "trades"))
-	},
+	RunE: runDataCmd(
+		func(cmd *cobra.Command) url.Values { return stockTradeSingleParamsFromFlags(cmd).Values() },
+		func(sym string, p url.Values) (json.RawMessage, error) { return dataClient.Trades(sym, p) },
+		func(data json.RawMessage, sym string) json.RawMessage { return extractArray(data, sym, "trades") },
+		tradeColumns,
+	),
 }
 
 var dataSnapshotCmd = &cobra.Command{

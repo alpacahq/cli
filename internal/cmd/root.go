@@ -11,17 +11,12 @@ import (
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/client"
 	"github.com/alpacahq/cli/internal/config"
+	"github.com/alpacahq/cli/internal/output"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
-const (
-	exitAPIError = 1
-
-	outputJSON  = "json"
-	outputCSV   = "csv"
-	outputTable = "table"
-)
+const exitAPIError = 1
 
 var (
 	version       = "dev"
@@ -140,9 +135,9 @@ var rootCmd = &cobra.Command{
 		var err error
 		outputOverride := ""
 		if jsonFlag {
-			outputOverride = outputJSON
+			outputOverride = output.FormatJSON
 		} else if csvFlag {
-			outputOverride = outputCSV
+			outputOverride = output.FormatCSV
 		}
 		cfg, err = config.Load(profileFlag, outputOverride)
 		if err != nil {
@@ -250,15 +245,15 @@ func needsAuth(cmd *cobra.Command) bool {
 
 func getOutput() string {
 	if jsonFlag {
-		return outputJSON
+		return output.FormatJSON
 	}
 	if csvFlag {
-		return outputCSV
+		return output.FormatCSV
 	}
 	if cfg != nil {
 		return cfg.Output
 	}
-	return outputTable
+	return output.FormatTable
 }
 
 func verboseLog(format string, args ...any) {
