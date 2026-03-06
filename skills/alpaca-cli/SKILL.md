@@ -181,9 +181,24 @@ alpaca update --check      # check without installing
 alpaca --help-all                    # dump all commands, subcommands, and flags
 alpaca order --help                  # help for a command group
 alpaca order submit --help           # help for a specific command
+alpaca schema                        # list all API response schemas
+alpaca schema GetAccount             # show response fields for an operation
+alpaca doctor                        # check config and API connectivity
 ```
 
-Use `--help-all` to find the right command. Use `<command> --help` for flag details. These are always current — never rely on stale documentation when the CLI is installed.
+Use `--help-all` to find the right command. Use `<command> --help` for flag details. Use `alpaca schema` to explore response field docs generated from the API spec. These are always current — never rely on stale documentation when the CLI is installed.
+
+## Pagination
+
+Data commands support auto-pagination:
+
+```bash
+alpaca data bars AAPL --start 2025-01-01 --all
+alpaca data trades AAPL --start 2025-01-01 --all --max 5000
+alpaca news --symbols AAPL --all --max 100
+```
+
+`--all` fetches all available pages. `--max` caps the number of items (default: 10,000).
 
 ## Troubleshooting
 

@@ -217,11 +217,16 @@ func init() {
 	rootCmd.AddCommand(walletCmd)
 	rootCmd.AddCommand(apiCmd)
 	rootCmd.AddCommand(updateCmd)
+	rootCmd.AddCommand(doctorCmd)
+	rootCmd.AddCommand(schemaCmd)
+
+	doctorCmd.GroupID = utilGroup.ID
+	schemaCmd.GroupID = utilGroup.ID
 }
 
 func needsAuth(cmd *cobra.Command) bool {
 	switch cmd.Name() {
-	case "version", "help", "completion", "update", "setup":
+	case "version", "help", "completion", "update", "setup", "doctor", "schema":
 		return false
 	}
 	return true

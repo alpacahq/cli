@@ -21,11 +21,31 @@ var dataBarsCmd = &cobra.Command{
 	Short: "Get historical price bars",
 	Example: `  alpaca data bars AAPL --start 2025-01-01 --timeframe 1Day
   alpaca data bars BTC/USD --start 2025-01-01 --timeframe 1Hour
-  alpaca data bars AAPL --start 2025-01-01 --end 2025-06-01 --limit 100`,
+  alpaca data bars AAPL --start 2025-01-01 --end 2025-06-01 --limit 100
+  alpaca data bars AAPL --start 2025-01-01 --all`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbol := args[0]
-		data, err := dataClient.Bars(symbol, dataParams(cmd))
+		params := dataParams(cmd)
+
+		if cmdutil.Bool(cmd, "all") {
+			data, err := fetchAllDataPages(
+				func(pt string) (json.RawMessage, error) {
+					if pt != "" {
+						params.Set("page_token", pt)
+					}
+					return dataClient.Bars(symbol, params)
+				},
+				func(raw json.RawMessage) json.RawMessage { return extractBars(raw, symbol) },
+				cmdutil.Int(cmd, "max"),
+			)
+			if err != nil {
+				return err
+			}
+			return output.Render(cmd.OutOrStdout(), getOutput(), barColumns(), data)
+		}
+
+		data, err := dataClient.Bars(symbol, params)
 		if err != nil {
 			return err
 		}
@@ -37,10 +57,30 @@ var dataQuotesCmd = &cobra.Command{
 	Use:   "quotes <symbol>",
 	Short: "Get historical quotes",
 	Example: `  alpaca data quotes AAPL --start 2025-01-01
-  alpaca data quotes AAPL --start 2025-01-01 --end 2025-01-31 --limit 50`,
+  alpaca data quotes AAPL --start 2025-01-01 --end 2025-01-31 --limit 50
+  alpaca data quotes AAPL --start 2025-01-01 --all --max 5000`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbol := args[0]
+		params := dataParams(cmd)
+
+		if cmdutil.Bool(cmd, "all") {
+			data, err := fetchAllDataPages(
+				func(pt string) (json.RawMessage, error) {
+					if pt != "" {
+						params.Set("page_token", pt)
+					}
+					return dataClient.Quotes(symbol, params)
+				},
+				func(raw json.RawMessage) json.RawMessage { return extractArray(raw, symbol, "quotes") },
+				cmdutil.Int(cmd, "max"),
+			)
+			if err != nil {
+				return err
+			}
+			return output.Render(cmd.OutOrStdout(), getOutput(), quoteColumns(), data)
+		}
+
 		data, err := dataClient.Quotes(symbol, dataParams(cmd))
 		if err != nil {
 			return err
@@ -53,10 +93,30 @@ var dataTradesCmd = &cobra.Command{
 	Use:   "trades <symbol>",
 	Short: "Get historical trades",
 	Example: `  alpaca data trades AAPL --start 2025-01-01
-  alpaca data trades AAPL --start 2025-01-01 --limit 100`,
+  alpaca data trades AAPL --start 2025-01-01 --limit 100
+  alpaca data trades AAPL --start 2025-01-01 --all`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbol := args[0]
+		params := dataParams(cmd)
+
+		if cmdutil.Bool(cmd, "all") {
+			data, err := fetchAllDataPages(
+				func(pt string) (json.RawMessage, error) {
+					if pt != "" {
+						params.Set("page_token", pt)
+					}
+					return dataClient.Trades(symbol, params)
+				},
+				func(raw json.RawMessage) json.RawMessage { return extractArray(raw, symbol, "trades") },
+				cmdutil.Int(cmd, "max"),
+			)
+			if err != nil {
+				return err
+			}
+			return output.Render(cmd.OutOrStdout(), getOutput(), tradeColumns(), data)
+		}
+
 		data, err := dataClient.Trades(symbol, dataParams(cmd))
 		if err != nil {
 			return err
@@ -155,19 +215,27 @@ var dataLatestBarCmd = &cobra.Command{
 	},
 }
 
+func addPaginationFlags(cmd *cobra.Command) {
+	cmd.Flags().Bool("all", false, "Fetch all pages")
+	cmd.Flags().Int("max", 10000, "Maximum items when using --all")
+}
+
 func init() {
 	cmdutil.RegisterFlags(dataBarsCmd, api.StockBarSingleFlags, &cmdutil.FlagOpts{
 		Defaults: map[string]string{"timeframe": "1Day"},
 	})
+	addPaginationFlags(dataBarsCmd)
 	_ = dataBarsCmd.RegisterFlagCompletionFunc("feed", cobra.FixedCompletions([]string{"iex", "sip", "otc", "delayed_sip"}, cobra.ShellCompDirectiveNoFileComp))
 	_ = dataBarsCmd.RegisterFlagCompletionFunc("timeframe", cobra.FixedCompletions([]string{"1Min", "5Min", "15Min", "1Hour", "1Day", "1Week", "1Month"}, cobra.ShellCompDirectiveNoFileComp))
 	_ = dataBarsCmd.RegisterFlagCompletionFunc("adjustment", cobra.FixedCompletions([]string{"raw", "split", "dividend", "all"}, cobra.ShellCompDirectiveNoFileComp))
 
 	cmdutil.RegisterFlags(dataQuotesCmd, api.StockQuoteSingleFlags, nil)
 	_ = dataQuotesCmd.RegisterFlagCompletionFunc("feed", cobra.FixedCompletions([]string{"iex", "sip", "otc", "delayed_sip"}, cobra.ShellCompDirectiveNoFileComp))
+	addPaginationFlags(dataQuotesCmd)
 
 	cmdutil.RegisterFlags(dataTradesCmd, api.StockTradeSingleFlags, nil)
 	_ = dataTradesCmd.RegisterFlagCompletionFunc("feed", cobra.FixedCompletions([]string{"iex", "sip", "otc", "delayed_sip"}, cobra.ShellCompDirectiveNoFileComp))
+	addPaginationFlags(dataTradesCmd)
 
 	feedCompletions := cobra.FixedCompletions([]string{"iex", "sip", "otc", "delayed_sip"}, cobra.ShellCompDirectiveNoFileComp)
 

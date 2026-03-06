@@ -196,6 +196,9 @@ alpaca position list --json
 | `alpaca api post <path>` | POST request to any endpoint |
 | `alpaca api patch <path>` | PATCH request to any endpoint |
 | `alpaca api delete <path>` | DELETE request to any endpoint |
+| `alpaca schema` | List all API response schemas |
+| `alpaca schema <operation>` | Show response fields for an operation |
+| `alpaca doctor` | Check config and API connectivity |
 | `alpaca setup` | Install completions and man pages |
 | `alpaca update` | Self-update |
 | `alpaca version` | Print version |
@@ -380,6 +383,36 @@ echo '{"symbol":"AAPL","qty":"1","side":"buy","type":"market","time_in_force":"d
 ```
 
 If both `--data` and stdin are provided, `--data` takes precedence.
+
+### Pagination
+
+Data commands support auto-pagination with `--all`:
+
+```bash
+alpaca data bars AAPL --start 2025-01-01 --all
+alpaca data trades AAPL --start 2025-01-01 --all --max 5000
+alpaca news --symbols AAPL --all --max 100
+```
+
+`--max` limits the total number of items returned (default: 10,000).
+
+### Response Schemas
+
+Inspect response field docs generated from the OpenAPI spec:
+
+```bash
+alpaca schema                    # List all operations
+alpaca schema GetAccount         # Show Account response fields
+alpaca schema GetAllOrders       # Show Order response fields
+```
+
+### Diagnostics
+
+Check your CLI setup:
+
+```bash
+alpaca doctor
+```
 
 ### Timeout
 

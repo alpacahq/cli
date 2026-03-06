@@ -1004,10 +1004,18 @@ func mapGet(m map[string]any, key string) map[string]any {
 // --- Description generation ---
 
 type opDesc struct {
-	operationID string
-	goName      string
-	summary     string
-	params      []*flagDesc
+	operationID    string
+	goName         string
+	summary        string
+	params         []*flagDesc
+	responseFields []*responseFieldDesc
+	returnsArray   bool
+}
+
+type responseFieldDesc struct {
+	name     string
+	jsonType string
+	desc     string
 }
 
 type flagDesc struct {
@@ -1082,6 +1090,32 @@ func collectDescriptions(endpoints []*endpointInfo, schemas []*schemaInfo, spec 
 		sort.Slice(op.params, func(i, j int) bool {
 			return op.params[i].oasName < op.params[j].oasName
 		})
+
+		if ep.responseRef != "" {
+			for _, s := range schemas {
+				if s.goName == ep.responseRef && s.kind == "struct" {
+					var fieldNames []string
+					for name := range s.props {
+						fieldNames = append(fieldNames, name)
+					}
+					sort.Strings(fieldNames)
+					for _, name := range fieldNames {
+						propSchema := s.props[name]
+						desc := propertyDesc(propSchema, compSchemas)
+						if desc == "" {
+							desc = humanize(name, nil)
+						}
+						op.responseFields = append(op.responseFields, &responseFieldDesc{
+							name:     name,
+							jsonType: oasFieldType(propSchema, compSchemas),
+							desc:     normalizeDesc(desc),
+						})
+					}
+					break
+				}
+			}
+		}
+		op.returnsArray = ep.returnsArray
 
 		ops = append(ops, op)
 	}
@@ -1205,6 +1239,44 @@ func extractEnumValues(schema map[string]any) []string {
 	}
 	sort.Strings(vals)
 	return vals
+}
+
+func oasFieldType(schema map[string]any, compSchemas map[string]any) string {
+	if ref, ok := schema["$ref"].(string); ok {
+		name := refBaseName(ref)
+		if compSchemas != nil {
+			if target, ok := compSchemas[name].(map[string]any); ok {
+				return oasFieldType(target, nil)
+			}
+		}
+		return name
+	}
+	typ, _ := schema["type"].(string)
+	switch typ {
+	case "string":
+		if _, hasEnum := schema["enum"]; hasEnum {
+			return "enum"
+		}
+		return "string"
+	case "integer":
+		return "integer"
+	case "number":
+		return "number"
+	case "boolean":
+		return "boolean"
+	case "array":
+		if items, ok := schema["items"].(map[string]any); ok {
+			return "[]" + oasFieldType(items, compSchemas)
+		}
+		return "array"
+	case "object":
+		if ap, ok := schema["additionalProperties"].(map[string]any); ok {
+			return "map[string]" + oasFieldType(ap, compSchemas)
+		}
+		return "object"
+	default:
+		return "any"
+	}
 }
 
 func normalizeDesc(s string) string {
@@ -1388,6 +1460,37 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 			fmt.Fprintf(&buf, "}\n\n")
 		}
 	}
+
+	fmt.Fprintf(&buf, "// ResponseField describes a field in an API response.\n")
+	fmt.Fprintf(&buf, "type ResponseField struct {\n")
+	fmt.Fprintf(&buf, "\tName        string\n")
+	fmt.Fprintf(&buf, "\tType        string\n")
+	fmt.Fprintf(&buf, "\tDescription string\n")
+	fmt.Fprintf(&buf, "}\n\n")
+
+	fmt.Fprintf(&buf, "// ResponseSchemas maps operation names to their response fields.\n")
+	fmt.Fprintf(&buf, "var ResponseSchemas = map[string][]ResponseField{\n")
+	for _, op := range ops {
+		if len(op.responseFields) == 0 {
+			continue
+		}
+		fmt.Fprintf(&buf, "\t%q: {\n", op.goName)
+		for _, f := range op.responseFields {
+			fmt.Fprintf(&buf, "\t\t{Name: %q, Type: %q, Description: %q},\n", f.name, f.jsonType, f.desc)
+		}
+		fmt.Fprintf(&buf, "\t},\n")
+	}
+	fmt.Fprintf(&buf, "}\n\n")
+
+	fmt.Fprintf(&buf, "// OperationSummaries maps operation names to their summaries.\n")
+	fmt.Fprintf(&buf, "var OperationSummaries = map[string]string{\n")
+	for _, op := range ops {
+		if len(op.responseFields) == 0 {
+			continue
+		}
+		fmt.Fprintf(&buf, "\t%q: %q,\n", op.goName, op.summary)
+	}
+	fmt.Fprintf(&buf, "}\n\n")
 
 	return buf.String()
 }

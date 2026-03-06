@@ -328,9 +328,14 @@ func TestNoEmptyFlagDescriptions(t *testing.T) {
 	lines := strings.Split(src, "\n")
 	var currentSet string
 	setDecl := regexp.MustCompile(`^var (\w+Flags) = \[\]FlagDef\{`)
+	anyVarOrType := regexp.MustCompile(`^(var|type) `)
 	for _, line := range lines {
 		if m := setDecl.FindStringSubmatch(line); m != nil {
 			currentSet = m[1]
+			continue
+		}
+		if anyVarOrType.MatchString(strings.TrimSpace(line)) {
+			currentSet = ""
 			continue
 		}
 		if currentSet == "" || !referenced[currentSet] {

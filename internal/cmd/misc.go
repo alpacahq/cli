@@ -101,11 +101,34 @@ var newsCmd = &cobra.Command{
 	Use:   "news",
 	Short: api.NewsOp.Summary,
 	Example: `  alpaca news
-  alpaca news --symbols AAPL,MSFT --limit 10`,
+  alpaca news --symbols AAPL,MSFT --limit 10
+  alpaca news --symbols AAPL --all --max 100`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		params := newsParamsFromFlags(cmd)
 		if params.Limit == 0 {
 			params.Limit = 10
+		}
+
+		if cmdutil.Bool(cmd, "all") {
+			max := cmdutil.Int(cmd, "max")
+			var allNews []api.News
+			for page := 0; page < maxPages; page++ {
+				resp, err := dataClient.News(params)
+				if err != nil {
+					return err
+				}
+				allNews = append(allNews, resp.News...)
+				if max > 0 && len(allNews) >= max {
+					allNews = allNews[:max]
+					break
+				}
+				if resp.NextPageToken == "" {
+					break
+				}
+				params.PageToken = resp.NextPageToken
+			}
+			newsData, _ := json.Marshal(allNews)
+			return output.Render(cmd.OutOrStdout(), getOutput(), newsColumns(), json.RawMessage(newsData))
 		}
 
 		resp, err := dataClient.News(params)
@@ -130,4 +153,5 @@ func init() {
 	portfolioCmd.AddCommand(portfolioHistoryCmd)
 
 	cmdutil.RegisterFlags(newsCmd, api.NewsFlags, nil)
+	addPaginationFlags(newsCmd)
 }
