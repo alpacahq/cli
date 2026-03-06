@@ -10,6 +10,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const orderStatusOpen = "open"
+
 var orderCmd = &cobra.Command{
 	Use:   "order",
 	Short: "Manage orders",
@@ -66,22 +68,9 @@ var orderListCmd = &cobra.Command{
   alpaca order list --status closed --limit 20
   alpaca order list --symbols AAPL,MSFT --after 2025-01-01`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		nested := cmdutil.Bool(cmd, "nested")
-		params := &api.GetAllOrdersParams{
-			Status:        cmdutil.Str(cmd, "status"),
-			Symbols:       cmdutil.Str(cmd, "symbols"),
-			After:         cmdutil.Str(cmd, "after"),
-			Until:         cmdutil.Str(cmd, "until"),
-			Limit:         cmdutil.Int(cmd, "limit"),
-			Direction:     cmdutil.Str(cmd, "direction"),
-			Nested:        nested,
-			Side:          cmdutil.Str(cmd, "side"),
-			AssetClass:    cmdutil.Str(cmd, "asset-class"),
-			BeforeOrderID: cmdutil.Str(cmd, "before-order-id"),
-			AfterOrderID:  cmdutil.Str(cmd, "after-order-id"),
-		}
+		params := getAllOrdersParamsFromFlags(cmd)
 		if params.Status == "" {
-			params.Status = "open"
+			params.Status = orderStatusOpen
 		}
 
 		orders, err := tradingClient.GetAllOrders(params)
@@ -90,11 +79,11 @@ var orderListCmd = &cobra.Command{
 		}
 
 		hint := "No open orders."
-		if params.Status != "open" {
+		if params.Status != orderStatusOpen {
 			hint = "No orders found."
 		}
 
-		if !nested {
+		if !params.Nested {
 			return output.RenderWithHint(cmd.OutOrStdout(), getOutput(), orderColumns(), orders, hint)
 		}
 

@@ -23,15 +23,7 @@ var corporateActionListCmd = &cobra.Command{
 			return err
 		}
 
-		params := &api.GetV2CorporateActionsAnnouncementsParams{
-			CaTypes:  cmdutil.Str(cmd, "ca-types"),
-			Since:    cmdutil.Str(cmd, "since"),
-			Until:    cmdutil.Str(cmd, "until"),
-			Symbol:   cmdutil.Str(cmd, "symbol"),
-			Cusip:    cmdutil.Str(cmd, "cusip"),
-			DateType: cmdutil.Str(cmd, "date-type"),
-		}
-
+		params := getV2CorporateActionsAnnouncementsParamsFromFlags(cmd)
 		data, err := tradingClient.GetV2CorporateActionsAnnouncements(params)
 		if err != nil {
 			return err

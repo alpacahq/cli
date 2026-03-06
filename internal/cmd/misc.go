@@ -17,13 +17,10 @@ var clockCmd = &cobra.Command{
 	Example: `  alpaca clock
   alpaca clock --markets XNYS,XNAS`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		markets := cmdutil.Str(cmd, "markets")
+		params := clockParamsFromFlags(cmd)
 
-		if markets != "" {
-			resp, err := tradingClient.Clock(&api.ClockParams{
-				Markets: markets,
-				Time:    cmdutil.Str(cmd, "time"),
-			})
+		if params.Markets != "" {
+			resp, err := tradingClient.Clock(params)
 			if err != nil {
 				return err
 			}
@@ -61,21 +58,14 @@ var calendarCmd = &cobra.Command{
 		market := cmdutil.Str(cmd, "market")
 
 		if market != "" {
-			resp, err := tradingClient.Calendar(market, &api.CalendarParams{
-				Start: cmdutil.Str(cmd, "start"),
-				End:   cmdutil.Str(cmd, "end"),
-			})
+			resp, err := tradingClient.Calendar(market, calendarParamsFromFlags(cmd))
 			if err != nil {
 				return err
 			}
 			return output.JSON(cmd.OutOrStdout(), resp)
 		}
 
-		params := &api.LegacyCalendarParams{
-			Start:    cmdutil.Str(cmd, "start"),
-			End:      cmdutil.Str(cmd, "end"),
-			DateType: cmdutil.Str(cmd, "date-type"),
-		}
+		params := legacyCalendarParamsFromFlags(cmd)
 
 		data, err := tradingClient.LegacyCalendar(params)
 		if err != nil {
@@ -97,15 +87,7 @@ var portfolioHistoryCmd = &cobra.Command{
 	Example: `  alpaca portfolio history
   alpaca portfolio history --period 1M --timeframe 1D`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		params := &api.GetAccountPortfolioHistoryParams{
-			Period:            cmdutil.Str(cmd, "period"),
-			Timeframe:         cmdutil.Str(cmd, "timeframe"),
-			Start:             cmdutil.Str(cmd, "start"),
-			End:               cmdutil.Str(cmd, "end"),
-			IntradayReporting: cmdutil.Str(cmd, "intraday-reporting"),
-			PNLReset:          cmdutil.Str(cmd, "pnl-reset"),
-			CashflowTypes:     cmdutil.Str(cmd, "cashflow-types"),
-		}
+		params := getAccountPortfolioHistoryParamsFromFlags(cmd)
 
 		history, err := tradingClient.GetAccountPortfolioHistory(params)
 		if err != nil {
@@ -121,16 +103,7 @@ var newsCmd = &cobra.Command{
 	Example: `  alpaca news
   alpaca news --symbols AAPL,MSFT --limit 10`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		params := &api.NewsParams{
-			Symbols:            cmdutil.Str(cmd, "symbols"),
-			Start:              cmdutil.Str(cmd, "start"),
-			End:                cmdutil.Str(cmd, "end"),
-			Sort:               cmdutil.Str(cmd, "sort"),
-			IncludeContent:     cmdutil.Bool(cmd, "include-content"),
-			ExcludeContentless: cmdutil.Bool(cmd, "exclude-contentless"),
-			Limit:              cmdutil.Int(cmd, "limit"),
-			PageToken:          cmdutil.Str(cmd, "page-token"),
-		}
+		params := newsParamsFromFlags(cmd)
 		if params.Limit == 0 {
 			params.Limit = 10
 		}

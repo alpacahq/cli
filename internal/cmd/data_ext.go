@@ -23,20 +23,12 @@ var dataForexRatesCmd = &cobra.Command{
 	Example: `  alpaca data forex rates --currency-pairs EUR/USD,GBP/USD --start 2025-01-01
   alpaca data forex rates --currency-pairs USD/JPY --timeframe 1Hour`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		pairs, err := cmdutil.RequireStr(cmd, "currency-pairs")
+		_, err := cmdutil.RequireStr(cmd, "currency-pairs")
 		if err != nil {
 			return err
 		}
 
-		resp, err := dataClient.Rates(&api.RatesParams{
-			CurrencyPairs: pairs,
-			Timeframe:     cmdutil.Str(cmd, "timeframe"),
-			Start:         cmdutil.Str(cmd, "start"),
-			End:           cmdutil.Str(cmd, "end"),
-			Limit:         cmdutil.Int(cmd, "limit"),
-			Sort:          cmdutil.Str(cmd, "sort"),
-			PageToken:     cmdutil.Str(cmd, "page-token"),
-		})
+		resp, err := dataClient.Rates(ratesParamsFromFlags(cmd))
 		if err != nil {
 			return err
 		}
@@ -50,14 +42,12 @@ var dataForexLatestCmd = &cobra.Command{
 	Short:   api.LatestRatesOp.Summary,
 	Example: `  alpaca data forex latest --currency-pairs EUR/USD,GBP/USD`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		pairs, err := cmdutil.RequireStr(cmd, "currency-pairs")
+		_, err := cmdutil.RequireStr(cmd, "currency-pairs")
 		if err != nil {
 			return err
 		}
 
-		resp, err := dataClient.LatestRates(&api.LatestRatesParams{
-			CurrencyPairs: pairs,
-		})
+		resp, err := dataClient.LatestRates(latestRatesParamsFromFlags(cmd))
 		if err != nil {
 			return err
 		}
@@ -73,14 +63,12 @@ var dataCryptoOrderbookCmd = &cobra.Command{
 	Short:   api.CryptoLatestOrderbooksOp.Summary,
 	Example: `  alpaca data crypto-orderbook --symbols BTC/USD,ETH/USD`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbols, err := cmdutil.RequireStr(cmd, "symbols")
+		_, err := cmdutil.RequireStr(cmd, "symbols")
 		if err != nil {
 			return err
 		}
 
-		resp, err := dataClient.CryptoLatestOrderbooks("us", &api.CryptoLatestOrderbooksParams{
-			Symbols: symbols,
-		})
+		resp, err := dataClient.CryptoLatestOrderbooks("us", cryptoLatestOrderbooksParamsFromFlags(cmd))
 		if err != nil {
 			return err
 		}
@@ -97,22 +85,12 @@ var dataAuctionsCmd = &cobra.Command{
 	Example: `  alpaca data auctions --symbols AAPL --start 2025-01-01
   alpaca data auctions --symbols AAPL,MSFT --limit 10`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbols, err := cmdutil.RequireStr(cmd, "symbols")
+		_, err := cmdutil.RequireStr(cmd, "symbols")
 		if err != nil {
 			return err
 		}
 
-		resp, err := dataClient.StockAuctions(&api.StockAuctionsParams{
-			Symbols:   symbols,
-			Start:     cmdutil.Str(cmd, "start"),
-			End:       cmdutil.Str(cmd, "end"),
-			Limit:     cmdutil.Int(cmd, "limit"),
-			Sort:      cmdutil.Str(cmd, "sort"),
-			Asof:      cmdutil.Str(cmd, "asof"),
-			Feed:      cmdutil.Str(cmd, "feed"),
-			Currency:  cmdutil.Str(cmd, "currency"),
-			PageToken: cmdutil.Str(cmd, "page-token"),
-		})
+		resp, err := dataClient.StockAuctions(stockAuctionsParamsFromFlags(cmd))
 		if err != nil {
 			return err
 		}
@@ -128,17 +106,7 @@ var dataCorporateActionsCmd = &cobra.Command{
 	Short:   api.CorporateActionsOp.Summary,
 	Example: `  alpaca data corporate-actions --symbols AAPL --types forward_split --start 2025-01-01`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := dataClient.CorporateActions(&api.CorporateActionsParams{
-			Symbols:   cmdutil.Str(cmd, "symbols"),
-			Cusips:    cmdutil.Str(cmd, "cusips"),
-			Types:     cmdutil.Str(cmd, "types"),
-			Start:     cmdutil.Str(cmd, "start"),
-			End:       cmdutil.Str(cmd, "end"),
-			Ids:       cmdutil.Str(cmd, "ids"),
-			Limit:     cmdutil.Int(cmd, "limit"),
-			Sort:      cmdutil.Str(cmd, "sort"),
-			PageToken: cmdutil.Str(cmd, "page-token"),
-		})
+		resp, err := dataClient.CorporateActions(corporateActionsParamsFromFlags(cmd))
 		if err != nil {
 			return err
 		}
@@ -154,14 +122,12 @@ var dataFixedIncomeCmd = &cobra.Command{
 	Short:   api.FixedIncomeLatestPricesOp.Summary,
 	Example: `  alpaca data fixed-income --isins 912797KR1,912797LB5`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbols, err := cmdutil.RequireStr(cmd, "isins")
+		_, err := cmdutil.RequireStr(cmd, "isins")
 		if err != nil {
 			return err
 		}
 
-		resp, err := dataClient.FixedIncomeLatestPrices(&api.FixedIncomeLatestPricesParams{
-			Isins: symbols,
-		})
+		resp, err := dataClient.FixedIncomeLatestPrices(fixedIncomeLatestPricesParamsFromFlags(cmd))
 		if err != nil {
 			return err
 		}
@@ -178,9 +144,7 @@ var dataLogoCmd = &cobra.Command{
 	Example: `  alpaca data logo AAPL`,
 	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := dataClient.Logos(args[0], &api.LogosParams{
-			Placeholder: cmdutil.Bool(cmd, "placeholder"),
-		})
+		resp, err := dataClient.Logos(args[0], logosParamsFromFlags(cmd))
 		if err != nil {
 			return err
 		}
@@ -214,9 +178,7 @@ var dataMetaConditionsCmd = &cobra.Command{
 	Example: `  alpaca data meta conditions trade`,
 	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := dataClient.StockMetaConditions(args[0], &api.StockMetaConditionsParams{
-			Tape: cmdutil.Str(cmd, "tape"),
-		})
+		resp, err := dataClient.StockMetaConditions(args[0], stockMetaConditionsParamsFromFlags(cmd))
 		if err != nil {
 			return err
 		}

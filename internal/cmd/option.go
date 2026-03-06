@@ -23,23 +23,8 @@ var optionChainCmd = &cobra.Command{
   alpaca option chain SPY --strike-price-gte 400 --strike-price-lte 450`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		params := &api.GetOptionsContractsParams{
-			UnderlyingSymbols: args[0],
-			ShowDeliverables:  cmdutil.Bool(cmd, "show-deliverables"),
-			ExpirationDate:    cmdutil.Str(cmd, "expiration-date"),
-			Type:              cmdutil.Str(cmd, "type"),
-			Style:             cmdutil.Str(cmd, "style"),
-			Status:            cmdutil.Str(cmd, "status"),
-			StrikePriceGte:    cmdutil.Str(cmd, "strike-price-gte"),
-			StrikePriceLte:    cmdutil.Str(cmd, "strike-price-lte"),
-			ExpirationDateGte: cmdutil.Str(cmd, "expiration-date-gte"),
-			ExpirationDateLte: cmdutil.Str(cmd, "expiration-date-lte"),
-			RootSymbol:        cmdutil.Str(cmd, "root-symbol"),
-			Limit:             cmdutil.Int(cmd, "limit"),
-			PageToken:         cmdutil.Str(cmd, "page-token"),
-			Ppind:             cmdutil.Bool(cmd, "ppind"),
-		}
-
+		params := getOptionsContractsParamsFromFlags(cmd)
+		params.UnderlyingSymbols = args[0]
 		data, err := tradingClient.GetOptionsContracts(params)
 		if err != nil {
 			return err

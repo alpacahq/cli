@@ -18,10 +18,7 @@ var walletListCmd = &cobra.Command{
 	Use:   "list",
 	Short: api.ListCryptoFundingWalletsOp.Summary,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		wallet, err := tradingClient.ListCryptoFundingWallets(&api.ListCryptoFundingWalletsParams{
-			Asset:   cmdutil.Str(cmd, "asset"),
-			Network: cmdutil.Str(cmd, "network"),
-		})
+		wallet, err := tradingClient.ListCryptoFundingWallets(listCryptoFundingWalletsParamsFromFlags(cmd))
 		if err != nil {
 			return err
 		}
@@ -93,12 +90,7 @@ var walletTransferEstimateCmd = &cobra.Command{
 		if err := cmdutil.RequireAll(cmd, "asset", "amount"); err != nil {
 			return err
 		}
-		resp, err := tradingClient.GetCryptoTransferEstimate(&api.GetCryptoTransferEstimateParams{
-			Asset:       cmdutil.Str(cmd, "asset"),
-			Amount:      cmdutil.Str(cmd, "amount"),
-			FromAddress: cmdutil.Str(cmd, "from-address"),
-			ToAddress:   cmdutil.Str(cmd, "to-address"),
-		})
+		resp, err := tradingClient.GetCryptoTransferEstimate(getCryptoTransferEstimateParamsFromFlags(cmd))
 		if err != nil {
 			return err
 		}

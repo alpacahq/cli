@@ -19,13 +19,7 @@ var assetListCmd = &cobra.Command{
   alpaca asset list --asset-class us_equity --status active
   alpaca asset list --exchange NYSE`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		params := &api.GetV2AssetsParams{
-			Status:     cmdutil.Str(cmd, "status"),
-			AssetClass: cmdutil.Str(cmd, "asset-class"),
-			Exchange:   cmdutil.Str(cmd, "exchange"),
-			Attributes: cmdutil.Str(cmd, "attributes"),
-		}
-
+		params := getV2AssetsParamsFromFlags(cmd)
 		assets, err := tradingClient.GetV2Assets(params)
 		if err != nil {
 			return err
@@ -56,12 +50,7 @@ var treasuryListCmd = &cobra.Command{
 	Example: `  alpaca asset treasury
   alpaca asset treasury --bond-status active`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := tradingClient.UsTreasuries(&api.UsTreasuriesParams{
-			BondStatus: cmdutil.Str(cmd, "bond-status"),
-			Cusips:     cmdutil.Str(cmd, "cusips"),
-			Isins:      cmdutil.Str(cmd, "isins"),
-			Subtype:    cmdutil.Str(cmd, "subtype"),
-		})
+		resp, err := tradingClient.UsTreasuries(usTreasuriesParamsFromFlags(cmd))
 		if err != nil {
 			return err
 		}
@@ -75,12 +64,7 @@ var bondListCmd = &cobra.Command{
 	Example: `  alpaca asset bond
   alpaca asset bond --bond-status active`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := tradingClient.UsCorporates(&api.UsCorporatesParams{
-			BondStatus: cmdutil.Str(cmd, "bond-status"),
-			Cusips:     cmdutil.Str(cmd, "cusips"),
-			Isins:      cmdutil.Str(cmd, "isins"),
-			Tickers:    cmdutil.Str(cmd, "tickers"),
-		})
+		resp, err := tradingClient.UsCorporates(usCorporatesParamsFromFlags(cmd))
 		if err != nil {
 			return err
 		}

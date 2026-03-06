@@ -13,7 +13,6 @@ import (
 // FlagOpts configures RegisterFlags behavior. All map keys use OAS names.
 type FlagOpts struct {
 	Exclude  map[string]bool   // OAS param names to skip
-	Aliases  map[string]string // OAS name → CLI flag name override
 	Defaults map[string]string // OAS name → default value override
 }
 
@@ -27,9 +26,6 @@ func RegisterFlags(cmd *cobra.Command, defs []api.FlagDef, opts *FlagOpts) {
 		name := d.Name
 		defaultVal := d.Default
 		if opts != nil {
-			if alias, ok := opts.Aliases[d.OASName]; ok {
-				name = alias
-			}
 			if def, ok := opts.Defaults[d.OASName]; ok {
 				defaultVal = def
 			}
@@ -96,19 +92,4 @@ func Int(cmd *cobra.Command, name string) int {
 
 func Changed(cmd *cobra.Command, name string) bool {
 	return cmd.Flags().Changed(name)
-}
-
-func AddSortFlag(cmd *cobra.Command, completions []string) {
-	cmd.Flags().String("sort", "", "Sort order: asc or desc")
-	_ = cmd.RegisterFlagCompletionFunc("sort",
-		cobra.FixedCompletions(completions, cobra.ShellCompDirectiveNoFileComp))
-}
-
-func AddDateRangeFlags(cmd *cobra.Command) {
-	cmd.Flags().String("start", "", "Start date (YYYY-MM-DD or RFC3339)")
-	cmd.Flags().String("end", "", "End date (YYYY-MM-DD or RFC3339)")
-}
-
-func AddLimitFlag(cmd *cobra.Command) {
-	cmd.Flags().Int("limit", 0, "Max number of results")
 }

@@ -13,23 +13,31 @@ import (
 // generator without running `make generate`, this test fails.
 func TestGeneratedCodeIsUpToDate(t *testing.T) {
 	root := projectRoot()
-	dir := filepath.Join(root, "internal", "api")
 
-	generatedFiles := []string{
-		"trading_types.go",
-		"trading_client.go",
-		"marketdata_types.go",
-		"marketdata_client.go",
-		"descriptions.go",
+	type genFile struct {
+		dir  string
+		name string
+	}
+	apiDir := filepath.Join(root, "internal", "api")
+	cmdDir := filepath.Join(root, "internal", "cmd")
+
+	generatedFiles := []genFile{
+		{apiDir, "trading_types.go"},
+		{apiDir, "trading_client.go"},
+		{apiDir, "marketdata_types.go"},
+		{apiDir, "marketdata_client.go"},
+		{apiDir, "descriptions.go"},
+		{cmdDir, "params_generated.go"},
 	}
 
 	snapshots := make(map[string][]byte, len(generatedFiles))
 	for _, f := range generatedFiles {
-		data, err := os.ReadFile(filepath.Join(dir, f))
+		path := filepath.Join(f.dir, f.name)
+		data, err := os.ReadFile(path)
 		if err != nil {
-			t.Fatalf("reading %s: %v", f, err)
+			t.Fatalf("reading %s: %v", f.name, err)
 		}
-		snapshots[f] = data
+		snapshots[path] = data
 	}
 
 	cmd := exec.Command("go", "run", "./cmd/generate")
@@ -41,14 +49,14 @@ func TestGeneratedCodeIsUpToDate(t *testing.T) {
 
 	var drifted []string
 	for _, f := range generatedFiles {
-		path := filepath.Join(dir, f)
+		path := filepath.Join(f.dir, f.name)
 		after, err := os.ReadFile(path)
 		if err != nil {
-			t.Fatalf("reading %s after generate: %v", f, err)
+			t.Fatalf("reading %s after generate: %v", f.name, err)
 		}
-		if !bytes.Equal(snapshots[f], after) {
-			drifted = append(drifted, f)
-			_ = os.WriteFile(path, snapshots[f], 0o644)
+		if !bytes.Equal(snapshots[path], after) {
+			drifted = append(drifted, f.name)
+			_ = os.WriteFile(path, snapshots[path], 0o644)
 		}
 	}
 

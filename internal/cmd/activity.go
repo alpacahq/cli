@@ -28,24 +28,9 @@ var activityListCmd = &cobra.Command{
 		var err error
 
 		if actType != "" {
-			data, err = tradingClient.GetAccountActivitiesByActivityType(actType, &api.GetAccountActivitiesByActivityTypeParams{
-				After:     cmdutil.Str(cmd, "after"),
-				Until:     cmdutil.Str(cmd, "until"),
-				Date:      cmdutil.Str(cmd, "date"),
-				Direction: cmdutil.Str(cmd, "direction"),
-				PageSize:  cmdutil.Int(cmd, "page-size"),
-				PageToken: cmdutil.Str(cmd, "page-token"),
-			})
+			data, err = tradingClient.GetAccountActivitiesByActivityType(actType, getAccountActivitiesByActivityTypeParamsFromFlags(cmd))
 		} else {
-			data, err = tradingClient.GetAccountActivities(&api.GetAccountActivitiesParams{
-				After:     cmdutil.Str(cmd, "after"),
-				Until:     cmdutil.Str(cmd, "until"),
-				Date:      cmdutil.Str(cmd, "date"),
-				Direction: cmdutil.Str(cmd, "direction"),
-				PageSize:  cmdutil.Int(cmd, "page-size"),
-				Category:  cmdutil.Str(cmd, "category"),
-				PageToken: cmdutil.Str(cmd, "page-token"),
-			})
+			data, err = tradingClient.GetAccountActivities(getAccountActivitiesParamsFromFlags(cmd))
 		}
 		if err != nil {
 			return err

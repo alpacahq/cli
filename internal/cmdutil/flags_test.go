@@ -101,23 +101,6 @@ func TestRegisterFlags_Exclude(t *testing.T) {
 	}
 }
 
-func TestRegisterFlags_Aliases(t *testing.T) {
-	cmd := &cobra.Command{Use: "test"}
-	defs := []api.FlagDef{
-		{Name: "activity-type", OASName: "activity_type", Type: "string", Description: "Activity type"},
-	}
-	RegisterFlags(cmd, defs, &FlagOpts{
-		Aliases: map[string]string{"activity_type": "type"},
-	})
-
-	if cmd.Flags().Lookup("activity-type") != nil {
-		t.Error("original name should not be registered when alias exists")
-	}
-	if cmd.Flags().Lookup("type") == nil {
-		t.Error("alias 'type' should be registered")
-	}
-}
-
 func TestRegisterFlags_DefaultOverride(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
 	defs := []api.FlagDef{
@@ -225,43 +208,5 @@ func TestRequireAll_AllPresent(t *testing.T) {
 
 	if err := RequireAll(cmd, "x"); err != nil {
 		t.Errorf("expected no error, got: %v", err)
-	}
-}
-
-func TestAddSortFlag(t *testing.T) {
-	cmd := &cobra.Command{Use: "test"}
-	AddSortFlag(cmd, []string{"asc", "desc"})
-
-	f := cmd.Flags().Lookup("sort")
-	if f == nil {
-		t.Fatal("sort flag not registered")
-	}
-	if f.DefValue != "" {
-		t.Errorf("sort default = %q, want empty", f.DefValue)
-	}
-}
-
-func TestAddDateRangeFlags(t *testing.T) {
-	cmd := &cobra.Command{Use: "test"}
-	AddDateRangeFlags(cmd)
-
-	for _, name := range []string{"start", "end"} {
-		f := cmd.Flags().Lookup(name)
-		if f == nil {
-			t.Errorf("%s flag not registered", name)
-		}
-	}
-}
-
-func TestAddLimitFlag(t *testing.T) {
-	cmd := &cobra.Command{Use: "test"}
-	AddLimitFlag(cmd)
-
-	f := cmd.Flags().Lookup("limit")
-	if f == nil {
-		t.Fatal("limit flag not registered")
-	}
-	if f.DefValue != "0" {
-		t.Errorf("limit default = %q, want 0", f.DefValue)
 	}
 }

@@ -18,20 +18,12 @@ var dataOptionBarsCmd = &cobra.Command{
 	Example: `  alpaca data option bars --symbols AAPL250620C00200000 --start 2025-01-01
   alpaca data option bars --symbols AAPL250620C00200000,AAPL250620P00200000 --timeframe 1Day`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbols, err := cmdutil.RequireStr(cmd, "symbols")
+		_, err := cmdutil.RequireStr(cmd, "symbols")
 		if err != nil {
 			return err
 		}
 
-		resp, err := dataClient.OptionBars(&api.OptionBarsParams{
-			Symbols:   symbols,
-			Timeframe: cmdutil.Str(cmd, "timeframe"),
-			Start:     cmdutil.Str(cmd, "start"),
-			End:       cmdutil.Str(cmd, "end"),
-			Limit:     cmdutil.Int(cmd, "limit"),
-			Sort:      cmdutil.Str(cmd, "sort"),
-			PageToken: cmdutil.Str(cmd, "page-token"),
-		})
+		resp, err := dataClient.OptionBars(optionBarsParamsFromFlags(cmd))
 		if err != nil {
 			return err
 		}
@@ -45,19 +37,12 @@ var dataOptionTradesCmd = &cobra.Command{
 	Short:   api.OptionTradesOp.Summary,
 	Example: `  alpaca data option trades --symbols AAPL250620C00200000 --start 2025-01-01`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbols, err := cmdutil.RequireStr(cmd, "symbols")
+		_, err := cmdutil.RequireStr(cmd, "symbols")
 		if err != nil {
 			return err
 		}
 
-		resp, err := dataClient.OptionTrades(&api.OptionTradesParams{
-			Symbols:   symbols,
-			Start:     cmdutil.Str(cmd, "start"),
-			End:       cmdutil.Str(cmd, "end"),
-			Limit:     cmdutil.Int(cmd, "limit"),
-			Sort:      cmdutil.Str(cmd, "sort"),
-			PageToken: cmdutil.Str(cmd, "page-token"),
-		})
+		resp, err := dataClient.OptionTrades(optionTradesParamsFromFlags(cmd))
 		if err != nil {
 			return err
 		}
@@ -72,18 +57,12 @@ var dataOptionSnapshotCmd = &cobra.Command{
 	Example: `  alpaca data option snapshot --symbols AAPL250620C00200000
   alpaca data option snapshot --symbols AAPL250620C00200000,AAPL250620P00200000`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbols, err := cmdutil.RequireStr(cmd, "symbols")
+		_, err := cmdutil.RequireStr(cmd, "symbols")
 		if err != nil {
 			return err
 		}
 
-		resp, err := dataClient.OptionSnapshots(&api.OptionSnapshotsParams{
-			Symbols:      symbols,
-			Feed:         cmdutil.Str(cmd, "feed"),
-			UpdatedSince: cmdutil.Str(cmd, "updated-since"),
-			Limit:        cmdutil.Int(cmd, "limit"),
-			PageToken:    cmdutil.Str(cmd, "page-token"),
-		})
+		resp, err := dataClient.OptionSnapshots(optionSnapshotsParamsFromFlags(cmd))
 		if err != nil {
 			return err
 		}
@@ -99,19 +78,7 @@ var dataOptionChainCmd = &cobra.Command{
   alpaca data option chain SPY --expiration-date 2025-06-20 --type call`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := dataClient.OptionChain(args[0], &api.OptionChainParams{
-			Feed:              cmdutil.Str(cmd, "feed"),
-			ExpirationDate:    cmdutil.Str(cmd, "expiration-date"),
-			ExpirationDateGte: cmdutil.Str(cmd, "expiration-date-gte"),
-			ExpirationDateLte: cmdutil.Str(cmd, "expiration-date-lte"),
-			StrikePriceGte:    cmdutil.Str(cmd, "strike-price-gte"),
-			StrikePriceLte:    cmdutil.Str(cmd, "strike-price-lte"),
-			RootSymbol:        cmdutil.Str(cmd, "root-symbol"),
-			Type:              cmdutil.Str(cmd, "type"),
-			UpdatedSince:      cmdutil.Str(cmd, "updated-since"),
-			Limit:             cmdutil.Int(cmd, "limit"),
-			PageToken:         cmdutil.Str(cmd, "page-token"),
-		})
+		resp, err := dataClient.OptionChain(args[0], optionChainParamsFromFlags(cmd))
 		if err != nil {
 			return err
 		}
@@ -125,15 +92,12 @@ var dataOptionLatestQuotesCmd = &cobra.Command{
 	Short:   api.OptionLatestQuotesOp.Summary,
 	Example: `  alpaca data option latest-quotes --symbols AAPL250620C00200000`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbols, err := cmdutil.RequireStr(cmd, "symbols")
+		_, err := cmdutil.RequireStr(cmd, "symbols")
 		if err != nil {
 			return err
 		}
 
-		resp, err := dataClient.OptionLatestQuotes(&api.OptionLatestQuotesParams{
-			Symbols: symbols,
-			Feed:    cmdutil.Str(cmd, "feed"),
-		})
+		resp, err := dataClient.OptionLatestQuotes(optionLatestQuotesParamsFromFlags(cmd))
 		if err != nil {
 			return err
 		}
@@ -147,15 +111,12 @@ var dataOptionLatestTradesCmd = &cobra.Command{
 	Short:   api.OptionLatestTradesOp.Summary,
 	Example: `  alpaca data option latest-trades --symbols AAPL250620C00200000`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		symbols, err := cmdutil.RequireStr(cmd, "symbols")
+		_, err := cmdutil.RequireStr(cmd, "symbols")
 		if err != nil {
 			return err
 		}
 
-		resp, err := dataClient.OptionLatestTrades(&api.OptionLatestTradesParams{
-			Symbols: symbols,
-			Feed:    cmdutil.Str(cmd, "feed"),
-		})
+		resp, err := dataClient.OptionLatestTrades(optionLatestTradesParamsFromFlags(cmd))
 		if err != nil {
 			return err
 		}
