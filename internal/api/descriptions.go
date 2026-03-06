@@ -10,6 +10,7 @@ type FlagDef struct {
 	Default     string
 	Description string
 	Completions []string // enum values for shell completion
+	OpName      string   // operation name for schema lookup
 }
 
 type calendarOp struct {
@@ -29,9 +30,9 @@ var CalendarOp = calendarOp{
 }
 
 var CalendarFlags = []FlagDef{
-	{Name: "end", OASName: "end", Type: "string", Description: "last date to retrieve data for (inclusive). Default: one week from the start date"},
-	{Name: "start", OASName: "start", Type: "string", Description: "first date to retrieve data for (inclusive). Default: today"},
-	{Name: "timezone", OASName: "timezone", Type: "string", Description: "timezone of the times. Default: the timezone of the market", Completions: []string{"UTC"}},
+	{Name: "end", OASName: "end", Type: "string", Description: "last date to retrieve data for (inclusive). Default: one week from the start date", OpName: "Calendar"},
+	{Name: "start", OASName: "start", Type: "string", Description: "first date to retrieve data for (inclusive). Default: today", OpName: "Calendar"},
+	{Name: "timezone", OASName: "timezone", Type: "string", Description: "timezone of the times. Default: the timezone of the market", Completions: []string{"UTC"}, OpName: "Calendar"},
 }
 
 type clockOp struct {
@@ -47,8 +48,8 @@ var ClockOp = clockOp{
 }
 
 var ClockFlags = []FlagDef{
-	{Name: "markets", OASName: "markets", Type: "string", Description: "comma-separated list of markets"},
-	{Name: "time", OASName: "time", Type: "string", Description: "instead of the current time, use this time for the clock"},
+	{Name: "markets", OASName: "markets", Type: "string", Description: "comma-separated list of markets", OpName: "Clock"},
+	{Name: "time", OASName: "time", Type: "string", Description: "instead of the current time, use this time for the clock", OpName: "Clock"},
 }
 
 type corporateActionsOp struct {
@@ -78,15 +79,15 @@ var CorporateActionsOp = corporateActionsOp{
 }
 
 var CorporateActionsFlags = []FlagDef{
-	{Name: "cusips", OASName: "cusips", Type: "string", Description: "A comma-separated list of CUSIPs"},
-	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
-	{Name: "ids", OASName: "ids", Type: "string", Description: "A comma-separated list of corporate action IDs"},
-	{Name: "limit", OASName: "limit", Type: "int", Default: "100", Description: "maximum number of corporate actions to return in a response."},
-	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
-	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of symbols"},
-	{Name: "types", OASName: "types", Type: "string", Description: "A comma-separated list of types"},
+	{Name: "cusips", OASName: "cusips", Type: "string", Description: "A comma-separated list of CUSIPs", OpName: "CorporateActions"},
+	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", OpName: "CorporateActions"},
+	{Name: "ids", OASName: "ids", Type: "string", Description: "A comma-separated list of corporate action IDs", OpName: "CorporateActions"},
+	{Name: "limit", OASName: "limit", Type: "int", Default: "100", Description: "maximum number of corporate actions to return in a response.", OpName: "CorporateActions"},
+	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", OpName: "CorporateActions"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}, OpName: "CorporateActions"},
+	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval", OpName: "CorporateActions"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of symbols", OpName: "CorporateActions"},
+	{Name: "types", OASName: "types", Type: "string", Description: "A comma-separated list of types", OpName: "CorporateActions"},
 }
 
 type cryptoBarsOp struct {
@@ -114,13 +115,13 @@ var CryptoBarsOp = cryptoBarsOp{
 }
 
 var CryptoBarsFlags = []FlagDef{
-	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
-	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
-	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
-	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols"},
-	{Name: "timeframe", OASName: "timeframe", Type: "string", Description: "timeframe represented by each bar in aggregation.\nYou can use any of the following values:\n - [1-59]Min or [1-59]T, e.g"},
+	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", OpName: "CryptoBars"},
+	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", OpName: "CryptoBars"},
+	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", OpName: "CryptoBars"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}, OpName: "CryptoBars"},
+	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval", OpName: "CryptoBars"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", OpName: "CryptoBars"},
+	{Name: "timeframe", OASName: "timeframe", Type: "string", Description: "timeframe represented by each bar in aggregation.\nYou can use any of the following values:\n - [1-59]Min or [1-59]T, e.g", OpName: "CryptoBars"},
 }
 
 type cryptoLatestBarsOp struct {
@@ -136,7 +137,7 @@ var CryptoLatestBarsOp = cryptoLatestBarsOp{
 }
 
 var CryptoLatestBarsFlags = []FlagDef{
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", OpName: "CryptoLatestBars"},
 }
 
 type cryptoLatestOrderbooksOp struct {
@@ -152,7 +153,7 @@ var CryptoLatestOrderbooksOp = cryptoLatestOrderbooksOp{
 }
 
 var CryptoLatestOrderbooksFlags = []FlagDef{
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", OpName: "CryptoLatestOrderbooks"},
 }
 
 type cryptoLatestQuotesOp struct {
@@ -168,7 +169,7 @@ var CryptoLatestQuotesOp = cryptoLatestQuotesOp{
 }
 
 var CryptoLatestQuotesFlags = []FlagDef{
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", OpName: "CryptoLatestQuotes"},
 }
 
 type cryptoLatestTradesOp struct {
@@ -184,7 +185,7 @@ var CryptoLatestTradesOp = cryptoLatestTradesOp{
 }
 
 var CryptoLatestTradesFlags = []FlagDef{
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", OpName: "CryptoLatestTrades"},
 }
 
 type cryptoPerpLatestBarsOp struct {
@@ -200,7 +201,7 @@ var CryptoPerpLatestBarsOp = cryptoPerpLatestBarsOp{
 }
 
 var CryptoPerpLatestBarsFlags = []FlagDef{
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", OpName: "CryptoPerpLatestBars"},
 }
 
 type cryptoPerpLatestFuturesPricingOp struct {
@@ -216,7 +217,7 @@ var CryptoPerpLatestFuturesPricingOp = cryptoPerpLatestFuturesPricingOp{
 }
 
 var CryptoPerpLatestFuturesPricingFlags = []FlagDef{
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", OpName: "CryptoPerpLatestFuturesPricing"},
 }
 
 type cryptoPerpLatestOrderbooksOp struct {
@@ -232,7 +233,7 @@ var CryptoPerpLatestOrderbooksOp = cryptoPerpLatestOrderbooksOp{
 }
 
 var CryptoPerpLatestOrderbooksFlags = []FlagDef{
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", OpName: "CryptoPerpLatestOrderbooks"},
 }
 
 type cryptoPerpLatestQuotesOp struct {
@@ -248,7 +249,7 @@ var CryptoPerpLatestQuotesOp = cryptoPerpLatestQuotesOp{
 }
 
 var CryptoPerpLatestQuotesFlags = []FlagDef{
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", OpName: "CryptoPerpLatestQuotes"},
 }
 
 type cryptoPerpLatestTradesOp struct {
@@ -264,7 +265,7 @@ var CryptoPerpLatestTradesOp = cryptoPerpLatestTradesOp{
 }
 
 var CryptoPerpLatestTradesFlags = []FlagDef{
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", OpName: "CryptoPerpLatestTrades"},
 }
 
 type cryptoQuotesOp struct {
@@ -290,12 +291,12 @@ var CryptoQuotesOp = cryptoQuotesOp{
 }
 
 var CryptoQuotesFlags = []FlagDef{
-	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
-	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
-	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
-	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols"},
+	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", OpName: "CryptoQuotes"},
+	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", OpName: "CryptoQuotes"},
+	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", OpName: "CryptoQuotes"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}, OpName: "CryptoQuotes"},
+	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval", OpName: "CryptoQuotes"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", OpName: "CryptoQuotes"},
 }
 
 type cryptoSnapshotsOp struct {
@@ -311,7 +312,7 @@ var CryptoSnapshotsOp = cryptoSnapshotsOp{
 }
 
 var CryptoSnapshotsFlags = []FlagDef{
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", OpName: "CryptoSnapshots"},
 }
 
 type cryptoTradesOp struct {
@@ -337,12 +338,12 @@ var CryptoTradesOp = cryptoTradesOp{
 }
 
 var CryptoTradesFlags = []FlagDef{
-	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
-	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
-	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
-	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols"},
+	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", OpName: "CryptoTrades"},
+	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", OpName: "CryptoTrades"},
+	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", OpName: "CryptoTrades"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}, OpName: "CryptoTrades"},
+	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval", OpName: "CryptoTrades"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", OpName: "CryptoTrades"},
 }
 
 type fixedIncomeLatestPricesOp struct {
@@ -356,7 +357,7 @@ var FixedIncomeLatestPricesOp = fixedIncomeLatestPricesOp{
 }
 
 var FixedIncomeLatestPricesFlags = []FlagDef{
-	{Name: "isins", OASName: "isins", Type: "string", Description: "A comma-separated list of ISINs with a limit of 1000"},
+	{Name: "isins", OASName: "isins", Type: "string", Description: "A comma-separated list of ISINs with a limit of 1000", OpName: "FixedIncomeLatestPrices"},
 }
 
 type latestRatesOp struct {
@@ -370,7 +371,7 @@ var LatestRatesOp = latestRatesOp{
 }
 
 var LatestRatesFlags = []FlagDef{
-	{Name: "currency-pairs", OASName: "currency_pairs", Type: "string", Description: "A comma-separated string with currency pairs"},
+	{Name: "currency-pairs", OASName: "currency_pairs", Type: "string", Description: "A comma-separated string with currency pairs", OpName: "LatestRates"},
 }
 
 type legacyCalendarOp struct {
@@ -388,9 +389,9 @@ var LegacyCalendarOp = legacyCalendarOp{
 }
 
 var LegacyCalendarFlags = []FlagDef{
-	{Name: "date-type", OASName: "date_type", Type: "string", Description: "indicates what start and end mean", Completions: []string{"SETTLEMENT", "TRADING"}},
-	{Name: "end", OASName: "end", Type: "string", Description: "last date to retrieve data for (inclusive)"},
-	{Name: "start", OASName: "start", Type: "string", Description: "first date to retrieve data for (inclusive)"},
+	{Name: "date-type", OASName: "date_type", Type: "string", Description: "indicates what start and end mean", Completions: []string{"SETTLEMENT", "TRADING"}, OpName: "LegacyCalendar"},
+	{Name: "end", OASName: "end", Type: "string", Description: "last date to retrieve data for (inclusive)", OpName: "LegacyCalendar"},
+	{Name: "start", OASName: "start", Type: "string", Description: "first date to retrieve data for (inclusive)", OpName: "LegacyCalendar"},
 }
 
 type legacyClockOp struct {
@@ -414,7 +415,7 @@ var LogosOp = logosOp{
 }
 
 var LogosFlags = []FlagDef{
-	{Name: "placeholder", OASName: "placeholder", Type: "bool", Default: "true", Description: "placeholder"},
+	{Name: "placeholder", OASName: "placeholder", Type: "bool", Default: "true", Description: "placeholder", OpName: "Logos"},
 }
 
 type mostActivesOp struct {
@@ -430,8 +431,8 @@ var MostActivesOp = mostActivesOp{
 }
 
 var MostActivesFlags = []FlagDef{
-	{Name: "by", OASName: "by", Type: "string", Default: "volume", Description: "metric used for ranking the most active stocks", Completions: []string{"trades", "volume"}},
-	{Name: "top", OASName: "top", Type: "int", Default: "10", Description: "number of top most active stocks to fetch per day"},
+	{Name: "by", OASName: "by", Type: "string", Default: "volume", Description: "metric used for ranking the most active stocks", Completions: []string{"trades", "volume"}, OpName: "MostActives"},
+	{Name: "top", OASName: "top", Type: "int", Default: "10", Description: "number of top most active stocks to fetch per day", OpName: "MostActives"},
 }
 
 type moversOp struct {
@@ -447,7 +448,7 @@ var MoversOp = moversOp{
 }
 
 var MoversFlags = []FlagDef{
-	{Name: "top", OASName: "top", Type: "int", Default: "10", Description: "number of top market movers to fetch (gainers and losers)"},
+	{Name: "top", OASName: "top", Type: "int", Default: "10", Description: "number of top market movers to fetch (gainers and losers)", OpName: "Movers"},
 }
 
 type newsOp struct {
@@ -475,14 +476,14 @@ var NewsOp = newsOp{
 }
 
 var NewsFlags = []FlagDef{
-	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
-	{Name: "exclude-contentless", OASName: "exclude_contentless", Type: "bool", Description: "boolean indicator to exclude news articles that do not contain content"},
-	{Name: "include-content", OASName: "include_content", Type: "bool", Description: "boolean indicator to include content for news articles (if available)"},
-	{Name: "limit", OASName: "limit", Type: "int", Description: "limit of news items to be returned for a result page"},
-	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Default: "desc", Description: "sort articles by updated date", Completions: []string{"asc", "desc"}},
-	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of symbols for which to query news"},
+	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", OpName: "News"},
+	{Name: "exclude-contentless", OASName: "exclude_contentless", Type: "bool", Description: "boolean indicator to exclude news articles that do not contain content", OpName: "News"},
+	{Name: "include-content", OASName: "include_content", Type: "bool", Description: "boolean indicator to include content for news articles (if available)", OpName: "News"},
+	{Name: "limit", OASName: "limit", Type: "int", Description: "limit of news items to be returned for a result page", OpName: "News"},
+	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", OpName: "News"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "desc", Description: "sort articles by updated date", Completions: []string{"asc", "desc"}, OpName: "News"},
+	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval", OpName: "News"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of symbols for which to query news", OpName: "News"},
 }
 
 type optionChainOp struct {
@@ -518,17 +519,17 @@ var OptionChainOp = optionChainOp{
 }
 
 var OptionChainFlags = []FlagDef{
-	{Name: "expiration-date", OASName: "expiration_date", Type: "string", Description: "filter contracts by the exact expiration date (format: YYYY-MM-DD)"},
-	{Name: "expiration-date-gte", OASName: "expiration_date_gte", Type: "string", Description: "filter contracts with expiration date greater than or equal to the specified date"},
-	{Name: "expiration-date-lte", OASName: "expiration_date_lte", Type: "string", Description: "filter contracts with expiration date less than or equal to the specified date"},
-	{Name: "feed", OASName: "feed", Type: "string", Default: "opra", Description: "source feed of the data", Completions: []string{"indicative", "opra"}},
-	{Name: "limit", OASName: "limit", Type: "int", Default: "100", Description: "number of maximum snapshots to return in a response."},
-	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "root-symbol", OASName: "root_symbol", Type: "string", Description: "filter contracts by the root symbol"},
-	{Name: "strike-price-gte", OASName: "strike_price_gte", Type: "string", Description: "filter contracts with strike price greater than or equal to the specified value"},
-	{Name: "strike-price-lte", OASName: "strike_price_lte", Type: "string", Description: "filter contracts with strike price less than or equal to the specified value"},
-	{Name: "type", OASName: "type", Type: "string", Description: "filter contracts by the type (call or put)", Completions: []string{"call", "put"}},
-	{Name: "updated-since", OASName: "updated_since", Type: "string", Description: "filter to snapshots that were updated since this timestamp, meaning that the timestamp of the trade or the quote is g..."},
+	{Name: "expiration-date", OASName: "expiration_date", Type: "string", Description: "filter contracts by the exact expiration date (format: YYYY-MM-DD)", OpName: "OptionChain"},
+	{Name: "expiration-date-gte", OASName: "expiration_date_gte", Type: "string", Description: "filter contracts with expiration date greater than or equal to the specified date", OpName: "OptionChain"},
+	{Name: "expiration-date-lte", OASName: "expiration_date_lte", Type: "string", Description: "filter contracts with expiration date less than or equal to the specified date", OpName: "OptionChain"},
+	{Name: "feed", OASName: "feed", Type: "string", Default: "opra", Description: "source feed of the data", Completions: []string{"indicative", "opra"}, OpName: "OptionChain"},
+	{Name: "limit", OASName: "limit", Type: "int", Default: "100", Description: "number of maximum snapshots to return in a response.", OpName: "OptionChain"},
+	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", OpName: "OptionChain"},
+	{Name: "root-symbol", OASName: "root_symbol", Type: "string", Description: "filter contracts by the root symbol", OpName: "OptionChain"},
+	{Name: "strike-price-gte", OASName: "strike_price_gte", Type: "string", Description: "filter contracts with strike price greater than or equal to the specified value", OpName: "OptionChain"},
+	{Name: "strike-price-lte", OASName: "strike_price_lte", Type: "string", Description: "filter contracts with strike price less than or equal to the specified value", OpName: "OptionChain"},
+	{Name: "type", OASName: "type", Type: "string", Description: "filter contracts by the type (call or put)", Completions: []string{"call", "put"}, OpName: "OptionChain"},
+	{Name: "updated-since", OASName: "updated_since", Type: "string", Description: "filter to snapshots that were updated since this timestamp, meaning that the timestamp of the trade or the quote is g...", OpName: "OptionChain"},
 }
 
 type optionLatestQuotesOp struct {
@@ -544,8 +545,8 @@ var OptionLatestQuotesOp = optionLatestQuotesOp{
 }
 
 var OptionLatestQuotesFlags = []FlagDef{
-	{Name: "feed", OASName: "feed", Type: "string", Default: "opra", Description: "source feed of the data", Completions: []string{"indicative", "opra"}},
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of contract symbols with a limit of 100"},
+	{Name: "feed", OASName: "feed", Type: "string", Default: "opra", Description: "source feed of the data", Completions: []string{"indicative", "opra"}, OpName: "OptionLatestQuotes"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of contract symbols with a limit of 100", OpName: "OptionLatestQuotes"},
 }
 
 type optionLatestTradesOp struct {
@@ -561,8 +562,8 @@ var OptionLatestTradesOp = optionLatestTradesOp{
 }
 
 var OptionLatestTradesFlags = []FlagDef{
-	{Name: "feed", OASName: "feed", Type: "string", Default: "opra", Description: "source feed of the data", Completions: []string{"indicative", "opra"}},
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of contract symbols with a limit of 100"},
+	{Name: "feed", OASName: "feed", Type: "string", Default: "opra", Description: "source feed of the data", Completions: []string{"indicative", "opra"}, OpName: "OptionLatestTrades"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of contract symbols with a limit of 100", OpName: "OptionLatestTrades"},
 }
 
 type optionMetaConditionsOp struct {
@@ -602,11 +603,11 @@ var OptionSnapshotsOp = optionSnapshotsOp{
 }
 
 var OptionSnapshotsFlags = []FlagDef{
-	{Name: "feed", OASName: "feed", Type: "string", Default: "opra", Description: "source feed of the data", Completions: []string{"indicative", "opra"}},
-	{Name: "limit", OASName: "limit", Type: "int", Default: "100", Description: "number of maximum snapshots to return in a response."},
-	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of contract symbols with a limit of 100"},
-	{Name: "updated-since", OASName: "updated_since", Type: "string", Description: "filter to snapshots that were updated since this timestamp, meaning that the timestamp of the trade or the quote is g..."},
+	{Name: "feed", OASName: "feed", Type: "string", Default: "opra", Description: "source feed of the data", Completions: []string{"indicative", "opra"}, OpName: "OptionSnapshots"},
+	{Name: "limit", OASName: "limit", Type: "int", Default: "100", Description: "number of maximum snapshots to return in a response.", OpName: "OptionSnapshots"},
+	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", OpName: "OptionSnapshots"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of contract symbols with a limit of 100", OpName: "OptionSnapshots"},
+	{Name: "updated-since", OASName: "updated_since", Type: "string", Description: "filter to snapshots that were updated since this timestamp, meaning that the timestamp of the trade or the quote is g...", OpName: "OptionSnapshots"},
 }
 
 type optionTradesOp struct {
@@ -630,12 +631,12 @@ var OptionTradesOp = optionTradesOp{
 }
 
 var OptionTradesFlags = []FlagDef{
-	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
-	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
-	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
-	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of contract symbols with a limit of 100"},
+	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", OpName: "OptionTrades"},
+	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", OpName: "OptionTrades"},
+	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", OpName: "OptionTrades"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}, OpName: "OptionTrades"},
+	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval", OpName: "OptionTrades"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of contract symbols with a limit of 100", OpName: "OptionTrades"},
 }
 
 type ratesOp struct {
@@ -661,13 +662,13 @@ var RatesOp = ratesOp{
 }
 
 var RatesFlags = []FlagDef{
-	{Name: "currency-pairs", OASName: "currency_pairs", Type: "string", Description: "A comma-separated string with currency pairs"},
-	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
-	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
-	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
-	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
-	{Name: "timeframe", OASName: "timeframe", Type: "string", Default: "1Min", Description: "sampling interval of the currency rates"},
+	{Name: "currency-pairs", OASName: "currency_pairs", Type: "string", Description: "A comma-separated string with currency pairs", OpName: "Rates"},
+	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", OpName: "Rates"},
+	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", OpName: "Rates"},
+	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", OpName: "Rates"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}, OpName: "Rates"},
+	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval", OpName: "Rates"},
+	{Name: "timeframe", OASName: "timeframe", Type: "string", Default: "1Min", Description: "sampling interval of the currency rates", OpName: "Rates"},
 }
 
 type stockAuctionSingleOp struct {
@@ -697,14 +698,14 @@ var StockAuctionSingleOp = stockAuctionSingleOp{
 }
 
 var StockAuctionSingleFlags = []FlagDef{
-	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)"},
-	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
-	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
-	{Name: "feed", OASName: "feed", Type: "string", Default: "sip", Description: "only sip is valid for auctions"},
-	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
-	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
-	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
+	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)", OpName: "StockAuctionSingle"},
+	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", OpName: "StockAuctionSingle"},
+	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", OpName: "StockAuctionSingle"},
+	{Name: "feed", OASName: "feed", Type: "string", Default: "sip", Description: "only sip is valid for auctions", OpName: "StockAuctionSingle"},
+	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", OpName: "StockAuctionSingle"},
+	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", OpName: "StockAuctionSingle"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}, OpName: "StockAuctionSingle"},
+	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval", OpName: "StockAuctionSingle"},
 }
 
 type stockAuctionsOp struct {
@@ -734,15 +735,15 @@ var StockAuctionsOp = stockAuctionsOp{
 }
 
 var StockAuctionsFlags = []FlagDef{
-	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)"},
-	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
-	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
-	{Name: "feed", OASName: "feed", Type: "string", Default: "sip", Description: "only sip is valid for auctions"},
-	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
-	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
-	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols"},
+	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)", OpName: "StockAuctions"},
+	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", OpName: "StockAuctions"},
+	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", OpName: "StockAuctions"},
+	{Name: "feed", OASName: "feed", Type: "string", Default: "sip", Description: "only sip is valid for auctions", OpName: "StockAuctions"},
+	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", OpName: "StockAuctions"},
+	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", OpName: "StockAuctions"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}, OpName: "StockAuctions"},
+	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval", OpName: "StockAuctions"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols", OpName: "StockAuctions"},
 }
 
 type stockBarSingleOp struct {
@@ -776,16 +777,16 @@ var StockBarSingleOp = stockBarSingleOp{
 }
 
 var StockBarSingleFlags = []FlagDef{
-	{Name: "adjustment", OASName: "adjustment", Type: "string", Default: "raw", Description: "specifies the adjustments for the bars.\n\n - raw: no adjustments\n - split: adjust price and volume for forward and rev..."},
-	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)"},
-	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
-	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
-	{Name: "feed", OASName: "feed", Type: "string", Default: "sip", Description: "source feed of the data.", Completions: []string{"boats", "iex", "otc", "sip"}},
-	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
-	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
-	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
-	{Name: "timeframe", OASName: "timeframe", Type: "string", Description: "timeframe represented by each bar in aggregation.\nYou can use any of the following values:\n - [1-59]Min or [1-59]T, e.g"},
+	{Name: "adjustment", OASName: "adjustment", Type: "string", Default: "raw", Description: "specifies the adjustments for the bars.\n\n - raw: no adjustments\n - split: adjust price and volume for forward and rev...", OpName: "StockBarSingle"},
+	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)", OpName: "StockBarSingle"},
+	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", OpName: "StockBarSingle"},
+	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", OpName: "StockBarSingle"},
+	{Name: "feed", OASName: "feed", Type: "string", Default: "sip", Description: "source feed of the data.", Completions: []string{"boats", "iex", "otc", "sip"}, OpName: "StockBarSingle"},
+	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", OpName: "StockBarSingle"},
+	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", OpName: "StockBarSingle"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}, OpName: "StockBarSingle"},
+	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval", OpName: "StockBarSingle"},
+	{Name: "timeframe", OASName: "timeframe", Type: "string", Description: "timeframe represented by each bar in aggregation.\nYou can use any of the following values:\n - [1-59]Min or [1-59]T, e.g", OpName: "StockBarSingle"},
 }
 
 type stockBarsOp struct {
@@ -819,17 +820,17 @@ var StockBarsOp = stockBarsOp{
 }
 
 var StockBarsFlags = []FlagDef{
-	{Name: "adjustment", OASName: "adjustment", Type: "string", Default: "raw", Description: "specifies the adjustments for the bars.\n\n - raw: no adjustments\n - split: adjust price and volume for forward and rev..."},
-	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)"},
-	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
-	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
-	{Name: "feed", OASName: "feed", Type: "string", Default: "sip", Description: "source feed of the data.", Completions: []string{"boats", "iex", "otc", "sip"}},
-	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
-	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
-	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols"},
-	{Name: "timeframe", OASName: "timeframe", Type: "string", Description: "timeframe represented by each bar in aggregation.\nYou can use any of the following values:\n - [1-59]Min or [1-59]T, e.g"},
+	{Name: "adjustment", OASName: "adjustment", Type: "string", Default: "raw", Description: "specifies the adjustments for the bars.\n\n - raw: no adjustments\n - split: adjust price and volume for forward and rev...", OpName: "StockBars"},
+	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)", OpName: "StockBars"},
+	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", OpName: "StockBars"},
+	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", OpName: "StockBars"},
+	{Name: "feed", OASName: "feed", Type: "string", Default: "sip", Description: "source feed of the data.", Completions: []string{"boats", "iex", "otc", "sip"}, OpName: "StockBars"},
+	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", OpName: "StockBars"},
+	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", OpName: "StockBars"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}, OpName: "StockBars"},
+	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval", OpName: "StockBars"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols", OpName: "StockBars"},
+	{Name: "timeframe", OASName: "timeframe", Type: "string", Description: "timeframe represented by each bar in aggregation.\nYou can use any of the following values:\n - [1-59]Min or [1-59]T, e.g", OpName: "StockBars"},
 }
 
 type stockLatestBarSingleOp struct {
@@ -847,8 +848,8 @@ var StockLatestBarSingleOp = stockLatestBarSingleOp{
 }
 
 var StockLatestBarSingleFlags = []FlagDef{
-	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}},
+	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", OpName: "StockLatestBarSingle"},
+	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}, OpName: "StockLatestBarSingle"},
 }
 
 type stockLatestBarsOp struct {
@@ -866,9 +867,9 @@ var StockLatestBarsOp = stockLatestBarsOp{
 }
 
 var StockLatestBarsFlags = []FlagDef{
-	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}},
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols"},
+	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", OpName: "StockLatestBars"},
+	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}, OpName: "StockLatestBars"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols", OpName: "StockLatestBars"},
 }
 
 type stockLatestQuoteSingleOp struct {
@@ -886,8 +887,8 @@ var StockLatestQuoteSingleOp = stockLatestQuoteSingleOp{
 }
 
 var StockLatestQuoteSingleFlags = []FlagDef{
-	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}},
+	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", OpName: "StockLatestQuoteSingle"},
+	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}, OpName: "StockLatestQuoteSingle"},
 }
 
 type stockLatestQuotesOp struct {
@@ -905,9 +906,9 @@ var StockLatestQuotesOp = stockLatestQuotesOp{
 }
 
 var StockLatestQuotesFlags = []FlagDef{
-	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}},
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols"},
+	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", OpName: "StockLatestQuotes"},
+	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}, OpName: "StockLatestQuotes"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols", OpName: "StockLatestQuotes"},
 }
 
 type stockLatestTradeSingleOp struct {
@@ -925,8 +926,8 @@ var StockLatestTradeSingleOp = stockLatestTradeSingleOp{
 }
 
 var StockLatestTradeSingleFlags = []FlagDef{
-	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}},
+	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", OpName: "StockLatestTradeSingle"},
+	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}, OpName: "StockLatestTradeSingle"},
 }
 
 type stockLatestTradesOp struct {
@@ -944,9 +945,9 @@ var StockLatestTradesOp = stockLatestTradesOp{
 }
 
 var StockLatestTradesFlags = []FlagDef{
-	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}},
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols"},
+	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", OpName: "StockLatestTrades"},
+	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}, OpName: "StockLatestTrades"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols", OpName: "StockLatestTrades"},
 }
 
 type stockMetaConditionsOp struct {
@@ -962,7 +963,7 @@ var StockMetaConditionsOp = stockMetaConditionsOp{
 }
 
 var StockMetaConditionsFlags = []FlagDef{
-	{Name: "tape", OASName: "tape", Type: "string", Description: "one character name of the tape", Completions: []string{"A", "B", "C"}},
+	{Name: "tape", OASName: "tape", Type: "string", Description: "one character name of the tape", Completions: []string{"A", "B", "C"}, OpName: "StockMetaConditions"},
 }
 
 type stockMetaExchangesOp struct {
@@ -1000,14 +1001,14 @@ var StockQuoteSingleOp = stockQuoteSingleOp{
 }
 
 var StockQuoteSingleFlags = []FlagDef{
-	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)"},
-	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
-	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
-	{Name: "feed", OASName: "feed", Type: "string", Default: "sip", Description: "source feed of the data.", Completions: []string{"boats", "iex", "otc", "sip"}},
-	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
-	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
-	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
+	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)", OpName: "StockQuoteSingle"},
+	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", OpName: "StockQuoteSingle"},
+	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", OpName: "StockQuoteSingle"},
+	{Name: "feed", OASName: "feed", Type: "string", Default: "sip", Description: "source feed of the data.", Completions: []string{"boats", "iex", "otc", "sip"}, OpName: "StockQuoteSingle"},
+	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", OpName: "StockQuoteSingle"},
+	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", OpName: "StockQuoteSingle"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}, OpName: "StockQuoteSingle"},
+	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval", OpName: "StockQuoteSingle"},
 }
 
 type stockQuotesOp struct {
@@ -1037,15 +1038,15 @@ var StockQuotesOp = stockQuotesOp{
 }
 
 var StockQuotesFlags = []FlagDef{
-	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)"},
-	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
-	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
-	{Name: "feed", OASName: "feed", Type: "string", Default: "sip", Description: "source feed of the data.", Completions: []string{"boats", "iex", "otc", "sip"}},
-	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
-	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
-	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols"},
+	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)", OpName: "StockQuotes"},
+	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", OpName: "StockQuotes"},
+	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", OpName: "StockQuotes"},
+	{Name: "feed", OASName: "feed", Type: "string", Default: "sip", Description: "source feed of the data.", Completions: []string{"boats", "iex", "otc", "sip"}, OpName: "StockQuotes"},
+	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", OpName: "StockQuotes"},
+	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", OpName: "StockQuotes"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}, OpName: "StockQuotes"},
+	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval", OpName: "StockQuotes"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols", OpName: "StockQuotes"},
 }
 
 type stockSnapshotSingleOp struct {
@@ -1063,8 +1064,8 @@ var StockSnapshotSingleOp = stockSnapshotSingleOp{
 }
 
 var StockSnapshotSingleFlags = []FlagDef{
-	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}},
+	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", OpName: "StockSnapshotSingle"},
+	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}, OpName: "StockSnapshotSingle"},
 }
 
 type stockSnapshotsOp struct {
@@ -1082,9 +1083,9 @@ var StockSnapshotsOp = stockSnapshotsOp{
 }
 
 var StockSnapshotsFlags = []FlagDef{
-	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
-	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}},
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols"},
+	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", OpName: "StockSnapshots"},
+	{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}, OpName: "StockSnapshots"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols", OpName: "StockSnapshots"},
 }
 
 type stockTradeSingleOp struct {
@@ -1114,14 +1115,14 @@ var StockTradeSingleOp = stockTradeSingleOp{
 }
 
 var StockTradeSingleFlags = []FlagDef{
-	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)"},
-	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
-	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
-	{Name: "feed", OASName: "feed", Type: "string", Default: "sip", Description: "source feed of the data.", Completions: []string{"boats", "iex", "otc", "sip"}},
-	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
-	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
-	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
+	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)", OpName: "StockTradeSingle"},
+	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", OpName: "StockTradeSingle"},
+	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", OpName: "StockTradeSingle"},
+	{Name: "feed", OASName: "feed", Type: "string", Default: "sip", Description: "source feed of the data.", Completions: []string{"boats", "iex", "otc", "sip"}, OpName: "StockTradeSingle"},
+	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", OpName: "StockTradeSingle"},
+	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", OpName: "StockTradeSingle"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}, OpName: "StockTradeSingle"},
+	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval", OpName: "StockTradeSingle"},
 }
 
 type stockTradesOp struct {
@@ -1151,15 +1152,15 @@ var StockTradesOp = stockTradesOp{
 }
 
 var StockTradesFlags = []FlagDef{
-	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)"},
-	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD"},
-	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
-	{Name: "feed", OASName: "feed", Type: "string", Default: "sip", Description: "source feed of the data.", Completions: []string{"boats", "iex", "otc", "sip"}},
-	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
-	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
-	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols"},
+	{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)", OpName: "StockTrades"},
+	{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", OpName: "StockTrades"},
+	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", OpName: "StockTrades"},
+	{Name: "feed", OASName: "feed", Type: "string", Default: "sip", Description: "source feed of the data.", Completions: []string{"boats", "iex", "otc", "sip"}, OpName: "StockTrades"},
+	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", OpName: "StockTrades"},
+	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", OpName: "StockTrades"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}, OpName: "StockTrades"},
+	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval", OpName: "StockTrades"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols", OpName: "StockTrades"},
 }
 
 type usCorporatesOp struct {
@@ -1179,10 +1180,10 @@ var UsCorporatesOp = usCorporatesOp{
 }
 
 var UsCorporatesFlags = []FlagDef{
-	{Name: "bond-status", OASName: "bond_status", Type: "string", Description: "status of the bond", Completions: []string{"matured", "outstanding", "pre_issuance"}},
-	{Name: "cusips", OASName: "cusips", Type: "string", Description: "A comma-separated list of CUSIPs with a limit of 1000"},
-	{Name: "isins", OASName: "isins", Type: "string", Description: "A comma-separated list of ISINs with a limit of 1000"},
-	{Name: "tickers", OASName: "tickers", Type: "string", Description: "A comma-separated list of tickers with a limit of 1000"},
+	{Name: "bond-status", OASName: "bond_status", Type: "string", Description: "status of the bond", Completions: []string{"matured", "outstanding", "pre_issuance"}, OpName: "UsCorporates"},
+	{Name: "cusips", OASName: "cusips", Type: "string", Description: "A comma-separated list of CUSIPs with a limit of 1000", OpName: "UsCorporates"},
+	{Name: "isins", OASName: "isins", Type: "string", Description: "A comma-separated list of ISINs with a limit of 1000", OpName: "UsCorporates"},
+	{Name: "tickers", OASName: "tickers", Type: "string", Description: "A comma-separated list of tickers with a limit of 1000", OpName: "UsCorporates"},
 }
 
 type usTreasuriesOp struct {
@@ -1202,10 +1203,10 @@ var UsTreasuriesOp = usTreasuriesOp{
 }
 
 var UsTreasuriesFlags = []FlagDef{
-	{Name: "bond-status", OASName: "bond_status", Type: "string", Description: "status of the bond", Completions: []string{"matured", "outstanding", "pre_issuance"}},
-	{Name: "cusips", OASName: "cusips", Type: "string", Description: "A comma-separated list of CUSIPs with a limit of 1000"},
-	{Name: "isins", OASName: "isins", Type: "string", Description: "A comma-separated list of ISINs with a limit of 1000"},
-	{Name: "subtype", OASName: "subtype", Type: "string", Description: "subtype of the treasury", Completions: []string{"bill", "bond", "floating", "note", "strips", "tips"}},
+	{Name: "bond-status", OASName: "bond_status", Type: "string", Description: "status of the bond", Completions: []string{"matured", "outstanding", "pre_issuance"}, OpName: "UsTreasuries"},
+	{Name: "cusips", OASName: "cusips", Type: "string", Description: "A comma-separated list of CUSIPs with a limit of 1000", OpName: "UsTreasuries"},
+	{Name: "isins", OASName: "isins", Type: "string", Description: "A comma-separated list of ISINs with a limit of 1000", OpName: "UsTreasuries"},
+	{Name: "subtype", OASName: "subtype", Type: "string", Description: "subtype of the treasury", Completions: []string{"bill", "bond", "floating", "note", "strips", "tips"}, OpName: "UsTreasuries"},
 }
 
 type addAssetToWatchlistOp struct {
@@ -1221,7 +1222,7 @@ var AddAssetToWatchlistOp = addAssetToWatchlistOp{
 }
 
 var AddAssetToWatchlistFlags = []FlagDef{
-	{Name: "symbol", OASName: "symbol", Type: "string", Description: "the symbol name to add to the watchlist"},
+	{Name: "symbol", OASName: "symbol", Type: "string", Description: "the symbol name to add to the watchlist", OpName: "AddAssetToWatchlist"},
 }
 
 type addAssetToWatchlistByNameOp struct {
@@ -1237,8 +1238,8 @@ var AddAssetToWatchlistByNameOp = addAssetToWatchlistByNameOp{
 }
 
 var AddAssetToWatchlistByNameFlags = []FlagDef{
-	{Name: "name", OASName: "name", Type: "string", Description: "name of the watchlist"},
-	{Name: "symbol", OASName: "symbol", Type: "string", Description: "the symbol name to add to the watchlist"},
+	{Name: "name", OASName: "name", Type: "string", Description: "name of the watchlist", OpName: "AddAssetToWatchlistByName"},
+	{Name: "symbol", OASName: "symbol", Type: "string", Description: "the symbol name to add to the watchlist", OpName: "AddAssetToWatchlistByName"},
 }
 
 type createCryptoPerpTransferForAccountOp struct {
@@ -1256,9 +1257,9 @@ var CreateCryptoPerpTransferForAccountOp = createCryptoPerpTransferForAccountOp{
 }
 
 var CreateCryptoPerpTransferForAccountFlags = []FlagDef{
-	{Name: "address", OASName: "address", Type: "string", Description: "destination wallet address"},
-	{Name: "amount", OASName: "amount", Type: "string", Description: "amount, denoted in the specified asset, to be withdrawn from the user’s wallet"},
-	{Name: "asset", OASName: "asset", Type: "string", Description: "asset"},
+	{Name: "address", OASName: "address", Type: "string", Description: "destination wallet address", OpName: "CreateCryptoPerpTransferForAccount"},
+	{Name: "amount", OASName: "amount", Type: "string", Description: "amount, denoted in the specified asset, to be withdrawn from the user’s wallet", OpName: "CreateCryptoPerpTransferForAccount"},
+	{Name: "asset", OASName: "asset", Type: "string", Description: "asset", OpName: "CreateCryptoPerpTransferForAccount"},
 }
 
 type createCryptoTransferForAccountOp struct {
@@ -1276,9 +1277,9 @@ var CreateCryptoTransferForAccountOp = createCryptoTransferForAccountOp{
 }
 
 var CreateCryptoTransferForAccountFlags = []FlagDef{
-	{Name: "address", OASName: "address", Type: "string", Description: "destination wallet address"},
-	{Name: "amount", OASName: "amount", Type: "string", Description: "amount, denoted in the specified asset, to be withdrawn from the user’s wallet"},
-	{Name: "asset", OASName: "asset", Type: "string", Description: "asset"},
+	{Name: "address", OASName: "address", Type: "string", Description: "destination wallet address", OpName: "CreateCryptoTransferForAccount"},
+	{Name: "amount", OASName: "amount", Type: "string", Description: "amount, denoted in the specified asset, to be withdrawn from the user’s wallet", OpName: "CreateCryptoTransferForAccount"},
+	{Name: "asset", OASName: "asset", Type: "string", Description: "asset", OpName: "CreateCryptoTransferForAccount"},
 }
 
 type createWhitelistedAddressOp struct {
@@ -1294,8 +1295,8 @@ var CreateWhitelistedAddressOp = createWhitelistedAddressOp{
 }
 
 var CreateWhitelistedAddressFlags = []FlagDef{
-	{Name: "address", OASName: "address", Type: "string", Description: "address to be whitelisted"},
-	{Name: "asset", OASName: "asset", Type: "string", Description: "symbol of underlying asset for the whitelisted address"},
+	{Name: "address", OASName: "address", Type: "string", Description: "address to be whitelisted", OpName: "CreateWhitelistedAddress"},
+	{Name: "asset", OASName: "asset", Type: "string", Description: "symbol of underlying asset for the whitelisted address", OpName: "CreateWhitelistedAddress"},
 }
 
 type createWhitelistedPerpAddressOp struct {
@@ -1311,8 +1312,8 @@ var CreateWhitelistedPerpAddressOp = createWhitelistedPerpAddressOp{
 }
 
 var CreateWhitelistedPerpAddressFlags = []FlagDef{
-	{Name: "address", OASName: "address", Type: "string", Description: "address to be whitelisted"},
-	{Name: "asset", OASName: "asset", Type: "string", Description: "symbol of underlying asset for the whitelisted address"},
+	{Name: "address", OASName: "address", Type: "string", Description: "address to be whitelisted", OpName: "CreateWhitelistedPerpAddress"},
+	{Name: "asset", OASName: "asset", Type: "string", Description: "symbol of underlying asset for the whitelisted address", OpName: "CreateWhitelistedPerpAddress"},
 }
 
 type deleteAllOpenPositionsOp struct {
@@ -1326,7 +1327,7 @@ var DeleteAllOpenPositionsOp = deleteAllOpenPositionsOp{
 }
 
 var DeleteAllOpenPositionsFlags = []FlagDef{
-	{Name: "cancel-orders", OASName: "cancel_orders", Type: "bool", Description: "if true is specified, cancel all open orders before liquidating all positions"},
+	{Name: "cancel-orders", OASName: "cancel_orders", Type: "bool", Description: "if true is specified, cancel all open orders before liquidating all positions", OpName: "DeleteAllOpenPositions"},
 }
 
 type deleteAllOrdersOp struct {
@@ -1352,8 +1353,8 @@ var DeleteOpenPositionOp = deleteOpenPositionOp{
 }
 
 var DeleteOpenPositionFlags = []FlagDef{
-	{Name: "percentage", OASName: "percentage", Type: "string", Description: "percentage of position to liquidate"},
-	{Name: "qty", OASName: "qty", Type: "string", Description: "the number of shares to liquidate. Can accept up to 9 decimal points. Cannot work with percentage"},
+	{Name: "percentage", OASName: "percentage", Type: "string", Description: "percentage of position to liquidate", OpName: "DeleteOpenPosition"},
+	{Name: "qty", OASName: "qty", Type: "string", Description: "the number of shares to liquidate. Can accept up to 9 decimal points. Cannot work with percentage", OpName: "DeleteOpenPosition"},
 }
 
 type deleteOrderByOrderIDOp struct {
@@ -1387,7 +1388,7 @@ var DeleteWatchlistByNameOp = deleteWatchlistByNameOp{
 }
 
 var DeleteWatchlistByNameFlags = []FlagDef{
-	{Name: "name", OASName: "name", Type: "string", Description: "name of the watchlist"},
+	{Name: "name", OASName: "name", Type: "string", Description: "name of the watchlist", OpName: "DeleteWatchlistByName"},
 }
 
 type deleteWhitelistedAddressOp struct {
@@ -1457,20 +1458,20 @@ var GetOptionsContractsOp = getOptionsContractsOp{
 }
 
 var GetOptionsContractsFlags = []FlagDef{
-	{Name: "expiration-date", OASName: "expiration_date", Type: "string", Description: "filter contracts by the exact expiration date (format: YYYY-MM-DD)"},
-	{Name: "expiration-date-gte", OASName: "expiration_date_gte", Type: "string", Description: "filter contracts with expiration date greater than or equal to the specified date"},
-	{Name: "expiration-date-lte", OASName: "expiration_date_lte", Type: "string", Description: "filter contracts with expiration date less than or equal to the specified date"},
-	{Name: "limit", OASName: "limit", Type: "int", Description: "number of contracts to limit per page (default=100, max=10000)"},
-	{Name: "page-token", OASName: "page_token", Type: "string", Description: "used for pagination, this token retrieves the next page of results"},
-	{Name: "ppind", OASName: "ppind", Type: "bool", Description: "ppind(Penny Program Indicator) field indicates whether an option contract is eligible for penny price increments,"},
-	{Name: "root-symbol", OASName: "root_symbol", Type: "string", Description: "filter contracts by the root symbol"},
-	{Name: "show-deliverables", OASName: "show_deliverables", Type: "bool", Description: "include deliverables array in the response"},
-	{Name: "status", OASName: "status", Type: "string", Description: "filter contracts by status (active/inactive). By default only active contracts are returned", Completions: []string{"active", "inactive"}},
-	{Name: "strike-price-gte", OASName: "strike_price_gte", Type: "string", Description: "filter contracts with strike price greater than or equal to the specified value"},
-	{Name: "strike-price-lte", OASName: "strike_price_lte", Type: "string", Description: "filter contracts with strike price less than or equal to the specified value"},
-	{Name: "style", OASName: "style", Type: "string", Description: "filter contracts by the style (american/european)", Completions: []string{"american", "european"}},
-	{Name: "type", OASName: "type", Type: "string", Description: "filter contracts by the type (call/put)", Completions: []string{"call", "put"}},
-	{Name: "underlying-symbols", OASName: "underlying_symbols", Type: "string", Description: "filter contracts by one or more underlying symbols"},
+	{Name: "expiration-date", OASName: "expiration_date", Type: "string", Description: "filter contracts by the exact expiration date (format: YYYY-MM-DD)", OpName: "GetOptionsContracts"},
+	{Name: "expiration-date-gte", OASName: "expiration_date_gte", Type: "string", Description: "filter contracts with expiration date greater than or equal to the specified date", OpName: "GetOptionsContracts"},
+	{Name: "expiration-date-lte", OASName: "expiration_date_lte", Type: "string", Description: "filter contracts with expiration date less than or equal to the specified date", OpName: "GetOptionsContracts"},
+	{Name: "limit", OASName: "limit", Type: "int", Description: "number of contracts to limit per page (default=100, max=10000)", OpName: "GetOptionsContracts"},
+	{Name: "page-token", OASName: "page_token", Type: "string", Description: "used for pagination, this token retrieves the next page of results", OpName: "GetOptionsContracts"},
+	{Name: "ppind", OASName: "ppind", Type: "bool", Description: "ppind(Penny Program Indicator) field indicates whether an option contract is eligible for penny price increments,", OpName: "GetOptionsContracts"},
+	{Name: "root-symbol", OASName: "root_symbol", Type: "string", Description: "filter contracts by the root symbol", OpName: "GetOptionsContracts"},
+	{Name: "show-deliverables", OASName: "show_deliverables", Type: "bool", Description: "include deliverables array in the response", OpName: "GetOptionsContracts"},
+	{Name: "status", OASName: "status", Type: "string", Description: "filter contracts by status (active/inactive). By default only active contracts are returned", Completions: []string{"active", "inactive"}, OpName: "GetOptionsContracts"},
+	{Name: "strike-price-gte", OASName: "strike_price_gte", Type: "string", Description: "filter contracts with strike price greater than or equal to the specified value", OpName: "GetOptionsContracts"},
+	{Name: "strike-price-lte", OASName: "strike_price_lte", Type: "string", Description: "filter contracts with strike price less than or equal to the specified value", OpName: "GetOptionsContracts"},
+	{Name: "style", OASName: "style", Type: "string", Description: "filter contracts by the style (american/european)", Completions: []string{"american", "european"}, OpName: "GetOptionsContracts"},
+	{Name: "type", OASName: "type", Type: "string", Description: "filter contracts by the type (call/put)", Completions: []string{"call", "put"}, OpName: "GetOptionsContracts"},
+	{Name: "underlying-symbols", OASName: "underlying_symbols", Type: "string", Description: "filter contracts by one or more underlying symbols", OpName: "GetOptionsContracts"},
 }
 
 type getV2AssetsOp struct {
@@ -1490,10 +1491,10 @@ var GetV2AssetsOp = getV2AssetsOp{
 }
 
 var GetV2AssetsFlags = []FlagDef{
-	{Name: "asset-class", OASName: "asset_class", Type: "string", Description: "defaults to us_equity"},
-	{Name: "attributes", OASName: "attributes", Type: "string", Default: "[]", Description: "comma separated values to query for more than one attribute"},
-	{Name: "exchange", OASName: "exchange", Type: "string", Description: "optional AMEX, ARCA, BATS, NYSE, NASDAQ, NYSEARCA or OTC"},
-	{Name: "status", OASName: "status", Type: "string", Description: "e.g. “active”. By default, all statuses are included"},
+	{Name: "asset-class", OASName: "asset_class", Type: "string", Description: "defaults to us_equity", OpName: "GetV2Assets"},
+	{Name: "attributes", OASName: "attributes", Type: "string", Default: "[]", Description: "comma separated values to query for more than one attribute", OpName: "GetV2Assets"},
+	{Name: "exchange", OASName: "exchange", Type: "string", Description: "optional AMEX, ARCA, BATS, NYSE, NASDAQ, NYSEARCA or OTC", OpName: "GetV2Assets"},
+	{Name: "status", OASName: "status", Type: "string", Description: "e.g. “active”. By default, all statuses are included", OpName: "GetV2Assets"},
 }
 
 type getV2AssetsSymbolOrAssetIDOp struct {
@@ -1527,12 +1528,12 @@ var GetV2CorporateActionsAnnouncementsOp = getV2CorporateActionsAnnouncementsOp{
 }
 
 var GetV2CorporateActionsAnnouncementsFlags = []FlagDef{
-	{Name: "ca-types", OASName: "ca_types", Type: "string", Description: "A comma-delimited list of Dividend, Merger, Spinoff, or Split"},
-	{Name: "cusip", OASName: "cusip", Type: "string", Description: "CUSIP of the company initiating the announcement"},
-	{Name: "date-type", OASName: "date_type", Type: "string", Description: "declaration_date, ex_date, record_date, or payable_date"},
-	{Name: "since", OASName: "since", Type: "string", Description: "start (inclusive) of the date range when searching corporate action announcements"},
-	{Name: "symbol", OASName: "symbol", Type: "string", Description: "symbol of the company initiating the announcement"},
-	{Name: "until", OASName: "until", Type: "string", Description: "end (inclusive) of the date range when searching corporate action announcements"},
+	{Name: "ca-types", OASName: "ca_types", Type: "string", Description: "A comma-delimited list of Dividend, Merger, Spinoff, or Split", OpName: "GetV2CorporateActionsAnnouncements"},
+	{Name: "cusip", OASName: "cusip", Type: "string", Description: "CUSIP of the company initiating the announcement", OpName: "GetV2CorporateActionsAnnouncements"},
+	{Name: "date-type", OASName: "date_type", Type: "string", Description: "declaration_date, ex_date, record_date, or payable_date", OpName: "GetV2CorporateActionsAnnouncements"},
+	{Name: "since", OASName: "since", Type: "string", Description: "start (inclusive) of the date range when searching corporate action announcements", OpName: "GetV2CorporateActionsAnnouncements"},
+	{Name: "symbol", OASName: "symbol", Type: "string", Description: "symbol of the company initiating the announcement", OpName: "GetV2CorporateActionsAnnouncements"},
+	{Name: "until", OASName: "until", Type: "string", Description: "end (inclusive) of the date range when searching corporate action announcements", OpName: "GetV2CorporateActionsAnnouncements"},
 }
 
 type getV2CorporateActionsAnnouncementsIDOp struct {
@@ -1578,14 +1579,14 @@ var GetAccountActivitiesOp = getAccountActivitiesOp{
 }
 
 var GetAccountActivitiesFlags = []FlagDef{
-	{Name: "activity-types", OASName: "activity_types", Type: "string", Description: "A comma-separated list of activity types used to filter the results"},
-	{Name: "after", OASName: "after", Type: "string", Description: "get activities created after this date. Both formats YYYY-MM-DD and YYYY-MM-DDTHH:MM:SSZ are supported"},
-	{Name: "category", OASName: "category", Type: "string", Description: "activity category. Cannot be used with \"activity_types\" parameter", Completions: []string{"non_trade_activity", "trade_activity"}},
-	{Name: "date", OASName: "date", Type: "string", Description: "filter activities by the activity date. Both formats YYYY-MM-DD and YYYY-MM-DDTHH:MM:SSZ are supported"},
-	{Name: "direction", OASName: "direction", Type: "string", Default: "desc", Description: "chronological order of response based on the activity datetime", Completions: []string{"asc", "desc"}},
-	{Name: "page-size", OASName: "page_size", Type: "int", Default: "100", Description: "maximum number of entries to return in the response"},
-	{Name: "page-token", OASName: "page_token", Type: "string", Description: "token used for pagination. Provide the ID of the last activity from the last page to retrieve the next set of results"},
-	{Name: "until", OASName: "until", Type: "string", Description: "get activities created before this date. Both formats YYYY-MM-DD and YYYY-MM-DDTHH:MM:SSZ are supported"},
+	{Name: "activity-types", OASName: "activity_types", Type: "string", Description: "A comma-separated list of activity types used to filter the results", OpName: "GetAccountActivities"},
+	{Name: "after", OASName: "after", Type: "string", Description: "get activities created after this date. Both formats YYYY-MM-DD and YYYY-MM-DDTHH:MM:SSZ are supported", OpName: "GetAccountActivities"},
+	{Name: "category", OASName: "category", Type: "string", Description: "activity category. Cannot be used with \"activity_types\" parameter", Completions: []string{"non_trade_activity", "trade_activity"}, OpName: "GetAccountActivities"},
+	{Name: "date", OASName: "date", Type: "string", Description: "filter activities by the activity date. Both formats YYYY-MM-DD and YYYY-MM-DDTHH:MM:SSZ are supported", OpName: "GetAccountActivities"},
+	{Name: "direction", OASName: "direction", Type: "string", Default: "desc", Description: "chronological order of response based on the activity datetime", Completions: []string{"asc", "desc"}, OpName: "GetAccountActivities"},
+	{Name: "page-size", OASName: "page_size", Type: "int", Default: "100", Description: "maximum number of entries to return in the response", OpName: "GetAccountActivities"},
+	{Name: "page-token", OASName: "page_token", Type: "string", Description: "token used for pagination. Provide the ID of the last activity from the last page to retrieve the next set of results", OpName: "GetAccountActivities"},
+	{Name: "until", OASName: "until", Type: "string", Description: "get activities created before this date. Both formats YYYY-MM-DD and YYYY-MM-DDTHH:MM:SSZ are supported", OpName: "GetAccountActivities"},
 }
 
 type getAccountActivitiesByActivityTypeOp struct {
@@ -1611,12 +1612,12 @@ var GetAccountActivitiesByActivityTypeOp = getAccountActivitiesByActivityTypeOp{
 }
 
 var GetAccountActivitiesByActivityTypeFlags = []FlagDef{
-	{Name: "after", OASName: "after", Type: "string", Description: "get activities created after this date. Both formats YYYY-MM-DD and YYYY-MM-DDTHH:MM:SSZ are supported"},
-	{Name: "date", OASName: "date", Type: "string", Description: "filter activities by the activity date. Both formats YYYY-MM-DD and YYYY-MM-DDTHH:MM:SSZ are supported"},
-	{Name: "direction", OASName: "direction", Type: "string", Default: "desc", Description: "chronological order of response based on the activity datetime", Completions: []string{"asc", "desc"}},
-	{Name: "page-size", OASName: "page_size", Type: "int", Default: "100", Description: "maximum number of entries to return in the response"},
-	{Name: "page-token", OASName: "page_token", Type: "string", Description: "token used for pagination. Provide the ID of the last activity from the last page to retrieve the next set of results"},
-	{Name: "until", OASName: "until", Type: "string", Description: "get activities created before this date. Both formats YYYY-MM-DD and YYYY-MM-DDTHH:MM:SSZ are supported"},
+	{Name: "after", OASName: "after", Type: "string", Description: "get activities created after this date. Both formats YYYY-MM-DD and YYYY-MM-DDTHH:MM:SSZ are supported", OpName: "GetAccountActivitiesByActivityType"},
+	{Name: "date", OASName: "date", Type: "string", Description: "filter activities by the activity date. Both formats YYYY-MM-DD and YYYY-MM-DDTHH:MM:SSZ are supported", OpName: "GetAccountActivitiesByActivityType"},
+	{Name: "direction", OASName: "direction", Type: "string", Default: "desc", Description: "chronological order of response based on the activity datetime", Completions: []string{"asc", "desc"}, OpName: "GetAccountActivitiesByActivityType"},
+	{Name: "page-size", OASName: "page_size", Type: "int", Default: "100", Description: "maximum number of entries to return in the response", OpName: "GetAccountActivitiesByActivityType"},
+	{Name: "page-token", OASName: "page_token", Type: "string", Description: "token used for pagination. Provide the ID of the last activity from the last page to retrieve the next set of results", OpName: "GetAccountActivitiesByActivityType"},
+	{Name: "until", OASName: "until", Type: "string", Description: "get activities created before this date. Both formats YYYY-MM-DD and YYYY-MM-DDTHH:MM:SSZ are supported", OpName: "GetAccountActivitiesByActivityType"},
 }
 
 type getAccountConfigOp struct {
@@ -1652,14 +1653,14 @@ var GetAccountPortfolioHistoryOp = getAccountPortfolioHistoryOp{
 }
 
 var GetAccountPortfolioHistoryFlags = []FlagDef{
-	{Name: "cashflow-types", OASName: "cashflow_types", Type: "string", Description: "cashflow activities to include in the report. One of 'ALL', 'NONE', or a comma-separated list of activity types"},
-	{Name: "end", OASName: "end", Type: "string", Description: "timestamp the data is returned up to in RFC3339 format (including timezone specification)"},
-	{Name: "extended-hours", OASName: "extended_hours", Type: "string", Description: "**deprecated**: Users are strongly advised to **rely on the intraday_reporting query parameter** for better control\no..."},
-	{Name: "intraday-reporting", OASName: "intraday_reporting", Type: "string", Default: "market_hours", Description: "for intraday resolutions (<1D) this specfies which timestamps to return data points for:\n\nAllowed values are:\n- **mar...", Completions: []string{"continuous", "extended_hours", "market_hours"}},
-	{Name: "period", OASName: "period", Type: "string", Description: "duration of the data in number + unit format, such as 1D, where unit can be D for day, W for week, M for month and A ..."},
-	{Name: "pnl-reset", OASName: "pnl_reset", Type: "string", Default: "per_day", Description: "pnl_reset defines how we are calculating the baseline values for Profit And Loss (pnl) for queries with timeframe les...", Completions: []string{"no_reset", "per_day"}},
-	{Name: "start", OASName: "start", Type: "string", Description: "timestamp the data is returned starting from in RFC3339 format (including timezone specification)"},
-	{Name: "timeframe", OASName: "timeframe", Type: "string", Description: "resolution of time window"},
+	{Name: "cashflow-types", OASName: "cashflow_types", Type: "string", Description: "cashflow activities to include in the report. One of 'ALL', 'NONE', or a comma-separated list of activity types", OpName: "GetAccountPortfolioHistory"},
+	{Name: "end", OASName: "end", Type: "string", Description: "timestamp the data is returned up to in RFC3339 format (including timezone specification)", OpName: "GetAccountPortfolioHistory"},
+	{Name: "extended-hours", OASName: "extended_hours", Type: "string", Description: "**deprecated**: Users are strongly advised to **rely on the intraday_reporting query parameter** for better control\no...", OpName: "GetAccountPortfolioHistory"},
+	{Name: "intraday-reporting", OASName: "intraday_reporting", Type: "string", Default: "market_hours", Description: "for intraday resolutions (<1D) this specfies which timestamps to return data points for:\n\nAllowed values are:\n- **mar...", Completions: []string{"continuous", "extended_hours", "market_hours"}, OpName: "GetAccountPortfolioHistory"},
+	{Name: "period", OASName: "period", Type: "string", Description: "duration of the data in number + unit format, such as 1D, where unit can be D for day, W for week, M for month and A ...", OpName: "GetAccountPortfolioHistory"},
+	{Name: "pnl-reset", OASName: "pnl_reset", Type: "string", Default: "per_day", Description: "pnl_reset defines how we are calculating the baseline values for Profit And Loss (pnl) for queries with timeframe les...", Completions: []string{"no_reset", "per_day"}, OpName: "GetAccountPortfolioHistory"},
+	{Name: "start", OASName: "start", Type: "string", Description: "timestamp the data is returned starting from in RFC3339 format (including timezone specification)", OpName: "GetAccountPortfolioHistory"},
+	{Name: "timeframe", OASName: "timeframe", Type: "string", Description: "resolution of time window", OpName: "GetAccountPortfolioHistory"},
 }
 
 type getAllOpenPositionsOp struct {
@@ -1701,17 +1702,17 @@ var GetAllOrdersOp = getAllOrdersOp{
 }
 
 var GetAllOrdersFlags = []FlagDef{
-	{Name: "after", OASName: "after", Type: "string", Description: "response will include only ones submitted after this timestamp (exclusive.)"},
-	{Name: "after-order-id", OASName: "after_order_id", Type: "string", Description: "return orders submitted after the order with this ID (exclusive).\nMutually exclusive with before_order_id"},
-	{Name: "asset-class", OASName: "asset_class", Type: "string", Description: "A comma seperated list of asset classes, the response will include only orders in the specified asset classes"},
-	{Name: "before-order-id", OASName: "before_order_id", Type: "string", Description: "return orders submitted before the order with this ID (exclusive).\nMutually exclusive with after_order_id"},
-	{Name: "direction", OASName: "direction", Type: "string", Description: "chronological order of response based on the submission time. asc or desc. Defaults to desc", Completions: []string{"asc", "desc"}},
-	{Name: "limit", OASName: "limit", Type: "int", Description: "maximum number of orders in response. Defaults to 50 and max is 500"},
-	{Name: "nested", OASName: "nested", Type: "bool", Description: "if true, the result will roll up multi-leg orders under the legs field of primary order"},
-	{Name: "side", OASName: "side", Type: "string", Description: "filters down to orders that have a matching side field set"},
-	{Name: "status", OASName: "status", Type: "string", Description: "order status to be queried. open, closed or all. Defaults to open", Completions: []string{"all", "closed", "open"}},
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of symbols to filter by (ex"},
-	{Name: "until", OASName: "until", Type: "string", Description: "response will include only ones submitted until this timestamp (exclusive.)"},
+	{Name: "after", OASName: "after", Type: "string", Description: "response will include only ones submitted after this timestamp (exclusive.)", OpName: "GetAllOrders"},
+	{Name: "after-order-id", OASName: "after_order_id", Type: "string", Description: "return orders submitted after the order with this ID (exclusive).\nMutually exclusive with before_order_id", OpName: "GetAllOrders"},
+	{Name: "asset-class", OASName: "asset_class", Type: "string", Description: "A comma seperated list of asset classes, the response will include only orders in the specified asset classes", OpName: "GetAllOrders"},
+	{Name: "before-order-id", OASName: "before_order_id", Type: "string", Description: "return orders submitted before the order with this ID (exclusive).\nMutually exclusive with after_order_id", OpName: "GetAllOrders"},
+	{Name: "direction", OASName: "direction", Type: "string", Description: "chronological order of response based on the submission time. asc or desc. Defaults to desc", Completions: []string{"asc", "desc"}, OpName: "GetAllOrders"},
+	{Name: "limit", OASName: "limit", Type: "int", Description: "maximum number of orders in response. Defaults to 50 and max is 500", OpName: "GetAllOrders"},
+	{Name: "nested", OASName: "nested", Type: "bool", Description: "if true, the result will roll up multi-leg orders under the legs field of primary order", OpName: "GetAllOrders"},
+	{Name: "side", OASName: "side", Type: "string", Description: "filters down to orders that have a matching side field set", OpName: "GetAllOrders"},
+	{Name: "status", OASName: "status", Type: "string", Description: "order status to be queried. open, closed or all. Defaults to open", Completions: []string{"all", "closed", "open"}, OpName: "GetAllOrders"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of symbols to filter by (ex", OpName: "GetAllOrders"},
+	{Name: "until", OASName: "until", Type: "string", Description: "response will include only ones submitted until this timestamp (exclusive.)", OpName: "GetAllOrders"},
 }
 
 type getCryptoFundingTransferOp struct {
@@ -1735,7 +1736,7 @@ var GetCryptoPerpAccountLeverageOp = getCryptoPerpAccountLeverageOp{
 }
 
 var GetCryptoPerpAccountLeverageFlags = []FlagDef{
-	{Name: "symbol", OASName: "symbol", Type: "string", Description: "symbol of underlying asset"},
+	{Name: "symbol", OASName: "symbol", Type: "string", Description: "symbol of underlying asset", OpName: "GetCryptoPerpAccountLeverage"},
 }
 
 type getCryptoPerpAccountVitalsOp struct {
@@ -1773,10 +1774,10 @@ var GetCryptoPerpTransferEstimateOp = getCryptoPerpTransferEstimateOp{
 }
 
 var GetCryptoPerpTransferEstimateFlags = []FlagDef{
-	{Name: "amount", OASName: "amount", Type: "string", Description: "amount, denoted in the specified asset, of the proposed transaction"},
-	{Name: "asset", OASName: "asset", Type: "string", Description: "asset for the proposed transaction"},
-	{Name: "from-address", OASName: "from_address", Type: "string", Description: "originating address of the proposed transaction"},
-	{Name: "to-address", OASName: "to_address", Type: "string", Description: "destination address of the proposed transaction"},
+	{Name: "amount", OASName: "amount", Type: "string", Description: "amount, denoted in the specified asset, of the proposed transaction", OpName: "GetCryptoPerpTransferEstimate"},
+	{Name: "asset", OASName: "asset", Type: "string", Description: "asset for the proposed transaction", OpName: "GetCryptoPerpTransferEstimate"},
+	{Name: "from-address", OASName: "from_address", Type: "string", Description: "originating address of the proposed transaction", OpName: "GetCryptoPerpTransferEstimate"},
+	{Name: "to-address", OASName: "to_address", Type: "string", Description: "destination address of the proposed transaction", OpName: "GetCryptoPerpTransferEstimate"},
 }
 
 type getCryptoTransferEstimateOp struct {
@@ -1796,10 +1797,10 @@ var GetCryptoTransferEstimateOp = getCryptoTransferEstimateOp{
 }
 
 var GetCryptoTransferEstimateFlags = []FlagDef{
-	{Name: "amount", OASName: "amount", Type: "string", Description: "amount, denoted in the specified asset, of the proposed transaction"},
-	{Name: "asset", OASName: "asset", Type: "string", Description: "asset for the proposed transaction"},
-	{Name: "from-address", OASName: "from_address", Type: "string", Description: "originating address of the proposed transaction"},
-	{Name: "to-address", OASName: "to_address", Type: "string", Description: "destination address of the proposed transaction"},
+	{Name: "amount", OASName: "amount", Type: "string", Description: "amount, denoted in the specified asset, of the proposed transaction", OpName: "GetCryptoTransferEstimate"},
+	{Name: "asset", OASName: "asset", Type: "string", Description: "asset for the proposed transaction", OpName: "GetCryptoTransferEstimate"},
+	{Name: "from-address", OASName: "from_address", Type: "string", Description: "originating address of the proposed transaction", OpName: "GetCryptoTransferEstimate"},
+	{Name: "to-address", OASName: "to_address", Type: "string", Description: "destination address of the proposed transaction", OpName: "GetCryptoTransferEstimate"},
 }
 
 type getOpenPositionOp struct {
@@ -1823,7 +1824,7 @@ var GetOrderByClientOrderIDOp = getOrderByClientOrderIDOp{
 }
 
 var GetOrderByClientOrderIDFlags = []FlagDef{
-	{Name: "client-order-id", OASName: "client_order_id", Type: "string", Description: "client-assigned order ID"},
+	{Name: "client-order-id", OASName: "client_order_id", Type: "string", Description: "client-assigned order ID", OpName: "GetOrderByClientOrderID"},
 }
 
 type getOrderByOrderIDOp struct {
@@ -1839,7 +1840,7 @@ var GetOrderByOrderIDOp = getOrderByOrderIDOp{
 }
 
 var GetOrderByOrderIDFlags = []FlagDef{
-	{Name: "nested", OASName: "nested", Type: "bool", Description: "if true, the result will roll up multi-leg orders under the legs field of primary order"},
+	{Name: "nested", OASName: "nested", Type: "bool", Description: "if true, the result will roll up multi-leg orders under the legs field of primary order", OpName: "GetOrderByOrderID"},
 }
 
 type getWatchlistByIDOp struct {
@@ -1863,7 +1864,7 @@ var GetWatchlistByNameOp = getWatchlistByNameOp{
 }
 
 var GetWatchlistByNameFlags = []FlagDef{
-	{Name: "name", OASName: "name", Type: "string", Description: "name of the watchlist"},
+	{Name: "name", OASName: "name", Type: "string", Description: "name of the watchlist", OpName: "GetWatchlistByName"},
 }
 
 type getWatchlistsOp struct {
@@ -1895,8 +1896,8 @@ var ListCryptoFundingWalletsOp = listCryptoFundingWalletsOp{
 }
 
 var ListCryptoFundingWalletsFlags = []FlagDef{
-	{Name: "asset", OASName: "asset", Type: "string", Description: "asset"},
-	{Name: "network", OASName: "network", Type: "string", Description: "optional network identifier", Completions: []string{"ethereum", "solana"}},
+	{Name: "asset", OASName: "asset", Type: "string", Description: "asset", OpName: "ListCryptoFundingWallets"},
+	{Name: "network", OASName: "network", Type: "string", Description: "optional network identifier", Completions: []string{"ethereum", "solana"}, OpName: "ListCryptoFundingWallets"},
 }
 
 type listCryptoPerpFundingTransfersOp struct {
@@ -1918,7 +1919,7 @@ var ListCryptoPerpFundingWalletsOp = listCryptoPerpFundingWalletsOp{
 }
 
 var ListCryptoPerpFundingWalletsFlags = []FlagDef{
-	{Name: "asset", OASName: "asset", Type: "string", Description: "asset"},
+	{Name: "asset", OASName: "asset", Type: "string", Description: "asset", OpName: "ListCryptoPerpFundingWallets"},
 }
 
 type listWhitelistedAddressOp struct {
@@ -1960,13 +1961,13 @@ var OptionBarsOp = optionBarsOp{
 }
 
 var OptionBarsFlags = []FlagDef{
-	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval"},
-	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page."},
-	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue"},
-	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}},
-	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval"},
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of contract symbols with a limit of 100"},
-	{Name: "timeframe", OASName: "timeframe", Type: "string", Description: "timeframe represented by each bar in aggregation.\nYou can use any of the following values:\n - [1-59]Min or [1-59]T, e.g"},
+	{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", OpName: "OptionBars"},
+	{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", OpName: "OptionBars"},
+	{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", OpName: "OptionBars"},
+	{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}, OpName: "OptionBars"},
+	{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval", OpName: "OptionBars"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of contract symbols with a limit of 100", OpName: "OptionBars"},
+	{Name: "timeframe", OASName: "timeframe", Type: "string", Description: "timeframe represented by each bar in aggregation.\nYou can use any of the following values:\n - [1-59]Min or [1-59]T, e.g", OpName: "OptionBars"},
 }
 
 type optionDoNotExerciseOp struct {
@@ -2018,16 +2019,16 @@ var PatchAccountConfigOp = patchAccountConfigOp{
 }
 
 var PatchAccountConfigFlags = []FlagDef{
-	{Name: "disable-overnight-trading", OASName: "disable_overnight_trading", Type: "bool", Description: "if true, overnight trading is disabled"},
-	{Name: "dtbp-check", OASName: "dtbp_check", Type: "string", Description: "both, entry, or exit. Controls Day Trading Margin Call (DTMC) checks", Completions: []string{"both", "entry", "exit"}},
-	{Name: "fractional-trading", OASName: "fractional_trading", Type: "bool", Description: "if true, account is able to participate in fractional trading"},
-	{Name: "max-margin-multiplier", OASName: "max_margin_multiplier", Type: "string", Description: "can be \"1\", \"2\", or \"4\""},
-	{Name: "max-options-trading-level", OASName: "max_options_trading_level", Type: "int", Description: "desired maximum options trading level. 0=disabled, 1=Covered Call/Cash-Secured Put, 2=Long Call/Put, 3=Spreads/Straddles", Completions: []string{"0", "1", "2", "3"}},
-	{Name: "no-shorting", OASName: "no_shorting", Type: "bool", Description: "if true, account becomes long-only mode"},
-	{Name: "pdt-check", OASName: "pdt_check", Type: "string", Description: "both, entry, or exit"},
-	{Name: "ptp-no-exception-entry", OASName: "ptp_no_exception_entry", Type: "bool", Description: "if set to true then Alpaca will accept orders for PTP symbols with no exception. Default is false"},
-	{Name: "suspend-trade", OASName: "suspend_trade", Type: "bool", Description: "if true, new orders are blocked"},
-	{Name: "trade-confirm-email", OASName: "trade_confirm_email", Type: "string", Description: "all or none. If none, emails for order fills are not sent"},
+	{Name: "disable-overnight-trading", OASName: "disable_overnight_trading", Type: "bool", Description: "if true, overnight trading is disabled", OpName: "PatchAccountConfig"},
+	{Name: "dtbp-check", OASName: "dtbp_check", Type: "string", Description: "both, entry, or exit. Controls Day Trading Margin Call (DTMC) checks", Completions: []string{"both", "entry", "exit"}, OpName: "PatchAccountConfig"},
+	{Name: "fractional-trading", OASName: "fractional_trading", Type: "bool", Description: "if true, account is able to participate in fractional trading", OpName: "PatchAccountConfig"},
+	{Name: "max-margin-multiplier", OASName: "max_margin_multiplier", Type: "string", Description: "can be \"1\", \"2\", or \"4\"", OpName: "PatchAccountConfig"},
+	{Name: "max-options-trading-level", OASName: "max_options_trading_level", Type: "int", Description: "desired maximum options trading level. 0=disabled, 1=Covered Call/Cash-Secured Put, 2=Long Call/Put, 3=Spreads/Straddles", Completions: []string{"0", "1", "2", "3"}, OpName: "PatchAccountConfig"},
+	{Name: "no-shorting", OASName: "no_shorting", Type: "bool", Description: "if true, account becomes long-only mode", OpName: "PatchAccountConfig"},
+	{Name: "pdt-check", OASName: "pdt_check", Type: "string", Description: "both, entry, or exit", OpName: "PatchAccountConfig"},
+	{Name: "ptp-no-exception-entry", OASName: "ptp_no_exception_entry", Type: "bool", Description: "if set to true then Alpaca will accept orders for PTP symbols with no exception. Default is false", OpName: "PatchAccountConfig"},
+	{Name: "suspend-trade", OASName: "suspend_trade", Type: "bool", Description: "if true, new orders are blocked", OpName: "PatchAccountConfig"},
+	{Name: "trade-confirm-email", OASName: "trade_confirm_email", Type: "string", Description: "all or none. If none, emails for order fills are not sent", OpName: "PatchAccountConfig"},
 }
 
 type patchOrderByOrderIDOp struct {
@@ -2055,13 +2056,13 @@ var PatchOrderByOrderIDOp = patchOrderByOrderIDOp{
 }
 
 var PatchOrderByOrderIDFlags = []FlagDef{
-	{Name: "advanced-instructions", OASName: "advanced_instructions", Type: "string", Description: "advanced instructions for Elite Smart Router: https://docs.alpaca.markets/docs/alpaca-elite-smart-router"},
-	{Name: "client-order-id", OASName: "client_order_id", Type: "string", Description: "A unique identifier for the new order. Automatically generated if not sent. (<= 128 characters)"},
-	{Name: "limit-price", OASName: "limit_price", Type: "string", Description: "required if original order's type field was limit or stop_limit."},
-	{Name: "qty", OASName: "qty", Type: "string", Description: "number of shares to trade."},
-	{Name: "stop-price", OASName: "stop_price", Type: "string", Description: "required if original order type is limit or stop_limit"},
-	{Name: "time-in-force", OASName: "time_in_force", Type: "string", Description: "time-In-Force values supported by Alpaca vary based on the order's security type", Completions: []string{"cls", "day", "fok", "gtc", "ioc", "opg"}},
-	{Name: "trail", OASName: "trail", Type: "string", Description: "the new value of the trail_price or trail_percent value (works only for type=“trailing_stop”)"},
+	{Name: "advanced-instructions", OASName: "advanced_instructions", Type: "string", Description: "advanced instructions for Elite Smart Router: https://docs.alpaca.markets/docs/alpaca-elite-smart-router", OpName: "PatchOrderByOrderID"},
+	{Name: "client-order-id", OASName: "client_order_id", Type: "string", Description: "A unique identifier for the new order. Automatically generated if not sent. (<= 128 characters)", OpName: "PatchOrderByOrderID"},
+	{Name: "limit-price", OASName: "limit_price", Type: "string", Description: "required if original order's type field was limit or stop_limit.", OpName: "PatchOrderByOrderID"},
+	{Name: "qty", OASName: "qty", Type: "string", Description: "number of shares to trade.", OpName: "PatchOrderByOrderID"},
+	{Name: "stop-price", OASName: "stop_price", Type: "string", Description: "required if original order type is limit or stop_limit", OpName: "PatchOrderByOrderID"},
+	{Name: "time-in-force", OASName: "time_in_force", Type: "string", Description: "time-In-Force values supported by Alpaca vary based on the order's security type", Completions: []string{"cls", "day", "fok", "gtc", "ioc", "opg"}, OpName: "PatchOrderByOrderID"},
+	{Name: "trail", OASName: "trail", Type: "string", Description: "the new value of the trail_price or trail_percent value (works only for type=“trailing_stop”)", OpName: "PatchOrderByOrderID"},
 }
 
 type postOrderOp struct {
@@ -2109,24 +2110,24 @@ var PostOrderOp = postOrderOp{
 }
 
 var PostOrderFlags = []FlagDef{
-	{Name: "advanced-instructions", OASName: "advanced_instructions", Type: "string", Description: "advanced instructions for Elite Smart Router: https://docs.alpaca.markets/docs/alpaca-elite-smart-router"},
-	{Name: "client-order-id", OASName: "client_order_id", Type: "string", Description: "A unique identifier for the order. Automatically generated if not sent. (<= 128 characters)"},
-	{Name: "extended-hours", OASName: "extended_hours", Type: "bool", Description: "(default) false"},
-	{Name: "legs", OASName: "legs", Type: "string", Description: "list of order legs (<= 4)"},
-	{Name: "limit-price", OASName: "limit_price", Type: "string", Description: "required if type is limit or stop_limit."},
-	{Name: "notional", OASName: "notional", Type: "string", Description: "dollar amount to trade. Cannot work with qty. Can only work for market order types and day for time in force"},
-	{Name: "order-class", OASName: "order_class", Type: "string", Description: "order classes supported by Alpaca vary based on the order's security type", Completions: []string{"bracket", "mleg", "oco", "oto", "simple"}},
-	{Name: "position-intent", OASName: "position_intent", Type: "string", Description: "represents the desired position strategy", Completions: []string{"buy_to_close", "buy_to_open", "sell_to_close", "sell_to_open"}},
-	{Name: "qty", OASName: "qty", Type: "string", Description: "number of shares to trade"},
-	{Name: "side", OASName: "side", Type: "string", Description: "represents which side this order was on:\n- buy\n- sell\nRequired for all order classes except for mleg", Completions: []string{"buy", "sell"}},
-	{Name: "stop-loss", OASName: "stop_loss", Type: "string", Description: "takes in string/number values for stop_price and limit_price"},
-	{Name: "stop-price", OASName: "stop_price", Type: "string", Description: "required if type is stop or stop_limit"},
-	{Name: "symbol", OASName: "symbol", Type: "string", Description: "symbol, asset ID, or currency pair to identify the asset to trade, required for all order classes except for mleg"},
-	{Name: "take-profit", OASName: "take_profit", Type: "string", Description: "takes in a string/number value for limit_price"},
-	{Name: "time-in-force", OASName: "time_in_force", Type: "string", Description: "time-In-Force values supported by Alpaca vary based on the order's security type", Completions: []string{"cls", "day", "fok", "gtc", "ioc", "opg"}},
-	{Name: "trail-percent", OASName: "trail_percent", Type: "string", Description: "this or trail_price is required if type is trailing_stop"},
-	{Name: "trail-price", OASName: "trail_price", Type: "string", Description: "this or trail_percent is required if type is trailing_stop"},
-	{Name: "type", OASName: "type", Type: "string", Description: "order types supported by Alpaca vary based on the order's security type", Completions: []string{"limit", "market", "stop", "stop_limit", "trailing_stop"}},
+	{Name: "advanced-instructions", OASName: "advanced_instructions", Type: "string", Description: "advanced instructions for Elite Smart Router: https://docs.alpaca.markets/docs/alpaca-elite-smart-router", OpName: "PostOrder"},
+	{Name: "client-order-id", OASName: "client_order_id", Type: "string", Description: "A unique identifier for the order. Automatically generated if not sent. (<= 128 characters)", OpName: "PostOrder"},
+	{Name: "extended-hours", OASName: "extended_hours", Type: "bool", Description: "(default) false", OpName: "PostOrder"},
+	{Name: "legs", OASName: "legs", Type: "string", Description: "list of order legs (<= 4)", OpName: "PostOrder"},
+	{Name: "limit-price", OASName: "limit_price", Type: "string", Description: "required if type is limit or stop_limit.", OpName: "PostOrder"},
+	{Name: "notional", OASName: "notional", Type: "string", Description: "dollar amount to trade. Cannot work with qty. Can only work for market order types and day for time in force", OpName: "PostOrder"},
+	{Name: "order-class", OASName: "order_class", Type: "string", Description: "order classes supported by Alpaca vary based on the order's security type", Completions: []string{"bracket", "mleg", "oco", "oto", "simple"}, OpName: "PostOrder"},
+	{Name: "position-intent", OASName: "position_intent", Type: "string", Description: "represents the desired position strategy", Completions: []string{"buy_to_close", "buy_to_open", "sell_to_close", "sell_to_open"}, OpName: "PostOrder"},
+	{Name: "qty", OASName: "qty", Type: "string", Description: "number of shares to trade", OpName: "PostOrder"},
+	{Name: "side", OASName: "side", Type: "string", Description: "represents which side this order was on:\n- buy\n- sell\nRequired for all order classes except for mleg", Completions: []string{"buy", "sell"}, OpName: "PostOrder"},
+	{Name: "stop-loss", OASName: "stop_loss", Type: "string", Description: "takes in string/number values for stop_price and limit_price", OpName: "PostOrder"},
+	{Name: "stop-price", OASName: "stop_price", Type: "string", Description: "required if type is stop or stop_limit", OpName: "PostOrder"},
+	{Name: "symbol", OASName: "symbol", Type: "string", Description: "symbol, asset ID, or currency pair to identify the asset to trade, required for all order classes except for mleg", OpName: "PostOrder"},
+	{Name: "take-profit", OASName: "take_profit", Type: "string", Description: "takes in a string/number value for limit_price", OpName: "PostOrder"},
+	{Name: "time-in-force", OASName: "time_in_force", Type: "string", Description: "time-In-Force values supported by Alpaca vary based on the order's security type", Completions: []string{"cls", "day", "fok", "gtc", "ioc", "opg"}, OpName: "PostOrder"},
+	{Name: "trail-percent", OASName: "trail_percent", Type: "string", Description: "this or trail_price is required if type is trailing_stop", OpName: "PostOrder"},
+	{Name: "trail-price", OASName: "trail_price", Type: "string", Description: "this or trail_percent is required if type is trailing_stop", OpName: "PostOrder"},
+	{Name: "type", OASName: "type", Type: "string", Description: "order types supported by Alpaca vary based on the order's security type", Completions: []string{"limit", "market", "stop", "stop_limit", "trailing_stop"}, OpName: "PostOrder"},
 }
 
 type postWatchlistOp struct {
@@ -2142,8 +2143,8 @@ var PostWatchlistOp = postWatchlistOp{
 }
 
 var PostWatchlistFlags = []FlagDef{
-	{Name: "name", OASName: "name", Type: "string", Description: "name"},
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "symbols"},
+	{Name: "name", OASName: "name", Type: "string", Description: "name", OpName: "PostWatchlist"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "symbols", OpName: "PostWatchlist"},
 }
 
 type removeAssetFromWatchlistOp struct {
@@ -2171,8 +2172,8 @@ var SetCryptoPerpAccountLeverageOp = setCryptoPerpAccountLeverageOp{
 }
 
 var SetCryptoPerpAccountLeverageFlags = []FlagDef{
-	{Name: "leverage", OASName: "leverage", Type: "int", Description: "leverage for the underlying asset"},
-	{Name: "symbol", OASName: "symbol", Type: "string", Description: "symbol of underlying asset"},
+	{Name: "leverage", OASName: "leverage", Type: "int", Description: "leverage for the underlying asset", OpName: "SetCryptoPerpAccountLeverage"},
+	{Name: "symbol", OASName: "symbol", Type: "string", Description: "symbol of underlying asset", OpName: "SetCryptoPerpAccountLeverage"},
 }
 
 type updateWatchlistByIDOp struct {
@@ -2190,8 +2191,8 @@ var UpdateWatchlistByIDOp = updateWatchlistByIDOp{
 }
 
 var UpdateWatchlistByIDFlags = []FlagDef{
-	{Name: "name", OASName: "name", Type: "string", Description: "name"},
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "symbols"},
+	{Name: "name", OASName: "name", Type: "string", Description: "name", OpName: "UpdateWatchlistByID"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "symbols", OpName: "UpdateWatchlistByID"},
 }
 
 type updateWatchlistByNameOp struct {
@@ -2207,8 +2208,8 @@ var UpdateWatchlistByNameOp = updateWatchlistByNameOp{
 }
 
 var UpdateWatchlistByNameFlags = []FlagDef{
-	{Name: "name", OASName: "name", Type: "string", Description: "name of the watchlist"},
-	{Name: "symbols", OASName: "symbols", Type: "string", Description: "symbols"},
+	{Name: "name", OASName: "name", Type: "string", Description: "name of the watchlist", OpName: "UpdateWatchlistByName"},
+	{Name: "symbols", OASName: "symbols", Type: "string", Description: "symbols", OpName: "UpdateWatchlistByName"},
 }
 
 // ResponseField describes a field in an API response.
@@ -2216,6 +2217,7 @@ type ResponseField struct {
 	Name        string
 	Type        string
 	Description string
+	EnumValues  []string
 }
 
 // ResponseSchemas maps operation names to their response fields.
@@ -2293,7 +2295,7 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "gainers", Type: "[]object", Description: "list of top N gainers"},
 		{Name: "last_updated", Type: "string", Description: "time when the movers were last computed. Formatted as a RFC-3339 date-time with nanosecond precision"},
 		{Name: "losers", Type: "[]object", Description: "list of top N losers"},
-		{Name: "market_type", Type: "enum", Description: "market type (stocks or crypto)"},
+		{Name: "market_type", Type: "enum", Description: "market type (stocks or crypto)", EnumValues: []string{"crypto", "stocks"}},
 	},
 	"News": {
 		{Name: "news", Type: "[]object", Description: "news"},
@@ -2420,12 +2422,12 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "asset", Type: "string", Description: "symbol of crypto asset for given transfer (e.g. BTC )"},
 		{Name: "chain", Type: "string", Description: "underlying network for given transfer"},
 		{Name: "created_at", Type: "string", Description: "timedate when transfer was created"},
-		{Name: "direction", Type: "enum", Description: "direction"},
+		{Name: "direction", Type: "enum", Description: "direction", EnumValues: []string{"INCOMING", "OUTGOING"}},
 		{Name: "fees", Type: "string", Description: "fees"},
 		{Name: "from_address", Type: "string", Description: "originating address of the transfer"},
 		{Name: "id", Type: "string", Description: "crypto transfer ID"},
 		{Name: "network_fee", Type: "string", Description: "network fee"},
-		{Name: "status", Type: "enum", Description: "status"},
+		{Name: "status", Type: "enum", Description: "status", EnumValues: []string{"COMPLETE", "FAILED", "PROCESSING"}},
 		{Name: "to_address", Type: "string", Description: "destination address of the transfer"},
 		{Name: "tx_hash", Type: "string", Description: "on-chain transaction hash (e.g. 0xabc...xyz)"},
 		{Name: "usd_value", Type: "string", Description: "equivalent USD value at time of transfer"},
@@ -2435,12 +2437,12 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "asset", Type: "string", Description: "symbol of crypto asset for given transfer (e.g. BTC )"},
 		{Name: "chain", Type: "string", Description: "underlying network for given transfer"},
 		{Name: "created_at", Type: "string", Description: "timedate when transfer was created"},
-		{Name: "direction", Type: "enum", Description: "direction"},
+		{Name: "direction", Type: "enum", Description: "direction", EnumValues: []string{"INCOMING", "OUTGOING"}},
 		{Name: "fees", Type: "string", Description: "fees"},
 		{Name: "from_address", Type: "string", Description: "originating address of the transfer"},
 		{Name: "id", Type: "string", Description: "crypto transfer ID"},
 		{Name: "network_fee", Type: "string", Description: "network fee"},
-		{Name: "status", Type: "enum", Description: "status"},
+		{Name: "status", Type: "enum", Description: "status", EnumValues: []string{"COMPLETE", "FAILED", "PROCESSING"}},
 		{Name: "to_address", Type: "string", Description: "destination address of the transfer"},
 		{Name: "tx_hash", Type: "string", Description: "on-chain transaction hash (e.g. 0xabc...xyz)"},
 		{Name: "usd_value", Type: "string", Description: "equivalent USD value at time of transfer"},
@@ -2451,7 +2453,7 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "chain", Type: "string", Description: "underlying network this address represents"},
 		{Name: "created_at", Type: "string", Description: "timestamp (RFC3339) of account creation"},
 		{Name: "id", Type: "string", Description: "unique ID for whitelisted address"},
-		{Name: "status", Type: "enum", Description: "status of whitelisted address which is either ACTIVE or PENDING"},
+		{Name: "status", Type: "enum", Description: "status of whitelisted address which is either ACTIVE or PENDING", EnumValues: []string{"APPROVED", "PENDING"}},
 	},
 	"CreateWhitelistedPerpAddress": {
 		{Name: "address", Type: "string", Description: "whitelisted address"},
@@ -2459,7 +2461,7 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "chain", Type: "string", Description: "underlying network this address represents"},
 		{Name: "created_at", Type: "string", Description: "timestamp (RFC3339) of account creation"},
 		{Name: "id", Type: "string", Description: "unique ID for whitelisted address"},
-		{Name: "status", Type: "enum", Description: "status of whitelisted address which is either ACTIVE or PENDING"},
+		{Name: "status", Type: "enum", Description: "status of whitelisted address which is either ACTIVE or PENDING", EnumValues: []string{"APPROVED", "PENDING"}},
 	},
 	"DeleteAllOpenPositions": {
 		{Name: "body", Type: "object", Description: "orders API allows a user to monitor, place and cancel their orders with Alpaca.\n\nEach order has a unique identifier p..."},
@@ -2471,7 +2473,7 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "status", Type: "integer", Description: "http response code"},
 	},
 	"DeleteOpenPosition": {
-		{Name: "asset_class", Type: "enum", Description: "this represents the category to which the asset belongs to"},
+		{Name: "asset_class", Type: "enum", Description: "this represents the category to which the asset belongs to", EnumValues: []string{"crypto", "us_equity", "us_option"}},
 		{Name: "asset_id", Type: "string", Description: "asset ID (For options this represents the option contract ID)"},
 		{Name: "canceled_at", Type: "string", Description: "canceled at"},
 		{Name: "client_order_id", Type: "string", Description: "client unique order ID"},
@@ -2487,22 +2489,22 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "legs", Type: "[]object", Description: "when querying non-simple order_class orders in a nested style, an array of Order entities associated with this order"},
 		{Name: "limit_price", Type: "string", Description: "limit price"},
 		{Name: "notional", Type: "string", Description: "ordered notional amount. If entered, qty will be null. Can take up to 9 decimal points"},
-		{Name: "order_class", Type: "enum", Description: "order classes supported by Alpaca vary based on the order's security type"},
+		{Name: "order_class", Type: "enum", Description: "order classes supported by Alpaca vary based on the order's security type", EnumValues: []string{"bracket", "mleg", "oco", "oto", "simple"}},
 		{Name: "order_type", Type: "string", Description: "deprecated in favour of the field \"type\""},
-		{Name: "position_intent", Type: "enum", Description: "represents the desired position strategy"},
+		{Name: "position_intent", Type: "enum", Description: "represents the desired position strategy", EnumValues: []string{"buy_to_close", "buy_to_open", "sell_to_close", "sell_to_open"}},
 		{Name: "qty", Type: "string", Description: "ordered quantity. If entered, notional will be null. Can take up to 9 decimal points. Required if order class is mleg"},
 		{Name: "replaced_at", Type: "string", Description: "replaced at"},
 		{Name: "replaced_by", Type: "string", Description: "order ID that this order was replaced by"},
 		{Name: "replaces", Type: "string", Description: "order ID that this order replaces"},
-		{Name: "side", Type: "enum", Description: "represents which side this order was on:\n- buy\n- sell\nRequired for all order classes except for mleg"},
-		{Name: "status", Type: "enum", Description: "an order executed through Alpaca can experience several status changes during its lifecycle"},
+		{Name: "side", Type: "enum", Description: "represents which side this order was on:\n- buy\n- sell\nRequired for all order classes except for mleg", EnumValues: []string{"buy", "sell"}},
+		{Name: "status", Type: "enum", Description: "an order executed through Alpaca can experience several status changes during its lifecycle", EnumValues: []string{"accepted", "accepted_for_bidding", "calculated", "canceled", "done_for_day", "expired", "filled", "new", "partially_filled", "pending_cancel", "pending_new", "pending_replace", "rejected", "replaced", "stopped", "suspended"}},
 		{Name: "stop_price", Type: "string", Description: "stop price"},
 		{Name: "submitted_at", Type: "string", Description: "submitted at"},
 		{Name: "symbol", Type: "string", Description: "asset symbol, required for all order classes except for mleg"},
-		{Name: "time_in_force", Type: "enum", Description: "time-In-Force values supported by Alpaca vary based on the order's security type"},
+		{Name: "time_in_force", Type: "enum", Description: "time-In-Force values supported by Alpaca vary based on the order's security type", EnumValues: []string{"cls", "day", "fok", "gtc", "ioc", "opg"}},
 		{Name: "trail_percent", Type: "string", Description: "percent value away from the high water mark for trailing stop orders"},
 		{Name: "trail_price", Type: "string", Description: "dollar value away from the high water mark for trailing stop orders"},
-		{Name: "type", Type: "enum", Description: "order types supported by Alpaca vary based on the order's security type"},
+		{Name: "type", Type: "enum", Description: "order types supported by Alpaca vary based on the order's security type", EnumValues: []string{"limit", "market", "stop", "stop_limit", "trailing_stop"}},
 		{Name: "updated_at", Type: "string", Description: "updated at"},
 	},
 	"GetOptionContractSymbolOrID": {
@@ -2517,21 +2519,21 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "open_interest_date", Type: "string", Description: "date of the open interest data"},
 		{Name: "root_symbol", Type: "string", Description: "root symbol of the option contract"},
 		{Name: "size", Type: "string", Description: "represents the number of underlying shares to be delivered in case the contract is exercised/assigned"},
-		{Name: "status", Type: "enum", Description: "status of the option contract"},
+		{Name: "status", Type: "enum", Description: "status of the option contract", EnumValues: []string{"active", "inactive"}},
 		{Name: "strike_price", Type: "string", Description: "strike price of the option contract"},
-		{Name: "style", Type: "enum", Description: "style of the option contract"},
+		{Name: "style", Type: "enum", Description: "style of the option contract", EnumValues: []string{"american", "european"}},
 		{Name: "symbol", Type: "string", Description: "symbol representing the option contract"},
 		{Name: "tradable", Type: "boolean", Description: "indicates whether the option contract is tradable"},
-		{Name: "type", Type: "enum", Description: "type of the option contract"},
+		{Name: "type", Type: "enum", Description: "type of the option contract", EnumValues: []string{"call", "put"}},
 		{Name: "underlying_asset_id", Type: "string", Description: "unique identifier of the underlying asset"},
 		{Name: "underlying_symbol", Type: "string", Description: "underlying symbol of the option contract"},
 	},
 	"GetV2Assets": {
-		{Name: "attributes", Type: "[]enum", Description: "unique characteristics of the asset"},
-		{Name: "class", Type: "enum", Description: "this represents the category to which the asset belongs to"},
+		{Name: "attributes", Type: "[]enum", Description: "unique characteristics of the asset", EnumValues: []string{"fractional_eh_enabled", "has_options", "ipo", "options_late_close", "overnight_halted", "overnight_tradable", "ptp_no_exception", "ptp_with_exception"}},
+		{Name: "class", Type: "enum", Description: "this represents the category to which the asset belongs to", EnumValues: []string{"crypto", "us_equity", "us_option"}},
 		{Name: "cusip", Type: "string", Description: "CUSIP identifier for the asset (US Equities only).\nTo request a specific CUSIP, please reach out to Alpaca support"},
 		{Name: "easy_to_borrow", Type: "boolean", Description: "asset is easy-to-borrow or not (filtering for easy_to_borrow = True is the best way to check whether the name is curr..."},
-		{Name: "exchange", Type: "enum", Description: "represents the current exchanges Alpaca supports"},
+		{Name: "exchange", Type: "enum", Description: "represents the current exchanges Alpaca supports", EnumValues: []string{"AMEX", "ARCA", "BATS", "NASDAQ", "NYSE", "NYSEARCA", "OTC"}},
 		{Name: "fractionable", Type: "boolean", Description: "asset is fractionable or not"},
 		{Name: "id", Type: "string", Description: "asset ID"},
 		{Name: "maintenance_margin_requirement", Type: "number", Description: "**deprecated**: Please use margin_requirement_long or margin_requirement_short instead"},
@@ -2540,16 +2542,16 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "marginable", Type: "boolean", Description: "asset is marginable or not"},
 		{Name: "name", Type: "string", Description: "official name of the asset"},
 		{Name: "shortable", Type: "boolean", Description: "asset is shortable or not"},
-		{Name: "status", Type: "enum", Description: "active or inactive"},
+		{Name: "status", Type: "enum", Description: "active or inactive", EnumValues: []string{"active", "inactive"}},
 		{Name: "symbol", Type: "string", Description: "symbol of the asset"},
 		{Name: "tradable", Type: "boolean", Description: "asset is tradable on Alpaca or not"},
 	},
 	"GetV2AssetsSymbolOrAssetID": {
-		{Name: "attributes", Type: "[]enum", Description: "unique characteristics of the asset"},
-		{Name: "class", Type: "enum", Description: "this represents the category to which the asset belongs to"},
+		{Name: "attributes", Type: "[]enum", Description: "unique characteristics of the asset", EnumValues: []string{"fractional_eh_enabled", "has_options", "ipo", "options_late_close", "overnight_halted", "overnight_tradable", "ptp_no_exception", "ptp_with_exception"}},
+		{Name: "class", Type: "enum", Description: "this represents the category to which the asset belongs to", EnumValues: []string{"crypto", "us_equity", "us_option"}},
 		{Name: "cusip", Type: "string", Description: "CUSIP identifier for the asset (US Equities only).\nTo request a specific CUSIP, please reach out to Alpaca support"},
 		{Name: "easy_to_borrow", Type: "boolean", Description: "asset is easy-to-borrow or not (filtering for easy_to_borrow = True is the best way to check whether the name is curr..."},
-		{Name: "exchange", Type: "enum", Description: "represents the current exchanges Alpaca supports"},
+		{Name: "exchange", Type: "enum", Description: "represents the current exchanges Alpaca supports", EnumValues: []string{"AMEX", "ARCA", "BATS", "NASDAQ", "NYSE", "NYSEARCA", "OTC"}},
 		{Name: "fractionable", Type: "boolean", Description: "asset is fractionable or not"},
 		{Name: "id", Type: "string", Description: "asset ID"},
 		{Name: "maintenance_margin_requirement", Type: "number", Description: "**deprecated**: Please use margin_requirement_long or margin_requirement_short instead"},
@@ -2558,7 +2560,7 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "marginable", Type: "boolean", Description: "asset is marginable or not"},
 		{Name: "name", Type: "string", Description: "official name of the asset"},
 		{Name: "shortable", Type: "boolean", Description: "asset is shortable or not"},
-		{Name: "status", Type: "enum", Description: "active or inactive"},
+		{Name: "status", Type: "enum", Description: "active or inactive", EnumValues: []string{"active", "inactive"}},
 		{Name: "symbol", Type: "string", Description: "symbol of the asset"},
 		{Name: "tradable", Type: "boolean", Description: "asset is tradable on Alpaca or not"},
 	},
@@ -2583,9 +2585,9 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "maintenance_margin", Type: "string", Description: "maintenance margin requirement (continuously updated value)"},
 		{Name: "multiplier", Type: "string", Description: "buying power multiplier that represents account margin classification; valid values 1 (standard limited margin accoun..."},
 		{Name: "non_marginable_buying_power", Type: "string", Description: "current available non-margin dollar buying power"},
-		{Name: "options_approved_level", Type: "integer", Description: "options trading level that was approved for this account."},
+		{Name: "options_approved_level", Type: "integer", Description: "options trading level that was approved for this account.", EnumValues: []string{"0", "1", "2", "3"}},
 		{Name: "options_buying_power", Type: "string", Description: "your buying power for options trading"},
-		{Name: "options_trading_level", Type: "integer", Description: "effective options trading level of the account."},
+		{Name: "options_trading_level", Type: "integer", Description: "effective options trading level of the account.", EnumValues: []string{"0", "1", "2", "3"}},
 		{Name: "pattern_day_trader", Type: "boolean", Description: "whether or not the account has been flagged as a pattern day trader"},
 		{Name: "pending_reg_taf_fees", Type: "string", Description: "pending regulatory fees for the account"},
 		{Name: "pending_transfer_in", Type: "string", Description: "cash pending transfer in"},
@@ -2595,17 +2597,17 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "short_market_value", Type: "string", Description: "real-time MtM value of all short positions held in the account"},
 		{Name: "shorting_enabled", Type: "boolean", Description: "flag to denote whether or not the account is permitted to short"},
 		{Name: "sma", Type: "string", Description: "value of special memorandum account (will be used at a later date to provide additional buying_power)"},
-		{Name: "status", Type: "enum", Description: "an enum representing the various possible account status values.\n\nMost likely, the account status is ACTIVE unless th..."},
+		{Name: "status", Type: "enum", Description: "an enum representing the various possible account status values.\n\nMost likely, the account status is ACTIVE unless th...", EnumValues: []string{"ACCOUNT_UPDATED", "ACTIVE", "APPROVAL_PENDING", "ONBOARDING", "REJECTED", "SUBMISSION_FAILED", "SUBMITTED"}},
 		{Name: "trade_suspended_by_user", Type: "boolean", Description: "user setting. If true, the account is not allowed to place orders"},
 		{Name: "trading_blocked", Type: "boolean", Description: "if true, the account is not allowed to place orders"},
 		{Name: "transfers_blocked", Type: "boolean", Description: "if true, the account is not allowed to request money transfers"},
 	},
 	"GetAccountConfig": {
 		{Name: "disable_overnight_trading", Type: "boolean", Description: "if true, overnight trading is disabled"},
-		{Name: "dtbp_check", Type: "enum", Description: "both, entry, or exit. Controls Day Trading Margin Call (DTMC) checks"},
+		{Name: "dtbp_check", Type: "enum", Description: "both, entry, or exit. Controls Day Trading Margin Call (DTMC) checks", EnumValues: []string{"both", "entry", "exit"}},
 		{Name: "fractional_trading", Type: "boolean", Description: "if true, account is able to participate in fractional trading"},
 		{Name: "max_margin_multiplier", Type: "string", Description: "can be \"1\", \"2\", or \"4\""},
-		{Name: "max_options_trading_level", Type: "integer", Description: "desired maximum options trading level. 0=disabled, 1=Covered Call/Cash-Secured Put, 2=Long Call/Put, 3=Spreads/Straddles"},
+		{Name: "max_options_trading_level", Type: "integer", Description: "desired maximum options trading level. 0=disabled, 1=Covered Call/Cash-Secured Put, 2=Long Call/Put, 3=Spreads/Straddles", EnumValues: []string{"0", "1", "2", "3"}},
 		{Name: "no_shorting", Type: "boolean", Description: "if true, account becomes long-only mode"},
 		{Name: "pdt_check", Type: "string", Description: "both, entry, or exit"},
 		{Name: "ptp_no_exception_entry", Type: "boolean", Description: "if set to true then Alpaca will accept orders for PTP symbols with no exception. Default is false"},
@@ -2623,14 +2625,14 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "timestamp", Type: "[]integer", Description: "time of each data element, left-labeled (the beginning of time window)."},
 	},
 	"GetAllOpenPositions": {
-		{Name: "asset_class", Type: "enum", Description: "this represents the category to which the asset belongs to"},
+		{Name: "asset_class", Type: "enum", Description: "this represents the category to which the asset belongs to", EnumValues: []string{"crypto", "us_equity", "us_option"}},
 		{Name: "asset_id", Type: "string", Description: "asset ID (For options this represents the option contract ID)"},
 		{Name: "asset_marginable", Type: "boolean", Description: "asset marginable"},
 		{Name: "avg_entry_price", Type: "string", Description: "average entry price of the position"},
 		{Name: "change_today", Type: "string", Description: "percent change from last day price (by a factor of 1)"},
 		{Name: "cost_basis", Type: "string", Description: "total cost basis in dollar"},
 		{Name: "current_price", Type: "string", Description: "current asset price per share"},
-		{Name: "exchange", Type: "enum", Description: "represents the current exchanges Alpaca supports"},
+		{Name: "exchange", Type: "enum", Description: "represents the current exchanges Alpaca supports", EnumValues: []string{"AMEX", "ARCA", "BATS", "NASDAQ", "NYSE", "NYSEARCA", "OTC"}},
 		{Name: "lastday_price", Type: "string", Description: "last day’s asset price per share based on the closing value of the last trading day"},
 		{Name: "market_value", Type: "string", Description: "total dollar amount of the position"},
 		{Name: "qty", Type: "string", Description: "number of shares"},
@@ -2643,7 +2645,7 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "unrealized_plpc", Type: "string", Description: "unrealized profit/loss percent (by a factor of 1)"},
 	},
 	"GetAllOrders": {
-		{Name: "asset_class", Type: "enum", Description: "this represents the category to which the asset belongs to"},
+		{Name: "asset_class", Type: "enum", Description: "this represents the category to which the asset belongs to", EnumValues: []string{"crypto", "us_equity", "us_option"}},
 		{Name: "asset_id", Type: "string", Description: "asset ID (For options this represents the option contract ID)"},
 		{Name: "canceled_at", Type: "string", Description: "canceled at"},
 		{Name: "client_order_id", Type: "string", Description: "client unique order ID"},
@@ -2659,22 +2661,22 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "legs", Type: "[]object", Description: "when querying non-simple order_class orders in a nested style, an array of Order entities associated with this order"},
 		{Name: "limit_price", Type: "string", Description: "limit price"},
 		{Name: "notional", Type: "string", Description: "ordered notional amount. If entered, qty will be null. Can take up to 9 decimal points"},
-		{Name: "order_class", Type: "enum", Description: "order classes supported by Alpaca vary based on the order's security type"},
+		{Name: "order_class", Type: "enum", Description: "order classes supported by Alpaca vary based on the order's security type", EnumValues: []string{"bracket", "mleg", "oco", "oto", "simple"}},
 		{Name: "order_type", Type: "string", Description: "deprecated in favour of the field \"type\""},
-		{Name: "position_intent", Type: "enum", Description: "represents the desired position strategy"},
+		{Name: "position_intent", Type: "enum", Description: "represents the desired position strategy", EnumValues: []string{"buy_to_close", "buy_to_open", "sell_to_close", "sell_to_open"}},
 		{Name: "qty", Type: "string", Description: "ordered quantity. If entered, notional will be null. Can take up to 9 decimal points. Required if order class is mleg"},
 		{Name: "replaced_at", Type: "string", Description: "replaced at"},
 		{Name: "replaced_by", Type: "string", Description: "order ID that this order was replaced by"},
 		{Name: "replaces", Type: "string", Description: "order ID that this order replaces"},
-		{Name: "side", Type: "enum", Description: "represents which side this order was on:\n- buy\n- sell\nRequired for all order classes except for mleg"},
-		{Name: "status", Type: "enum", Description: "an order executed through Alpaca can experience several status changes during its lifecycle"},
+		{Name: "side", Type: "enum", Description: "represents which side this order was on:\n- buy\n- sell\nRequired for all order classes except for mleg", EnumValues: []string{"buy", "sell"}},
+		{Name: "status", Type: "enum", Description: "an order executed through Alpaca can experience several status changes during its lifecycle", EnumValues: []string{"accepted", "accepted_for_bidding", "calculated", "canceled", "done_for_day", "expired", "filled", "new", "partially_filled", "pending_cancel", "pending_new", "pending_replace", "rejected", "replaced", "stopped", "suspended"}},
 		{Name: "stop_price", Type: "string", Description: "stop price"},
 		{Name: "submitted_at", Type: "string", Description: "submitted at"},
 		{Name: "symbol", Type: "string", Description: "asset symbol, required for all order classes except for mleg"},
-		{Name: "time_in_force", Type: "enum", Description: "time-In-Force values supported by Alpaca vary based on the order's security type"},
+		{Name: "time_in_force", Type: "enum", Description: "time-In-Force values supported by Alpaca vary based on the order's security type", EnumValues: []string{"cls", "day", "fok", "gtc", "ioc", "opg"}},
 		{Name: "trail_percent", Type: "string", Description: "percent value away from the high water mark for trailing stop orders"},
 		{Name: "trail_price", Type: "string", Description: "dollar value away from the high water mark for trailing stop orders"},
-		{Name: "type", Type: "enum", Description: "order types supported by Alpaca vary based on the order's security type"},
+		{Name: "type", Type: "enum", Description: "order types supported by Alpaca vary based on the order's security type", EnumValues: []string{"limit", "market", "stop", "stop_limit", "trailing_stop"}},
 		{Name: "updated_at", Type: "string", Description: "updated at"},
 	},
 	"GetCryptoFundingTransfer": {
@@ -2682,12 +2684,12 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "asset", Type: "string", Description: "symbol of crypto asset for given transfer (e.g. BTC )"},
 		{Name: "chain", Type: "string", Description: "underlying network for given transfer"},
 		{Name: "created_at", Type: "string", Description: "timedate when transfer was created"},
-		{Name: "direction", Type: "enum", Description: "direction"},
+		{Name: "direction", Type: "enum", Description: "direction", EnumValues: []string{"INCOMING", "OUTGOING"}},
 		{Name: "fees", Type: "string", Description: "fees"},
 		{Name: "from_address", Type: "string", Description: "originating address of the transfer"},
 		{Name: "id", Type: "string", Description: "crypto transfer ID"},
 		{Name: "network_fee", Type: "string", Description: "network fee"},
-		{Name: "status", Type: "enum", Description: "status"},
+		{Name: "status", Type: "enum", Description: "status", EnumValues: []string{"COMPLETE", "FAILED", "PROCESSING"}},
 		{Name: "to_address", Type: "string", Description: "destination address of the transfer"},
 		{Name: "tx_hash", Type: "string", Description: "on-chain transaction hash (e.g. 0xabc...xyz)"},
 		{Name: "usd_value", Type: "string", Description: "equivalent USD value at time of transfer"},
@@ -2697,25 +2699,25 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "asset", Type: "string", Description: "symbol of crypto asset for given transfer (e.g. BTC )"},
 		{Name: "chain", Type: "string", Description: "underlying network for given transfer"},
 		{Name: "created_at", Type: "string", Description: "timedate when transfer was created"},
-		{Name: "direction", Type: "enum", Description: "direction"},
+		{Name: "direction", Type: "enum", Description: "direction", EnumValues: []string{"INCOMING", "OUTGOING"}},
 		{Name: "fees", Type: "string", Description: "fees"},
 		{Name: "from_address", Type: "string", Description: "originating address of the transfer"},
 		{Name: "id", Type: "string", Description: "crypto transfer ID"},
 		{Name: "network_fee", Type: "string", Description: "network fee"},
-		{Name: "status", Type: "enum", Description: "status"},
+		{Name: "status", Type: "enum", Description: "status", EnumValues: []string{"COMPLETE", "FAILED", "PROCESSING"}},
 		{Name: "to_address", Type: "string", Description: "destination address of the transfer"},
 		{Name: "tx_hash", Type: "string", Description: "on-chain transaction hash (e.g. 0xabc...xyz)"},
 		{Name: "usd_value", Type: "string", Description: "equivalent USD value at time of transfer"},
 	},
 	"GetOpenPosition": {
-		{Name: "asset_class", Type: "enum", Description: "this represents the category to which the asset belongs to"},
+		{Name: "asset_class", Type: "enum", Description: "this represents the category to which the asset belongs to", EnumValues: []string{"crypto", "us_equity", "us_option"}},
 		{Name: "asset_id", Type: "string", Description: "asset ID (For options this represents the option contract ID)"},
 		{Name: "asset_marginable", Type: "boolean", Description: "asset marginable"},
 		{Name: "avg_entry_price", Type: "string", Description: "average entry price of the position"},
 		{Name: "change_today", Type: "string", Description: "percent change from last day price (by a factor of 1)"},
 		{Name: "cost_basis", Type: "string", Description: "total cost basis in dollar"},
 		{Name: "current_price", Type: "string", Description: "current asset price per share"},
-		{Name: "exchange", Type: "enum", Description: "represents the current exchanges Alpaca supports"},
+		{Name: "exchange", Type: "enum", Description: "represents the current exchanges Alpaca supports", EnumValues: []string{"AMEX", "ARCA", "BATS", "NASDAQ", "NYSE", "NYSEARCA", "OTC"}},
 		{Name: "lastday_price", Type: "string", Description: "last day’s asset price per share based on the closing value of the last trading day"},
 		{Name: "market_value", Type: "string", Description: "total dollar amount of the position"},
 		{Name: "qty", Type: "string", Description: "number of shares"},
@@ -2728,7 +2730,7 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "unrealized_plpc", Type: "string", Description: "unrealized profit/loss percent (by a factor of 1)"},
 	},
 	"GetOrderByClientOrderID": {
-		{Name: "asset_class", Type: "enum", Description: "this represents the category to which the asset belongs to"},
+		{Name: "asset_class", Type: "enum", Description: "this represents the category to which the asset belongs to", EnumValues: []string{"crypto", "us_equity", "us_option"}},
 		{Name: "asset_id", Type: "string", Description: "asset ID (For options this represents the option contract ID)"},
 		{Name: "canceled_at", Type: "string", Description: "canceled at"},
 		{Name: "client_order_id", Type: "string", Description: "client unique order ID"},
@@ -2744,26 +2746,26 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "legs", Type: "[]object", Description: "when querying non-simple order_class orders in a nested style, an array of Order entities associated with this order"},
 		{Name: "limit_price", Type: "string", Description: "limit price"},
 		{Name: "notional", Type: "string", Description: "ordered notional amount. If entered, qty will be null. Can take up to 9 decimal points"},
-		{Name: "order_class", Type: "enum", Description: "order classes supported by Alpaca vary based on the order's security type"},
+		{Name: "order_class", Type: "enum", Description: "order classes supported by Alpaca vary based on the order's security type", EnumValues: []string{"bracket", "mleg", "oco", "oto", "simple"}},
 		{Name: "order_type", Type: "string", Description: "deprecated in favour of the field \"type\""},
-		{Name: "position_intent", Type: "enum", Description: "represents the desired position strategy"},
+		{Name: "position_intent", Type: "enum", Description: "represents the desired position strategy", EnumValues: []string{"buy_to_close", "buy_to_open", "sell_to_close", "sell_to_open"}},
 		{Name: "qty", Type: "string", Description: "ordered quantity. If entered, notional will be null. Can take up to 9 decimal points. Required if order class is mleg"},
 		{Name: "replaced_at", Type: "string", Description: "replaced at"},
 		{Name: "replaced_by", Type: "string", Description: "order ID that this order was replaced by"},
 		{Name: "replaces", Type: "string", Description: "order ID that this order replaces"},
-		{Name: "side", Type: "enum", Description: "represents which side this order was on:\n- buy\n- sell\nRequired for all order classes except for mleg"},
-		{Name: "status", Type: "enum", Description: "an order executed through Alpaca can experience several status changes during its lifecycle"},
+		{Name: "side", Type: "enum", Description: "represents which side this order was on:\n- buy\n- sell\nRequired for all order classes except for mleg", EnumValues: []string{"buy", "sell"}},
+		{Name: "status", Type: "enum", Description: "an order executed through Alpaca can experience several status changes during its lifecycle", EnumValues: []string{"accepted", "accepted_for_bidding", "calculated", "canceled", "done_for_day", "expired", "filled", "new", "partially_filled", "pending_cancel", "pending_new", "pending_replace", "rejected", "replaced", "stopped", "suspended"}},
 		{Name: "stop_price", Type: "string", Description: "stop price"},
 		{Name: "submitted_at", Type: "string", Description: "submitted at"},
 		{Name: "symbol", Type: "string", Description: "asset symbol, required for all order classes except for mleg"},
-		{Name: "time_in_force", Type: "enum", Description: "time-In-Force values supported by Alpaca vary based on the order's security type"},
+		{Name: "time_in_force", Type: "enum", Description: "time-In-Force values supported by Alpaca vary based on the order's security type", EnumValues: []string{"cls", "day", "fok", "gtc", "ioc", "opg"}},
 		{Name: "trail_percent", Type: "string", Description: "percent value away from the high water mark for trailing stop orders"},
 		{Name: "trail_price", Type: "string", Description: "dollar value away from the high water mark for trailing stop orders"},
-		{Name: "type", Type: "enum", Description: "order types supported by Alpaca vary based on the order's security type"},
+		{Name: "type", Type: "enum", Description: "order types supported by Alpaca vary based on the order's security type", EnumValues: []string{"limit", "market", "stop", "stop_limit", "trailing_stop"}},
 		{Name: "updated_at", Type: "string", Description: "updated at"},
 	},
 	"GetOrderByOrderID": {
-		{Name: "asset_class", Type: "enum", Description: "this represents the category to which the asset belongs to"},
+		{Name: "asset_class", Type: "enum", Description: "this represents the category to which the asset belongs to", EnumValues: []string{"crypto", "us_equity", "us_option"}},
 		{Name: "asset_id", Type: "string", Description: "asset ID (For options this represents the option contract ID)"},
 		{Name: "canceled_at", Type: "string", Description: "canceled at"},
 		{Name: "client_order_id", Type: "string", Description: "client unique order ID"},
@@ -2779,22 +2781,22 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "legs", Type: "[]object", Description: "when querying non-simple order_class orders in a nested style, an array of Order entities associated with this order"},
 		{Name: "limit_price", Type: "string", Description: "limit price"},
 		{Name: "notional", Type: "string", Description: "ordered notional amount. If entered, qty will be null. Can take up to 9 decimal points"},
-		{Name: "order_class", Type: "enum", Description: "order classes supported by Alpaca vary based on the order's security type"},
+		{Name: "order_class", Type: "enum", Description: "order classes supported by Alpaca vary based on the order's security type", EnumValues: []string{"bracket", "mleg", "oco", "oto", "simple"}},
 		{Name: "order_type", Type: "string", Description: "deprecated in favour of the field \"type\""},
-		{Name: "position_intent", Type: "enum", Description: "represents the desired position strategy"},
+		{Name: "position_intent", Type: "enum", Description: "represents the desired position strategy", EnumValues: []string{"buy_to_close", "buy_to_open", "sell_to_close", "sell_to_open"}},
 		{Name: "qty", Type: "string", Description: "ordered quantity. If entered, notional will be null. Can take up to 9 decimal points. Required if order class is mleg"},
 		{Name: "replaced_at", Type: "string", Description: "replaced at"},
 		{Name: "replaced_by", Type: "string", Description: "order ID that this order was replaced by"},
 		{Name: "replaces", Type: "string", Description: "order ID that this order replaces"},
-		{Name: "side", Type: "enum", Description: "represents which side this order was on:\n- buy\n- sell\nRequired for all order classes except for mleg"},
-		{Name: "status", Type: "enum", Description: "an order executed through Alpaca can experience several status changes during its lifecycle"},
+		{Name: "side", Type: "enum", Description: "represents which side this order was on:\n- buy\n- sell\nRequired for all order classes except for mleg", EnumValues: []string{"buy", "sell"}},
+		{Name: "status", Type: "enum", Description: "an order executed through Alpaca can experience several status changes during its lifecycle", EnumValues: []string{"accepted", "accepted_for_bidding", "calculated", "canceled", "done_for_day", "expired", "filled", "new", "partially_filled", "pending_cancel", "pending_new", "pending_replace", "rejected", "replaced", "stopped", "suspended"}},
 		{Name: "stop_price", Type: "string", Description: "stop price"},
 		{Name: "submitted_at", Type: "string", Description: "submitted at"},
 		{Name: "symbol", Type: "string", Description: "asset symbol, required for all order classes except for mleg"},
-		{Name: "time_in_force", Type: "enum", Description: "time-In-Force values supported by Alpaca vary based on the order's security type"},
+		{Name: "time_in_force", Type: "enum", Description: "time-In-Force values supported by Alpaca vary based on the order's security type", EnumValues: []string{"cls", "day", "fok", "gtc", "ioc", "opg"}},
 		{Name: "trail_percent", Type: "string", Description: "percent value away from the high water mark for trailing stop orders"},
 		{Name: "trail_price", Type: "string", Description: "dollar value away from the high water mark for trailing stop orders"},
-		{Name: "type", Type: "enum", Description: "order types supported by Alpaca vary based on the order's security type"},
+		{Name: "type", Type: "enum", Description: "order types supported by Alpaca vary based on the order's security type", EnumValues: []string{"limit", "market", "stop", "stop_limit", "trailing_stop"}},
 		{Name: "updated_at", Type: "string", Description: "updated at"},
 	},
 	"GetWatchlistByID": {
@@ -2825,12 +2827,12 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "asset", Type: "string", Description: "symbol of crypto asset for given transfer (e.g. BTC )"},
 		{Name: "chain", Type: "string", Description: "underlying network for given transfer"},
 		{Name: "created_at", Type: "string", Description: "timedate when transfer was created"},
-		{Name: "direction", Type: "enum", Description: "direction"},
+		{Name: "direction", Type: "enum", Description: "direction", EnumValues: []string{"INCOMING", "OUTGOING"}},
 		{Name: "fees", Type: "string", Description: "fees"},
 		{Name: "from_address", Type: "string", Description: "originating address of the transfer"},
 		{Name: "id", Type: "string", Description: "crypto transfer ID"},
 		{Name: "network_fee", Type: "string", Description: "network fee"},
-		{Name: "status", Type: "enum", Description: "status"},
+		{Name: "status", Type: "enum", Description: "status", EnumValues: []string{"COMPLETE", "FAILED", "PROCESSING"}},
 		{Name: "to_address", Type: "string", Description: "destination address of the transfer"},
 		{Name: "tx_hash", Type: "string", Description: "on-chain transaction hash (e.g. 0xabc...xyz)"},
 		{Name: "usd_value", Type: "string", Description: "equivalent USD value at time of transfer"},
@@ -2845,12 +2847,12 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "asset", Type: "string", Description: "symbol of crypto asset for given transfer (e.g. BTC )"},
 		{Name: "chain", Type: "string", Description: "underlying network for given transfer"},
 		{Name: "created_at", Type: "string", Description: "timedate when transfer was created"},
-		{Name: "direction", Type: "enum", Description: "direction"},
+		{Name: "direction", Type: "enum", Description: "direction", EnumValues: []string{"INCOMING", "OUTGOING"}},
 		{Name: "fees", Type: "string", Description: "fees"},
 		{Name: "from_address", Type: "string", Description: "originating address of the transfer"},
 		{Name: "id", Type: "string", Description: "crypto transfer ID"},
 		{Name: "network_fee", Type: "string", Description: "network fee"},
-		{Name: "status", Type: "enum", Description: "status"},
+		{Name: "status", Type: "enum", Description: "status", EnumValues: []string{"COMPLETE", "FAILED", "PROCESSING"}},
 		{Name: "to_address", Type: "string", Description: "destination address of the transfer"},
 		{Name: "tx_hash", Type: "string", Description: "on-chain transaction hash (e.g. 0xabc...xyz)"},
 		{Name: "usd_value", Type: "string", Description: "equivalent USD value at time of transfer"},
@@ -2866,7 +2868,7 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "chain", Type: "string", Description: "underlying network this address represents"},
 		{Name: "created_at", Type: "string", Description: "timestamp (RFC3339) of account creation"},
 		{Name: "id", Type: "string", Description: "unique ID for whitelisted address"},
-		{Name: "status", Type: "enum", Description: "status of whitelisted address which is either ACTIVE or PENDING"},
+		{Name: "status", Type: "enum", Description: "status of whitelisted address which is either ACTIVE or PENDING", EnumValues: []string{"APPROVED", "PENDING"}},
 	},
 	"ListWhitelistedPerpAddress": {
 		{Name: "address", Type: "string", Description: "whitelisted address"},
@@ -2874,7 +2876,7 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "chain", Type: "string", Description: "underlying network this address represents"},
 		{Name: "created_at", Type: "string", Description: "timestamp (RFC3339) of account creation"},
 		{Name: "id", Type: "string", Description: "unique ID for whitelisted address"},
-		{Name: "status", Type: "enum", Description: "status of whitelisted address which is either ACTIVE or PENDING"},
+		{Name: "status", Type: "enum", Description: "status of whitelisted address which is either ACTIVE or PENDING", EnumValues: []string{"APPROVED", "PENDING"}},
 	},
 	"OptionBars": {
 		{Name: "bars", Type: "map[string][]object", Description: "bars"},
@@ -2883,10 +2885,10 @@ var ResponseSchemas = map[string][]ResponseField{
 	},
 	"PatchAccountConfig": {
 		{Name: "disable_overnight_trading", Type: "boolean", Description: "if true, overnight trading is disabled"},
-		{Name: "dtbp_check", Type: "enum", Description: "both, entry, or exit. Controls Day Trading Margin Call (DTMC) checks"},
+		{Name: "dtbp_check", Type: "enum", Description: "both, entry, or exit. Controls Day Trading Margin Call (DTMC) checks", EnumValues: []string{"both", "entry", "exit"}},
 		{Name: "fractional_trading", Type: "boolean", Description: "if true, account is able to participate in fractional trading"},
 		{Name: "max_margin_multiplier", Type: "string", Description: "can be \"1\", \"2\", or \"4\""},
-		{Name: "max_options_trading_level", Type: "integer", Description: "desired maximum options trading level. 0=disabled, 1=Covered Call/Cash-Secured Put, 2=Long Call/Put, 3=Spreads/Straddles"},
+		{Name: "max_options_trading_level", Type: "integer", Description: "desired maximum options trading level. 0=disabled, 1=Covered Call/Cash-Secured Put, 2=Long Call/Put, 3=Spreads/Straddles", EnumValues: []string{"0", "1", "2", "3"}},
 		{Name: "no_shorting", Type: "boolean", Description: "if true, account becomes long-only mode"},
 		{Name: "pdt_check", Type: "string", Description: "both, entry, or exit"},
 		{Name: "ptp_no_exception_entry", Type: "boolean", Description: "if set to true then Alpaca will accept orders for PTP symbols with no exception. Default is false"},
@@ -2894,7 +2896,7 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "trade_confirm_email", Type: "string", Description: "all or none. If none, emails for order fills are not sent"},
 	},
 	"PatchOrderByOrderID": {
-		{Name: "asset_class", Type: "enum", Description: "this represents the category to which the asset belongs to"},
+		{Name: "asset_class", Type: "enum", Description: "this represents the category to which the asset belongs to", EnumValues: []string{"crypto", "us_equity", "us_option"}},
 		{Name: "asset_id", Type: "string", Description: "asset ID (For options this represents the option contract ID)"},
 		{Name: "canceled_at", Type: "string", Description: "canceled at"},
 		{Name: "client_order_id", Type: "string", Description: "client unique order ID"},
@@ -2910,26 +2912,26 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "legs", Type: "[]object", Description: "when querying non-simple order_class orders in a nested style, an array of Order entities associated with this order"},
 		{Name: "limit_price", Type: "string", Description: "limit price"},
 		{Name: "notional", Type: "string", Description: "ordered notional amount. If entered, qty will be null. Can take up to 9 decimal points"},
-		{Name: "order_class", Type: "enum", Description: "order classes supported by Alpaca vary based on the order's security type"},
+		{Name: "order_class", Type: "enum", Description: "order classes supported by Alpaca vary based on the order's security type", EnumValues: []string{"bracket", "mleg", "oco", "oto", "simple"}},
 		{Name: "order_type", Type: "string", Description: "deprecated in favour of the field \"type\""},
-		{Name: "position_intent", Type: "enum", Description: "represents the desired position strategy"},
+		{Name: "position_intent", Type: "enum", Description: "represents the desired position strategy", EnumValues: []string{"buy_to_close", "buy_to_open", "sell_to_close", "sell_to_open"}},
 		{Name: "qty", Type: "string", Description: "ordered quantity. If entered, notional will be null. Can take up to 9 decimal points. Required if order class is mleg"},
 		{Name: "replaced_at", Type: "string", Description: "replaced at"},
 		{Name: "replaced_by", Type: "string", Description: "order ID that this order was replaced by"},
 		{Name: "replaces", Type: "string", Description: "order ID that this order replaces"},
-		{Name: "side", Type: "enum", Description: "represents which side this order was on:\n- buy\n- sell\nRequired for all order classes except for mleg"},
-		{Name: "status", Type: "enum", Description: "an order executed through Alpaca can experience several status changes during its lifecycle"},
+		{Name: "side", Type: "enum", Description: "represents which side this order was on:\n- buy\n- sell\nRequired for all order classes except for mleg", EnumValues: []string{"buy", "sell"}},
+		{Name: "status", Type: "enum", Description: "an order executed through Alpaca can experience several status changes during its lifecycle", EnumValues: []string{"accepted", "accepted_for_bidding", "calculated", "canceled", "done_for_day", "expired", "filled", "new", "partially_filled", "pending_cancel", "pending_new", "pending_replace", "rejected", "replaced", "stopped", "suspended"}},
 		{Name: "stop_price", Type: "string", Description: "stop price"},
 		{Name: "submitted_at", Type: "string", Description: "submitted at"},
 		{Name: "symbol", Type: "string", Description: "asset symbol, required for all order classes except for mleg"},
-		{Name: "time_in_force", Type: "enum", Description: "time-In-Force values supported by Alpaca vary based on the order's security type"},
+		{Name: "time_in_force", Type: "enum", Description: "time-In-Force values supported by Alpaca vary based on the order's security type", EnumValues: []string{"cls", "day", "fok", "gtc", "ioc", "opg"}},
 		{Name: "trail_percent", Type: "string", Description: "percent value away from the high water mark for trailing stop orders"},
 		{Name: "trail_price", Type: "string", Description: "dollar value away from the high water mark for trailing stop orders"},
-		{Name: "type", Type: "enum", Description: "order types supported by Alpaca vary based on the order's security type"},
+		{Name: "type", Type: "enum", Description: "order types supported by Alpaca vary based on the order's security type", EnumValues: []string{"limit", "market", "stop", "stop_limit", "trailing_stop"}},
 		{Name: "updated_at", Type: "string", Description: "updated at"},
 	},
 	"PostOrder": {
-		{Name: "asset_class", Type: "enum", Description: "this represents the category to which the asset belongs to"},
+		{Name: "asset_class", Type: "enum", Description: "this represents the category to which the asset belongs to", EnumValues: []string{"crypto", "us_equity", "us_option"}},
 		{Name: "asset_id", Type: "string", Description: "asset ID (For options this represents the option contract ID)"},
 		{Name: "canceled_at", Type: "string", Description: "canceled at"},
 		{Name: "client_order_id", Type: "string", Description: "client unique order ID"},
@@ -2945,22 +2947,22 @@ var ResponseSchemas = map[string][]ResponseField{
 		{Name: "legs", Type: "[]object", Description: "when querying non-simple order_class orders in a nested style, an array of Order entities associated with this order"},
 		{Name: "limit_price", Type: "string", Description: "limit price"},
 		{Name: "notional", Type: "string", Description: "ordered notional amount. If entered, qty will be null. Can take up to 9 decimal points"},
-		{Name: "order_class", Type: "enum", Description: "order classes supported by Alpaca vary based on the order's security type"},
+		{Name: "order_class", Type: "enum", Description: "order classes supported by Alpaca vary based on the order's security type", EnumValues: []string{"bracket", "mleg", "oco", "oto", "simple"}},
 		{Name: "order_type", Type: "string", Description: "deprecated in favour of the field \"type\""},
-		{Name: "position_intent", Type: "enum", Description: "represents the desired position strategy"},
+		{Name: "position_intent", Type: "enum", Description: "represents the desired position strategy", EnumValues: []string{"buy_to_close", "buy_to_open", "sell_to_close", "sell_to_open"}},
 		{Name: "qty", Type: "string", Description: "ordered quantity. If entered, notional will be null. Can take up to 9 decimal points. Required if order class is mleg"},
 		{Name: "replaced_at", Type: "string", Description: "replaced at"},
 		{Name: "replaced_by", Type: "string", Description: "order ID that this order was replaced by"},
 		{Name: "replaces", Type: "string", Description: "order ID that this order replaces"},
-		{Name: "side", Type: "enum", Description: "represents which side this order was on:\n- buy\n- sell\nRequired for all order classes except for mleg"},
-		{Name: "status", Type: "enum", Description: "an order executed through Alpaca can experience several status changes during its lifecycle"},
+		{Name: "side", Type: "enum", Description: "represents which side this order was on:\n- buy\n- sell\nRequired for all order classes except for mleg", EnumValues: []string{"buy", "sell"}},
+		{Name: "status", Type: "enum", Description: "an order executed through Alpaca can experience several status changes during its lifecycle", EnumValues: []string{"accepted", "accepted_for_bidding", "calculated", "canceled", "done_for_day", "expired", "filled", "new", "partially_filled", "pending_cancel", "pending_new", "pending_replace", "rejected", "replaced", "stopped", "suspended"}},
 		{Name: "stop_price", Type: "string", Description: "stop price"},
 		{Name: "submitted_at", Type: "string", Description: "submitted at"},
 		{Name: "symbol", Type: "string", Description: "asset symbol, required for all order classes except for mleg"},
-		{Name: "time_in_force", Type: "enum", Description: "time-In-Force values supported by Alpaca vary based on the order's security type"},
+		{Name: "time_in_force", Type: "enum", Description: "time-In-Force values supported by Alpaca vary based on the order's security type", EnumValues: []string{"cls", "day", "fok", "gtc", "ioc", "opg"}},
 		{Name: "trail_percent", Type: "string", Description: "percent value away from the high water mark for trailing stop orders"},
 		{Name: "trail_price", Type: "string", Description: "dollar value away from the high water mark for trailing stop orders"},
-		{Name: "type", Type: "enum", Description: "order types supported by Alpaca vary based on the order's security type"},
+		{Name: "type", Type: "enum", Description: "order types supported by Alpaca vary based on the order's security type", EnumValues: []string{"limit", "market", "stop", "stop_limit", "trailing_stop"}},
 		{Name: "updated_at", Type: "string", Description: "updated at"},
 	},
 	"PostWatchlist": {
@@ -3082,4 +3084,20 @@ var OperationSummaries = map[string]string{
 	"RemoveAssetFromWatchlist":           "Delete symbol from watchlist",
 	"UpdateWatchlistByID":                "Update watchlist by id",
 	"UpdateWatchlistByName":              "Update watchlist by name",
+}
+
+// ArrayResponses tracks which operations return arrays vs single objects.
+var ArrayResponses = map[string]bool{
+	"DeleteAllOpenPositions":         true,
+	"DeleteAllOrders":                true,
+	"GetV2Assets":                    true,
+	"GetAllOpenPositions":            true,
+	"GetAllOrders":                   true,
+	"GetWatchlists":                  true,
+	"ListCryptoFundingTransfers":     true,
+	"ListCryptoFundingWallets":       true,
+	"ListCryptoPerpFundingTransfers": true,
+	"ListCryptoPerpFundingWallets":   true,
+	"ListWhitelistedAddress":         true,
+	"ListWhitelistedPerpAddress":     true,
 }

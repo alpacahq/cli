@@ -1013,9 +1013,10 @@ type opDesc struct {
 }
 
 type responseFieldDesc struct {
-	name     string
-	jsonType string
-	desc     string
+	name       string
+	jsonType   string
+	desc       string
+	enumValues []string
 }
 
 type flagDesc struct {
@@ -1105,10 +1106,17 @@ func collectDescriptions(endpoints []*endpointInfo, schemas []*schemaInfo, spec 
 						if desc == "" {
 							desc = humanize(name, nil)
 						}
+						enums := propertyEnums(propSchema, compSchemas)
+						if len(enums) == 0 {
+							if items, ok := propSchema["items"].(map[string]any); ok {
+								enums = propertyEnums(items, compSchemas)
+							}
+						}
 						op.responseFields = append(op.responseFields, &responseFieldDesc{
-							name:     name,
-							jsonType: oasFieldType(propSchema, compSchemas),
-							desc:     normalizeDesc(desc),
+							name:       name,
+							jsonType:   oasFieldType(propSchema, compSchemas),
+							desc:       normalizeDesc(desc),
+							enumValues: enums,
 						})
 					}
 					break
@@ -1396,6 +1404,7 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 	fmt.Fprintf(&buf, "\tDefault     string\n")
 	fmt.Fprintf(&buf, "\tDescription string\n")
 	fmt.Fprintf(&buf, "\tCompletions []string // enum values for shell completion\n")
+	fmt.Fprintf(&buf, "\tOpName      string   // operation name for schema lookup\n")
 	fmt.Fprintf(&buf, "}\n\n")
 
 	for _, op := range ops {
@@ -1455,6 +1464,7 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 					}
 					buf.WriteString("}")
 				}
+				fmt.Fprintf(&buf, ", OpName: %q", op.goName)
 				fmt.Fprintf(&buf, "},\n")
 			}
 			fmt.Fprintf(&buf, "}\n\n")
@@ -1466,6 +1476,7 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 	fmt.Fprintf(&buf, "\tName        string\n")
 	fmt.Fprintf(&buf, "\tType        string\n")
 	fmt.Fprintf(&buf, "\tDescription string\n")
+	fmt.Fprintf(&buf, "\tEnumValues  []string\n")
 	fmt.Fprintf(&buf, "}\n\n")
 
 	fmt.Fprintf(&buf, "// ResponseSchemas maps operation names to their response fields.\n")
@@ -1476,7 +1487,18 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 		}
 		fmt.Fprintf(&buf, "\t%q: {\n", op.goName)
 		for _, f := range op.responseFields {
-			fmt.Fprintf(&buf, "\t\t{Name: %q, Type: %q, Description: %q},\n", f.name, f.jsonType, f.desc)
+			fmt.Fprintf(&buf, "\t\t{Name: %q, Type: %q, Description: %q", f.name, f.jsonType, f.desc)
+			if len(f.enumValues) > 0 {
+				fmt.Fprintf(&buf, ", EnumValues: []string{")
+				for i, v := range f.enumValues {
+					if i > 0 {
+						buf.WriteString(", ")
+					}
+					fmt.Fprintf(&buf, "%q", v)
+				}
+				buf.WriteString("}")
+			}
+			fmt.Fprintf(&buf, "},\n")
 		}
 		fmt.Fprintf(&buf, "\t},\n")
 	}
@@ -1489,6 +1511,18 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 			continue
 		}
 		fmt.Fprintf(&buf, "\t%q: %q,\n", op.goName, op.summary)
+	}
+	fmt.Fprintf(&buf, "}\n\n")
+
+	fmt.Fprintf(&buf, "// ArrayResponses tracks which operations return arrays vs single objects.\n")
+	fmt.Fprintf(&buf, "var ArrayResponses = map[string]bool{\n")
+	for _, op := range ops {
+		if len(op.responseFields) == 0 {
+			continue
+		}
+		if op.returnsArray {
+			fmt.Fprintf(&buf, "\t%q: true,\n", op.goName)
+		}
 	}
 	fmt.Fprintf(&buf, "}\n\n")
 

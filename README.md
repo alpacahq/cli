@@ -196,8 +196,6 @@ alpaca position list --json
 | `alpaca api post <path>` | POST request to any endpoint |
 | `alpaca api patch <path>` | PATCH request to any endpoint |
 | `alpaca api delete <path>` | DELETE request to any endpoint |
-| `alpaca schema` | List all API response schemas |
-| `alpaca schema <operation>` | Show response fields for an operation |
 | `alpaca doctor` | Check config and API connectivity |
 | `alpaca setup` | Install completions and man pages |
 | `alpaca update` | Self-update |
@@ -398,12 +396,12 @@ alpaca news --symbols AAPL --all --max 100
 
 ### Response Schemas
 
-Inspect response field docs generated from the OpenAPI spec:
+Any command with OAS-generated flags supports `--schema` to show the response fields without making an API call:
 
 ```bash
-alpaca schema                    # List all operations
-alpaca schema GetAccount         # Show Account response fields
-alpaca schema GetAllOrders       # Show Order response fields
+alpaca order list --schema       # Show Order response fields
+alpaca asset list --schema       # Show Asset response fields
+alpaca data bars --schema        # Show bars response fields
 ```
 
 ### Diagnostics

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/alpacahq/cli/internal/api"
@@ -33,6 +34,7 @@ var (
 	quietFlag     bool
 	verboseFlag   bool
 	debugFlag     bool
+	schemaFlag    bool
 	profileFlag   string
 	timeoutFlag   int
 )
@@ -109,6 +111,11 @@ var rootCmd = &cobra.Command{
 		if ha, _ := cmd.Flags().GetBool("help-all"); ha {
 			return nil
 		}
+		if schemaFlag {
+			err := printCommandSchema(cmd)
+			cmd.RunE = func(*cobra.Command, []string) error { return nil }
+			return err
+		}
 		if cmd.Parent() != nil && cmd.Parent().Name() == "profile" {
 			return nil
 		}
@@ -164,6 +171,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&debugFlag, "debug", false, "Show full HTTP request/response bodies on stderr (implies --verbose)")
 	rootCmd.PersistentFlags().BoolVarP(&quietFlag, "quiet", "q", false, "Suppress non-data output (warnings, hints, color)")
 	rootCmd.PersistentFlags().IntVar(&timeoutFlag, "timeout", 30, "HTTP request timeout in seconds")
+	rootCmd.PersistentFlags().BoolVar(&schemaFlag, "schema", false, "Show response schema for this command and exit")
 
 	rootCmd.Flags().Bool("help-all", false, "Print full reference for every command")
 
@@ -218,15 +226,13 @@ func init() {
 	rootCmd.AddCommand(apiCmd)
 	rootCmd.AddCommand(updateCmd)
 	rootCmd.AddCommand(doctorCmd)
-	rootCmd.AddCommand(schemaCmd)
 
 	doctorCmd.GroupID = utilGroup.ID
-	schemaCmd.GroupID = utilGroup.ID
 }
 
 func needsAuth(cmd *cobra.Command) bool {
 	switch cmd.Name() {
-	case "version", "help", "completion", "update", "setup", "doctor", "schema":
+	case "version", "help", "completion", "update", "setup", "doctor":
 		return false
 	}
 	return true
@@ -249,4 +255,99 @@ func verboseLog(format string, args ...any) {
 	if verboseFlag {
 		fmt.Fprintf(os.Stderr, format+"\n", args...)
 	}
+}
+
+var (
+	schemaComment = color.New(color.Faint)
+	schemaType    = color.New(color.FgCyan)
+	schemaEnum    = color.New(color.FgGreen)
+)
+
+func printCommandSchema(cmd *cobra.Command) error {
+	opName := cmd.Annotations["op"]
+	if opName == "" {
+		return fmt.Errorf("no response schema available for %q", cmd.CommandPath())
+	}
+	fields, ok := api.ResponseSchemas[opName]
+	if !ok {
+		return fmt.Errorf("no response schema available for %q", cmd.CommandPath())
+	}
+
+	w := cmd.OutOrStdout()
+
+	summary := api.OperationSummaries[opName]
+	if api.ArrayResponses[opName] {
+		schemaComment.Fprintf(w, "// %s — returns an array of:\n", summary)
+	} else if summary != "" {
+		schemaComment.Fprintf(w, "// %s\n", summary)
+	}
+	fmt.Fprintln(w, "{")
+
+	for _, f := range fields {
+		ts := tsTypeColorized(f)
+		desc := firstLine(f.Description)
+		if desc != "" {
+			fmt.Fprintf(w, "  %s: %s; %s\n", f.Name, ts, schemaComment.Sprintf("// %s", desc))
+		} else {
+			fmt.Fprintf(w, "  %s: %s;\n", f.Name, ts)
+		}
+	}
+
+	fmt.Fprintln(w, "}")
+	return nil
+}
+
+var oasToTS = map[string]string{
+	"string":    "string",
+	"boolean":   "boolean",
+	"integer":   "number",
+	"number":    "number",
+	"enum":      "string",
+	"object":    "object",
+	"any":       "unknown",
+	"[]string":  "string[]",
+	"[]integer": "number[]",
+	"[]number":  "number[]",
+	"[]boolean": "boolean[]",
+	"[]object":  "object[]",
+	"[]enum":    "string[]",
+}
+
+func tsTypeColorized(f api.ResponseField) string {
+	if len(f.EnumValues) > 0 {
+		isArray := strings.HasPrefix(f.Type, "[]")
+		parts := make([]string, len(f.EnumValues))
+		for i, v := range f.EnumValues {
+			parts[i] = schemaEnum.Sprintf("%q", v)
+		}
+		union := strings.Join(parts, " | ")
+		if isArray {
+			return "(" + union + ")[]"
+		}
+		return union
+	}
+
+	raw := tsTypePlain(f.Type)
+	return schemaType.Sprint(raw)
+}
+
+func tsTypePlain(t string) string {
+	if ts, ok := oasToTS[t]; ok {
+		return ts
+	}
+	if strings.HasPrefix(t, "map[string]") {
+		return "Record<string, " + t[len("map[string]"):] + ">"
+	}
+	if strings.HasPrefix(t, "[]") {
+		return t[2:] + "[]"
+	}
+	return t
+}
+
+func firstLine(s string) string {
+	s = strings.TrimSpace(s)
+	if i := strings.IndexAny(s, "\n\r"); i >= 0 {
+		s = s[:i]
+	}
+	return strings.TrimSpace(s)
 }

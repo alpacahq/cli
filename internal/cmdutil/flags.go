@@ -17,7 +17,26 @@ type FlagOpts struct {
 }
 
 // RegisterFlags registers CLI flags from generated FlagDef definitions.
+// It also stores the operation name (from FlagDef.OpName) as a Cobra
+// annotation so --schema can look it up at runtime, and wraps the
+// command's Args validator to allow --schema to bypass arg checks.
 func RegisterFlags(cmd *cobra.Command, defs []api.FlagDef, opts *FlagOpts) {
+	if len(defs) > 0 && defs[0].OpName != "" {
+		if cmd.Annotations == nil {
+			cmd.Annotations = map[string]string{}
+		}
+		cmd.Annotations["op"] = defs[0].OpName
+
+		if origArgs := cmd.Args; origArgs != nil {
+			cmd.Args = func(cmd *cobra.Command, args []string) error {
+				if v, _ := cmd.Flags().GetBool("schema"); v {
+					return nil
+				}
+				return origArgs(cmd, args)
+			}
+		}
+	}
+
 	for _, d := range defs {
 		if opts != nil && opts.Exclude[d.OASName] {
 			continue
