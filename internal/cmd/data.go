@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"fmt"
-	"net/url"
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
@@ -26,7 +24,7 @@ var dataBarsCmd = &cobra.Command{
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbol := args[0]
-		params := dataParams(cmd)
+		params := stockBarSingleParamsFromFlags(cmd).Values()
 
 		if cmdutil.Bool(cmd, "all") {
 			data, err := fetchAllDataPages(
@@ -62,7 +60,7 @@ var dataQuotesCmd = &cobra.Command{
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbol := args[0]
-		params := dataParams(cmd)
+		params := stockQuoteSingleParamsFromFlags(cmd).Values()
 
 		if cmdutil.Bool(cmd, "all") {
 			data, err := fetchAllDataPages(
@@ -81,7 +79,7 @@ var dataQuotesCmd = &cobra.Command{
 			return output.Render(cmd.OutOrStdout(), getOutput(), quoteColumns(), data)
 		}
 
-		data, err := dataClient.Quotes(symbol, dataParams(cmd))
+		data, err := dataClient.Quotes(symbol, stockQuoteSingleParamsFromFlags(cmd).Values())
 		if err != nil {
 			return err
 		}
@@ -98,7 +96,7 @@ var dataTradesCmd = &cobra.Command{
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbol := args[0]
-		params := dataParams(cmd)
+		params := stockTradeSingleParamsFromFlags(cmd).Values()
 
 		if cmdutil.Bool(cmd, "all") {
 			data, err := fetchAllDataPages(
@@ -117,7 +115,7 @@ var dataTradesCmd = &cobra.Command{
 			return output.Render(cmd.OutOrStdout(), getOutput(), tradeColumns(), data)
 		}
 
-		data, err := dataClient.Trades(symbol, dataParams(cmd))
+		data, err := dataClient.Trades(symbol, stockTradeSingleParamsFromFlags(cmd).Values())
 		if err != nil {
 			return err
 		}
@@ -133,7 +131,7 @@ var dataSnapshotCmd = &cobra.Command{
   alpaca data snapshot BTC/USD --feed sip`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		data, err := dataClient.Snapshot(args[0], latestParams(cmd))
+		data, err := dataClient.Snapshot(args[0], stockSnapshotSingleParamsFromFlags(cmd).Values())
 		if err != nil {
 			return err
 		}
@@ -154,7 +152,7 @@ var dataLatestTradeCmd = &cobra.Command{
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbol := args[0]
-		data, err := dataClient.LatestTrade(symbol, latestParams(cmd))
+		data, err := dataClient.LatestTrade(symbol, stockLatestTradeSingleParamsFromFlags(cmd).Values())
 		if err != nil {
 			return err
 		}
@@ -177,7 +175,7 @@ var dataLatestQuoteCmd = &cobra.Command{
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbol := args[0]
-		data, err := dataClient.LatestQuote(symbol, latestParams(cmd))
+		data, err := dataClient.LatestQuote(symbol, stockLatestQuoteSingleParamsFromFlags(cmd).Values())
 		if err != nil {
 			return err
 		}
@@ -200,7 +198,7 @@ var dataLatestBarCmd = &cobra.Command{
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		symbol := args[0]
-		data, err := dataClient.LatestBar(symbol, latestParams(cmd))
+		data, err := dataClient.LatestBar(symbol, stockLatestBarSingleParamsFromFlags(cmd).Values())
 		if err != nil {
 			return err
 		}
@@ -260,32 +258,6 @@ func init() {
 	dataCmd.AddCommand(dataTradesCmd)
 	dataCmd.AddCommand(dataSnapshotCmd)
 	dataCmd.AddCommand(dataLatestCmd)
-}
-
-func dataParams(cmd *cobra.Command) url.Values {
-	params := url.Values{}
-	for _, key := range []string{"start", "end", "timeframe", "feed", "currency", "sort", "adjustment", "asof"} {
-		if v := cmdutil.Str(cmd, key); v != "" {
-			params.Set(key, v)
-		}
-	}
-	if v := cmdutil.Int(cmd, "limit"); v != 0 {
-		params.Set("limit", fmt.Sprint(v))
-	}
-	if v := cmdutil.Str(cmd, "page-token"); v != "" {
-		params.Set("page_token", v)
-	}
-	return params
-}
-
-func latestParams(cmd *cobra.Command) url.Values {
-	params := url.Values{}
-	for _, key := range []string{"feed", "currency"} {
-		if v := cmdutil.Str(cmd, key); v != "" {
-			params.Set(key, v)
-		}
-	}
-	return params
 }
 
 func extractBars(data json.RawMessage, symbol string) json.RawMessage {

@@ -94,7 +94,7 @@ var walletTransferEstimateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.JSON(cmd.OutOrStdout(), resp)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), transferEstimateColumns(), resp)
 	},
 }
 

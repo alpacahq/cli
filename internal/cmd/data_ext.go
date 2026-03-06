@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
+	"os"
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
@@ -219,9 +221,14 @@ func init() {
 func renderMapValues(w io.Writer, format string, cols []output.Column, data any) error {
 	j, _ := json.Marshal(data)
 	var m map[string]json.RawMessage
-	if json.Unmarshal(j, &m) == nil && len(m) == 1 {
-		for _, v := range m {
-			return output.Render(w, format, cols, v)
+	if json.Unmarshal(j, &m) == nil {
+		if len(m) == 1 {
+			for _, v := range m {
+				return output.Render(w, format, cols, v)
+			}
+		}
+		if len(m) > 1 && format != "json" && !quietFlag {
+			fmt.Fprintf(os.Stderr, "Hint: multi-symbol response (%d symbols); rendering as JSON. Use --json for structured output.\n", len(m))
 		}
 	}
 	return output.JSON(w, data)

@@ -20,7 +20,7 @@ func orderColumns() []output.Column {
 		{Header: "FILLED QTY", Field: "filled_qty"},
 		{Header: "FILLED AVG", Field: "filled_avg_price"},
 		{Header: "TIME IN FORCE", Field: "time_in_force"},
-		{Header: "SUBMITTED", Field: "submitted_at"},
+		{Header: "SUBMITTED", Field: "submitted_at", Format: output.FormatTimestamp},
 	}
 }
 
@@ -106,8 +106,8 @@ func watchlistColumns() []output.Column {
 	return []output.Column{
 		{Header: "ID", Field: "id"},
 		{Header: "NAME", Field: "name"},
-		{Header: "CREATED", Field: "created_at"},
-		{Header: "UPDATED", Field: "updated_at"},
+		{Header: "CREATED", Field: "created_at", Format: output.FormatTimestamp},
+		{Header: "UPDATED", Field: "updated_at", Format: output.FormatTimestamp},
 	}
 }
 
@@ -134,7 +134,7 @@ func calendarColumns() []output.Column {
 
 func newsColumns() []output.Column {
 	return []output.Column{
-		{Header: "DATE", Field: "created_at"},
+		{Header: "DATE", Field: "created_at", Format: output.FormatTimestamp},
 		{Header: "HEADLINE", Field: "headline"},
 		{Header: "SOURCE", Field: "source"},
 		{Header: "SYMBOLS", Field: "symbols"},
@@ -144,7 +144,7 @@ func newsColumns() []output.Column {
 
 func barColumns() []output.Column {
 	return []output.Column{
-		{Header: "TIMESTAMP", Field: "t"},
+		{Header: "TIMESTAMP", Field: "t", Format: output.FormatTimestamp},
 		{Header: "OPEN", Field: "o"},
 		{Header: "HIGH", Field: "h"},
 		{Header: "LOW", Field: "l"},
@@ -156,7 +156,7 @@ func barColumns() []output.Column {
 
 func quoteColumns() []output.Column {
 	return []output.Column{
-		{Header: "TIMESTAMP", Field: "t"},
+		{Header: "TIMESTAMP", Field: "t", Format: output.FormatTimestamp},
 		{Header: "BID", Field: "bp"},
 		{Header: "BID SIZE", Field: "bs"},
 		{Header: "ASK", Field: "ap"},
@@ -166,7 +166,7 @@ func quoteColumns() []output.Column {
 
 func tradeColumns() []output.Column {
 	return []output.Column{
-		{Header: "TIMESTAMP", Field: "t"},
+		{Header: "TIMESTAMP", Field: "t", Format: output.FormatTimestamp},
 		{Header: "PRICE", Field: "p"},
 		{Header: "SIZE", Field: "s"},
 		{Header: "EXCHANGE", Field: "x"},
@@ -183,7 +183,7 @@ func tradeActivityColumns() []output.Column {
 		{Header: "PRICE", Field: "price"},
 		{Header: "CUM QTY", Field: "cum_qty"},
 		{Header: "ORDER ID", Field: "order_id"},
-		{Header: "TIME", Field: "transaction_time"},
+		{Header: "TIME", Field: "transaction_time", Format: output.FormatTimestamp},
 	}
 }
 
@@ -219,7 +219,7 @@ func screenerMoverColumns() []output.Column {
 
 func forexRateColumns() []output.Column {
 	return []output.Column{
-		{Header: "TIMESTAMP", Field: "t"},
+		{Header: "TIMESTAMP", Field: "t", Format: output.FormatTimestamp},
 		{Header: "BID", Field: "bp"},
 		{Header: "ASK", Field: "ap"},
 		{Header: "MID", Field: "mp"},
@@ -255,7 +255,7 @@ func walletColumns() []output.Column {
 	return []output.Column{
 		{Header: "ADDRESS", Field: "address"},
 		{Header: "CHAIN", Field: "chain"},
-		{Header: "CREATED", Field: "created_at"},
+		{Header: "CREATED", Field: "created_at", Format: output.FormatTimestamp},
 	}
 }
 
@@ -267,7 +267,7 @@ func transferColumns() []output.Column {
 		{Header: "DIRECTION", Field: "direction"},
 		{Header: "STATUS", Field: "status"},
 		{Header: "CHAIN", Field: "chain"},
-		{Header: "CREATED", Field: "created_at"},
+		{Header: "CREATED", Field: "created_at", Format: output.FormatTimestamp},
 	}
 }
 
@@ -278,7 +278,16 @@ func whitelistColumns() []output.Column {
 		{Header: "ASSET", Field: "asset"},
 		{Header: "CHAIN", Field: "chain"},
 		{Header: "STATUS", Field: "status"},
-		{Header: "CREATED", Field: "created_at"},
+		{Header: "CREATED", Field: "created_at", Format: output.FormatTimestamp},
+	}
+}
+
+func transferEstimateColumns() []output.Column {
+	return []output.Column{
+		{Header: "FEE", Field: "fee"},
+		{Header: "TOTAL FEE", Field: "total_fee"},
+		{Header: "ASSET", Field: "asset"},
+		{Header: "NETWORK", Field: "network"},
 	}
 }
 

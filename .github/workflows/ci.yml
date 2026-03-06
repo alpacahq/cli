@@ -25,6 +25,14 @@ jobs:
       - name: Vet
         run: go vet ./...
 
+      - name: Generated code freshness
+        run: |
+          make generate
+          git diff --exit-code internal/api/ internal/cmd/params_generated.go || {
+            echo "::error::Generated code is out of date. Run 'make generate' and commit the result."
+            exit 1
+          }
+
       - name: Test
         run: go test -race -count=1 -coverprofile=coverage.out ./...
 

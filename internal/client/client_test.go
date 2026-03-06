@@ -419,6 +419,7 @@ func TestErrorPathInfrastructure(t *testing.T) {
 			status:   422,
 			body:     `{"code":42210001,"message":"qty must be positive"}`,
 			wantExit: ExitAPIError,
+			wantHint: "validation",
 			wantMsg:  "qty must be positive",
 		},
 	}

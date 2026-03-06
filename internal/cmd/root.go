@@ -57,6 +57,9 @@ func Execute() error {
 				printJSONError(apiErr)
 			} else {
 				fmt.Fprintf(os.Stderr, "Error: %s\n", apiErr)
+				if apiErr.RequestID != "" {
+					fmt.Fprintf(os.Stderr, "Request ID: %s\n", apiErr.RequestID)
+				}
 				if hint := apiErr.Hint(); hint != "" {
 					fmt.Fprintf(os.Stderr, "Hint: %s\n", hint)
 				}
@@ -87,6 +90,9 @@ func printJSONError(apiErr *client.APIError) {
 	if apiErr.Path != "" {
 		m["path"] = apiErr.Path
 	}
+	if apiErr.RequestID != "" {
+		m["request_id"] = apiErr.RequestID
+	}
 	enc := json.NewEncoder(os.Stderr)
 	_ = enc.Encode(m)
 }
@@ -105,7 +111,7 @@ var rootCmd = &cobra.Command{
 		return cmd.Help()
 	},
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		if cmd.Name() == "help" || cmd.Name() == "completion" || cmd.Name() == "version" {
+		if cmd.Name() == "help" {
 			return nil
 		}
 		if ha, _ := cmd.Flags().GetBool("help-all"); ha {
@@ -231,9 +237,13 @@ func init() {
 }
 
 func needsAuth(cmd *cobra.Command) bool {
-	switch cmd.Name() {
-	case "version", "help", "completion", "update", "setup", "doctor":
-		return false
+	for c := cmd; c != nil; c = c.Parent() {
+		if c.Parent() != nil && c.Parent().Parent() == nil {
+			switch c.Name() {
+			case "version", "help", "completion", "update", "setup", "doctor":
+				return false
+			}
+		}
 	}
 	return true
 }

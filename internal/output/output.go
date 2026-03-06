@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"strings"
 	"text/tabwriter"
+	"time"
 
 	"github.com/fatih/color"
 )
@@ -155,6 +156,22 @@ func PercentPL(val string) string {
 		return "0.00%"
 	}
 	return colorPL(val) + "%"
+}
+
+func FormatTimestamp(v any) string {
+	s := fmt.Sprintf("%v", v)
+	if s == "" || s == "<nil>" {
+		return ""
+	}
+	for _, layout := range []string{time.RFC3339Nano, time.RFC3339, "2006-01-02T15:04:05Z", "2006-01-02T15:04:05"} {
+		if t, err := time.Parse(layout, s); err == nil {
+			return t.Local().Format("Jan 02 15:04")
+		}
+	}
+	if _, err := time.Parse("2006-01-02", s); err == nil {
+		return s
+	}
+	return s
 }
 
 func toRows(data any) []map[string]any {

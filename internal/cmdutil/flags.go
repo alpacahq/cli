@@ -81,7 +81,7 @@ func Str(cmd *cobra.Command, name string) string {
 func RequireStr(cmd *cobra.Command, name string) (string, error) {
 	v := Str(cmd, name)
 	if v == "" {
-		return "", fmt.Errorf("--%s is required", name)
+		return "", fmt.Errorf("--%s is required (see '%s --help' for examples)", name, cmd.CommandPath())
 	}
 	return v, nil
 }
@@ -94,7 +94,7 @@ func RequireAll(cmd *cobra.Command, names ...string) error {
 		}
 	}
 	if len(missing) > 0 {
-		return fmt.Errorf("%s required", strings.Join(missing, ", "))
+		return fmt.Errorf("%s required (see '%s --help' for examples)", strings.Join(missing, ", "), cmd.CommandPath())
 	}
 	return nil
 }

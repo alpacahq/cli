@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -206,5 +207,77 @@ func TestProfileFilePermissions(t *testing.T) {
 	perm := info.Mode().Perm()
 	if perm != 0o600 {
 		t.Errorf("profile file permissions = %o, want 0600", perm)
+	}
+}
+
+func TestLoadProfile_CorruptedYAML(t *testing.T) {
+	withTempDir(t)
+
+	dir := filepath.Join(Dir(), "profiles")
+	_ = os.MkdirAll(dir, 0o700)
+	_ = os.WriteFile(filepath.Join(dir, "corrupt.yaml"), []byte("{{{{not yaml at all!!!!"), 0o600)
+
+	p := LoadProfileByName("corrupt")
+	if p.APIKey != "" {
+		t.Errorf("corrupted profile should return empty, got APIKey=%q", p.APIKey)
+	}
+}
+
+func TestLoad_EnvOverridesEverything(t *testing.T) {
+	withTempDir(t)
+
+	_ = SaveProfile("envtest", &Profile{
+		APIKey:    "profile-key",
+		SecretKey: "profile-secret",
+		BaseURL:   "https://profile-url.example.com",
+		DataURL:   "https://profile-data.example.com",
+	})
+	_ = SaveGlobalConfig(&Config{DefaultProfile: "envtest"})
+
+	t.Setenv("ALPACA_API_KEY", "env-key")
+	t.Setenv("ALPACA_SECRET_KEY", "env-secret")
+	t.Setenv("ALPACA_BASE_URL", "https://env-url.example.com")
+	t.Setenv("ALPACA_DATA_URL", "https://env-data.example.com")
+
+	r, err := Load("", "")
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if r.APIKey != "env-key" {
+		t.Errorf("APIKey = %q, want env-key", r.APIKey)
+	}
+	if r.SecretKey != "env-secret" {
+		t.Errorf("SecretKey = %q, want env-secret", r.SecretKey)
+	}
+	if r.BaseURL != "https://env-url.example.com" {
+		t.Errorf("BaseURL = %q, want env URL", r.BaseURL)
+	}
+	if r.DataURL != "https://env-data.example.com" {
+		t.Errorf("DataURL = %q, want env URL", r.DataURL)
+	}
+}
+
+func TestLoad_MissingConfigDir(t *testing.T) {
+	t.Setenv("ALPACA_CONFIG_DIR", "/nonexistent/path/that/doesnt/exist")
+
+	r, err := Load("", "")
+	if err != nil {
+		t.Fatalf("Load should not error on missing config dir: %v", err)
+	}
+	if r.ProfileName != "paper" {
+		t.Errorf("ProfileName = %q, want paper (default)", r.ProfileName)
+	}
+}
+
+func TestLoadGlobalConfig_CorruptedYAML(t *testing.T) {
+	withTempDir(t)
+
+	dir := Dir()
+	_ = os.MkdirAll(dir, 0o700)
+	_ = os.WriteFile(filepath.Join(dir, "config.yaml"), []byte(":::not valid yaml:::"), 0o600)
+
+	cfg := loadGlobalConfig()
+	if cfg.DefaultProfile != "" {
+		t.Errorf("corrupted config should return empty, got DefaultProfile=%q", cfg.DefaultProfile)
 	}
 }

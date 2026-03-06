@@ -43,6 +43,7 @@ type APIError struct {
 	Message    string `json:"message"`
 	Method     string `json:"method,omitempty"`
 	Path       string `json:"path,omitempty"`
+	RequestID  string `json:"request_id,omitempty"`
 	hint       string
 	retryAfter time.Duration
 }
@@ -72,6 +73,8 @@ func (e *APIError) Hint() string {
 		return e.hint
 	}
 	switch e.StatusCode {
+	case 422:
+		return "Validation error. Check parameter values — common issues: invalid qty, bad price, unknown symbol, or missing required fields."
 	case 429:
 		return "Rate limited. Reduce request frequency or add delays between calls."
 	case 401:
@@ -234,7 +237,7 @@ func (c *Client) do(method, reqURL string, body any) (json.RawMessage, error) {
 	}
 
 	if resp.StatusCode >= 400 {
-		apiErr := &APIError{StatusCode: resp.StatusCode, Method: method, Path: reqURL}
+		apiErr := &APIError{StatusCode: resp.StatusCode, Method: method, Path: reqURL, RequestID: resp.Header.Get("X-Request-Id")}
 		if json.Unmarshal(respBody, apiErr) != nil || apiErr.Message == "" {
 			apiErr.Message = strings.TrimSpace(string(respBody))
 			if apiErr.Message == "" {
