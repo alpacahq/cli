@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -13,6 +14,7 @@ import (
 	"github.com/alpacahq/cli/internal/oauth"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	"github.com/yarlson/tap"
 	"golang.org/x/term"
 )
 
@@ -68,7 +70,10 @@ func loginWithOAuth(cmd *cobra.Command) error {
 	if scopeFlag != "" {
 		scope = strings.ReplaceAll(scopeFlag, ",", " ")
 	} else if term.IsTerminal(int(os.Stdin.Fd())) {
-		selected := promptScopes()
+		selected, err := promptScopes()
+		if err != nil {
+			return err
+		}
 		if len(selected) > 0 {
 			scope = strings.Join(selected, " ")
 		}
@@ -131,41 +136,27 @@ var availableScopes = []scopeOption{
 	{"data", "Access market data"},
 }
 
-func promptScopes() []string {
-	fmt.Fprintln(os.Stderr, "\nSelect scopes to authorize (all selected by default):")
+func promptScopes() ([]string, error) {
+	allValues := make([]string, len(availableScopes))
+	options := make([]tap.SelectOption[string], len(availableScopes))
 	for i, s := range availableScopes {
-		fmt.Fprintf(os.Stderr, "  %d. %-16s %s\n", i+1, s.Value, s.Description)
-	}
-	fmt.Fprintf(os.Stderr, "\nPress Enter for all, or type scope numbers (e.g. 1,2): ")
-
-	reader := bufio.NewReader(os.Stdin)
-	line, _ := reader.ReadString('\n')
-	line = strings.TrimSpace(line)
-
-	if line == "" {
-		all := make([]string, len(availableScopes))
-		for i, s := range availableScopes {
-			all[i] = s.Value
-		}
-		return all
-	}
-
-	var selected []string
-	for _, part := range strings.Split(line, ",") {
-		part = strings.TrimSpace(part)
-		idx := 0
-		if _, err := fmt.Sscanf(part, "%d", &idx); err == nil && idx >= 1 && idx <= len(availableScopes) {
-			selected = append(selected, availableScopes[idx-1].Value)
-		} else {
-			for _, s := range availableScopes {
-				if s.Value == part {
-					selected = append(selected, s.Value)
-					break
-				}
-			}
+		allValues[i] = s.Value
+		options[i] = tap.SelectOption[string]{
+			Value: s.Value,
+			Label: s.Value,
+			Hint:  s.Description,
 		}
 	}
-	return selected
+
+	selected := tap.MultiSelect(context.Background(), tap.MultiSelectOptions[string]{
+		Message:       "Select scopes to authorize (space to toggle, enter to confirm)",
+		Options:       options,
+		InitialValues: allValues,
+	})
+	if selected == nil {
+		return nil, fmt.Errorf("login canceled")
+	}
+	return selected, nil
 }
 
 func loginWithAPIKey(cmd *cobra.Command) error {
