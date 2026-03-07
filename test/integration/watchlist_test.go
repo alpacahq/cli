@@ -3,6 +3,7 @@
 package integration
 
 import (
+	"os/exec"
 	"testing"
 	"time"
 )
@@ -101,7 +102,9 @@ func TestWatchlistByNameOps(t *testing.T) {
 		t.Fatal("watchlist missing id")
 	}
 	t.Cleanup(func() {
-		alpaca(t, "watchlist", "delete", wlID)
+		cmd := exec.Command(cliBinary, "watchlist", "delete", wlID)
+		cmd.Env = cliEnv()
+		_ = cmd.Run() // best-effort; delete-by-name at end of test may have already removed it
 	})
 
 	time.Sleep(300 * time.Millisecond)

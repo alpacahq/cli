@@ -308,7 +308,15 @@ func extractEndpoints(spec map[string]any) []*endpointInfo {
 						sort.Strings(pi.enumValues)
 					}
 					if dv, ok := pSchema["default"]; ok && dv != nil {
-						pi.defaultVal = fmt.Sprint(dv)
+						if arr, isArr := dv.([]any); isArr {
+							strs := make([]string, 0, len(arr))
+							for _, v := range arr {
+								strs = append(strs, fmt.Sprint(v))
+							}
+							pi.defaultVal = strings.Join(strs, ",")
+						} else {
+							pi.defaultVal = fmt.Sprint(dv)
+						}
 					}
 				}
 				switch in {

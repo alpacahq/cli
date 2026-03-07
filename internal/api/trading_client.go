@@ -219,7 +219,7 @@ type GetV2AssetsParams struct {
 	Status     string
 	AssetClass string
 	Exchange   string
-	Attributes string // default: []
+	Attributes string
 }
 
 func (p *GetV2AssetsParams) Values() url.Values {

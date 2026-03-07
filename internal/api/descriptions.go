@@ -1685,7 +1685,7 @@ func (o getV2AssetsOp) RequiredFlags() []string {
 func (o getV2AssetsOp) Flags() []FlagDef {
 	return []FlagDef{
 		{Name: "asset-class", OASName: "asset_class", Type: "string", Description: "defaults to us_equity", OpName: "GetV2Assets"},
-		{Name: "attributes", OASName: "attributes", Type: "string", Default: "[]", Description: "comma separated values to query for more than one attribute", OpName: "GetV2Assets"},
+		{Name: "attributes", OASName: "attributes", Type: "string", Description: "comma separated values to query for more than one attribute", OpName: "GetV2Assets"},
 		{Name: "exchange", OASName: "exchange", Type: "string", Description: "optional AMEX, ARCA, BATS, NYSE, NASDAQ, NYSEARCA or OTC", OpName: "GetV2Assets"},
 		{Name: "status", OASName: "status", Type: "string", Description: "e.g. “active”. By default, all statuses are included", OpName: "GetV2Assets"},
 	}
