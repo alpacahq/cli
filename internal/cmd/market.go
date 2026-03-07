@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/alpacahq/cli/internal/api"
@@ -75,77 +74,9 @@ var calendarCmd = &cobra.Command{
 	},
 }
 
-var portfolioCmd = &cobra.Command{
-	Use:   "portfolio",
-	Short: api.GetAccountPortfolioHistoryOp.Summary(),
-	Long:  "Returns portfolio equity and P&L history. Output is always JSON due to complex time-series structure.",
-	Example: `  alpaca account portfolio
-  alpaca account portfolio --period 1M --timeframe 1D`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		params := getAccountPortfolioHistoryParamsFromFlags(cmd)
-
-		history, err := tradingClient.GetAccountPortfolioHistory(params)
-		if err != nil {
-			return err
-		}
-		return output.JSON(cmd.OutOrStdout(), history)
-	},
-}
-
-var newsCmd = &cobra.Command{
-	Use:   "news",
-	Short: api.NewsOp.Summary(),
-	Example: `  alpaca data news
-  alpaca data news --symbols AAPL,MSFT --limit 10
-  alpaca data news --symbols AAPL --all --max 100`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		params := newsParamsFromFlags(cmd)
-		if params.Limit == 0 {
-			params.Limit = 10
-		}
-
-		if cmdutil.Bool(cmd, "all") {
-			max := cmdutil.Int(cmd, "max")
-			var allNews []api.News
-			for page := 0; page < maxPages; page++ {
-				resp, err := dataClient.News(params)
-				if err != nil {
-					return err
-				}
-				allNews = append(allNews, resp.News...)
-				if max > 0 && len(allNews) >= max {
-					allNews = allNews[:max]
-					break
-				}
-				if resp.NextPageToken == "" {
-					break
-				}
-				params.PageToken = resp.NextPageToken
-			}
-			newsData, _ := json.Marshal(allNews)
-			return output.Render(cmd.OutOrStdout(), getOutput(), nil, json.RawMessage(newsData))
-		}
-
-		resp, err := dataClient.News(params)
-		if err != nil {
-			return err
-		}
-
-		newsData, _ := json.Marshal(resp.News)
-		return output.Render(cmd.OutOrStdout(), getOutput(), nil, json.RawMessage(newsData))
-	},
-}
-
 func init() {
 	cmdutil.RegisterFlags(clockCmd, api.ClockOp.Flags(), nil)
 
 	cmdutil.RegisterFlags(calendarCmd, api.LegacyCalendarOp.Flags(), nil)
 	calendarCmd.Flags().String("market", "", "Market MIC for v3 calendar (e.g. XNYS)")
-
-	cmdutil.RegisterFlags(portfolioCmd, api.GetAccountPortfolioHistoryOp.Flags(), &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"extended_hours": true},
-	})
-
-	cmdutil.RegisterFlags(newsCmd, api.NewsOp.Flags(), nil)
-	addPaginationFlags(newsCmd)
 }

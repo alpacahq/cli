@@ -122,6 +122,112 @@ var dataMetaConditionsCmd = jsonCmd("conditions <ticktype>", api.StockMetaCondit
 	c.Example = `  alpaca data meta conditions trade`
 })
 
+// --- Screener ---
+
+var screenerCmd = &cobra.Command{
+	Use:   "screener",
+	Short: "Stock and crypto screener and market movers",
+}
+
+var screenerMostActivesCmd = fetchCmd("most-actives", api.MostActivesOp, func(cmd *cobra.Command, args []string) (any, error) {
+	params := &api.MostActivesParams{
+		By:  cmdutil.Str(cmd, "by"),
+		Top: cmdutil.Int(cmd, "top"),
+	}
+	resp, err := dataClient.MostActives(params)
+	if err != nil {
+		return nil, err
+	}
+	return resp.MostActives, nil
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca data screener most-actives
+  alpaca data screener most-actives --by trades --top 10`
+})
+
+var screenerMoversCmd = &cobra.Command{
+	Use:   "movers",
+	Short: api.MoversOp.Summary(),
+	Example: `  alpaca data screener movers
+  alpaca data screener movers --market crypto --top 5`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		market := cmdutil.Str(cmd, "market")
+		if market == "" {
+			market = "stocks"
+		}
+
+		params := &api.MoversParams{
+			Top: cmdutil.Int(cmd, "top"),
+		}
+
+		resp, err := dataClient.Movers(market, params)
+		if err != nil {
+			return err
+		}
+
+		w := cmd.OutOrStdout()
+		format := getOutput()
+		if format == output.FormatJSON || format == output.FormatCSV {
+			return output.Render(w, format, nil, resp)
+		}
+
+		cmd.Println("GAINERS")
+		gainersJSON, _ := json.Marshal(resp.Gainers)
+		if err := output.Render(w, output.FormatTable, nil, json.RawMessage(gainersJSON)); err != nil {
+			return err
+		}
+
+		cmd.Println("\nLOSERS")
+		losersJSON, _ := json.Marshal(resp.Losers)
+		return output.Render(w, output.FormatTable, nil, json.RawMessage(losersJSON))
+	},
+}
+
+// --- News ---
+
+var newsCmd = &cobra.Command{
+	Use:   "news",
+	Short: api.NewsOp.Summary(),
+	Example: `  alpaca data news
+  alpaca data news --symbols AAPL,MSFT --limit 10
+  alpaca data news --symbols AAPL --all --max 100`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		params := newsParamsFromFlags(cmd)
+		if params.Limit == 0 {
+			params.Limit = 10
+		}
+
+		if cmdutil.Bool(cmd, "all") {
+			max := cmdutil.Int(cmd, "max")
+			var allNews []api.News
+			for page := 0; page < maxPages; page++ {
+				resp, err := dataClient.News(params)
+				if err != nil {
+					return err
+				}
+				allNews = append(allNews, resp.News...)
+				if max > 0 && len(allNews) >= max {
+					allNews = allNews[:max]
+					break
+				}
+				if resp.NextPageToken == "" {
+					break
+				}
+				params.PageToken = resp.NextPageToken
+			}
+			newsData, _ := json.Marshal(allNews)
+			return output.Render(cmd.OutOrStdout(), getOutput(), nil, json.RawMessage(newsData))
+		}
+
+		resp, err := dataClient.News(params)
+		if err != nil {
+			return err
+		}
+
+		newsData, _ := json.Marshal(resp.News)
+		return output.Render(cmd.OutOrStdout(), getOutput(), nil, json.RawMessage(newsData))
+	},
+}
+
 func init() {
 	cmdutil.RegisterFlags(dataForexRatesCmd, api.RatesOp.Flags(), nil)
 
@@ -130,6 +236,15 @@ func init() {
 
 	dataMetaCmd.AddCommand(dataMetaExchangesCmd)
 	dataMetaCmd.AddCommand(dataMetaConditionsCmd)
+
+	cmdutil.RegisterFlags(screenerMoversCmd, api.MoversOp.Flags(), nil)
+	screenerMoversCmd.Flags().String("market", "", "Market: stocks or crypto (default: stocks)")
+	_ = screenerMoversCmd.RegisterFlagCompletionFunc("market", cobra.FixedCompletions(api.MarketTypeValues, cobra.ShellCompDirectiveNoFileComp))
+	screenerCmd.AddCommand(screenerMostActivesCmd)
+	screenerCmd.AddCommand(screenerMoversCmd)
+
+	cmdutil.RegisterFlags(newsCmd, api.NewsOp.Flags(), nil)
+	addPaginationFlags(newsCmd)
 
 	dataCmd.AddCommand(dataOptionCmd)
 	dataCmd.AddCommand(dataForexCmd)
