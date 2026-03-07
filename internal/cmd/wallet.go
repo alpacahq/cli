@@ -16,7 +16,7 @@ var walletCmd = &cobra.Command{
 
 var walletListCmd = &cobra.Command{
 	Use:   "list",
-	Short: api.ListCryptoFundingWalletsOp.Summary,
+	Short: api.ListCryptoFundingWalletsOp.Summary(),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		wallet, err := tradingClient.ListCryptoFundingWallets(listCryptoFundingWalletsParamsFromFlags(cmd))
 		if err != nil {
@@ -35,7 +35,7 @@ var walletTransferCmd = &cobra.Command{
 
 var walletTransferListCmd = &cobra.Command{
 	Use:   "list",
-	Short: api.ListCryptoFundingTransfersOp.Summary,
+	Short: api.ListCryptoFundingTransfersOp.Summary(),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		transfers, err := tradingClient.ListCryptoFundingTransfers()
 		if err != nil {
@@ -47,7 +47,7 @@ var walletTransferListCmd = &cobra.Command{
 
 var walletTransferGetCmd = &cobra.Command{
 	Use:   "get <id>",
-	Short: api.GetCryptoFundingTransferOp.Summary,
+	Short: api.GetCryptoFundingTransferOp.Summary(),
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		transfer, err := tradingClient.GetCryptoFundingTransfer(args[0])
@@ -60,7 +60,7 @@ var walletTransferGetCmd = &cobra.Command{
 
 var walletTransferCreateCmd = &cobra.Command{
 	Use:   "create",
-	Short: api.CreateCryptoTransferForAccountOp.Summary,
+	Short: api.CreateCryptoTransferForAccountOp.Summary(),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if err := cmdutil.RequireAll(cmd, "amount", "address", "asset"); err != nil {
 			return err
@@ -83,7 +83,7 @@ var walletTransferCreateCmd = &cobra.Command{
 
 var walletTransferEstimateCmd = &cobra.Command{
 	Use:   "estimate",
-	Short: api.GetCryptoTransferEstimateOp.Summary,
+	Short: api.GetCryptoTransferEstimateOp.Summary(),
 	Example: `  alpaca wallet transfer estimate --asset BTC --amount 0.5 \
     --from-address 0xabc... --to-address 0xdef...`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -107,7 +107,7 @@ var walletWhitelistCmd = &cobra.Command{
 
 var walletWhitelistListCmd = &cobra.Command{
 	Use:   "list",
-	Short: api.ListWhitelistedAddressOp.Summary,
+	Short: api.ListWhitelistedAddressOp.Summary(),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		addrs, err := tradingClient.ListWhitelistedAddress()
 		if err != nil {
@@ -119,7 +119,7 @@ var walletWhitelistListCmd = &cobra.Command{
 
 var walletWhitelistAddCmd = &cobra.Command{
 	Use:   "add",
-	Short: api.CreateWhitelistedAddressOp.Summary,
+	Short: api.CreateWhitelistedAddressOp.Summary(),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if err := cmdutil.RequireAll(cmd, "address", "asset"); err != nil {
 			return err
@@ -139,7 +139,7 @@ var walletWhitelistAddCmd = &cobra.Command{
 
 var walletWhitelistDeleteCmd = &cobra.Command{
 	Use:   "delete <id>",
-	Short: api.DeleteWhitelistedAddressOp.Summary,
+	Short: api.DeleteWhitelistedAddressOp.Summary(),
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		_, err := tradingClient.DeleteWhitelistedAddress(args[0])
@@ -152,10 +152,10 @@ var walletWhitelistDeleteCmd = &cobra.Command{
 }
 
 func init() {
-	cmdutil.RegisterFlags(walletListCmd, api.ListCryptoFundingWalletsFlags, nil)
-	cmdutil.RegisterFlags(walletTransferCreateCmd, api.CreateCryptoTransferForAccountFlags, nil)
-	cmdutil.RegisterFlags(walletTransferEstimateCmd, api.GetCryptoTransferEstimateFlags, nil)
-	cmdutil.RegisterFlags(walletWhitelistAddCmd, api.CreateWhitelistedAddressFlags, nil)
+	cmdutil.RegisterFlags(walletListCmd, api.ListCryptoFundingWalletsOp.Flags(), nil)
+	cmdutil.RegisterFlags(walletTransferCreateCmd, api.CreateCryptoTransferForAccountOp.Flags(), nil)
+	cmdutil.RegisterFlags(walletTransferEstimateCmd, api.GetCryptoTransferEstimateOp.Flags(), nil)
+	cmdutil.RegisterFlags(walletWhitelistAddCmd, api.CreateWhitelistedAddressOp.Flags(), nil)
 
 	walletTransferCmd.AddCommand(walletTransferListCmd)
 	walletTransferCmd.AddCommand(walletTransferGetCmd)

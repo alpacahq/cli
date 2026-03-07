@@ -10,7 +10,7 @@ import (
 
 func TestFromFlagsReadsRegisteredFlags(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
-	cmdutil.RegisterFlags(cmd, api.GetAllOrdersFlags, nil)
+	cmdutil.RegisterFlags(cmd, api.GetAllOrdersOp.Flags(), nil)
 	_ = cmd.Flags().Set("status", "closed")
 	_ = cmd.Flags().Set("limit", "10")
 	_ = cmd.Flags().Set("symbols", "AAPL,MSFT")
@@ -29,7 +29,7 @@ func TestFromFlagsReadsRegisteredFlags(t *testing.T) {
 
 func TestFromFlagsSkipsExcludedFlags(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
-	cmdutil.RegisterFlags(cmd, api.GetOptionsContractsFlags, &cmdutil.FlagOpts{
+	cmdutil.RegisterFlags(cmd, api.GetOptionsContractsOp.Flags(), &cmdutil.FlagOpts{
 		Exclude: map[string]bool{"underlying_symbols": true},
 	})
 
@@ -41,7 +41,7 @@ func TestFromFlagsSkipsExcludedFlags(t *testing.T) {
 
 func TestFromFlagsRespectsDefaults(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
-	cmdutil.RegisterFlags(cmd, api.OptionBarsFlags, &cmdutil.FlagOpts{
+	cmdutil.RegisterFlags(cmd, api.OptionBarsOp.Flags(), &cmdutil.FlagOpts{
 		Defaults: map[string]string{"timeframe": "1Day"},
 	})
 
@@ -53,7 +53,7 @@ func TestFromFlagsRespectsDefaults(t *testing.T) {
 
 func TestFromFlagsIntZeroValue(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
-	cmdutil.RegisterFlags(cmd, api.GetAllOrdersFlags, nil)
+	cmdutil.RegisterFlags(cmd, api.GetAllOrdersOp.Flags(), nil)
 	_ = cmd.Flags().Set("limit", "0")
 
 	params := getAllOrdersParamsFromFlags(cmd)
@@ -64,7 +64,7 @@ func TestFromFlagsIntZeroValue(t *testing.T) {
 
 func TestFromFlagsBoolExplicitFalse(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
-	cmdutil.RegisterFlags(cmd, api.GetAllOrdersFlags, nil)
+	cmdutil.RegisterFlags(cmd, api.GetAllOrdersOp.Flags(), nil)
 	_ = cmd.Flags().Set("nested", "false")
 
 	params := getAllOrdersParamsFromFlags(cmd)
@@ -84,7 +84,7 @@ func TestFromFlagsFieldCoverage(t *testing.T) {
 	}{
 		{
 			name:  "GetAllOrders",
-			flags: api.GetAllOrdersFlags,
+			flags: api.GetAllOrdersOp.Flags(),
 			check: func(cmd *cobra.Command) bool {
 				_ = cmd.Flags().Set("status", "open")
 				_ = cmd.Flags().Set("symbols", "AAPL")
@@ -108,7 +108,7 @@ func TestFromFlagsFieldCoverage(t *testing.T) {
 		},
 		{
 			name:  "News",
-			flags: api.NewsFlags,
+			flags: api.NewsOp.Flags(),
 			check: func(cmd *cobra.Command) bool {
 				_ = cmd.Flags().Set("symbols", "AAPL")
 				_ = cmd.Flags().Set("limit", "5")

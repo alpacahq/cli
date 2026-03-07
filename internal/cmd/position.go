@@ -16,7 +16,7 @@ var positionCmd = &cobra.Command{
 
 var positionListCmd = &cobra.Command{
 	Use:   "list",
-	Short: api.GetAllOpenPositionsOp.Summary,
+	Short: api.GetAllOpenPositionsOp.Summary(),
 	Example: `  alpaca position list
   alpaca position list --json
   alpaca position list --csv`,
@@ -31,7 +31,7 @@ var positionListCmd = &cobra.Command{
 
 var positionGetCmd = &cobra.Command{
 	Use:   "get <symbol>",
-	Short: api.GetOpenPositionOp.Summary,
+	Short: api.GetOpenPositionOp.Summary(),
 	Example: `  alpaca position get AAPL
   alpaca position get BTC/USD --json`,
 	Args: cobra.ExactArgs(1),
@@ -46,7 +46,7 @@ var positionGetCmd = &cobra.Command{
 
 var positionCloseCmd = &cobra.Command{
 	Use:   "close <symbol>",
-	Short: api.DeleteOpenPositionOp.Summary,
+	Short: api.DeleteOpenPositionOp.Summary(),
 	Example: `  alpaca position close AAPL
   alpaca position close AAPL --qty 5
   alpaca position close AAPL --percentage 50`,
@@ -63,7 +63,7 @@ var positionCloseCmd = &cobra.Command{
 
 var positionCloseAllCmd = &cobra.Command{
 	Use:   "close-all",
-	Short: api.DeleteAllOpenPositionsOp.Summary,
+	Short: api.DeleteAllOpenPositionsOp.Summary(),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		canceled, err := tradingClient.DeleteAllOpenPositions(deleteAllOpenPositionsParamsFromFlags(cmd))
 		if err != nil {
@@ -79,8 +79,8 @@ var positionCloseAllCmd = &cobra.Command{
 }
 
 func init() {
-	cmdutil.RegisterFlags(positionCloseCmd, api.DeleteOpenPositionFlags, nil)
-	cmdutil.RegisterFlags(positionCloseAllCmd, api.DeleteAllOpenPositionsFlags, nil)
+	cmdutil.RegisterFlags(positionCloseCmd, api.DeleteOpenPositionOp.Flags(), nil)
+	cmdutil.RegisterFlags(positionCloseAllCmd, api.DeleteAllOpenPositionsOp.Flags(), nil)
 
 	positionCmd.AddCommand(positionListCmd)
 	positionCmd.AddCommand(positionGetCmd)

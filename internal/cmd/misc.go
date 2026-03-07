@@ -13,7 +13,7 @@ import (
 
 var clockCmd = &cobra.Command{
 	Use:   "clock",
-	Short: api.LegacyClockOp.Summary,
+	Short: api.LegacyClockOp.Summary(),
 	Example: `  alpaca clock
   alpaca clock --markets XNYS,XNAS`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -50,7 +50,7 @@ var clockCmd = &cobra.Command{
 
 var calendarCmd = &cobra.Command{
 	Use:   "calendar",
-	Short: api.LegacyCalendarOp.Summary,
+	Short: api.LegacyCalendarOp.Summary(),
 	Example: `  alpaca calendar
   alpaca calendar --start 2025-01-01 --end 2025-12-31
   alpaca calendar --market XNYS --start 2025-01-01`,
@@ -82,7 +82,7 @@ var portfolioCmd = &cobra.Command{
 
 var portfolioHistoryCmd = &cobra.Command{
 	Use:   "history",
-	Short: api.GetAccountPortfolioHistoryOp.Summary,
+	Short: api.GetAccountPortfolioHistoryOp.Summary(),
 	Long:  "Returns portfolio equity and P&L history. Output is always JSON due to complex time-series structure.",
 	Example: `  alpaca portfolio history
   alpaca portfolio history --period 1M --timeframe 1D`,
@@ -99,7 +99,7 @@ var portfolioHistoryCmd = &cobra.Command{
 
 var newsCmd = &cobra.Command{
 	Use:   "news",
-	Short: api.NewsOp.Summary,
+	Short: api.NewsOp.Summary(),
 	Example: `  alpaca news
   alpaca news --symbols AAPL,MSFT --limit 10
   alpaca news --symbols AAPL --all --max 100`,
@@ -142,16 +142,16 @@ var newsCmd = &cobra.Command{
 }
 
 func init() {
-	cmdutil.RegisterFlags(clockCmd, api.ClockFlags, nil)
+	cmdutil.RegisterFlags(clockCmd, api.ClockOp.Flags(), nil)
 
-	cmdutil.RegisterFlags(calendarCmd, api.LegacyCalendarFlags, nil)
+	cmdutil.RegisterFlags(calendarCmd, api.LegacyCalendarOp.Flags(), nil)
 	calendarCmd.Flags().String("market", "", "Market MIC for v3 calendar (e.g. XNYS)")
 
-	cmdutil.RegisterFlags(portfolioHistoryCmd, api.GetAccountPortfolioHistoryFlags, &cmdutil.FlagOpts{
+	cmdutil.RegisterFlags(portfolioHistoryCmd, api.GetAccountPortfolioHistoryOp.Flags(), &cmdutil.FlagOpts{
 		Exclude: map[string]bool{"extended_hours": true},
 	})
 	portfolioCmd.AddCommand(portfolioHistoryCmd)
 
-	cmdutil.RegisterFlags(newsCmd, api.NewsFlags, nil)
+	cmdutil.RegisterFlags(newsCmd, api.NewsOp.Flags(), nil)
 	addPaginationFlags(newsCmd)
 }

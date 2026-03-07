@@ -81,7 +81,7 @@ func fetchOptionLatestTrades(cmd *cobra.Command) (any, error) {
 
 var dataOptionBarsCmd = &cobra.Command{
 	Use:   "bars",
-	Short: api.OptionBarsOp.Summary,
+	Short: api.OptionBarsOp.Summary(),
 	Example: `  alpaca data option bars --symbols AAPL250620C00200000 --start 2025-01-01
   alpaca data option bars --symbols AAPL250620C00200000,AAPL250620P00200000 --timeframe 1Day`,
 	RunE: optionSymbolsRunE(fetchOptionBars, barColumns),
@@ -89,14 +89,14 @@ var dataOptionBarsCmd = &cobra.Command{
 
 var dataOptionTradesCmd = &cobra.Command{
 	Use:     "trades",
-	Short:   api.OptionTradesOp.Summary,
+	Short:   api.OptionTradesOp.Summary(),
 	Example: `  alpaca data option trades --symbols AAPL250620C00200000 --start 2025-01-01`,
 	RunE:    optionSymbolsRunE(fetchOptionTrades, tradeColumns),
 }
 
 var dataOptionSnapshotCmd = &cobra.Command{
 	Use:   "snapshot",
-	Short: api.OptionSnapshotsOp.Summary,
+	Short: api.OptionSnapshotsOp.Summary(),
 	Example: `  alpaca data option snapshot --symbols AAPL250620C00200000
   alpaca data option snapshot --symbols AAPL250620C00200000,AAPL250620P00200000`,
 	RunE: renderOptionJSON(fetchOptionSnapshots),
@@ -104,7 +104,7 @@ var dataOptionSnapshotCmd = &cobra.Command{
 
 var dataOptionChainCmd = &cobra.Command{
 	Use:   "chain <underlying>",
-	Short: api.OptionChainOp.Summary,
+	Short: api.OptionChainOp.Summary(),
 	Example: `  alpaca data option chain AAPL
   alpaca data option chain SPY --expiration-date 2025-06-20 --type call`,
 	Args: cobra.ExactArgs(1),
@@ -119,21 +119,21 @@ var dataOptionChainCmd = &cobra.Command{
 
 var dataOptionLatestQuotesCmd = &cobra.Command{
 	Use:     "latest-quotes",
-	Short:   api.OptionLatestQuotesOp.Summary,
+	Short:   api.OptionLatestQuotesOp.Summary(),
 	Example: `  alpaca data option latest-quotes --symbols AAPL250620C00200000`,
 	RunE:    renderOptionJSON(fetchOptionLatestQuotes),
 }
 
 var dataOptionLatestTradesCmd = &cobra.Command{
 	Use:     "latest-trades",
-	Short:   api.OptionLatestTradesOp.Summary,
+	Short:   api.OptionLatestTradesOp.Summary(),
 	Example: `  alpaca data option latest-trades --symbols AAPL250620C00200000`,
 	RunE:    renderOptionJSON(fetchOptionLatestTrades),
 }
 
 var dataOptionExchangesCmd = &cobra.Command{
 	Use:     "exchanges",
-	Short:   api.OptionMetaExchangesOp.Summary,
+	Short:   api.OptionMetaExchangesOp.Summary(),
 	Example: `  alpaca data option exchanges`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		resp, err := dataClient.OptionMetaExchanges()
@@ -146,7 +146,7 @@ var dataOptionExchangesCmd = &cobra.Command{
 
 var dataOptionConditionsCmd = &cobra.Command{
 	Use:     "conditions <ticktype>",
-	Short:   api.OptionMetaConditionsOp.Summary,
+	Short:   api.OptionMetaConditionsOp.Summary(),
 	Example: `  alpaca data option conditions trade`,
 	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -159,18 +159,18 @@ var dataOptionConditionsCmd = &cobra.Command{
 }
 
 func init() {
-	cmdutil.RegisterFlags(dataOptionBarsCmd, api.OptionBarsFlags, &cmdutil.FlagOpts{
+	cmdutil.RegisterFlags(dataOptionBarsCmd, api.OptionBarsOp.Flags(), &cmdutil.FlagOpts{
 		Defaults: map[string]string{"timeframe": "1Day"},
 	})
 
-	cmdutil.RegisterFlags(dataOptionTradesCmd, api.OptionTradesFlags, nil)
+	cmdutil.RegisterFlags(dataOptionTradesCmd, api.OptionTradesOp.Flags(), nil)
 
-	cmdutil.RegisterFlags(dataOptionSnapshotCmd, api.OptionSnapshotsFlags, nil)
+	cmdutil.RegisterFlags(dataOptionSnapshotCmd, api.OptionSnapshotsOp.Flags(), nil)
 
-	cmdutil.RegisterFlags(dataOptionChainCmd, api.OptionChainFlags, nil)
+	cmdutil.RegisterFlags(dataOptionChainCmd, api.OptionChainOp.Flags(), nil)
 
-	cmdutil.RegisterFlags(dataOptionLatestQuotesCmd, api.OptionLatestQuotesFlags, nil)
-	cmdutil.RegisterFlags(dataOptionLatestTradesCmd, api.OptionLatestTradesFlags, nil)
+	cmdutil.RegisterFlags(dataOptionLatestQuotesCmd, api.OptionLatestQuotesOp.Flags(), nil)
+	cmdutil.RegisterFlags(dataOptionLatestTradesCmd, api.OptionLatestTradesOp.Flags(), nil)
 
 	dataOptionCmd.AddCommand(dataOptionBarsCmd)
 	dataOptionCmd.AddCommand(dataOptionTradesCmd)

@@ -19,7 +19,7 @@ var orderCmd = &cobra.Command{
 
 var orderSubmitCmd = &cobra.Command{
 	Use:   "submit <symbol>",
-	Short: api.PostOrderOp.Summary,
+	Short: api.PostOrderOp.Summary(),
 	Example: `  alpaca order submit AAPL --qty 10 --side buy --type market
   alpaca order submit AAPL --qty 5 --side buy --type limit --limit-price 185.00
   alpaca order submit AAPL --qty 10 --side sell --type stop --stop-price 175.00
@@ -63,7 +63,7 @@ var orderSubmitCmd = &cobra.Command{
 
 var orderListCmd = &cobra.Command{
 	Use:   "list",
-	Short: api.GetAllOrdersOp.Summary,
+	Short: api.GetAllOrdersOp.Summary(),
 	Example: `  alpaca order list
   alpaca order list --status closed --limit 20
   alpaca order list --symbols AAPL,MSFT --after 2025-01-01`,
@@ -97,7 +97,7 @@ var orderListCmd = &cobra.Command{
 
 var orderGetCmd = &cobra.Command{
 	Use:   "get [order-id]",
-	Short: api.GetOrderByOrderIDOp.Summary,
+	Short: api.GetOrderByOrderIDOp.Summary(),
 	Example: `  alpaca order get 61e69015-8549-4baf-b96f-9c4f3e8d0c35
   alpaca order get --client-id my-order-123`,
 	Args: cobra.MaximumNArgs(1),
@@ -129,7 +129,7 @@ var orderGetCmd = &cobra.Command{
 
 var orderCancelCmd = &cobra.Command{
 	Use:   "cancel <order-id>",
-	Short: api.DeleteOrderByOrderIDOp.Summary,
+	Short: api.DeleteOrderByOrderIDOp.Summary(),
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		_, err := tradingClient.DeleteOrderByOrderID(args[0])
@@ -143,7 +143,7 @@ var orderCancelCmd = &cobra.Command{
 
 var orderCancelAllCmd = &cobra.Command{
 	Use:   "cancel-all",
-	Short: api.DeleteAllOrdersOp.Summary,
+	Short: api.DeleteAllOrdersOp.Summary(),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		canceled, err := tradingClient.DeleteAllOrders()
 		if err != nil {
@@ -155,7 +155,7 @@ var orderCancelAllCmd = &cobra.Command{
 
 var orderReplaceCmd = &cobra.Command{
 	Use:     "replace <order-id>",
-	Short:   api.PatchOrderByOrderIDOp.Summary,
+	Short:   api.PatchOrderByOrderIDOp.Summary(),
 	Example: `  alpaca order replace <order-id> --qty 20 --limit-price 190.00`,
 	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -170,21 +170,21 @@ var orderReplaceCmd = &cobra.Command{
 }
 
 func init() {
-	cmdutil.RegisterFlags(orderSubmitCmd, api.PostOrderFlags, &cmdutil.FlagOpts{
+	cmdutil.RegisterFlags(orderSubmitCmd, api.PostOrderOp.Flags(), &cmdutil.FlagOpts{
 		Exclude:  map[string]bool{"symbol": true, "advanced_instructions": true, "legs": true},
 		Defaults: map[string]string{"type": "market"},
 	})
 	orderSubmitCmd.Flags().Bool("dry-run", false, "Print the request body without submitting")
 
-	cmdutil.RegisterFlags(orderListCmd, api.GetAllOrdersFlags, nil)
+	cmdutil.RegisterFlags(orderListCmd, api.GetAllOrdersOp.Flags(), nil)
 
-	cmdutil.RegisterFlags(orderReplaceCmd, api.PatchOrderByOrderIDFlags, &cmdutil.FlagOpts{
+	cmdutil.RegisterFlags(orderReplaceCmd, api.PatchOrderByOrderIDOp.Flags(), &cmdutil.FlagOpts{
 		Exclude: map[string]bool{"advanced_instructions": true},
 	})
 
 	orderCmd.AddCommand(orderSubmitCmd)
 	orderCmd.AddCommand(orderListCmd)
-	cmdutil.RegisterFlags(orderGetCmd, api.GetOrderByOrderIDFlags, nil)
+	cmdutil.RegisterFlags(orderGetCmd, api.GetOrderByOrderIDOp.Flags(), nil)
 	orderGetCmd.Flags().String("client-id", "", "Look up order by client order ID")
 	orderCmd.AddCommand(orderGetCmd)
 	orderCmd.AddCommand(orderCancelCmd)

@@ -15,7 +15,7 @@ var corporateActionCmd = &cobra.Command{
 
 var corporateActionListCmd = &cobra.Command{
 	Use:   "list",
-	Short: api.GetV2CorporateActionsAnnouncementsOp.Summary,
+	Short: api.GetV2CorporateActionsAnnouncementsOp.Summary(),
 	Example: `  alpaca corporate-action list --ca-types reverse_split --since 2025-01-01 --until 2025-12-31
   alpaca corporate-action list --ca-types cash_dividend --symbol AAPL --since 2025-01-01 --until 2025-06-30`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -35,7 +35,7 @@ var corporateActionListCmd = &cobra.Command{
 
 var corporateActionGetCmd = &cobra.Command{
 	Use:   "get <id>",
-	Short: api.GetV2CorporateActionsAnnouncementsIDOp.Summary,
+	Short: api.GetV2CorporateActionsAnnouncementsIDOp.Summary(),
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		data, err := tradingClient.GetV2CorporateActionsAnnouncementsID(args[0])
@@ -47,7 +47,7 @@ var corporateActionGetCmd = &cobra.Command{
 }
 
 func init() {
-	cmdutil.RegisterFlags(corporateActionListCmd, api.GetV2CorporateActionsAnnouncementsFlags, nil)
+	cmdutil.RegisterFlags(corporateActionListCmd, api.GetV2CorporateActionsAnnouncementsOp.Flags(), nil)
 
 	corporateActionCmd.AddCommand(corporateActionListCmd)
 	corporateActionCmd.AddCommand(corporateActionGetCmd)

@@ -17,7 +17,7 @@ var watchlistCmd = &cobra.Command{
 
 var watchlistListCmd = &cobra.Command{
 	Use:   "list",
-	Short: api.GetWatchlistsOp.Summary,
+	Short: api.GetWatchlistsOp.Summary(),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		watchlists, err := tradingClient.GetWatchlists()
 		if err != nil {
@@ -62,7 +62,7 @@ func watchlistAddRunE(add func(key, symbol string) (*api.Watchlist, error)) func
 
 var watchlistGetCmd = &cobra.Command{
 	Use:   "get <id>",
-	Short: api.GetWatchlistByIDOp.Summary,
+	Short: api.GetWatchlistByIDOp.Summary(),
 	Args:  cobra.ExactArgs(1),
 	RunE: watchlistFetchRunE(func(key string) (*api.Watchlist, error) {
 		return tradingClient.GetWatchlistByID(key)
@@ -71,7 +71,7 @@ var watchlistGetCmd = &cobra.Command{
 
 var watchlistCreateCmd = &cobra.Command{
 	Use:     "create <name>",
-	Short:   api.PostWatchlistOp.Summary,
+	Short:   api.PostWatchlistOp.Summary(),
 	Example: `  alpaca watchlist create "Tech Stocks" --symbols AAPL,MSFT,GOOG`,
 	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -93,7 +93,7 @@ var watchlistCreateCmd = &cobra.Command{
 
 var watchlistUpdateCmd = &cobra.Command{
 	Use:   "update <id>",
-	Short: api.UpdateWatchlistByIDOp.Summary,
+	Short: api.UpdateWatchlistByIDOp.Summary(),
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		body, _ := updateWatchlistRequestBodyFromFlags(cmd)
@@ -112,7 +112,7 @@ var watchlistUpdateCmd = &cobra.Command{
 
 var watchlistDeleteCmd = &cobra.Command{
 	Use:   "delete <id>",
-	Short: api.DeleteWatchlistByIDOp.Summary,
+	Short: api.DeleteWatchlistByIDOp.Summary(),
 	Args:  cobra.ExactArgs(1),
 	RunE: watchlistDeleteRunE(func(key string) error {
 		_, err := tradingClient.DeleteWatchlistByID(key)
@@ -122,7 +122,7 @@ var watchlistDeleteCmd = &cobra.Command{
 
 var watchlistAddCmd = &cobra.Command{
 	Use:   "add <id> <symbol>",
-	Short: api.AddAssetToWatchlistOp.Summary,
+	Short: api.AddAssetToWatchlistOp.Summary(),
 	Args:  cobra.ExactArgs(2),
 	RunE: watchlistAddRunE(func(key, symbol string) (*api.Watchlist, error) {
 		return tradingClient.AddAssetToWatchlist(key, &api.AddAssetToWatchlistRequest{Symbol: symbol})
@@ -131,7 +131,7 @@ var watchlistAddCmd = &cobra.Command{
 
 var watchlistRemoveCmd = &cobra.Command{
 	Use:   "remove <id> <symbol>",
-	Short: api.RemoveAssetFromWatchlistOp.Summary,
+	Short: api.RemoveAssetFromWatchlistOp.Summary(),
 	Args:  cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		_, err := tradingClient.RemoveAssetFromWatchlist(args[0], args[1])
@@ -145,7 +145,7 @@ var watchlistRemoveCmd = &cobra.Command{
 
 var watchlistGetByNameCmd = &cobra.Command{
 	Use:     "get-by-name <name>",
-	Short:   api.GetWatchlistByNameOp.Summary,
+	Short:   api.GetWatchlistByNameOp.Summary(),
 	Example: `  alpaca watchlist get-by-name "Tech Stocks"`,
 	Args:    cobra.ExactArgs(1),
 	RunE: watchlistFetchRunE(func(key string) (*api.Watchlist, error) {
@@ -155,7 +155,7 @@ var watchlistGetByNameCmd = &cobra.Command{
 
 var watchlistDeleteByNameCmd = &cobra.Command{
 	Use:     "delete-by-name <name>",
-	Short:   api.DeleteWatchlistByNameOp.Summary,
+	Short:   api.DeleteWatchlistByNameOp.Summary(),
 	Example: `  alpaca watchlist delete-by-name "Tech Stocks"`,
 	Args:    cobra.ExactArgs(1),
 	RunE: watchlistDeleteRunE(func(key string) error {
@@ -166,7 +166,7 @@ var watchlistDeleteByNameCmd = &cobra.Command{
 
 var watchlistUpdateByNameCmd = &cobra.Command{
 	Use:     "update-by-name <name>",
-	Short:   api.UpdateWatchlistByNameOp.Summary,
+	Short:   api.UpdateWatchlistByNameOp.Summary(),
 	Example: `  alpaca watchlist update-by-name "Tech Stocks" --symbols AAPL,MSFT,GOOG`,
 	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -191,7 +191,7 @@ var watchlistUpdateByNameCmd = &cobra.Command{
 
 var watchlistAddByNameCmd = &cobra.Command{
 	Use:     "add-by-name <name> <symbol>",
-	Short:   api.AddAssetToWatchlistByNameOp.Summary,
+	Short:   api.AddAssetToWatchlistByNameOp.Summary(),
 	Example: `  alpaca watchlist add-by-name "Tech Stocks" NVDA`,
 	Args:    cobra.ExactArgs(2),
 	RunE: watchlistAddRunE(func(key, symbol string) (*api.Watchlist, error) {
@@ -203,12 +203,12 @@ var watchlistAddByNameCmd = &cobra.Command{
 }
 
 func init() {
-	cmdutil.RegisterFlags(watchlistCreateCmd, api.PostWatchlistFlags, &cmdutil.FlagOpts{
+	cmdutil.RegisterFlags(watchlistCreateCmd, api.PostWatchlistOp.Flags(), &cmdutil.FlagOpts{
 		Exclude: map[string]bool{"name": true},
 	})
-	cmdutil.RegisterFlags(watchlistUpdateCmd, api.UpdateWatchlistByIDFlags, nil)
+	cmdutil.RegisterFlags(watchlistUpdateCmd, api.UpdateWatchlistByIDOp.Flags(), nil)
 
-	cmdutil.RegisterFlags(watchlistUpdateByNameCmd, api.UpdateWatchlistByNameFlags, &cmdutil.FlagOpts{
+	cmdutil.RegisterFlags(watchlistUpdateByNameCmd, api.UpdateWatchlistByNameOp.Flags(), &cmdutil.FlagOpts{
 		Exclude: map[string]bool{"name": true},
 	})
 	watchlistUpdateByNameCmd.Flags().String("new-name", "", "New name for the watchlist")

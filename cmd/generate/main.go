@@ -1467,8 +1467,10 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 	fmt.Fprintf(&buf, "// Op is satisfied by every generated operation variable (e.g. GetAccountOp).\n")
 	fmt.Fprintf(&buf, "// Use it to pass operations type-safely instead of raw strings.\n")
 	fmt.Fprintf(&buf, "type Op interface {\n")
-	fmt.Fprintf(&buf, "\tResponseFields() []ResponseField\n")
+	fmt.Fprintf(&buf, "\tSummary() string\n")
+	fmt.Fprintf(&buf, "\tFlags() []FlagDef\n")
 	fmt.Fprintf(&buf, "\tRequiredFlags() []string\n")
+	fmt.Fprintf(&buf, "\tResponseFields() []ResponseField\n")
 	fmt.Fprintf(&buf, "}\n\n")
 
 	fmt.Fprintf(&buf, "// FlagDef describes a CLI flag derived from the OpenAPI spec.\n")
@@ -1486,12 +1488,12 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 	for _, op := range ops {
 		typeName := lcFirst(op.goName) + "Op"
 
-		fmt.Fprintf(&buf, "type %s struct {\n", typeName)
-		fmt.Fprintf(&buf, "\tSummary string\n")
-		fmt.Fprintf(&buf, "}\n\n")
+		fmt.Fprintf(&buf, "type %s struct{}\n\n", typeName)
 
-		fmt.Fprintf(&buf, "var %sOp = %s{\n", op.goName, typeName)
-		fmt.Fprintf(&buf, "\tSummary: %q,\n", op.summary)
+		fmt.Fprintf(&buf, "var %sOp = %s{}\n\n", op.goName, typeName)
+
+		fmt.Fprintf(&buf, "func (o %s) Summary() string {\n", typeName)
+		fmt.Fprintf(&buf, "\treturn %q\n", op.summary)
 		fmt.Fprintf(&buf, "}\n\n")
 
 		fmt.Fprintf(&buf, "func (o %s) ResponseFields() []ResponseField {\n", typeName)
@@ -1529,15 +1531,16 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 				break
 			}
 		}
+		fmt.Fprintf(&buf, "func (o %s) Flags() []FlagDef {\n", typeName)
 		if hasFlags {
 			seen := map[string]bool{}
-			fmt.Fprintf(&buf, "var %sFlags = []FlagDef{\n", op.goName)
+			fmt.Fprintf(&buf, "\treturn []FlagDef{\n")
 			for _, p := range op.params {
 				if p.isPathParam || seen[p.oasName] {
 					continue
 				}
 				seen[p.oasName] = true
-				fmt.Fprintf(&buf, "\t{Name: %q, OASName: %q, Type: %q", p.flagName, p.oasName, p.flagType)
+				fmt.Fprintf(&buf, "\t\t{Name: %q, OASName: %q, Type: %q", p.flagName, p.oasName, p.flagType)
 				if p.defaultVal != "" {
 					fmt.Fprintf(&buf, ", Default: %q", p.defaultVal)
 				}
@@ -1558,8 +1561,11 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 				}
 				fmt.Fprintf(&buf, "},\n")
 			}
-			fmt.Fprintf(&buf, "}\n\n")
+			fmt.Fprintf(&buf, "\t}\n")
+		} else {
+			fmt.Fprintf(&buf, "\treturn nil\n")
 		}
+		fmt.Fprintf(&buf, "}\n\n")
 	}
 
 	fmt.Fprintf(&buf, "// ResponseField describes a field in an API response.\n")

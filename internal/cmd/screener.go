@@ -16,7 +16,7 @@ var screenerCmd = &cobra.Command{
 
 var screenerMostActivesCmd = &cobra.Command{
 	Use:   "most-actives",
-	Short: api.MostActivesOp.Summary,
+	Short: api.MostActivesOp.Summary(),
 	Example: `  alpaca screener most-actives
   alpaca screener most-actives --by trades --top 10`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -36,7 +36,7 @@ var screenerMostActivesCmd = &cobra.Command{
 
 var screenerMoversCmd = &cobra.Command{
 	Use:   "movers",
-	Short: api.MoversOp.Summary,
+	Short: api.MoversOp.Summary(),
 	Example: `  alpaca screener movers
   alpaca screener movers --market crypto --top 5`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -73,9 +73,9 @@ var screenerMoversCmd = &cobra.Command{
 }
 
 func init() {
-	cmdutil.RegisterFlags(screenerMostActivesCmd, api.MostActivesFlags, nil)
+	cmdutil.RegisterFlags(screenerMostActivesCmd, api.MostActivesOp.Flags(), nil)
 
-	cmdutil.RegisterFlags(screenerMoversCmd, api.MoversFlags, nil)
+	cmdutil.RegisterFlags(screenerMoversCmd, api.MoversOp.Flags(), nil)
 	screenerMoversCmd.Flags().String("market", "", "Market: stocks or crypto (default: stocks)")
 	_ = screenerMoversCmd.RegisterFlagCompletionFunc("market", cobra.FixedCompletions(api.MarketTypeValues, cobra.ShellCompDirectiveNoFileComp))
 

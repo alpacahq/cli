@@ -16,7 +16,7 @@ var activityCmd = &cobra.Command{
 
 var activityListCmd = &cobra.Command{
 	Use:   "list",
-	Short: api.GetAccountActivitiesOp.Summary,
+	Short: api.GetAccountActivitiesOp.Summary(),
 	Example: `  alpaca activity list
   alpaca activity list --activity-types FILL --page-size 20
   alpaca activity list --activity-types DIV --after 2025-01-01
@@ -48,7 +48,7 @@ var activityListCmd = &cobra.Command{
 }
 
 func init() {
-	cmdutil.RegisterFlags(activityListCmd, api.GetAccountActivitiesFlags, nil)
+	cmdutil.RegisterFlags(activityListCmd, api.GetAccountActivitiesOp.Flags(), nil)
 
 	activityCmd.AddCommand(activityListCmd)
 }

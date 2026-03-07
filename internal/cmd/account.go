@@ -14,7 +14,7 @@ var accountCmd = &cobra.Command{
 
 var accountGetCmd = &cobra.Command{
 	Use:   "get",
-	Short: api.GetAccountOp.Summary,
+	Short: api.GetAccountOp.Summary(),
 	Example: `  alpaca account get
   alpaca account get --json`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -28,7 +28,7 @@ var accountGetCmd = &cobra.Command{
 
 var accountConfigGetCmd = &cobra.Command{
 	Use:   "get",
-	Short: api.GetAccountConfigOp.Summary,
+	Short: api.GetAccountConfigOp.Summary(),
 	Example: `  alpaca account config get
   alpaca account config get --json`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -42,7 +42,7 @@ var accountConfigGetCmd = &cobra.Command{
 
 var accountConfigSetCmd = &cobra.Command{
 	Use:   "set",
-	Short: api.PatchAccountConfigOp.Summary,
+	Short: api.PatchAccountConfigOp.Summary(),
 	Example: `  alpaca account config set --no-shorting true
   alpaca account config set --dtbp-check entry`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -65,7 +65,7 @@ var accountConfigCmd = &cobra.Command{
 }
 
 func init() {
-	cmdutil.RegisterFlags(accountConfigSetCmd, api.PatchAccountConfigFlags, nil)
+	cmdutil.RegisterFlags(accountConfigSetCmd, api.PatchAccountConfigOp.Flags(), nil)
 
 	accountConfigCmd.AddCommand(accountConfigGetCmd)
 	accountConfigCmd.AddCommand(accountConfigSetCmd)

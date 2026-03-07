@@ -196,7 +196,7 @@ func addPaginationFlags(cmd *cobra.Command) {
 func init() {
 	feedCompletions := cobra.FixedCompletions([]string{"iex", "sip", "otc", "delayed_sip"}, cobra.ShellCompDirectiveNoFileComp)
 
-	cmdutil.RegisterFlags(dataBarsCmd, api.StockBarSingleFlags, &cmdutil.FlagOpts{
+	cmdutil.RegisterFlags(dataBarsCmd, api.StockBarSingleOp.Flags(), &cmdutil.FlagOpts{
 		Defaults: map[string]string{"timeframe": "1Day"},
 	})
 	addPaginationFlags(dataBarsCmd)
@@ -204,24 +204,24 @@ func init() {
 	_ = dataBarsCmd.RegisterFlagCompletionFunc("timeframe", cobra.FixedCompletions([]string{"1Min", "5Min", "15Min", "1Hour", "1Day", "1Week", "1Month"}, cobra.ShellCompDirectiveNoFileComp))
 	_ = dataBarsCmd.RegisterFlagCompletionFunc("adjustment", cobra.FixedCompletions([]string{"raw", "split", "dividend", "all"}, cobra.ShellCompDirectiveNoFileComp))
 
-	cmdutil.RegisterFlags(dataQuotesCmd, api.StockQuoteSingleFlags, nil)
+	cmdutil.RegisterFlags(dataQuotesCmd, api.StockQuoteSingleOp.Flags(), nil)
 	_ = dataQuotesCmd.RegisterFlagCompletionFunc("feed", feedCompletions)
 	addPaginationFlags(dataQuotesCmd)
 
-	cmdutil.RegisterFlags(dataTradesCmd, api.StockTradeSingleFlags, nil)
+	cmdutil.RegisterFlags(dataTradesCmd, api.StockTradeSingleOp.Flags(), nil)
 	_ = dataTradesCmd.RegisterFlagCompletionFunc("feed", feedCompletions)
 	addPaginationFlags(dataTradesCmd)
 
-	cmdutil.RegisterFlags(dataSnapshotCmd, api.StockSnapshotSingleFlags, nil)
+	cmdutil.RegisterFlags(dataSnapshotCmd, api.StockSnapshotSingleOp.Flags(), nil)
 	_ = dataSnapshotCmd.RegisterFlagCompletionFunc("feed", feedCompletions)
 
-	cmdutil.RegisterFlags(dataLatestTradeCmd, api.StockLatestTradeSingleFlags, nil)
+	cmdutil.RegisterFlags(dataLatestTradeCmd, api.StockLatestTradeSingleOp.Flags(), nil)
 	_ = dataLatestTradeCmd.RegisterFlagCompletionFunc("feed", feedCompletions)
 
-	cmdutil.RegisterFlags(dataLatestQuoteCmd, api.StockLatestQuoteSingleFlags, nil)
+	cmdutil.RegisterFlags(dataLatestQuoteCmd, api.StockLatestQuoteSingleOp.Flags(), nil)
 	_ = dataLatestQuoteCmd.RegisterFlagCompletionFunc("feed", feedCompletions)
 
-	cmdutil.RegisterFlags(dataLatestBarCmd, api.StockLatestBarSingleFlags, nil)
+	cmdutil.RegisterFlags(dataLatestBarCmd, api.StockLatestBarSingleOp.Flags(), nil)
 	_ = dataLatestBarCmd.RegisterFlagCompletionFunc("feed", feedCompletions)
 
 	dataLatestCmd.AddCommand(dataLatestTradeCmd)

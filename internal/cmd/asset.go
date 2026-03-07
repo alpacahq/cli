@@ -14,7 +14,7 @@ var assetCmd = &cobra.Command{
 
 var assetListCmd = &cobra.Command{
 	Use:   "list",
-	Short: api.GetV2AssetsOp.Summary,
+	Short: api.GetV2AssetsOp.Summary(),
 	Example: `  alpaca asset list
   alpaca asset list --asset-class us_equity --status active
   alpaca asset list --exchange NYSE`,
@@ -30,7 +30,7 @@ var assetListCmd = &cobra.Command{
 
 var assetGetCmd = &cobra.Command{
 	Use:   "get <symbol>",
-	Short: api.GetV2AssetsSymbolOrAssetIDOp.Summary,
+	Short: api.GetV2AssetsSymbolOrAssetIDOp.Summary(),
 	Example: `  alpaca asset get AAPL
   alpaca asset get BTC/USD
   alpaca asset get AAPL --json`,
@@ -46,7 +46,7 @@ var assetGetCmd = &cobra.Command{
 
 var treasuryListCmd = &cobra.Command{
 	Use:   "treasury",
-	Short: api.UsTreasuriesOp.Summary,
+	Short: api.UsTreasuriesOp.Summary(),
 	Example: `  alpaca asset treasury
   alpaca asset treasury --bond-status active`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -60,7 +60,7 @@ var treasuryListCmd = &cobra.Command{
 
 var bondListCmd = &cobra.Command{
 	Use:   "bond",
-	Short: api.UsCorporatesOp.Summary,
+	Short: api.UsCorporatesOp.Summary(),
 	Example: `  alpaca asset bond
   alpaca asset bond --bond-status active`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -73,11 +73,11 @@ var bondListCmd = &cobra.Command{
 }
 
 func init() {
-	cmdutil.RegisterFlags(assetListCmd, api.GetV2AssetsFlags, nil)
+	cmdutil.RegisterFlags(assetListCmd, api.GetV2AssetsOp.Flags(), nil)
 
-	cmdutil.RegisterFlags(treasuryListCmd, api.UsTreasuriesFlags, nil)
+	cmdutil.RegisterFlags(treasuryListCmd, api.UsTreasuriesOp.Flags(), nil)
 
-	cmdutil.RegisterFlags(bondListCmd, api.UsCorporatesFlags, nil)
+	cmdutil.RegisterFlags(bondListCmd, api.UsCorporatesOp.Flags(), nil)
 
 	assetCmd.AddCommand(assetListCmd)
 	assetCmd.AddCommand(assetGetCmd)
