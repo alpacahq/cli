@@ -61,7 +61,13 @@ var dataBarsCmd = &cobra.Command{
   alpaca data bars AAPL --start 2025-01-01 --all`,
 	Args: cobra.ExactArgs(1),
 	RunE: runDataCmd(
-		func(cmd *cobra.Command) url.Values { return stockBarSingleParamsFromFlags(cmd).Values() },
+		func(cmd *cobra.Command) url.Values {
+			p := stockBarSingleParamsFromFlags(cmd)
+			if p.Timeframe == "" {
+				p.Timeframe = "1Day"
+			}
+			return p.Values()
+		},
 		func(sym string, p url.Values) (json.RawMessage, error) { return dataClient.Bars(sym, p) },
 		extractBars,
 		barColumns,

@@ -11,7 +11,7 @@ import (
 func addAssetToWatchlistByNameParamsFromFlags(cmd *cobra.Command) *api.AddAssetToWatchlistByNameParams {
 	p := &api.AddAssetToWatchlistByNameParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("name") != nil {
+	if flags.Lookup("name") != nil && flags.Changed("name") {
 		p.Name = cmdutil.Str(cmd, "name")
 	}
 	return p
@@ -20,13 +20,13 @@ func addAssetToWatchlistByNameParamsFromFlags(cmd *cobra.Command) *api.AddAssetT
 func calendarParamsFromFlags(cmd *cobra.Command) *api.CalendarParams {
 	p := &api.CalendarParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("end") != nil {
+	if flags.Lookup("end") != nil && flags.Changed("end") {
 		p.End = cmdutil.Str(cmd, "end")
 	}
-	if flags.Lookup("start") != nil {
+	if flags.Lookup("start") != nil && flags.Changed("start") {
 		p.Start = cmdutil.Str(cmd, "start")
 	}
-	if flags.Lookup("timezone") != nil {
+	if flags.Lookup("timezone") != nil && flags.Changed("timezone") {
 		p.Timezone = cmdutil.Str(cmd, "timezone")
 	}
 	return p
@@ -35,10 +35,10 @@ func calendarParamsFromFlags(cmd *cobra.Command) *api.CalendarParams {
 func clockParamsFromFlags(cmd *cobra.Command) *api.ClockParams {
 	p := &api.ClockParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("markets") != nil {
+	if flags.Lookup("markets") != nil && flags.Changed("markets") {
 		p.Markets = cmdutil.Str(cmd, "markets")
 	}
-	if flags.Lookup("time") != nil {
+	if flags.Lookup("time") != nil && flags.Changed("time") {
 		p.Time = cmdutil.Str(cmd, "time")
 	}
 	return p
@@ -47,31 +47,31 @@ func clockParamsFromFlags(cmd *cobra.Command) *api.ClockParams {
 func corporateActionsParamsFromFlags(cmd *cobra.Command) *api.CorporateActionsParams {
 	p := &api.CorporateActionsParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("cusips") != nil {
+	if flags.Lookup("cusips") != nil && flags.Changed("cusips") {
 		p.Cusips = cmdutil.Str(cmd, "cusips")
 	}
-	if flags.Lookup("end") != nil {
+	if flags.Lookup("end") != nil && flags.Changed("end") {
 		p.End = cmdutil.Str(cmd, "end")
 	}
-	if flags.Lookup("ids") != nil {
+	if flags.Lookup("ids") != nil && flags.Changed("ids") {
 		p.Ids = cmdutil.Str(cmd, "ids")
 	}
-	if flags.Lookup("limit") != nil {
+	if flags.Lookup("limit") != nil && flags.Changed("limit") {
 		p.Limit = cmdutil.Int(cmd, "limit")
 	}
-	if flags.Lookup("page-token") != nil {
+	if flags.Lookup("page-token") != nil && flags.Changed("page-token") {
 		p.PageToken = cmdutil.Str(cmd, "page-token")
 	}
-	if flags.Lookup("sort") != nil {
+	if flags.Lookup("sort") != nil && flags.Changed("sort") {
 		p.Sort = cmdutil.Str(cmd, "sort")
 	}
-	if flags.Lookup("start") != nil {
+	if flags.Lookup("start") != nil && flags.Changed("start") {
 		p.Start = cmdutil.Str(cmd, "start")
 	}
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
-	if flags.Lookup("types") != nil {
+	if flags.Lookup("types") != nil && flags.Changed("types") {
 		p.Types = cmdutil.Str(cmd, "types")
 	}
 	return p
@@ -80,25 +80,25 @@ func corporateActionsParamsFromFlags(cmd *cobra.Command) *api.CorporateActionsPa
 func cryptoBarsParamsFromFlags(cmd *cobra.Command) *api.CryptoBarsParams {
 	p := &api.CryptoBarsParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("end") != nil {
+	if flags.Lookup("end") != nil && flags.Changed("end") {
 		p.End = cmdutil.Str(cmd, "end")
 	}
-	if flags.Lookup("limit") != nil {
+	if flags.Lookup("limit") != nil && flags.Changed("limit") {
 		p.Limit = cmdutil.Int(cmd, "limit")
 	}
-	if flags.Lookup("page-token") != nil {
+	if flags.Lookup("page-token") != nil && flags.Changed("page-token") {
 		p.PageToken = cmdutil.Str(cmd, "page-token")
 	}
-	if flags.Lookup("sort") != nil {
+	if flags.Lookup("sort") != nil && flags.Changed("sort") {
 		p.Sort = cmdutil.Str(cmd, "sort")
 	}
-	if flags.Lookup("start") != nil {
+	if flags.Lookup("start") != nil && flags.Changed("start") {
 		p.Start = cmdutil.Str(cmd, "start")
 	}
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
-	if flags.Lookup("timeframe") != nil {
+	if flags.Lookup("timeframe") != nil && flags.Changed("timeframe") {
 		p.Timeframe = cmdutil.Str(cmd, "timeframe")
 	}
 	return p
@@ -107,7 +107,7 @@ func cryptoBarsParamsFromFlags(cmd *cobra.Command) *api.CryptoBarsParams {
 func cryptoLatestBarsParamsFromFlags(cmd *cobra.Command) *api.CryptoLatestBarsParams {
 	p := &api.CryptoLatestBarsParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
 	return p
@@ -116,7 +116,7 @@ func cryptoLatestBarsParamsFromFlags(cmd *cobra.Command) *api.CryptoLatestBarsPa
 func cryptoLatestOrderbooksParamsFromFlags(cmd *cobra.Command) *api.CryptoLatestOrderbooksParams {
 	p := &api.CryptoLatestOrderbooksParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
 	return p
@@ -125,7 +125,7 @@ func cryptoLatestOrderbooksParamsFromFlags(cmd *cobra.Command) *api.CryptoLatest
 func cryptoLatestQuotesParamsFromFlags(cmd *cobra.Command) *api.CryptoLatestQuotesParams {
 	p := &api.CryptoLatestQuotesParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
 	return p
@@ -134,7 +134,7 @@ func cryptoLatestQuotesParamsFromFlags(cmd *cobra.Command) *api.CryptoLatestQuot
 func cryptoLatestTradesParamsFromFlags(cmd *cobra.Command) *api.CryptoLatestTradesParams {
 	p := &api.CryptoLatestTradesParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
 	return p
@@ -143,7 +143,7 @@ func cryptoLatestTradesParamsFromFlags(cmd *cobra.Command) *api.CryptoLatestTrad
 func cryptoPerpLatestBarsParamsFromFlags(cmd *cobra.Command) *api.CryptoPerpLatestBarsParams {
 	p := &api.CryptoPerpLatestBarsParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
 	return p
@@ -152,7 +152,7 @@ func cryptoPerpLatestBarsParamsFromFlags(cmd *cobra.Command) *api.CryptoPerpLate
 func cryptoPerpLatestFuturesPricingParamsFromFlags(cmd *cobra.Command) *api.CryptoPerpLatestFuturesPricingParams {
 	p := &api.CryptoPerpLatestFuturesPricingParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
 	return p
@@ -161,7 +161,7 @@ func cryptoPerpLatestFuturesPricingParamsFromFlags(cmd *cobra.Command) *api.Cryp
 func cryptoPerpLatestOrderbooksParamsFromFlags(cmd *cobra.Command) *api.CryptoPerpLatestOrderbooksParams {
 	p := &api.CryptoPerpLatestOrderbooksParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
 	return p
@@ -170,7 +170,7 @@ func cryptoPerpLatestOrderbooksParamsFromFlags(cmd *cobra.Command) *api.CryptoPe
 func cryptoPerpLatestQuotesParamsFromFlags(cmd *cobra.Command) *api.CryptoPerpLatestQuotesParams {
 	p := &api.CryptoPerpLatestQuotesParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
 	return p
@@ -179,7 +179,7 @@ func cryptoPerpLatestQuotesParamsFromFlags(cmd *cobra.Command) *api.CryptoPerpLa
 func cryptoPerpLatestTradesParamsFromFlags(cmd *cobra.Command) *api.CryptoPerpLatestTradesParams {
 	p := &api.CryptoPerpLatestTradesParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
 	return p
@@ -188,22 +188,22 @@ func cryptoPerpLatestTradesParamsFromFlags(cmd *cobra.Command) *api.CryptoPerpLa
 func cryptoQuotesParamsFromFlags(cmd *cobra.Command) *api.CryptoQuotesParams {
 	p := &api.CryptoQuotesParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("end") != nil {
+	if flags.Lookup("end") != nil && flags.Changed("end") {
 		p.End = cmdutil.Str(cmd, "end")
 	}
-	if flags.Lookup("limit") != nil {
+	if flags.Lookup("limit") != nil && flags.Changed("limit") {
 		p.Limit = cmdutil.Int(cmd, "limit")
 	}
-	if flags.Lookup("page-token") != nil {
+	if flags.Lookup("page-token") != nil && flags.Changed("page-token") {
 		p.PageToken = cmdutil.Str(cmd, "page-token")
 	}
-	if flags.Lookup("sort") != nil {
+	if flags.Lookup("sort") != nil && flags.Changed("sort") {
 		p.Sort = cmdutil.Str(cmd, "sort")
 	}
-	if flags.Lookup("start") != nil {
+	if flags.Lookup("start") != nil && flags.Changed("start") {
 		p.Start = cmdutil.Str(cmd, "start")
 	}
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
 	return p
@@ -212,7 +212,7 @@ func cryptoQuotesParamsFromFlags(cmd *cobra.Command) *api.CryptoQuotesParams {
 func cryptoSnapshotsParamsFromFlags(cmd *cobra.Command) *api.CryptoSnapshotsParams {
 	p := &api.CryptoSnapshotsParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
 	return p
@@ -221,22 +221,22 @@ func cryptoSnapshotsParamsFromFlags(cmd *cobra.Command) *api.CryptoSnapshotsPara
 func cryptoTradesParamsFromFlags(cmd *cobra.Command) *api.CryptoTradesParams {
 	p := &api.CryptoTradesParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("end") != nil {
+	if flags.Lookup("end") != nil && flags.Changed("end") {
 		p.End = cmdutil.Str(cmd, "end")
 	}
-	if flags.Lookup("limit") != nil {
+	if flags.Lookup("limit") != nil && flags.Changed("limit") {
 		p.Limit = cmdutil.Int(cmd, "limit")
 	}
-	if flags.Lookup("page-token") != nil {
+	if flags.Lookup("page-token") != nil && flags.Changed("page-token") {
 		p.PageToken = cmdutil.Str(cmd, "page-token")
 	}
-	if flags.Lookup("sort") != nil {
+	if flags.Lookup("sort") != nil && flags.Changed("sort") {
 		p.Sort = cmdutil.Str(cmd, "sort")
 	}
-	if flags.Lookup("start") != nil {
+	if flags.Lookup("start") != nil && flags.Changed("start") {
 		p.Start = cmdutil.Str(cmd, "start")
 	}
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
 	return p
@@ -245,7 +245,7 @@ func cryptoTradesParamsFromFlags(cmd *cobra.Command) *api.CryptoTradesParams {
 func deleteAllOpenPositionsParamsFromFlags(cmd *cobra.Command) *api.DeleteAllOpenPositionsParams {
 	p := &api.DeleteAllOpenPositionsParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("cancel-orders") != nil {
+	if flags.Lookup("cancel-orders") != nil && flags.Changed("cancel-orders") {
 		p.CancelOrders = cmdutil.Bool(cmd, "cancel-orders")
 	}
 	return p
@@ -254,10 +254,10 @@ func deleteAllOpenPositionsParamsFromFlags(cmd *cobra.Command) *api.DeleteAllOpe
 func deleteOpenPositionParamsFromFlags(cmd *cobra.Command) *api.DeleteOpenPositionParams {
 	p := &api.DeleteOpenPositionParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("percentage") != nil {
+	if flags.Lookup("percentage") != nil && flags.Changed("percentage") {
 		p.Percentage = cmdutil.Str(cmd, "percentage")
 	}
-	if flags.Lookup("qty") != nil {
+	if flags.Lookup("qty") != nil && flags.Changed("qty") {
 		p.Qty = cmdutil.Str(cmd, "qty")
 	}
 	return p
@@ -266,7 +266,7 @@ func deleteOpenPositionParamsFromFlags(cmd *cobra.Command) *api.DeleteOpenPositi
 func deleteWatchlistByNameParamsFromFlags(cmd *cobra.Command) *api.DeleteWatchlistByNameParams {
 	p := &api.DeleteWatchlistByNameParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("name") != nil {
+	if flags.Lookup("name") != nil && flags.Changed("name") {
 		p.Name = cmdutil.Str(cmd, "name")
 	}
 	return p
@@ -275,7 +275,7 @@ func deleteWatchlistByNameParamsFromFlags(cmd *cobra.Command) *api.DeleteWatchli
 func fixedIncomeLatestPricesParamsFromFlags(cmd *cobra.Command) *api.FixedIncomeLatestPricesParams {
 	p := &api.FixedIncomeLatestPricesParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("isins") != nil {
+	if flags.Lookup("isins") != nil && flags.Changed("isins") {
 		p.Isins = cmdutil.Str(cmd, "isins")
 	}
 	return p
@@ -284,28 +284,28 @@ func fixedIncomeLatestPricesParamsFromFlags(cmd *cobra.Command) *api.FixedIncome
 func getAccountActivitiesParamsFromFlags(cmd *cobra.Command) *api.GetAccountActivitiesParams {
 	p := &api.GetAccountActivitiesParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("activity-types") != nil {
+	if flags.Lookup("activity-types") != nil && flags.Changed("activity-types") {
 		p.ActivityTypes = cmdutil.Str(cmd, "activity-types")
 	}
-	if flags.Lookup("after") != nil {
+	if flags.Lookup("after") != nil && flags.Changed("after") {
 		p.After = cmdutil.Str(cmd, "after")
 	}
-	if flags.Lookup("category") != nil {
+	if flags.Lookup("category") != nil && flags.Changed("category") {
 		p.Category = cmdutil.Str(cmd, "category")
 	}
-	if flags.Lookup("date") != nil {
+	if flags.Lookup("date") != nil && flags.Changed("date") {
 		p.Date = cmdutil.Str(cmd, "date")
 	}
-	if flags.Lookup("direction") != nil {
+	if flags.Lookup("direction") != nil && flags.Changed("direction") {
 		p.Direction = cmdutil.Str(cmd, "direction")
 	}
-	if flags.Lookup("page-size") != nil {
+	if flags.Lookup("page-size") != nil && flags.Changed("page-size") {
 		p.PageSize = cmdutil.Int(cmd, "page-size")
 	}
-	if flags.Lookup("page-token") != nil {
+	if flags.Lookup("page-token") != nil && flags.Changed("page-token") {
 		p.PageToken = cmdutil.Str(cmd, "page-token")
 	}
-	if flags.Lookup("until") != nil {
+	if flags.Lookup("until") != nil && flags.Changed("until") {
 		p.Until = cmdutil.Str(cmd, "until")
 	}
 	return p
@@ -314,22 +314,22 @@ func getAccountActivitiesParamsFromFlags(cmd *cobra.Command) *api.GetAccountActi
 func getAccountActivitiesByActivityTypeParamsFromFlags(cmd *cobra.Command) *api.GetAccountActivitiesByActivityTypeParams {
 	p := &api.GetAccountActivitiesByActivityTypeParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("after") != nil {
+	if flags.Lookup("after") != nil && flags.Changed("after") {
 		p.After = cmdutil.Str(cmd, "after")
 	}
-	if flags.Lookup("date") != nil {
+	if flags.Lookup("date") != nil && flags.Changed("date") {
 		p.Date = cmdutil.Str(cmd, "date")
 	}
-	if flags.Lookup("direction") != nil {
+	if flags.Lookup("direction") != nil && flags.Changed("direction") {
 		p.Direction = cmdutil.Str(cmd, "direction")
 	}
-	if flags.Lookup("page-size") != nil {
+	if flags.Lookup("page-size") != nil && flags.Changed("page-size") {
 		p.PageSize = cmdutil.Int(cmd, "page-size")
 	}
-	if flags.Lookup("page-token") != nil {
+	if flags.Lookup("page-token") != nil && flags.Changed("page-token") {
 		p.PageToken = cmdutil.Str(cmd, "page-token")
 	}
-	if flags.Lookup("until") != nil {
+	if flags.Lookup("until") != nil && flags.Changed("until") {
 		p.Until = cmdutil.Str(cmd, "until")
 	}
 	return p
@@ -338,28 +338,28 @@ func getAccountActivitiesByActivityTypeParamsFromFlags(cmd *cobra.Command) *api.
 func getAccountPortfolioHistoryParamsFromFlags(cmd *cobra.Command) *api.GetAccountPortfolioHistoryParams {
 	p := &api.GetAccountPortfolioHistoryParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("cashflow-types") != nil {
+	if flags.Lookup("cashflow-types") != nil && flags.Changed("cashflow-types") {
 		p.CashflowTypes = cmdutil.Str(cmd, "cashflow-types")
 	}
-	if flags.Lookup("end") != nil {
+	if flags.Lookup("end") != nil && flags.Changed("end") {
 		p.End = cmdutil.Str(cmd, "end")
 	}
-	if flags.Lookup("extended-hours") != nil {
+	if flags.Lookup("extended-hours") != nil && flags.Changed("extended-hours") {
 		p.ExtendedHours = cmdutil.Str(cmd, "extended-hours")
 	}
-	if flags.Lookup("intraday-reporting") != nil {
+	if flags.Lookup("intraday-reporting") != nil && flags.Changed("intraday-reporting") {
 		p.IntradayReporting = cmdutil.Str(cmd, "intraday-reporting")
 	}
-	if flags.Lookup("period") != nil {
+	if flags.Lookup("period") != nil && flags.Changed("period") {
 		p.Period = cmdutil.Str(cmd, "period")
 	}
-	if flags.Lookup("pnl-reset") != nil {
+	if flags.Lookup("pnl-reset") != nil && flags.Changed("pnl-reset") {
 		p.PNLReset = cmdutil.Str(cmd, "pnl-reset")
 	}
-	if flags.Lookup("start") != nil {
+	if flags.Lookup("start") != nil && flags.Changed("start") {
 		p.Start = cmdutil.Str(cmd, "start")
 	}
-	if flags.Lookup("timeframe") != nil {
+	if flags.Lookup("timeframe") != nil && flags.Changed("timeframe") {
 		p.Timeframe = cmdutil.Str(cmd, "timeframe")
 	}
 	return p
@@ -368,37 +368,37 @@ func getAccountPortfolioHistoryParamsFromFlags(cmd *cobra.Command) *api.GetAccou
 func getAllOrdersParamsFromFlags(cmd *cobra.Command) *api.GetAllOrdersParams {
 	p := &api.GetAllOrdersParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("after") != nil {
+	if flags.Lookup("after") != nil && flags.Changed("after") {
 		p.After = cmdutil.Str(cmd, "after")
 	}
-	if flags.Lookup("after-order-id") != nil {
+	if flags.Lookup("after-order-id") != nil && flags.Changed("after-order-id") {
 		p.AfterOrderID = cmdutil.Str(cmd, "after-order-id")
 	}
-	if flags.Lookup("asset-class") != nil {
+	if flags.Lookup("asset-class") != nil && flags.Changed("asset-class") {
 		p.AssetClass = cmdutil.Str(cmd, "asset-class")
 	}
-	if flags.Lookup("before-order-id") != nil {
+	if flags.Lookup("before-order-id") != nil && flags.Changed("before-order-id") {
 		p.BeforeOrderID = cmdutil.Str(cmd, "before-order-id")
 	}
-	if flags.Lookup("direction") != nil {
+	if flags.Lookup("direction") != nil && flags.Changed("direction") {
 		p.Direction = cmdutil.Str(cmd, "direction")
 	}
-	if flags.Lookup("limit") != nil {
+	if flags.Lookup("limit") != nil && flags.Changed("limit") {
 		p.Limit = cmdutil.Int(cmd, "limit")
 	}
-	if flags.Lookup("nested") != nil {
+	if flags.Lookup("nested") != nil && flags.Changed("nested") {
 		p.Nested = cmdutil.Bool(cmd, "nested")
 	}
-	if flags.Lookup("side") != nil {
+	if flags.Lookup("side") != nil && flags.Changed("side") {
 		p.Side = cmdutil.Str(cmd, "side")
 	}
-	if flags.Lookup("status") != nil {
+	if flags.Lookup("status") != nil && flags.Changed("status") {
 		p.Status = cmdutil.Str(cmd, "status")
 	}
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
-	if flags.Lookup("until") != nil {
+	if flags.Lookup("until") != nil && flags.Changed("until") {
 		p.Until = cmdutil.Str(cmd, "until")
 	}
 	return p
@@ -407,7 +407,7 @@ func getAllOrdersParamsFromFlags(cmd *cobra.Command) *api.GetAllOrdersParams {
 func getCryptoPerpAccountLeverageParamsFromFlags(cmd *cobra.Command) *api.GetCryptoPerpAccountLeverageParams {
 	p := &api.GetCryptoPerpAccountLeverageParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("symbol") != nil {
+	if flags.Lookup("symbol") != nil && flags.Changed("symbol") {
 		p.Symbol = cmdutil.Str(cmd, "symbol")
 	}
 	return p
@@ -416,16 +416,16 @@ func getCryptoPerpAccountLeverageParamsFromFlags(cmd *cobra.Command) *api.GetCry
 func getCryptoPerpTransferEstimateParamsFromFlags(cmd *cobra.Command) *api.GetCryptoPerpTransferEstimateParams {
 	p := &api.GetCryptoPerpTransferEstimateParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("amount") != nil {
+	if flags.Lookup("amount") != nil && flags.Changed("amount") {
 		p.Amount = cmdutil.Str(cmd, "amount")
 	}
-	if flags.Lookup("asset") != nil {
+	if flags.Lookup("asset") != nil && flags.Changed("asset") {
 		p.Asset = cmdutil.Str(cmd, "asset")
 	}
-	if flags.Lookup("from-address") != nil {
+	if flags.Lookup("from-address") != nil && flags.Changed("from-address") {
 		p.FromAddress = cmdutil.Str(cmd, "from-address")
 	}
-	if flags.Lookup("to-address") != nil {
+	if flags.Lookup("to-address") != nil && flags.Changed("to-address") {
 		p.ToAddress = cmdutil.Str(cmd, "to-address")
 	}
 	return p
@@ -434,16 +434,16 @@ func getCryptoPerpTransferEstimateParamsFromFlags(cmd *cobra.Command) *api.GetCr
 func getCryptoTransferEstimateParamsFromFlags(cmd *cobra.Command) *api.GetCryptoTransferEstimateParams {
 	p := &api.GetCryptoTransferEstimateParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("amount") != nil {
+	if flags.Lookup("amount") != nil && flags.Changed("amount") {
 		p.Amount = cmdutil.Str(cmd, "amount")
 	}
-	if flags.Lookup("asset") != nil {
+	if flags.Lookup("asset") != nil && flags.Changed("asset") {
 		p.Asset = cmdutil.Str(cmd, "asset")
 	}
-	if flags.Lookup("from-address") != nil {
+	if flags.Lookup("from-address") != nil && flags.Changed("from-address") {
 		p.FromAddress = cmdutil.Str(cmd, "from-address")
 	}
-	if flags.Lookup("to-address") != nil {
+	if flags.Lookup("to-address") != nil && flags.Changed("to-address") {
 		p.ToAddress = cmdutil.Str(cmd, "to-address")
 	}
 	return p
@@ -452,46 +452,46 @@ func getCryptoTransferEstimateParamsFromFlags(cmd *cobra.Command) *api.GetCrypto
 func getOptionsContractsParamsFromFlags(cmd *cobra.Command) *api.GetOptionsContractsParams {
 	p := &api.GetOptionsContractsParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("expiration-date") != nil {
+	if flags.Lookup("expiration-date") != nil && flags.Changed("expiration-date") {
 		p.ExpirationDate = cmdutil.Str(cmd, "expiration-date")
 	}
-	if flags.Lookup("expiration-date-gte") != nil {
+	if flags.Lookup("expiration-date-gte") != nil && flags.Changed("expiration-date-gte") {
 		p.ExpirationDateGte = cmdutil.Str(cmd, "expiration-date-gte")
 	}
-	if flags.Lookup("expiration-date-lte") != nil {
+	if flags.Lookup("expiration-date-lte") != nil && flags.Changed("expiration-date-lte") {
 		p.ExpirationDateLte = cmdutil.Str(cmd, "expiration-date-lte")
 	}
-	if flags.Lookup("limit") != nil {
+	if flags.Lookup("limit") != nil && flags.Changed("limit") {
 		p.Limit = cmdutil.Int(cmd, "limit")
 	}
-	if flags.Lookup("page-token") != nil {
+	if flags.Lookup("page-token") != nil && flags.Changed("page-token") {
 		p.PageToken = cmdutil.Str(cmd, "page-token")
 	}
-	if flags.Lookup("ppind") != nil {
+	if flags.Lookup("ppind") != nil && flags.Changed("ppind") {
 		p.Ppind = cmdutil.Bool(cmd, "ppind")
 	}
-	if flags.Lookup("root-symbol") != nil {
+	if flags.Lookup("root-symbol") != nil && flags.Changed("root-symbol") {
 		p.RootSymbol = cmdutil.Str(cmd, "root-symbol")
 	}
-	if flags.Lookup("show-deliverables") != nil {
+	if flags.Lookup("show-deliverables") != nil && flags.Changed("show-deliverables") {
 		p.ShowDeliverables = cmdutil.Bool(cmd, "show-deliverables")
 	}
-	if flags.Lookup("status") != nil {
+	if flags.Lookup("status") != nil && flags.Changed("status") {
 		p.Status = cmdutil.Str(cmd, "status")
 	}
-	if flags.Lookup("strike-price-gte") != nil {
+	if flags.Lookup("strike-price-gte") != nil && flags.Changed("strike-price-gte") {
 		p.StrikePriceGte = cmdutil.Str(cmd, "strike-price-gte")
 	}
-	if flags.Lookup("strike-price-lte") != nil {
+	if flags.Lookup("strike-price-lte") != nil && flags.Changed("strike-price-lte") {
 		p.StrikePriceLte = cmdutil.Str(cmd, "strike-price-lte")
 	}
-	if flags.Lookup("style") != nil {
+	if flags.Lookup("style") != nil && flags.Changed("style") {
 		p.Style = cmdutil.Str(cmd, "style")
 	}
-	if flags.Lookup("type") != nil {
+	if flags.Lookup("type") != nil && flags.Changed("type") {
 		p.Type = cmdutil.Str(cmd, "type")
 	}
-	if flags.Lookup("underlying-symbols") != nil {
+	if flags.Lookup("underlying-symbols") != nil && flags.Changed("underlying-symbols") {
 		p.UnderlyingSymbols = cmdutil.Str(cmd, "underlying-symbols")
 	}
 	return p
@@ -500,7 +500,7 @@ func getOptionsContractsParamsFromFlags(cmd *cobra.Command) *api.GetOptionsContr
 func getOrderByClientOrderIDParamsFromFlags(cmd *cobra.Command) *api.GetOrderByClientOrderIDParams {
 	p := &api.GetOrderByClientOrderIDParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("client-order-id") != nil {
+	if flags.Lookup("client-order-id") != nil && flags.Changed("client-order-id") {
 		p.ClientOrderID = cmdutil.Str(cmd, "client-order-id")
 	}
 	return p
@@ -509,7 +509,7 @@ func getOrderByClientOrderIDParamsFromFlags(cmd *cobra.Command) *api.GetOrderByC
 func getOrderByOrderIDParamsFromFlags(cmd *cobra.Command) *api.GetOrderByOrderIDParams {
 	p := &api.GetOrderByOrderIDParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("nested") != nil {
+	if flags.Lookup("nested") != nil && flags.Changed("nested") {
 		p.Nested = cmdutil.Bool(cmd, "nested")
 	}
 	return p
@@ -518,16 +518,16 @@ func getOrderByOrderIDParamsFromFlags(cmd *cobra.Command) *api.GetOrderByOrderID
 func getV2AssetsParamsFromFlags(cmd *cobra.Command) *api.GetV2AssetsParams {
 	p := &api.GetV2AssetsParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("asset-class") != nil {
+	if flags.Lookup("asset-class") != nil && flags.Changed("asset-class") {
 		p.AssetClass = cmdutil.Str(cmd, "asset-class")
 	}
-	if flags.Lookup("attributes") != nil {
+	if flags.Lookup("attributes") != nil && flags.Changed("attributes") {
 		p.Attributes = cmdutil.Str(cmd, "attributes")
 	}
-	if flags.Lookup("exchange") != nil {
+	if flags.Lookup("exchange") != nil && flags.Changed("exchange") {
 		p.Exchange = cmdutil.Str(cmd, "exchange")
 	}
-	if flags.Lookup("status") != nil {
+	if flags.Lookup("status") != nil && flags.Changed("status") {
 		p.Status = cmdutil.Str(cmd, "status")
 	}
 	return p
@@ -536,22 +536,22 @@ func getV2AssetsParamsFromFlags(cmd *cobra.Command) *api.GetV2AssetsParams {
 func getV2CorporateActionsAnnouncementsParamsFromFlags(cmd *cobra.Command) *api.GetV2CorporateActionsAnnouncementsParams {
 	p := &api.GetV2CorporateActionsAnnouncementsParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("ca-types") != nil {
+	if flags.Lookup("ca-types") != nil && flags.Changed("ca-types") {
 		p.CaTypes = cmdutil.Str(cmd, "ca-types")
 	}
-	if flags.Lookup("cusip") != nil {
+	if flags.Lookup("cusip") != nil && flags.Changed("cusip") {
 		p.Cusip = cmdutil.Str(cmd, "cusip")
 	}
-	if flags.Lookup("date-type") != nil {
+	if flags.Lookup("date-type") != nil && flags.Changed("date-type") {
 		p.DateType = cmdutil.Str(cmd, "date-type")
 	}
-	if flags.Lookup("since") != nil {
+	if flags.Lookup("since") != nil && flags.Changed("since") {
 		p.Since = cmdutil.Str(cmd, "since")
 	}
-	if flags.Lookup("symbol") != nil {
+	if flags.Lookup("symbol") != nil && flags.Changed("symbol") {
 		p.Symbol = cmdutil.Str(cmd, "symbol")
 	}
-	if flags.Lookup("until") != nil {
+	if flags.Lookup("until") != nil && flags.Changed("until") {
 		p.Until = cmdutil.Str(cmd, "until")
 	}
 	return p
@@ -560,7 +560,7 @@ func getV2CorporateActionsAnnouncementsParamsFromFlags(cmd *cobra.Command) *api.
 func getWatchlistByNameParamsFromFlags(cmd *cobra.Command) *api.GetWatchlistByNameParams {
 	p := &api.GetWatchlistByNameParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("name") != nil {
+	if flags.Lookup("name") != nil && flags.Changed("name") {
 		p.Name = cmdutil.Str(cmd, "name")
 	}
 	return p
@@ -569,7 +569,7 @@ func getWatchlistByNameParamsFromFlags(cmd *cobra.Command) *api.GetWatchlistByNa
 func latestRatesParamsFromFlags(cmd *cobra.Command) *api.LatestRatesParams {
 	p := &api.LatestRatesParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("currency-pairs") != nil {
+	if flags.Lookup("currency-pairs") != nil && flags.Changed("currency-pairs") {
 		p.CurrencyPairs = cmdutil.Str(cmd, "currency-pairs")
 	}
 	return p
@@ -578,13 +578,13 @@ func latestRatesParamsFromFlags(cmd *cobra.Command) *api.LatestRatesParams {
 func legacyCalendarParamsFromFlags(cmd *cobra.Command) *api.LegacyCalendarParams {
 	p := &api.LegacyCalendarParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("date-type") != nil {
+	if flags.Lookup("date-type") != nil && flags.Changed("date-type") {
 		p.DateType = cmdutil.Str(cmd, "date-type")
 	}
-	if flags.Lookup("end") != nil {
+	if flags.Lookup("end") != nil && flags.Changed("end") {
 		p.End = cmdutil.Str(cmd, "end")
 	}
-	if flags.Lookup("start") != nil {
+	if flags.Lookup("start") != nil && flags.Changed("start") {
 		p.Start = cmdutil.Str(cmd, "start")
 	}
 	return p
@@ -593,10 +593,10 @@ func legacyCalendarParamsFromFlags(cmd *cobra.Command) *api.LegacyCalendarParams
 func listCryptoFundingWalletsParamsFromFlags(cmd *cobra.Command) *api.ListCryptoFundingWalletsParams {
 	p := &api.ListCryptoFundingWalletsParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("asset") != nil {
+	if flags.Lookup("asset") != nil && flags.Changed("asset") {
 		p.Asset = cmdutil.Str(cmd, "asset")
 	}
-	if flags.Lookup("network") != nil {
+	if flags.Lookup("network") != nil && flags.Changed("network") {
 		p.Network = cmdutil.Str(cmd, "network")
 	}
 	return p
@@ -605,7 +605,7 @@ func listCryptoFundingWalletsParamsFromFlags(cmd *cobra.Command) *api.ListCrypto
 func listCryptoPerpFundingWalletsParamsFromFlags(cmd *cobra.Command) *api.ListCryptoPerpFundingWalletsParams {
 	p := &api.ListCryptoPerpFundingWalletsParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("asset") != nil {
+	if flags.Lookup("asset") != nil && flags.Changed("asset") {
 		p.Asset = cmdutil.Str(cmd, "asset")
 	}
 	return p
@@ -614,7 +614,7 @@ func listCryptoPerpFundingWalletsParamsFromFlags(cmd *cobra.Command) *api.ListCr
 func logosParamsFromFlags(cmd *cobra.Command) *api.LogosParams {
 	p := &api.LogosParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("placeholder") != nil {
+	if flags.Lookup("placeholder") != nil && flags.Changed("placeholder") {
 		p.Placeholder = cmdutil.Bool(cmd, "placeholder")
 	}
 	return p
@@ -623,10 +623,10 @@ func logosParamsFromFlags(cmd *cobra.Command) *api.LogosParams {
 func mostActivesParamsFromFlags(cmd *cobra.Command) *api.MostActivesParams {
 	p := &api.MostActivesParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("by") != nil {
+	if flags.Lookup("by") != nil && flags.Changed("by") {
 		p.By = cmdutil.Str(cmd, "by")
 	}
-	if flags.Lookup("top") != nil {
+	if flags.Lookup("top") != nil && flags.Changed("top") {
 		p.Top = cmdutil.Int(cmd, "top")
 	}
 	return p
@@ -635,7 +635,7 @@ func mostActivesParamsFromFlags(cmd *cobra.Command) *api.MostActivesParams {
 func moversParamsFromFlags(cmd *cobra.Command) *api.MoversParams {
 	p := &api.MoversParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("top") != nil {
+	if flags.Lookup("top") != nil && flags.Changed("top") {
 		p.Top = cmdutil.Int(cmd, "top")
 	}
 	return p
@@ -644,28 +644,28 @@ func moversParamsFromFlags(cmd *cobra.Command) *api.MoversParams {
 func newsParamsFromFlags(cmd *cobra.Command) *api.NewsParams {
 	p := &api.NewsParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("end") != nil {
+	if flags.Lookup("end") != nil && flags.Changed("end") {
 		p.End = cmdutil.Str(cmd, "end")
 	}
-	if flags.Lookup("exclude-contentless") != nil {
+	if flags.Lookup("exclude-contentless") != nil && flags.Changed("exclude-contentless") {
 		p.ExcludeContentless = cmdutil.Bool(cmd, "exclude-contentless")
 	}
-	if flags.Lookup("include-content") != nil {
+	if flags.Lookup("include-content") != nil && flags.Changed("include-content") {
 		p.IncludeContent = cmdutil.Bool(cmd, "include-content")
 	}
-	if flags.Lookup("limit") != nil {
+	if flags.Lookup("limit") != nil && flags.Changed("limit") {
 		p.Limit = cmdutil.Int(cmd, "limit")
 	}
-	if flags.Lookup("page-token") != nil {
+	if flags.Lookup("page-token") != nil && flags.Changed("page-token") {
 		p.PageToken = cmdutil.Str(cmd, "page-token")
 	}
-	if flags.Lookup("sort") != nil {
+	if flags.Lookup("sort") != nil && flags.Changed("sort") {
 		p.Sort = cmdutil.Str(cmd, "sort")
 	}
-	if flags.Lookup("start") != nil {
+	if flags.Lookup("start") != nil && flags.Changed("start") {
 		p.Start = cmdutil.Str(cmd, "start")
 	}
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
 	return p
@@ -674,25 +674,25 @@ func newsParamsFromFlags(cmd *cobra.Command) *api.NewsParams {
 func optionBarsParamsFromFlags(cmd *cobra.Command) *api.OptionBarsParams {
 	p := &api.OptionBarsParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("end") != nil {
+	if flags.Lookup("end") != nil && flags.Changed("end") {
 		p.End = cmdutil.Str(cmd, "end")
 	}
-	if flags.Lookup("limit") != nil {
+	if flags.Lookup("limit") != nil && flags.Changed("limit") {
 		p.Limit = cmdutil.Int(cmd, "limit")
 	}
-	if flags.Lookup("page-token") != nil {
+	if flags.Lookup("page-token") != nil && flags.Changed("page-token") {
 		p.PageToken = cmdutil.Str(cmd, "page-token")
 	}
-	if flags.Lookup("sort") != nil {
+	if flags.Lookup("sort") != nil && flags.Changed("sort") {
 		p.Sort = cmdutil.Str(cmd, "sort")
 	}
-	if flags.Lookup("start") != nil {
+	if flags.Lookup("start") != nil && flags.Changed("start") {
 		p.Start = cmdutil.Str(cmd, "start")
 	}
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
-	if flags.Lookup("timeframe") != nil {
+	if flags.Lookup("timeframe") != nil && flags.Changed("timeframe") {
 		p.Timeframe = cmdutil.Str(cmd, "timeframe")
 	}
 	return p
@@ -701,37 +701,37 @@ func optionBarsParamsFromFlags(cmd *cobra.Command) *api.OptionBarsParams {
 func optionChainParamsFromFlags(cmd *cobra.Command) *api.OptionChainParams {
 	p := &api.OptionChainParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("expiration-date") != nil {
+	if flags.Lookup("expiration-date") != nil && flags.Changed("expiration-date") {
 		p.ExpirationDate = cmdutil.Str(cmd, "expiration-date")
 	}
-	if flags.Lookup("expiration-date-gte") != nil {
+	if flags.Lookup("expiration-date-gte") != nil && flags.Changed("expiration-date-gte") {
 		p.ExpirationDateGte = cmdutil.Str(cmd, "expiration-date-gte")
 	}
-	if flags.Lookup("expiration-date-lte") != nil {
+	if flags.Lookup("expiration-date-lte") != nil && flags.Changed("expiration-date-lte") {
 		p.ExpirationDateLte = cmdutil.Str(cmd, "expiration-date-lte")
 	}
-	if flags.Lookup("feed") != nil {
+	if flags.Lookup("feed") != nil && flags.Changed("feed") {
 		p.Feed = cmdutil.Str(cmd, "feed")
 	}
-	if flags.Lookup("limit") != nil {
+	if flags.Lookup("limit") != nil && flags.Changed("limit") {
 		p.Limit = cmdutil.Int(cmd, "limit")
 	}
-	if flags.Lookup("page-token") != nil {
+	if flags.Lookup("page-token") != nil && flags.Changed("page-token") {
 		p.PageToken = cmdutil.Str(cmd, "page-token")
 	}
-	if flags.Lookup("root-symbol") != nil {
+	if flags.Lookup("root-symbol") != nil && flags.Changed("root-symbol") {
 		p.RootSymbol = cmdutil.Str(cmd, "root-symbol")
 	}
-	if flags.Lookup("strike-price-gte") != nil {
+	if flags.Lookup("strike-price-gte") != nil && flags.Changed("strike-price-gte") {
 		p.StrikePriceGte = cmdutil.Str(cmd, "strike-price-gte")
 	}
-	if flags.Lookup("strike-price-lte") != nil {
+	if flags.Lookup("strike-price-lte") != nil && flags.Changed("strike-price-lte") {
 		p.StrikePriceLte = cmdutil.Str(cmd, "strike-price-lte")
 	}
-	if flags.Lookup("type") != nil {
+	if flags.Lookup("type") != nil && flags.Changed("type") {
 		p.Type = cmdutil.Str(cmd, "type")
 	}
-	if flags.Lookup("updated-since") != nil {
+	if flags.Lookup("updated-since") != nil && flags.Changed("updated-since") {
 		p.UpdatedSince = cmdutil.Str(cmd, "updated-since")
 	}
 	return p
@@ -740,10 +740,10 @@ func optionChainParamsFromFlags(cmd *cobra.Command) *api.OptionChainParams {
 func optionLatestQuotesParamsFromFlags(cmd *cobra.Command) *api.OptionLatestQuotesParams {
 	p := &api.OptionLatestQuotesParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("feed") != nil {
+	if flags.Lookup("feed") != nil && flags.Changed("feed") {
 		p.Feed = cmdutil.Str(cmd, "feed")
 	}
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
 	return p
@@ -752,10 +752,10 @@ func optionLatestQuotesParamsFromFlags(cmd *cobra.Command) *api.OptionLatestQuot
 func optionLatestTradesParamsFromFlags(cmd *cobra.Command) *api.OptionLatestTradesParams {
 	p := &api.OptionLatestTradesParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("feed") != nil {
+	if flags.Lookup("feed") != nil && flags.Changed("feed") {
 		p.Feed = cmdutil.Str(cmd, "feed")
 	}
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
 	return p
@@ -764,19 +764,19 @@ func optionLatestTradesParamsFromFlags(cmd *cobra.Command) *api.OptionLatestTrad
 func optionSnapshotsParamsFromFlags(cmd *cobra.Command) *api.OptionSnapshotsParams {
 	p := &api.OptionSnapshotsParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("feed") != nil {
+	if flags.Lookup("feed") != nil && flags.Changed("feed") {
 		p.Feed = cmdutil.Str(cmd, "feed")
 	}
-	if flags.Lookup("limit") != nil {
+	if flags.Lookup("limit") != nil && flags.Changed("limit") {
 		p.Limit = cmdutil.Int(cmd, "limit")
 	}
-	if flags.Lookup("page-token") != nil {
+	if flags.Lookup("page-token") != nil && flags.Changed("page-token") {
 		p.PageToken = cmdutil.Str(cmd, "page-token")
 	}
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
-	if flags.Lookup("updated-since") != nil {
+	if flags.Lookup("updated-since") != nil && flags.Changed("updated-since") {
 		p.UpdatedSince = cmdutil.Str(cmd, "updated-since")
 	}
 	return p
@@ -785,22 +785,22 @@ func optionSnapshotsParamsFromFlags(cmd *cobra.Command) *api.OptionSnapshotsPara
 func optionTradesParamsFromFlags(cmd *cobra.Command) *api.OptionTradesParams {
 	p := &api.OptionTradesParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("end") != nil {
+	if flags.Lookup("end") != nil && flags.Changed("end") {
 		p.End = cmdutil.Str(cmd, "end")
 	}
-	if flags.Lookup("limit") != nil {
+	if flags.Lookup("limit") != nil && flags.Changed("limit") {
 		p.Limit = cmdutil.Int(cmd, "limit")
 	}
-	if flags.Lookup("page-token") != nil {
+	if flags.Lookup("page-token") != nil && flags.Changed("page-token") {
 		p.PageToken = cmdutil.Str(cmd, "page-token")
 	}
-	if flags.Lookup("sort") != nil {
+	if flags.Lookup("sort") != nil && flags.Changed("sort") {
 		p.Sort = cmdutil.Str(cmd, "sort")
 	}
-	if flags.Lookup("start") != nil {
+	if flags.Lookup("start") != nil && flags.Changed("start") {
 		p.Start = cmdutil.Str(cmd, "start")
 	}
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
 	return p
@@ -809,25 +809,25 @@ func optionTradesParamsFromFlags(cmd *cobra.Command) *api.OptionTradesParams {
 func ratesParamsFromFlags(cmd *cobra.Command) *api.RatesParams {
 	p := &api.RatesParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("currency-pairs") != nil {
+	if flags.Lookup("currency-pairs") != nil && flags.Changed("currency-pairs") {
 		p.CurrencyPairs = cmdutil.Str(cmd, "currency-pairs")
 	}
-	if flags.Lookup("end") != nil {
+	if flags.Lookup("end") != nil && flags.Changed("end") {
 		p.End = cmdutil.Str(cmd, "end")
 	}
-	if flags.Lookup("limit") != nil {
+	if flags.Lookup("limit") != nil && flags.Changed("limit") {
 		p.Limit = cmdutil.Int(cmd, "limit")
 	}
-	if flags.Lookup("page-token") != nil {
+	if flags.Lookup("page-token") != nil && flags.Changed("page-token") {
 		p.PageToken = cmdutil.Str(cmd, "page-token")
 	}
-	if flags.Lookup("sort") != nil {
+	if flags.Lookup("sort") != nil && flags.Changed("sort") {
 		p.Sort = cmdutil.Str(cmd, "sort")
 	}
-	if flags.Lookup("start") != nil {
+	if flags.Lookup("start") != nil && flags.Changed("start") {
 		p.Start = cmdutil.Str(cmd, "start")
 	}
-	if flags.Lookup("timeframe") != nil {
+	if flags.Lookup("timeframe") != nil && flags.Changed("timeframe") {
 		p.Timeframe = cmdutil.Str(cmd, "timeframe")
 	}
 	return p
@@ -836,10 +836,10 @@ func ratesParamsFromFlags(cmd *cobra.Command) *api.RatesParams {
 func setCryptoPerpAccountLeverageParamsFromFlags(cmd *cobra.Command) *api.SetCryptoPerpAccountLeverageParams {
 	p := &api.SetCryptoPerpAccountLeverageParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("leverage") != nil {
+	if flags.Lookup("leverage") != nil && flags.Changed("leverage") {
 		p.Leverage = cmdutil.Int(cmd, "leverage")
 	}
-	if flags.Lookup("symbol") != nil {
+	if flags.Lookup("symbol") != nil && flags.Changed("symbol") {
 		p.Symbol = cmdutil.Str(cmd, "symbol")
 	}
 	return p
@@ -848,28 +848,28 @@ func setCryptoPerpAccountLeverageParamsFromFlags(cmd *cobra.Command) *api.SetCry
 func stockAuctionSingleParamsFromFlags(cmd *cobra.Command) *api.StockAuctionSingleParams {
 	p := &api.StockAuctionSingleParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("asof") != nil {
+	if flags.Lookup("asof") != nil && flags.Changed("asof") {
 		p.Asof = cmdutil.Str(cmd, "asof")
 	}
-	if flags.Lookup("currency") != nil {
+	if flags.Lookup("currency") != nil && flags.Changed("currency") {
 		p.Currency = cmdutil.Str(cmd, "currency")
 	}
-	if flags.Lookup("end") != nil {
+	if flags.Lookup("end") != nil && flags.Changed("end") {
 		p.End = cmdutil.Str(cmd, "end")
 	}
-	if flags.Lookup("feed") != nil {
+	if flags.Lookup("feed") != nil && flags.Changed("feed") {
 		p.Feed = cmdutil.Str(cmd, "feed")
 	}
-	if flags.Lookup("limit") != nil {
+	if flags.Lookup("limit") != nil && flags.Changed("limit") {
 		p.Limit = cmdutil.Int(cmd, "limit")
 	}
-	if flags.Lookup("page-token") != nil {
+	if flags.Lookup("page-token") != nil && flags.Changed("page-token") {
 		p.PageToken = cmdutil.Str(cmd, "page-token")
 	}
-	if flags.Lookup("sort") != nil {
+	if flags.Lookup("sort") != nil && flags.Changed("sort") {
 		p.Sort = cmdutil.Str(cmd, "sort")
 	}
-	if flags.Lookup("start") != nil {
+	if flags.Lookup("start") != nil && flags.Changed("start") {
 		p.Start = cmdutil.Str(cmd, "start")
 	}
 	return p
@@ -878,31 +878,31 @@ func stockAuctionSingleParamsFromFlags(cmd *cobra.Command) *api.StockAuctionSing
 func stockAuctionsParamsFromFlags(cmd *cobra.Command) *api.StockAuctionsParams {
 	p := &api.StockAuctionsParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("asof") != nil {
+	if flags.Lookup("asof") != nil && flags.Changed("asof") {
 		p.Asof = cmdutil.Str(cmd, "asof")
 	}
-	if flags.Lookup("currency") != nil {
+	if flags.Lookup("currency") != nil && flags.Changed("currency") {
 		p.Currency = cmdutil.Str(cmd, "currency")
 	}
-	if flags.Lookup("end") != nil {
+	if flags.Lookup("end") != nil && flags.Changed("end") {
 		p.End = cmdutil.Str(cmd, "end")
 	}
-	if flags.Lookup("feed") != nil {
+	if flags.Lookup("feed") != nil && flags.Changed("feed") {
 		p.Feed = cmdutil.Str(cmd, "feed")
 	}
-	if flags.Lookup("limit") != nil {
+	if flags.Lookup("limit") != nil && flags.Changed("limit") {
 		p.Limit = cmdutil.Int(cmd, "limit")
 	}
-	if flags.Lookup("page-token") != nil {
+	if flags.Lookup("page-token") != nil && flags.Changed("page-token") {
 		p.PageToken = cmdutil.Str(cmd, "page-token")
 	}
-	if flags.Lookup("sort") != nil {
+	if flags.Lookup("sort") != nil && flags.Changed("sort") {
 		p.Sort = cmdutil.Str(cmd, "sort")
 	}
-	if flags.Lookup("start") != nil {
+	if flags.Lookup("start") != nil && flags.Changed("start") {
 		p.Start = cmdutil.Str(cmd, "start")
 	}
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
 	return p
@@ -911,34 +911,34 @@ func stockAuctionsParamsFromFlags(cmd *cobra.Command) *api.StockAuctionsParams {
 func stockBarSingleParamsFromFlags(cmd *cobra.Command) *api.StockBarSingleParams {
 	p := &api.StockBarSingleParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("adjustment") != nil {
+	if flags.Lookup("adjustment") != nil && flags.Changed("adjustment") {
 		p.Adjustment = cmdutil.Str(cmd, "adjustment")
 	}
-	if flags.Lookup("asof") != nil {
+	if flags.Lookup("asof") != nil && flags.Changed("asof") {
 		p.Asof = cmdutil.Str(cmd, "asof")
 	}
-	if flags.Lookup("currency") != nil {
+	if flags.Lookup("currency") != nil && flags.Changed("currency") {
 		p.Currency = cmdutil.Str(cmd, "currency")
 	}
-	if flags.Lookup("end") != nil {
+	if flags.Lookup("end") != nil && flags.Changed("end") {
 		p.End = cmdutil.Str(cmd, "end")
 	}
-	if flags.Lookup("feed") != nil {
+	if flags.Lookup("feed") != nil && flags.Changed("feed") {
 		p.Feed = cmdutil.Str(cmd, "feed")
 	}
-	if flags.Lookup("limit") != nil {
+	if flags.Lookup("limit") != nil && flags.Changed("limit") {
 		p.Limit = cmdutil.Int(cmd, "limit")
 	}
-	if flags.Lookup("page-token") != nil {
+	if flags.Lookup("page-token") != nil && flags.Changed("page-token") {
 		p.PageToken = cmdutil.Str(cmd, "page-token")
 	}
-	if flags.Lookup("sort") != nil {
+	if flags.Lookup("sort") != nil && flags.Changed("sort") {
 		p.Sort = cmdutil.Str(cmd, "sort")
 	}
-	if flags.Lookup("start") != nil {
+	if flags.Lookup("start") != nil && flags.Changed("start") {
 		p.Start = cmdutil.Str(cmd, "start")
 	}
-	if flags.Lookup("timeframe") != nil {
+	if flags.Lookup("timeframe") != nil && flags.Changed("timeframe") {
 		p.Timeframe = cmdutil.Str(cmd, "timeframe")
 	}
 	return p
@@ -947,37 +947,37 @@ func stockBarSingleParamsFromFlags(cmd *cobra.Command) *api.StockBarSingleParams
 func stockBarsParamsFromFlags(cmd *cobra.Command) *api.StockBarsParams {
 	p := &api.StockBarsParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("adjustment") != nil {
+	if flags.Lookup("adjustment") != nil && flags.Changed("adjustment") {
 		p.Adjustment = cmdutil.Str(cmd, "adjustment")
 	}
-	if flags.Lookup("asof") != nil {
+	if flags.Lookup("asof") != nil && flags.Changed("asof") {
 		p.Asof = cmdutil.Str(cmd, "asof")
 	}
-	if flags.Lookup("currency") != nil {
+	if flags.Lookup("currency") != nil && flags.Changed("currency") {
 		p.Currency = cmdutil.Str(cmd, "currency")
 	}
-	if flags.Lookup("end") != nil {
+	if flags.Lookup("end") != nil && flags.Changed("end") {
 		p.End = cmdutil.Str(cmd, "end")
 	}
-	if flags.Lookup("feed") != nil {
+	if flags.Lookup("feed") != nil && flags.Changed("feed") {
 		p.Feed = cmdutil.Str(cmd, "feed")
 	}
-	if flags.Lookup("limit") != nil {
+	if flags.Lookup("limit") != nil && flags.Changed("limit") {
 		p.Limit = cmdutil.Int(cmd, "limit")
 	}
-	if flags.Lookup("page-token") != nil {
+	if flags.Lookup("page-token") != nil && flags.Changed("page-token") {
 		p.PageToken = cmdutil.Str(cmd, "page-token")
 	}
-	if flags.Lookup("sort") != nil {
+	if flags.Lookup("sort") != nil && flags.Changed("sort") {
 		p.Sort = cmdutil.Str(cmd, "sort")
 	}
-	if flags.Lookup("start") != nil {
+	if flags.Lookup("start") != nil && flags.Changed("start") {
 		p.Start = cmdutil.Str(cmd, "start")
 	}
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
-	if flags.Lookup("timeframe") != nil {
+	if flags.Lookup("timeframe") != nil && flags.Changed("timeframe") {
 		p.Timeframe = cmdutil.Str(cmd, "timeframe")
 	}
 	return p
@@ -986,10 +986,10 @@ func stockBarsParamsFromFlags(cmd *cobra.Command) *api.StockBarsParams {
 func stockLatestBarSingleParamsFromFlags(cmd *cobra.Command) *api.StockLatestBarSingleParams {
 	p := &api.StockLatestBarSingleParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("currency") != nil {
+	if flags.Lookup("currency") != nil && flags.Changed("currency") {
 		p.Currency = cmdutil.Str(cmd, "currency")
 	}
-	if flags.Lookup("feed") != nil {
+	if flags.Lookup("feed") != nil && flags.Changed("feed") {
 		p.Feed = cmdutil.Str(cmd, "feed")
 	}
 	return p
@@ -998,13 +998,13 @@ func stockLatestBarSingleParamsFromFlags(cmd *cobra.Command) *api.StockLatestBar
 func stockLatestBarsParamsFromFlags(cmd *cobra.Command) *api.StockLatestBarsParams {
 	p := &api.StockLatestBarsParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("currency") != nil {
+	if flags.Lookup("currency") != nil && flags.Changed("currency") {
 		p.Currency = cmdutil.Str(cmd, "currency")
 	}
-	if flags.Lookup("feed") != nil {
+	if flags.Lookup("feed") != nil && flags.Changed("feed") {
 		p.Feed = cmdutil.Str(cmd, "feed")
 	}
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
 	return p
@@ -1013,10 +1013,10 @@ func stockLatestBarsParamsFromFlags(cmd *cobra.Command) *api.StockLatestBarsPara
 func stockLatestQuoteSingleParamsFromFlags(cmd *cobra.Command) *api.StockLatestQuoteSingleParams {
 	p := &api.StockLatestQuoteSingleParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("currency") != nil {
+	if flags.Lookup("currency") != nil && flags.Changed("currency") {
 		p.Currency = cmdutil.Str(cmd, "currency")
 	}
-	if flags.Lookup("feed") != nil {
+	if flags.Lookup("feed") != nil && flags.Changed("feed") {
 		p.Feed = cmdutil.Str(cmd, "feed")
 	}
 	return p
@@ -1025,13 +1025,13 @@ func stockLatestQuoteSingleParamsFromFlags(cmd *cobra.Command) *api.StockLatestQ
 func stockLatestQuotesParamsFromFlags(cmd *cobra.Command) *api.StockLatestQuotesParams {
 	p := &api.StockLatestQuotesParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("currency") != nil {
+	if flags.Lookup("currency") != nil && flags.Changed("currency") {
 		p.Currency = cmdutil.Str(cmd, "currency")
 	}
-	if flags.Lookup("feed") != nil {
+	if flags.Lookup("feed") != nil && flags.Changed("feed") {
 		p.Feed = cmdutil.Str(cmd, "feed")
 	}
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
 	return p
@@ -1040,10 +1040,10 @@ func stockLatestQuotesParamsFromFlags(cmd *cobra.Command) *api.StockLatestQuotes
 func stockLatestTradeSingleParamsFromFlags(cmd *cobra.Command) *api.StockLatestTradeSingleParams {
 	p := &api.StockLatestTradeSingleParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("currency") != nil {
+	if flags.Lookup("currency") != nil && flags.Changed("currency") {
 		p.Currency = cmdutil.Str(cmd, "currency")
 	}
-	if flags.Lookup("feed") != nil {
+	if flags.Lookup("feed") != nil && flags.Changed("feed") {
 		p.Feed = cmdutil.Str(cmd, "feed")
 	}
 	return p
@@ -1052,13 +1052,13 @@ func stockLatestTradeSingleParamsFromFlags(cmd *cobra.Command) *api.StockLatestT
 func stockLatestTradesParamsFromFlags(cmd *cobra.Command) *api.StockLatestTradesParams {
 	p := &api.StockLatestTradesParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("currency") != nil {
+	if flags.Lookup("currency") != nil && flags.Changed("currency") {
 		p.Currency = cmdutil.Str(cmd, "currency")
 	}
-	if flags.Lookup("feed") != nil {
+	if flags.Lookup("feed") != nil && flags.Changed("feed") {
 		p.Feed = cmdutil.Str(cmd, "feed")
 	}
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
 	return p
@@ -1067,7 +1067,7 @@ func stockLatestTradesParamsFromFlags(cmd *cobra.Command) *api.StockLatestTrades
 func stockMetaConditionsParamsFromFlags(cmd *cobra.Command) *api.StockMetaConditionsParams {
 	p := &api.StockMetaConditionsParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("tape") != nil {
+	if flags.Lookup("tape") != nil && flags.Changed("tape") {
 		p.Tape = cmdutil.Str(cmd, "tape")
 	}
 	return p
@@ -1076,28 +1076,28 @@ func stockMetaConditionsParamsFromFlags(cmd *cobra.Command) *api.StockMetaCondit
 func stockQuoteSingleParamsFromFlags(cmd *cobra.Command) *api.StockQuoteSingleParams {
 	p := &api.StockQuoteSingleParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("asof") != nil {
+	if flags.Lookup("asof") != nil && flags.Changed("asof") {
 		p.Asof = cmdutil.Str(cmd, "asof")
 	}
-	if flags.Lookup("currency") != nil {
+	if flags.Lookup("currency") != nil && flags.Changed("currency") {
 		p.Currency = cmdutil.Str(cmd, "currency")
 	}
-	if flags.Lookup("end") != nil {
+	if flags.Lookup("end") != nil && flags.Changed("end") {
 		p.End = cmdutil.Str(cmd, "end")
 	}
-	if flags.Lookup("feed") != nil {
+	if flags.Lookup("feed") != nil && flags.Changed("feed") {
 		p.Feed = cmdutil.Str(cmd, "feed")
 	}
-	if flags.Lookup("limit") != nil {
+	if flags.Lookup("limit") != nil && flags.Changed("limit") {
 		p.Limit = cmdutil.Int(cmd, "limit")
 	}
-	if flags.Lookup("page-token") != nil {
+	if flags.Lookup("page-token") != nil && flags.Changed("page-token") {
 		p.PageToken = cmdutil.Str(cmd, "page-token")
 	}
-	if flags.Lookup("sort") != nil {
+	if flags.Lookup("sort") != nil && flags.Changed("sort") {
 		p.Sort = cmdutil.Str(cmd, "sort")
 	}
-	if flags.Lookup("start") != nil {
+	if flags.Lookup("start") != nil && flags.Changed("start") {
 		p.Start = cmdutil.Str(cmd, "start")
 	}
 	return p
@@ -1106,31 +1106,31 @@ func stockQuoteSingleParamsFromFlags(cmd *cobra.Command) *api.StockQuoteSinglePa
 func stockQuotesParamsFromFlags(cmd *cobra.Command) *api.StockQuotesParams {
 	p := &api.StockQuotesParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("asof") != nil {
+	if flags.Lookup("asof") != nil && flags.Changed("asof") {
 		p.Asof = cmdutil.Str(cmd, "asof")
 	}
-	if flags.Lookup("currency") != nil {
+	if flags.Lookup("currency") != nil && flags.Changed("currency") {
 		p.Currency = cmdutil.Str(cmd, "currency")
 	}
-	if flags.Lookup("end") != nil {
+	if flags.Lookup("end") != nil && flags.Changed("end") {
 		p.End = cmdutil.Str(cmd, "end")
 	}
-	if flags.Lookup("feed") != nil {
+	if flags.Lookup("feed") != nil && flags.Changed("feed") {
 		p.Feed = cmdutil.Str(cmd, "feed")
 	}
-	if flags.Lookup("limit") != nil {
+	if flags.Lookup("limit") != nil && flags.Changed("limit") {
 		p.Limit = cmdutil.Int(cmd, "limit")
 	}
-	if flags.Lookup("page-token") != nil {
+	if flags.Lookup("page-token") != nil && flags.Changed("page-token") {
 		p.PageToken = cmdutil.Str(cmd, "page-token")
 	}
-	if flags.Lookup("sort") != nil {
+	if flags.Lookup("sort") != nil && flags.Changed("sort") {
 		p.Sort = cmdutil.Str(cmd, "sort")
 	}
-	if flags.Lookup("start") != nil {
+	if flags.Lookup("start") != nil && flags.Changed("start") {
 		p.Start = cmdutil.Str(cmd, "start")
 	}
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
 	return p
@@ -1139,10 +1139,10 @@ func stockQuotesParamsFromFlags(cmd *cobra.Command) *api.StockQuotesParams {
 func stockSnapshotSingleParamsFromFlags(cmd *cobra.Command) *api.StockSnapshotSingleParams {
 	p := &api.StockSnapshotSingleParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("currency") != nil {
+	if flags.Lookup("currency") != nil && flags.Changed("currency") {
 		p.Currency = cmdutil.Str(cmd, "currency")
 	}
-	if flags.Lookup("feed") != nil {
+	if flags.Lookup("feed") != nil && flags.Changed("feed") {
 		p.Feed = cmdutil.Str(cmd, "feed")
 	}
 	return p
@@ -1151,13 +1151,13 @@ func stockSnapshotSingleParamsFromFlags(cmd *cobra.Command) *api.StockSnapshotSi
 func stockSnapshotsParamsFromFlags(cmd *cobra.Command) *api.StockSnapshotsParams {
 	p := &api.StockSnapshotsParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("currency") != nil {
+	if flags.Lookup("currency") != nil && flags.Changed("currency") {
 		p.Currency = cmdutil.Str(cmd, "currency")
 	}
-	if flags.Lookup("feed") != nil {
+	if flags.Lookup("feed") != nil && flags.Changed("feed") {
 		p.Feed = cmdutil.Str(cmd, "feed")
 	}
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
 	return p
@@ -1166,28 +1166,28 @@ func stockSnapshotsParamsFromFlags(cmd *cobra.Command) *api.StockSnapshotsParams
 func stockTradeSingleParamsFromFlags(cmd *cobra.Command) *api.StockTradeSingleParams {
 	p := &api.StockTradeSingleParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("asof") != nil {
+	if flags.Lookup("asof") != nil && flags.Changed("asof") {
 		p.Asof = cmdutil.Str(cmd, "asof")
 	}
-	if flags.Lookup("currency") != nil {
+	if flags.Lookup("currency") != nil && flags.Changed("currency") {
 		p.Currency = cmdutil.Str(cmd, "currency")
 	}
-	if flags.Lookup("end") != nil {
+	if flags.Lookup("end") != nil && flags.Changed("end") {
 		p.End = cmdutil.Str(cmd, "end")
 	}
-	if flags.Lookup("feed") != nil {
+	if flags.Lookup("feed") != nil && flags.Changed("feed") {
 		p.Feed = cmdutil.Str(cmd, "feed")
 	}
-	if flags.Lookup("limit") != nil {
+	if flags.Lookup("limit") != nil && flags.Changed("limit") {
 		p.Limit = cmdutil.Int(cmd, "limit")
 	}
-	if flags.Lookup("page-token") != nil {
+	if flags.Lookup("page-token") != nil && flags.Changed("page-token") {
 		p.PageToken = cmdutil.Str(cmd, "page-token")
 	}
-	if flags.Lookup("sort") != nil {
+	if flags.Lookup("sort") != nil && flags.Changed("sort") {
 		p.Sort = cmdutil.Str(cmd, "sort")
 	}
-	if flags.Lookup("start") != nil {
+	if flags.Lookup("start") != nil && flags.Changed("start") {
 		p.Start = cmdutil.Str(cmd, "start")
 	}
 	return p
@@ -1196,31 +1196,31 @@ func stockTradeSingleParamsFromFlags(cmd *cobra.Command) *api.StockTradeSinglePa
 func stockTradesParamsFromFlags(cmd *cobra.Command) *api.StockTradesParams {
 	p := &api.StockTradesParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("asof") != nil {
+	if flags.Lookup("asof") != nil && flags.Changed("asof") {
 		p.Asof = cmdutil.Str(cmd, "asof")
 	}
-	if flags.Lookup("currency") != nil {
+	if flags.Lookup("currency") != nil && flags.Changed("currency") {
 		p.Currency = cmdutil.Str(cmd, "currency")
 	}
-	if flags.Lookup("end") != nil {
+	if flags.Lookup("end") != nil && flags.Changed("end") {
 		p.End = cmdutil.Str(cmd, "end")
 	}
-	if flags.Lookup("feed") != nil {
+	if flags.Lookup("feed") != nil && flags.Changed("feed") {
 		p.Feed = cmdutil.Str(cmd, "feed")
 	}
-	if flags.Lookup("limit") != nil {
+	if flags.Lookup("limit") != nil && flags.Changed("limit") {
 		p.Limit = cmdutil.Int(cmd, "limit")
 	}
-	if flags.Lookup("page-token") != nil {
+	if flags.Lookup("page-token") != nil && flags.Changed("page-token") {
 		p.PageToken = cmdutil.Str(cmd, "page-token")
 	}
-	if flags.Lookup("sort") != nil {
+	if flags.Lookup("sort") != nil && flags.Changed("sort") {
 		p.Sort = cmdutil.Str(cmd, "sort")
 	}
-	if flags.Lookup("start") != nil {
+	if flags.Lookup("start") != nil && flags.Changed("start") {
 		p.Start = cmdutil.Str(cmd, "start")
 	}
-	if flags.Lookup("symbols") != nil {
+	if flags.Lookup("symbols") != nil && flags.Changed("symbols") {
 		p.Symbols = cmdutil.Str(cmd, "symbols")
 	}
 	return p
@@ -1229,7 +1229,7 @@ func stockTradesParamsFromFlags(cmd *cobra.Command) *api.StockTradesParams {
 func updateWatchlistByNameParamsFromFlags(cmd *cobra.Command) *api.UpdateWatchlistByNameParams {
 	p := &api.UpdateWatchlistByNameParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("name") != nil {
+	if flags.Lookup("name") != nil && flags.Changed("name") {
 		p.Name = cmdutil.Str(cmd, "name")
 	}
 	return p
@@ -1238,16 +1238,16 @@ func updateWatchlistByNameParamsFromFlags(cmd *cobra.Command) *api.UpdateWatchli
 func usCorporatesParamsFromFlags(cmd *cobra.Command) *api.UsCorporatesParams {
 	p := &api.UsCorporatesParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("bond-status") != nil {
+	if flags.Lookup("bond-status") != nil && flags.Changed("bond-status") {
 		p.BondStatus = cmdutil.Str(cmd, "bond-status")
 	}
-	if flags.Lookup("cusips") != nil {
+	if flags.Lookup("cusips") != nil && flags.Changed("cusips") {
 		p.Cusips = cmdutil.Str(cmd, "cusips")
 	}
-	if flags.Lookup("isins") != nil {
+	if flags.Lookup("isins") != nil && flags.Changed("isins") {
 		p.Isins = cmdutil.Str(cmd, "isins")
 	}
-	if flags.Lookup("tickers") != nil {
+	if flags.Lookup("tickers") != nil && flags.Changed("tickers") {
 		p.Tickers = cmdutil.Str(cmd, "tickers")
 	}
 	return p
@@ -1256,16 +1256,16 @@ func usCorporatesParamsFromFlags(cmd *cobra.Command) *api.UsCorporatesParams {
 func usTreasuriesParamsFromFlags(cmd *cobra.Command) *api.UsTreasuriesParams {
 	p := &api.UsTreasuriesParams{}
 	flags := cmd.Flags()
-	if flags.Lookup("bond-status") != nil {
+	if flags.Lookup("bond-status") != nil && flags.Changed("bond-status") {
 		p.BondStatus = cmdutil.Str(cmd, "bond-status")
 	}
-	if flags.Lookup("cusips") != nil {
+	if flags.Lookup("cusips") != nil && flags.Changed("cusips") {
 		p.Cusips = cmdutil.Str(cmd, "cusips")
 	}
-	if flags.Lookup("isins") != nil {
+	if flags.Lookup("isins") != nil && flags.Changed("isins") {
 		p.Isins = cmdutil.Str(cmd, "isins")
 	}
-	if flags.Lookup("subtype") != nil {
+	if flags.Lookup("subtype") != nil && flags.Changed("subtype") {
 		p.Subtype = cmdutil.Str(cmd, "subtype")
 	}
 	return p

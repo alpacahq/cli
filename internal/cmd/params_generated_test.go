@@ -39,15 +39,21 @@ func TestFromFlagsSkipsExcludedFlags(t *testing.T) {
 	}
 }
 
-func TestFromFlagsRespectsDefaults(t *testing.T) {
+func TestFromFlagsOmitsUnchanged(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
 	cmdutil.RegisterFlags(cmd, api.OptionBarsOp.Flags(), &cmdutil.FlagOpts{
 		Defaults: map[string]string{"timeframe": "1Day"},
 	})
 
 	params := optionBarsParamsFromFlags(cmd)
-	if params.Timeframe != "1Day" {
-		t.Errorf("Timeframe = %q, want %q", params.Timeframe, "1Day")
+	if params.Timeframe != "" {
+		t.Errorf("Timeframe = %q, want empty (flag not set by user)", params.Timeframe)
+	}
+
+	_ = cmd.Flags().Set("timeframe", "1Hour")
+	params = optionBarsParamsFromFlags(cmd)
+	if params.Timeframe != "1Hour" {
+		t.Errorf("Timeframe = %q, want %q", params.Timeframe, "1Hour")
 	}
 }
 

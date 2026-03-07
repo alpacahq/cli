@@ -40,7 +40,11 @@ func renderOptionJSON(fetch func(cmd *cobra.Command) (any, error)) func(*cobra.C
 }
 
 func fetchOptionBars(cmd *cobra.Command) (any, error) {
-	resp, err := dataClient.OptionBars(optionBarsParamsFromFlags(cmd))
+	params := optionBarsParamsFromFlags(cmd)
+	if params.Timeframe == "" {
+		params.Timeframe = "1Day"
+	}
+	resp, err := dataClient.OptionBars(params)
 	if err != nil {
 		return nil, err
 	}

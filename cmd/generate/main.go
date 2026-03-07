@@ -1679,7 +1679,7 @@ func genFromFlags(endpoints []*endpointInfo, schemas []*schemaInfo) string {
 			case "bool":
 				helper = "cmdutil.Bool"
 			}
-			fmt.Fprintf(&buf, "\tif flags.Lookup(%q) != nil {\n", flagName)
+			fmt.Fprintf(&buf, "\tif flags.Lookup(%q) != nil && flags.Changed(%q) {\n", flagName, flagName)
 			fmt.Fprintf(&buf, "\t\tp.%s = %s(cmd, %q)\n", qp.goName, helper, flagName)
 			fmt.Fprintf(&buf, "\t}\n")
 		}
