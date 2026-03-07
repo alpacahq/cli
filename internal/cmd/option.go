@@ -5,7 +5,6 @@ import (
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
-	"github.com/alpacahq/cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -14,71 +13,50 @@ var optionCmd = &cobra.Command{
 	Short: "Options trading",
 }
 
-var optionChainCmd = &cobra.Command{
-	Use:   "chain <underlying>",
-	Short: api.GetOptionsContractsOp.Summary(),
-	Long:  "List option contracts for an underlying symbol. For market data (greeks, pricing), use `data option chain`.",
-	Example: `  alpaca option chain AAPL
-  alpaca option chain AAPL --expiration-date 2025-06-20 --type call
-  alpaca option chain SPY --strike-price-gte 400 --strike-price-lte 450`,
-	Args: cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		params := getOptionsContractsParamsFromFlags(cmd)
-		params.UnderlyingSymbols = args[0]
-		data, err := tradingClient.GetOptionsContracts(params)
-		if err != nil {
-			return err
-		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), nil, data)
-	},
-}
-
-var optionGetCmd = &cobra.Command{
-	Use:   "get <symbol-or-id>",
-	Short: api.GetOptionContractSymbolOrIDOp.Summary(),
-	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		contract, err := tradingClient.GetOptionContractSymbolOrID(args[0])
-		if err != nil {
-			return err
-		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, contract)
-	},
-}
-
-var optionExerciseCmd = &cobra.Command{
-	Use:   "exercise <symbol-or-id>",
-	Short: api.OptionExerciseOp.Summary(),
-	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		_, err := tradingClient.OptionExercise(args[0])
-		if err != nil {
-			return err
-		}
-		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Option %s exercise requested.\n", args[0])
-		return nil
-	},
-}
-
-var optionDoNotExerciseCmd = &cobra.Command{
-	Use:   "do-not-exercise <symbol-or-id>",
-	Short: api.OptionDoNotExerciseOp.Summary(),
-	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		_, err := tradingClient.OptionDoNotExercise(args[0])
-		if err != nil {
-			return err
-		}
-		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Option %s marked as do-not-exercise.\n", args[0])
-		return nil
-	},
-}
-
-func init() {
-	cmdutil.RegisterFlags(optionChainCmd, api.GetOptionsContractsOp.Flags(), &cmdutil.FlagOpts{
+var optionChainCmd = fetchCmd("chain <underlying>", api.GetOptionsContractsOp, func(cmd *cobra.Command, args []string) (any, error) {
+	params := getOptionsContractsParamsFromFlags(cmd)
+	params.UnderlyingSymbols = args[0]
+	return tradingClient.GetOptionsContracts(params)
+}, func(c *cobra.Command) {
+	cmdutil.RegisterFlags(c, api.GetOptionsContractsOp.Flags(), &cmdutil.FlagOpts{
 		Exclude: map[string]bool{"underlying_symbols": true},
 	})
+	c.Args = cobra.ExactArgs(1)
+	c.Long = "List option contracts for an underlying symbol. For market data (greeks, pricing), use `data option chain`."
+	c.Example = `  alpaca option chain AAPL
+  alpaca option chain AAPL --expiration-date 2025-06-20 --type call
+  alpaca option chain SPY --strike-price-gte 400 --strike-price-lte 450`
+})
 
+var optionGetCmd = fetchCmd("get <symbol-or-id>", api.GetOptionContractSymbolOrIDOp, func(_ *cobra.Command, args []string) (any, error) {
+	return tradingClient.GetOptionContractSymbolOrID(args[0])
+}, func(c *cobra.Command) {
+	c.Args = cobra.ExactArgs(1)
+})
+
+var optionExerciseCmd = actionCmd("exercise <symbol-or-id>", api.OptionExerciseOp, "", func(cmd *cobra.Command, args []string) error {
+	_, err := tradingClient.OptionExercise(args[0])
+	if err != nil {
+		return err
+	}
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Option %s exercise requested.\n", args[0])
+	return nil
+}, func(c *cobra.Command) {
+	c.Args = cobra.ExactArgs(1)
+})
+
+var optionDoNotExerciseCmd = actionCmd("do-not-exercise <symbol-or-id>", api.OptionDoNotExerciseOp, "", func(cmd *cobra.Command, args []string) error {
+	_, err := tradingClient.OptionDoNotExercise(args[0])
+	if err != nil {
+		return err
+	}
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Option %s marked as do-not-exercise.\n", args[0])
+	return nil
+}, func(c *cobra.Command) {
+	c.Args = cobra.ExactArgs(1)
+})
+
+func init() {
 	optionCmd.AddCommand(optionChainCmd)
 	optionCmd.AddCommand(optionGetCmd)
 	optionCmd.AddCommand(optionExerciseCmd)

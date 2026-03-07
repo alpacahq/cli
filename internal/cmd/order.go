@@ -127,47 +127,35 @@ var orderGetCmd = &cobra.Command{
 	},
 }
 
-var orderCancelCmd = &cobra.Command{
-	Use:   "cancel <order-id>",
-	Short: api.DeleteOrderByOrderIDOp.Summary(),
-	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		_, err := tradingClient.DeleteOrderByOrderID(args[0])
-		if err != nil {
-			return err
-		}
-		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Order %s canceled.\n", args[0])
-		return nil
-	},
-}
+var orderCancelCmd = actionCmd("cancel <order-id>", api.DeleteOrderByOrderIDOp, "", func(cmd *cobra.Command, args []string) error {
+	_, err := tradingClient.DeleteOrderByOrderID(args[0])
+	if err != nil {
+		return err
+	}
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Order %s canceled.\n", args[0])
+	return nil
+}, func(c *cobra.Command) {
+	c.Args = cobra.ExactArgs(1)
+})
 
-var orderCancelAllCmd = &cobra.Command{
-	Use:   "cancel-all",
-	Short: api.DeleteAllOrdersOp.Summary(),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		canceled, err := tradingClient.DeleteAllOrders()
-		if err != nil {
-			return err
-		}
-		return output.RenderWithHint(cmd.OutOrStdout(), getOutput(), canceledOrderColumns(), canceled, "No open orders to cancel.")
-	},
-}
+var orderCancelAllCmd = fetchCmd("cancel-all", api.DeleteAllOrdersOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.DeleteAllOrders()
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca order cancel-all`
+	cmdColumns[c] = canceledOrderColumns()
+})
 
-var orderReplaceCmd = &cobra.Command{
-	Use:     "replace <order-id>",
-	Short:   api.PatchOrderByOrderIDOp.Summary(),
-	Example: `  alpaca order replace <order-id> --qty 20 --limit-price 190.00`,
-	Args:    cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		body, _ := patchOrderRequestBodyFromFlags(cmd)
-
-		order, err := tradingClient.PatchOrderByOrderID(args[0], body)
-		if err != nil {
-			return err
-		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), orderColumns(), order)
-	},
-}
+var orderReplaceCmd = fetchCmd("replace <order-id>", api.PatchOrderByOrderIDOp, func(cmd *cobra.Command, args []string) (any, error) {
+	body, _ := patchOrderRequestBodyFromFlags(cmd)
+	return tradingClient.PatchOrderByOrderID(args[0], body)
+}, func(c *cobra.Command) {
+	cmdutil.RegisterFlags(c, api.PatchOrderByOrderIDOp.Flags(), &cmdutil.FlagOpts{
+		Exclude: map[string]bool{"advanced_instructions": true},
+	})
+	c.Args = cobra.ExactArgs(1)
+	c.Example = `  alpaca order replace <order-id> --qty 20 --limit-price 190.00`
+	cmdColumns[c] = orderColumns()
+})
 
 func init() {
 	cmdutil.RegisterFlags(orderSubmitCmd, api.PostOrderOp.Flags(), &cmdutil.FlagOpts{
@@ -177,10 +165,6 @@ func init() {
 	orderSubmitCmd.Flags().Bool("dry-run", false, "Print the request body without submitting")
 
 	cmdutil.RegisterFlags(orderListCmd, api.GetAllOrdersOp.Flags(), nil)
-
-	cmdutil.RegisterFlags(orderReplaceCmd, api.PatchOrderByOrderIDOp.Flags(), &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"advanced_instructions": true},
-	})
 
 	orderCmd.AddCommand(orderSubmitCmd)
 	orderCmd.AddCommand(orderListCmd)

@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"github.com/alpacahq/cli/internal/api"
-	"github.com/alpacahq/cli/internal/cmdutil"
-	"github.com/alpacahq/cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -12,73 +10,47 @@ var assetCmd = &cobra.Command{
 	Short: "Browse assets",
 }
 
-var assetListCmd = &cobra.Command{
-	Use:   "list",
-	Short: api.GetV2AssetsOp.Summary(),
-	Example: `  alpaca asset list
+var assetListCmd = fetchCmd("list", api.GetV2AssetsOp, func(cmd *cobra.Command, args []string) (any, error) {
+	params := getV2AssetsParamsFromFlags(cmd)
+	return tradingClient.GetV2Assets(params)
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca asset list
   alpaca asset list --asset-class us_equity --status active
-  alpaca asset list --exchange NYSE`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		params := getV2AssetsParamsFromFlags(cmd)
-		assets, err := tradingClient.GetV2Assets(params)
-		if err != nil {
-			return err
-		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), nil, assets)
-	},
-}
+  alpaca asset list --exchange NYSE`
+})
 
-var assetGetCmd = &cobra.Command{
-	Use:   "get <symbol>",
-	Short: api.GetV2AssetsSymbolOrAssetIDOp.Summary(),
-	Example: `  alpaca asset get AAPL
+var assetGetCmd = fetchCmd("get <symbol>", api.GetV2AssetsSymbolOrAssetIDOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.GetV2AssetsSymbolOrAssetID(args[0])
+}, func(c *cobra.Command) {
+	c.Args = cobra.ExactArgs(1)
+	c.Example = `  alpaca asset get AAPL
   alpaca asset get BTC/USD
-  alpaca asset get AAPL --json`,
-	Args: cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		asset, err := tradingClient.GetV2AssetsSymbolOrAssetID(args[0])
-		if err != nil {
-			return err
-		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, asset)
-	},
-}
+  alpaca asset get AAPL --json`
+})
 
-var treasuryListCmd = &cobra.Command{
-	Use:   "treasury",
-	Short: api.UsTreasuriesOp.Summary(),
-	Example: `  alpaca asset treasury
-  alpaca asset treasury --bond-status active`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := tradingClient.UsTreasuries(usTreasuriesParamsFromFlags(cmd))
-		if err != nil {
-			return err
-		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), nil, resp.UsTreasuries)
-	},
-}
+var treasuryListCmd = fetchCmd("treasury", api.UsTreasuriesOp, func(cmd *cobra.Command, args []string) (any, error) {
+	resp, err := tradingClient.UsTreasuries(usTreasuriesParamsFromFlags(cmd))
+	if err != nil {
+		return nil, err
+	}
+	return resp.UsTreasuries, nil
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca asset treasury
+  alpaca asset treasury --bond-status active`
+})
 
-var bondListCmd = &cobra.Command{
-	Use:   "bond",
-	Short: api.UsCorporatesOp.Summary(),
-	Example: `  alpaca asset bond
-  alpaca asset bond --bond-status active`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := tradingClient.UsCorporates(usCorporatesParamsFromFlags(cmd))
-		if err != nil {
-			return err
-		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), nil, resp.UsCorporates)
-	},
-}
+var bondListCmd = fetchCmd("bond", api.UsCorporatesOp, func(cmd *cobra.Command, args []string) (any, error) {
+	resp, err := tradingClient.UsCorporates(usCorporatesParamsFromFlags(cmd))
+	if err != nil {
+		return nil, err
+	}
+	return resp.UsCorporates, nil
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca asset bond
+  alpaca asset bond --bond-status active`
+})
 
 func init() {
-	cmdutil.RegisterFlags(assetListCmd, api.GetV2AssetsOp.Flags(), nil)
-
-	cmdutil.RegisterFlags(treasuryListCmd, api.UsTreasuriesOp.Flags(), nil)
-
-	cmdutil.RegisterFlags(bondListCmd, api.UsCorporatesOp.Flags(), nil)
-
 	assetCmd.AddCommand(assetListCmd)
 	assetCmd.AddCommand(assetGetCmd)
 	assetCmd.AddCommand(treasuryListCmd)

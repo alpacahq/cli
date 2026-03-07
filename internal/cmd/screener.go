@@ -14,25 +14,20 @@ var screenerCmd = &cobra.Command{
 	Short: "Stock and crypto screener and market movers",
 }
 
-var screenerMostActivesCmd = &cobra.Command{
-	Use:   "most-actives",
-	Short: api.MostActivesOp.Summary(),
-	Example: `  alpaca screener most-actives
-  alpaca screener most-actives --by trades --top 10`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		params := &api.MostActivesParams{
-			By:  cmdutil.Str(cmd, "by"),
-			Top: cmdutil.Int(cmd, "top"),
-		}
-
-		resp, err := dataClient.MostActives(params)
-		if err != nil {
-			return err
-		}
-
-		return output.Render(cmd.OutOrStdout(), getOutput(), nil, resp.MostActives)
-	},
-}
+var screenerMostActivesCmd = fetchCmd("most-actives", api.MostActivesOp, func(cmd *cobra.Command, args []string) (any, error) {
+	params := &api.MostActivesParams{
+		By:  cmdutil.Str(cmd, "by"),
+		Top: cmdutil.Int(cmd, "top"),
+	}
+	resp, err := dataClient.MostActives(params)
+	if err != nil {
+		return nil, err
+	}
+	return resp.MostActives, nil
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca screener most-actives
+  alpaca screener most-actives --by trades --top 10`
+})
 
 var screenerMoversCmd = &cobra.Command{
 	Use:   "movers",
@@ -73,8 +68,6 @@ var screenerMoversCmd = &cobra.Command{
 }
 
 func init() {
-	cmdutil.RegisterFlags(screenerMostActivesCmd, api.MostActivesOp.Flags(), nil)
-
 	cmdutil.RegisterFlags(screenerMoversCmd, api.MoversOp.Flags(), nil)
 	screenerMoversCmd.Flags().String("market", "", "Market: stocks or crypto (default: stocks)")
 	_ = screenerMoversCmd.RegisterFlagCompletionFunc("market", cobra.FixedCompletions(api.MarketTypeValues, cobra.ShellCompDirectiveNoFileComp))

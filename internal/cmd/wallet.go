@@ -1,11 +1,8 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
-	"github.com/alpacahq/cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -14,17 +11,9 @@ var walletCmd = &cobra.Command{
 	Short: "Crypto funding wallets and transfers",
 }
 
-var walletListCmd = &cobra.Command{
-	Use:   "list",
-	Short: api.ListCryptoFundingWalletsOp.Summary(),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		wallet, err := tradingClient.ListCryptoFundingWallets(listCryptoFundingWalletsParamsFromFlags(cmd))
-		if err != nil {
-			return err
-		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), columnsForOp(api.ListCryptoFundingWalletsOp), wallet)
-	},
-}
+var walletListCmd = fetchCmd("list", api.ListCryptoFundingWalletsOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.ListCryptoFundingWallets(listCryptoFundingWalletsParamsFromFlags(cmd))
+})
 
 // --- wallet transfer ---
 
@@ -33,70 +22,39 @@ var walletTransferCmd = &cobra.Command{
 	Short: "Manage crypto transfers",
 }
 
-var walletTransferListCmd = &cobra.Command{
-	Use:   "list",
-	Short: api.ListCryptoFundingTransfersOp.Summary(),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		transfers, err := tradingClient.ListCryptoFundingTransfers()
-		if err != nil {
-			return err
-		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), columnsForOp(api.ListCryptoFundingTransfersOp), transfers)
-	},
-}
+var walletTransferListCmd = fetchCmd("list", api.ListCryptoFundingTransfersOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.ListCryptoFundingTransfers()
+})
 
-var walletTransferGetCmd = &cobra.Command{
-	Use:   "get <id>",
-	Short: api.GetCryptoFundingTransferOp.Summary(),
-	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		transfer, err := tradingClient.GetCryptoFundingTransfer(args[0])
-		if err != nil {
-			return err
-		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), columnsForOp(api.GetCryptoFundingTransferOp), transfer)
-	},
-}
+var walletTransferGetCmd = fetchCmd("get <id>", api.GetCryptoFundingTransferOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.GetCryptoFundingTransfer(args[0])
+}, func(c *cobra.Command) {
+	c.Args = cobra.ExactArgs(1)
+})
 
-var walletTransferCreateCmd = &cobra.Command{
-	Use:   "create",
-	Short: api.CreateCryptoTransferForAccountOp.Summary(),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := cmdutil.RequireAll(cmd, "amount", "address", "asset"); err != nil {
-			return err
-		}
-		body := &api.CreateCryptoTransferRequest{
-			Amount:  cmdutil.Str(cmd, "amount"),
-			Address: cmdutil.Str(cmd, "address"),
-			Asset:   cmdutil.Str(cmd, "asset"),
-		}
-
-		transfer, err := tradingClient.CreateCryptoTransferForAccount(body)
-		if err != nil {
-			return err
-		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), columnsForOp(api.CreateCryptoTransferForAccountOp), transfer)
-	},
-}
+var walletTransferCreateCmd = fetchCmd("create", api.CreateCryptoTransferForAccountOp, func(cmd *cobra.Command, args []string) (any, error) {
+	if err := cmdutil.RequireAll(cmd, "amount", "address", "asset"); err != nil {
+		return nil, err
+	}
+	body := &api.CreateCryptoTransferRequest{
+		Amount:  cmdutil.Str(cmd, "amount"),
+		Address: cmdutil.Str(cmd, "address"),
+		Asset:   cmdutil.Str(cmd, "asset"),
+	}
+	return tradingClient.CreateCryptoTransferForAccount(body)
+})
 
 // --- transfer estimate ---
 
-var walletTransferEstimateCmd = &cobra.Command{
-	Use:   "estimate",
-	Short: api.GetCryptoTransferEstimateOp.Summary(),
-	Example: `  alpaca wallet transfer estimate --asset BTC --amount 0.5 \
-    --from-address 0xabc... --to-address 0xdef...`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := cmdutil.RequireAll(cmd, "asset", "amount"); err != nil {
-			return err
-		}
-		resp, err := tradingClient.GetCryptoTransferEstimate(getCryptoTransferEstimateParamsFromFlags(cmd))
-		if err != nil {
-			return err
-		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), columnsForOp(api.GetCryptoTransferEstimateOp), resp)
-	},
-}
+var walletTransferEstimateCmd = fetchCmd("estimate", api.GetCryptoTransferEstimateOp, func(cmd *cobra.Command, args []string) (any, error) {
+	if err := cmdutil.RequireAll(cmd, "asset", "amount"); err != nil {
+		return nil, err
+	}
+	return tradingClient.GetCryptoTransferEstimate(getCryptoTransferEstimateParamsFromFlags(cmd))
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca wallet transfer estimate --asset BTC --amount 0.5 \
+    --from-address 0xabc... --to-address 0xdef...`
+})
 
 // --- wallet whitelist ---
 
@@ -105,58 +63,29 @@ var walletWhitelistCmd = &cobra.Command{
 	Short: "Manage whitelisted crypto addresses",
 }
 
-var walletWhitelistListCmd = &cobra.Command{
-	Use:   "list",
-	Short: api.ListWhitelistedAddressOp.Summary(),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		addrs, err := tradingClient.ListWhitelistedAddress()
-		if err != nil {
-			return err
-		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), columnsForOp(api.ListWhitelistedAddressOp), addrs)
-	},
-}
+var walletWhitelistListCmd = fetchCmd("list", api.ListWhitelistedAddressOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.ListWhitelistedAddress()
+})
 
-var walletWhitelistAddCmd = &cobra.Command{
-	Use:   "add",
-	Short: api.CreateWhitelistedAddressOp.Summary(),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := cmdutil.RequireAll(cmd, "address", "asset"); err != nil {
-			return err
-		}
-		body := &api.CreateWhitelistedAddressRequest{
-			Address: cmdutil.Str(cmd, "address"),
-			Asset:   cmdutil.Str(cmd, "asset"),
-		}
+var walletWhitelistAddCmd = fetchCmd("add", api.CreateWhitelistedAddressOp, func(cmd *cobra.Command, args []string) (any, error) {
+	if err := cmdutil.RequireAll(cmd, "address", "asset"); err != nil {
+		return nil, err
+	}
+	body := &api.CreateWhitelistedAddressRequest{
+		Address: cmdutil.Str(cmd, "address"),
+		Asset:   cmdutil.Str(cmd, "asset"),
+	}
+	return tradingClient.CreateWhitelistedAddress(body)
+})
 
-		addr, err := tradingClient.CreateWhitelistedAddress(body)
-		if err != nil {
-			return err
-		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), columnsForOp(api.CreateWhitelistedAddressOp), addr)
-	},
-}
-
-var walletWhitelistDeleteCmd = &cobra.Command{
-	Use:   "delete <id>",
-	Short: api.DeleteWhitelistedAddressOp.Summary(),
-	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		_, err := tradingClient.DeleteWhitelistedAddress(args[0])
-		if err != nil {
-			return err
-		}
-		_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Whitelisted address removed.")
-		return nil
-	},
-}
+var walletWhitelistDeleteCmd = actionCmd("delete <id>", api.DeleteWhitelistedAddressOp, "Whitelisted address removed.", func(cmd *cobra.Command, args []string) error {
+	_, err := tradingClient.DeleteWhitelistedAddress(args[0])
+	return err
+}, func(c *cobra.Command) {
+	c.Args = cobra.ExactArgs(1)
+})
 
 func init() {
-	cmdutil.RegisterFlags(walletListCmd, api.ListCryptoFundingWalletsOp.Flags(), nil)
-	cmdutil.RegisterFlags(walletTransferCreateCmd, api.CreateCryptoTransferForAccountOp.Flags(), nil)
-	cmdutil.RegisterFlags(walletTransferEstimateCmd, api.GetCryptoTransferEstimateOp.Flags(), nil)
-	cmdutil.RegisterFlags(walletWhitelistAddCmd, api.CreateWhitelistedAddressOp.Flags(), nil)
-
 	walletTransferCmd.AddCommand(walletTransferListCmd)
 	walletTransferCmd.AddCommand(walletTransferGetCmd)
 	walletTransferCmd.AddCommand(walletTransferCreateCmd)

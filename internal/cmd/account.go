@@ -12,33 +12,19 @@ var accountCmd = &cobra.Command{
 	Short: "Manage your trading account",
 }
 
-var accountGetCmd = &cobra.Command{
-	Use:   "get",
-	Short: api.GetAccountOp.Summary(),
-	Example: `  alpaca account get
-  alpaca account get --json`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		account, err := tradingClient.GetAccount()
-		if err != nil {
-			return err
-		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), columnsForOp(api.GetAccountOp), account)
-	},
-}
+var accountGetCmd = fetchCmd("get", api.GetAccountOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.GetAccount()
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca account get
+  alpaca account get --json`
+})
 
-var accountConfigGetCmd = &cobra.Command{
-	Use:   "get",
-	Short: api.GetAccountConfigOp.Summary(),
-	Example: `  alpaca account config get
-  alpaca account config get --json`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		config, err := tradingClient.GetAccountConfig()
-		if err != nil {
-			return err
-		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), columnsForOp(api.GetAccountConfigOp), config)
-	},
-}
+var accountConfigGetCmd = fetchCmd("get", api.GetAccountConfigOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.GetAccountConfig()
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca account config get
+  alpaca account config get --json`
+})
 
 var accountConfigSetCmd = &cobra.Command{
 	Use:   "set",

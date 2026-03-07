@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"github.com/alpacahq/cli/internal/api"
-	"github.com/alpacahq/cli/internal/cmdutil"
-	"github.com/alpacahq/cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -13,42 +11,27 @@ var corporateActionCmd = &cobra.Command{
 	Short:   "Corporate actions announcements",
 }
 
-var corporateActionListCmd = &cobra.Command{
-	Use:   "list",
-	Short: api.GetV2CorporateActionsAnnouncementsOp.Summary(),
-	Example: `  alpaca corporate-action list --ca-types reverse_split --since 2025-01-01 --until 2025-12-31
-  alpaca corporate-action list --ca-types cash_dividend --symbol AAPL --since 2025-01-01 --until 2025-06-30`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := cmdutil.RequireAll(cmd, api.GetV2CorporateActionsAnnouncementsOp.RequiredFlags()...); err != nil {
-			return err
-		}
-
-		params := getV2CorporateActionsAnnouncementsParamsFromFlags(cmd)
-		data, err := tradingClient.GetV2CorporateActionsAnnouncements(params)
-		if err != nil {
-			return err
-		}
-
-		return output.Render(cmd.OutOrStdout(), getOutput(), columnsForOp(api.GetV2CorporateActionsAnnouncementsOp), data)
+var corporateActionListCmd = fetchCmd("list",
+	api.GetV2CorporateActionsAnnouncementsOp,
+	func(cmd *cobra.Command, _ []string) (any, error) {
+		return tradingClient.GetV2CorporateActionsAnnouncements(
+			getV2CorporateActionsAnnouncementsParamsFromFlags(cmd))
 	},
-}
+	func(c *cobra.Command) {
+		c.Example = `  alpaca corporate-action list --ca-types reverse_split --since 2025-01-01 --until 2025-12-31
+  alpaca corporate-action list --ca-types cash_dividend --symbol AAPL --since 2025-01-01 --until 2025-06-30`
+	})
 
-var corporateActionGetCmd = &cobra.Command{
-	Use:   "get <id>",
-	Short: api.GetV2CorporateActionsAnnouncementsIDOp.Summary(),
-	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		data, err := tradingClient.GetV2CorporateActionsAnnouncementsID(args[0])
-		if err != nil {
-			return err
-		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), columnsForOp(api.GetV2CorporateActionsAnnouncementsIDOp), data)
+var corporateActionGetCmd = fetchCmd("get <id>",
+	api.GetV2CorporateActionsAnnouncementsIDOp,
+	func(_ *cobra.Command, args []string) (any, error) {
+		return tradingClient.GetV2CorporateActionsAnnouncementsID(args[0])
 	},
-}
+	func(c *cobra.Command) {
+		c.Args = cobra.ExactArgs(1)
+	})
 
 func init() {
-	cmdutil.RegisterFlags(corporateActionListCmd, api.GetV2CorporateActionsAnnouncementsOp.Flags(), nil)
-
 	corporateActionCmd.AddCommand(corporateActionListCmd)
 	corporateActionCmd.AddCommand(corporateActionGetCmd)
 }

@@ -14,35 +14,23 @@ var positionCmd = &cobra.Command{
 	Short: "Manage positions",
 }
 
-var positionListCmd = &cobra.Command{
-	Use:   "list",
-	Short: api.GetAllOpenPositionsOp.Summary(),
-	Example: `  alpaca position list
+var positionListCmd = fetchCmd("list", api.GetAllOpenPositionsOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.GetAllOpenPositions()
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca position list
   alpaca position list --json
-  alpaca position list --csv`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		positions, err := tradingClient.GetAllOpenPositions()
-		if err != nil {
-			return err
-		}
-		return output.RenderWithHint(cmd.OutOrStdout(), getOutput(), positionColumns(), positions, "No open positions.")
-	},
-}
+  alpaca position list --csv`
+	cmdColumns[c] = positionColumns()
+})
 
-var positionGetCmd = &cobra.Command{
-	Use:   "get <symbol>",
-	Short: api.GetOpenPositionOp.Summary(),
-	Example: `  alpaca position get AAPL
-  alpaca position get BTC/USD --json`,
-	Args: cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		pos, err := tradingClient.GetOpenPosition(args[0])
-		if err != nil {
-			return err
-		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), positionColumns(), pos)
-	},
-}
+var positionGetCmd = fetchCmd("get <symbol>", api.GetOpenPositionOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.GetOpenPosition(args[0])
+}, func(c *cobra.Command) {
+	c.Args = cobra.ExactArgs(1)
+	c.Example = `  alpaca position get AAPL
+  alpaca position get BTC/USD --json`
+	cmdColumns[c] = positionColumns()
+})
 
 var positionCloseCmd = &cobra.Command{
 	Use:   "close <symbol>",

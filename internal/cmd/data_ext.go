@@ -38,116 +38,69 @@ var dataForexRatesCmd = &cobra.Command{
 	},
 }
 
-var dataForexLatestCmd = &cobra.Command{
-	Use:     "latest",
-	Short:   api.LatestRatesOp.Summary(),
-	Example: `  alpaca data forex latest --currency-pairs EUR/USD,GBP/USD`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := cmdutil.RequireAll(cmd, api.LatestRatesOp.RequiredFlags()...); err != nil {
-			return err
-		}
-
-		resp, err := dataClient.LatestRates(latestRatesParamsFromFlags(cmd))
-		if err != nil {
-			return err
-		}
-
-		return output.JSON(cmd.OutOrStdout(), resp.Rates)
-	},
-}
+var dataForexLatestCmd = jsonCmd("latest", api.LatestRatesOp, func(cmd *cobra.Command, args []string) (any, error) {
+	resp, err := dataClient.LatestRates(latestRatesParamsFromFlags(cmd))
+	if err != nil {
+		return nil, err
+	}
+	return resp.Rates, nil
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca data forex latest --currency-pairs EUR/USD,GBP/USD`
+})
 
 // --- Crypto Orderbook ---
 
-var dataCryptoOrderbookCmd = &cobra.Command{
-	Use:     "crypto-orderbook",
-	Short:   api.CryptoLatestOrderbooksOp.Summary(),
-	Example: `  alpaca data crypto-orderbook --symbols BTC/USD,ETH/USD`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := cmdutil.RequireAll(cmd, api.CryptoLatestOrderbooksOp.RequiredFlags()...); err != nil {
-			return err
-		}
-
-		resp, err := dataClient.CryptoLatestOrderbooks("us", cryptoLatestOrderbooksParamsFromFlags(cmd))
-		if err != nil {
-			return err
-		}
-
-		return output.JSON(cmd.OutOrStdout(), resp.Orderbooks)
-	},
-}
+var dataCryptoOrderbookCmd = jsonCmd("crypto-orderbook", api.CryptoLatestOrderbooksOp, func(cmd *cobra.Command, args []string) (any, error) {
+	resp, err := dataClient.CryptoLatestOrderbooks("us", cryptoLatestOrderbooksParamsFromFlags(cmd))
+	if err != nil {
+		return nil, err
+	}
+	return resp.Orderbooks, nil
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca data crypto-orderbook --symbols BTC/USD,ETH/USD`
+})
 
 // --- Auctions ---
 
-var dataAuctionsCmd = &cobra.Command{
-	Use:   "auctions",
-	Short: api.StockAuctionsOp.Summary(),
-	Example: `  alpaca data auctions --symbols AAPL --start 2025-01-01
-  alpaca data auctions --symbols AAPL,MSFT --limit 10`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := cmdutil.RequireAll(cmd, api.StockAuctionsOp.RequiredFlags()...); err != nil {
-			return err
-		}
-
-		resp, err := dataClient.StockAuctions(stockAuctionsParamsFromFlags(cmd))
-		if err != nil {
-			return err
-		}
-
-		return output.JSON(cmd.OutOrStdout(), resp.Auctions)
-	},
-}
+var dataAuctionsCmd = jsonCmd("auctions", api.StockAuctionsOp, func(cmd *cobra.Command, args []string) (any, error) {
+	resp, err := dataClient.StockAuctions(stockAuctionsParamsFromFlags(cmd))
+	if err != nil {
+		return nil, err
+	}
+	return resp.Auctions, nil
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca data auctions --symbols AAPL --start 2025-01-01
+  alpaca data auctions --symbols AAPL,MSFT --limit 10`
+})
 
 // --- Corporate Actions (market data) ---
 
-var dataCorporateActionsCmd = &cobra.Command{
-	Use:     "corporate-actions",
-	Short:   api.CorporateActionsOp.Summary(),
-	Example: `  alpaca data corporate-actions --symbols AAPL --types forward_split --start 2025-01-01`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := dataClient.CorporateActions(corporateActionsParamsFromFlags(cmd))
-		if err != nil {
-			return err
-		}
-
-		return output.JSON(cmd.OutOrStdout(), resp)
-	},
-}
+var dataCorporateActionsCmd = jsonCmd("corporate-actions", api.CorporateActionsOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return dataClient.CorporateActions(corporateActionsParamsFromFlags(cmd))
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca data corporate-actions --symbols AAPL --types forward_split --start 2025-01-01`
+})
 
 // --- Fixed Income Data ---
 
-var dataFixedIncomeCmd = &cobra.Command{
-	Use:     "fixed-income",
-	Short:   api.FixedIncomeLatestPricesOp.Summary(),
-	Example: `  alpaca data fixed-income --isins 912797KR1,912797LB5`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := cmdutil.RequireAll(cmd, api.FixedIncomeLatestPricesOp.RequiredFlags()...); err != nil {
-			return err
-		}
-
-		resp, err := dataClient.FixedIncomeLatestPrices(fixedIncomeLatestPricesParamsFromFlags(cmd))
-		if err != nil {
-			return err
-		}
-
-		return output.JSON(cmd.OutOrStdout(), resp.Prices)
-	},
-}
+var dataFixedIncomeCmd = jsonCmd("fixed-income", api.FixedIncomeLatestPricesOp, func(cmd *cobra.Command, args []string) (any, error) {
+	resp, err := dataClient.FixedIncomeLatestPrices(fixedIncomeLatestPricesParamsFromFlags(cmd))
+	if err != nil {
+		return nil, err
+	}
+	return resp.Prices, nil
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca data fixed-income --isins 912797KR1,912797LB5`
+})
 
 // --- Logo ---
 
-var dataLogoCmd = &cobra.Command{
-	Use:     "logo <symbol>",
-	Short:   api.LogosOp.Summary(),
-	Example: `  alpaca data logo AAPL`,
-	Args:    cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := dataClient.Logos(args[0], logosParamsFromFlags(cmd))
-		if err != nil {
-			return err
-		}
-		return output.JSON(cmd.OutOrStdout(), resp)
-	},
-}
+var dataLogoCmd = jsonCmd("logo <symbol>", api.LogosOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return dataClient.Logos(args[0], logosParamsFromFlags(cmd))
+}, func(c *cobra.Command) {
+	c.Args = cobra.ExactArgs(1)
+	c.Example = `  alpaca data logo AAPL`
+})
 
 // --- Exchange & Condition Metadata ---
 
@@ -156,50 +109,25 @@ var dataMetaCmd = &cobra.Command{
 	Short: "Stock exchange and condition reference data",
 }
 
-var dataMetaExchangesCmd = &cobra.Command{
-	Use:     "exchanges",
-	Short:   api.StockMetaExchangesOp.Summary(),
-	Example: `  alpaca data meta exchanges`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := dataClient.StockMetaExchanges()
-		if err != nil {
-			return err
-		}
-		return output.JSON(cmd.OutOrStdout(), resp)
-	},
-}
+var dataMetaExchangesCmd = jsonCmd("exchanges", api.StockMetaExchangesOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return dataClient.StockMetaExchanges()
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca data meta exchanges`
+})
 
-var dataMetaConditionsCmd = &cobra.Command{
-	Use:     "conditions <ticktype>",
-	Short:   api.StockMetaConditionsOp.Summary(),
-	Example: `  alpaca data meta conditions trade`,
-	Args:    cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := dataClient.StockMetaConditions(args[0], stockMetaConditionsParamsFromFlags(cmd))
-		if err != nil {
-			return err
-		}
-		return output.JSON(cmd.OutOrStdout(), resp)
-	},
-}
+var dataMetaConditionsCmd = jsonCmd("conditions <ticktype>", api.StockMetaConditionsOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return dataClient.StockMetaConditions(args[0], stockMetaConditionsParamsFromFlags(cmd))
+}, func(c *cobra.Command) {
+	c.Args = cobra.ExactArgs(1)
+	c.Example = `  alpaca data meta conditions trade`
+})
 
 func init() {
 	cmdutil.RegisterFlags(dataForexRatesCmd, api.RatesOp.Flags(), nil)
-	cmdutil.RegisterFlags(dataForexLatestCmd, api.LatestRatesOp.Flags(), nil)
+
 	dataForexCmd.AddCommand(dataForexRatesCmd)
 	dataForexCmd.AddCommand(dataForexLatestCmd)
 
-	cmdutil.RegisterFlags(dataCryptoOrderbookCmd, api.CryptoLatestOrderbooksOp.Flags(), nil)
-
-	cmdutil.RegisterFlags(dataAuctionsCmd, api.StockAuctionsOp.Flags(), nil)
-
-	cmdutil.RegisterFlags(dataCorporateActionsCmd, api.CorporateActionsOp.Flags(), nil)
-
-	cmdutil.RegisterFlags(dataFixedIncomeCmd, api.FixedIncomeLatestPricesOp.Flags(), nil)
-
-	cmdutil.RegisterFlags(dataLogoCmd, api.LogosOp.Flags(), nil)
-
-	cmdutil.RegisterFlags(dataMetaConditionsCmd, api.StockMetaConditionsOp.Flags(), nil)
 	dataMetaCmd.AddCommand(dataMetaExchangesCmd)
 	dataMetaCmd.AddCommand(dataMetaConditionsCmd)
 
