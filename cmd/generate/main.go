@@ -1488,26 +1488,10 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 
 		fmt.Fprintf(&buf, "type %s struct {\n", typeName)
 		fmt.Fprintf(&buf, "\tSummary string\n")
-		seen := map[string]bool{}
-		for _, p := range op.params {
-			if seen[p.goFieldName] {
-				continue
-			}
-			seen[p.goFieldName] = true
-			fmt.Fprintf(&buf, "\t%s string\n", p.goFieldName)
-		}
 		fmt.Fprintf(&buf, "}\n\n")
 
-		seen = map[string]bool{}
 		fmt.Fprintf(&buf, "var %sOp = %s{\n", op.goName, typeName)
 		fmt.Fprintf(&buf, "\tSummary: %q,\n", op.summary)
-		for _, p := range op.params {
-			if seen[p.goFieldName] {
-				continue
-			}
-			seen[p.goFieldName] = true
-			fmt.Fprintf(&buf, "\t%s: %q,\n", p.goFieldName, p.description)
-		}
 		fmt.Fprintf(&buf, "}\n\n")
 
 		fmt.Fprintf(&buf, "func (o %s) ResponseFields() []ResponseField {\n", typeName)
@@ -1546,7 +1530,7 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 			}
 		}
 		if hasFlags {
-			seen = map[string]bool{}
+			seen := map[string]bool{}
 			fmt.Fprintf(&buf, "var %sFlags = []FlagDef{\n", op.goName)
 			for _, p := range op.params {
 				if p.isPathParam || seen[p.oasName] {

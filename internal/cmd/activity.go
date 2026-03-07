@@ -43,14 +43,6 @@ var activityListCmd = &cobra.Command{
 			return output.JSON(cmd.OutOrStdout(), data)
 		}
 
-		if len(items) == 0 {
-			return output.Render(cmd.OutOrStdout(), out, nil, data)
-		}
-
-		_, isTrade := items[0]["cum_qty"]
-		if isTrade {
-			return output.Render(cmd.OutOrStdout(), out, nil, data)
-		}
 		return output.Render(cmd.OutOrStdout(), out, nil, data)
 	},
 }
