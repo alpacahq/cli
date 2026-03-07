@@ -16,10 +16,12 @@ type Config struct {
 }
 
 type Profile struct {
-	APIKey    string `yaml:"api_key"`
-	SecretKey string `yaml:"secret_key"`
-	BaseURL   string `yaml:"base_url"`
-	DataURL   string `yaml:"data_url"`
+	APIKey      string `yaml:"api_key"`
+	SecretKey   string `yaml:"secret_key"`
+	AccessToken string `yaml:"access_token,omitempty"`
+	Scopes      string `yaml:"scopes,omitempty"`
+	BaseURL     string `yaml:"base_url"`
+	DataURL     string `yaml:"data_url"`
 	// Deprecated: kept for backwards compat with existing profile files.
 	// New profiles store base_url directly.
 	Environment string `yaml:"environment,omitempty"`
@@ -28,6 +30,8 @@ type Profile struct {
 type Resolved struct {
 	APIKey      string
 	SecretKey   string
+	AccessToken string
+	Scopes      string
 	BaseURL     string
 	DataURL     string
 	Output      string
@@ -52,6 +56,8 @@ func Load(profileFlag, outputFlag string) (*Resolved, error) {
 		ProfileName: profileName,
 		APIKey:      resolve(os.Getenv("ALPACA_API_KEY"), profile.APIKey),
 		SecretKey:   resolve(os.Getenv("ALPACA_SECRET_KEY"), profile.SecretKey),
+		AccessToken: resolve(os.Getenv("ALPACA_ACCESS_TOKEN"), profile.AccessToken),
+		Scopes:      profile.Scopes,
 		BaseURL:     resolve(os.Getenv("ALPACA_BASE_URL"), profile.BaseURL),
 		DataURL:     resolve(os.Getenv("ALPACA_DATA_URL"), profile.DataURL),
 		Output:      resolve(outputFlag, os.Getenv("ALPACA_OUTPUT"), cfg.Output, "table"),
@@ -71,12 +77,25 @@ func Load(profileFlag, outputFlag string) (*Resolved, error) {
 }
 
 func (r *Resolved) HasCredentials() bool {
-	return r.APIKey != "" && r.SecretKey != ""
+	return (r.APIKey != "" && r.SecretKey != "") || r.AccessToken != ""
+}
+
+func (r *Resolved) IsOAuth() bool {
+	return r.AccessToken != ""
+}
+
+func (r *Resolved) HasScope(s string) bool {
+	for _, scope := range strings.Fields(r.Scopes) {
+		if scope == s {
+			return true
+		}
+	}
+	return false
 }
 
 func (r *Resolved) Validate() error {
 	if !r.HasCredentials() {
-		return fmt.Errorf("authentication required\nHint: run `alpaca profile login` to set up your credentials")
+		return fmt.Errorf("authentication required\nHint: run `alpaca profile login` to authenticate")
 	}
 	return nil
 }

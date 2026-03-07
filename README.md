@@ -79,9 +79,14 @@ alpaca clock
 
 **Paper trading is the default.** When you run `alpaca profile login`, credentials are stored for paper trading (`paper-api.alpaca.markets`) unless you explicitly pass `--live`.
 
+**Authentication methods:**
+
+- **OAuth (default)** — `alpaca profile login` opens a browser for OAuth authorization. No keys to copy/paste. The CLI starts a temporary localhost server to receive the callback, exchanges the authorization code for a token, and stores it locally.
+- **API keys** — `alpaca profile login --api-key` prompts for API key + secret. Recommended for CI/automation where a browser isn't available.
+
 **Credential safety:**
 
-- For interactive use, `alpaca profile login` stores credentials in `~/.config/alpaca/profiles/` with restricted file permissions (0600).
+- Credentials are stored in `~/.config/alpaca/profiles/` with restricted file permissions (0600).
 - For CI/automation, use environment variables instead of stored profiles — no secrets touch disk:
 
 ```bash
@@ -91,6 +96,12 @@ alpaca position list --json
 ```
 
 - Passing `--secret` via flags is discouraged (shell history exposure). Use interactive login or env vars.
+
+**OAuth security model:** The CLI is a public OAuth client — the embedded `client_id` is not a secret and serves only as an app identifier. This is the standard approach for native CLI applications, used by GitHub CLI, Google Cloud CLI, Stripe CLI, and others. The user always controls access through the browser consent screen; the client credentials alone grant no access to any account. For details, see:
+
+- [RFC 8252 Section 8.5](https://datatracker.ietf.org/doc/html/rfc8252#section-8.5) — IETF standard for OAuth in native apps: *"Secrets that are statically included as part of an app distributed to multiple users should not be treated as confidential secrets."*
+- [RFC 9700](https://datatracker.ietf.org/doc/html/rfc9700) — OAuth 2.0 Security Best Current Practice (BCP 240): mandates PKCE, deprecates reliance on static client secrets.
+- [GitHub CLI approach](https://github.com/cli/oauth/issues/1#issuecomment-749151295) — GitHub's `cli/oauth` maintainer on why embedding client secrets in open-source CLIs is acceptable.
 
 ## Commands
 
@@ -186,7 +197,7 @@ alpaca position list --json
 |---------|-------------|
 | `alpaca clock` | Market clock (supports `--markets` for v3) |
 | `alpaca calendar` | Trading calendar (supports `--market` for v3) |
-| `alpaca profile login` | Authenticate with API key/secret |
+| `alpaca profile login` | Authenticate via browser OAuth (or `--api-key`) |
 | `alpaca profile logout [name]` | Remove a profile |
 | `alpaca profile status` | Show the active profile |
 | `alpaca profile list` | List all profiles |
@@ -216,10 +227,12 @@ alpaca position list --csv        # CSV for spreadsheets
 ### Profiles
 
 ```bash
-alpaca profile login                                 # Paper trading (default)
-alpaca profile login --name live --live               # Live trading
+alpaca profile login                                 # OAuth via browser, paper (default)
+alpaca profile login --live                          # OAuth for live trading
+alpaca profile login --api-key                       # API key/secret (for CI/automation)
+alpaca profile login --api-key --name live --live    # API key for live trading
 alpaca profile login --name staging --base-url https://staging-api.example.com
-alpaca profile switch live                            # Switch default profile
+alpaca profile switch live                           # Switch default profile
 ```
 
 Credentials are stored in `~/.config/alpaca/profiles/`.

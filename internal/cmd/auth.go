@@ -9,12 +9,14 @@ import (
 	"time"
 
 	"github.com/alpacahq/cli/internal/cmdutil"
-
 	"github.com/alpacahq/cli/internal/config"
+	"github.com/alpacahq/cli/internal/oauth"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 )
+
+const defaultProfileName = "paper"
 
 var profileCmd = &cobra.Command{
 	Use:   "profile",
@@ -23,96 +25,232 @@ var profileCmd = &cobra.Command{
 
 var profileLoginCmd = &cobra.Command{
 	Use:   "login",
-	Short: "Create a profile and authenticate",
-	Example: `  alpaca profile login
-  alpaca profile login --key PKXXXXXXXX --secret XXXXXXXX
-  alpaca profile login --name myaccount --live
-  alpaca profile login --name dev --base-url https://custom-api.example.com
-  alpaca profile login --name dev --base-url https://custom-api.example.com --data-url https://custom-data.example.com`,
+	Short: "Authenticate via browser OAuth or API keys",
+	Example: `  alpaca profile login                    # OAuth via browser (default)
+  alpaca profile login --live             # OAuth for live account
+  alpaca profile login --scope trading    # OAuth with specific scopes
+  alpaca profile login --api-key          # API key/secret login
+  alpaca profile login --api-key --key PKXXXXXXXX --secret XXXXXXXX
+  alpaca profile login --name dev --base-url https://custom-api.example.com`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		key := cmdutil.Str(cmd, "key")
-		secret := cmdutil.Str(cmd, "secret")
-		name := cmdutil.Str(cmd, "name")
-		dataURL := cmdutil.Str(cmd, "data-url")
-		noValidate := cmdutil.Bool(cmd, "no-validate")
-
-		if name == "" {
-			name = "paper"
+		useAPIKey := cmdutil.Bool(cmd, "api-key")
+		if useAPIKey {
+			return loginWithAPIKey(cmd)
 		}
+		return loginWithOAuth(cmd)
+	},
+}
 
-		baseURL, err := resolveBaseURLFlags(cmd)
+func loginWithOAuth(cmd *cobra.Command) error {
+	name := cmdutil.Str(cmd, "name")
+	dataURL := cmdutil.Str(cmd, "data-url")
+	noValidate := cmdutil.Bool(cmd, "no-validate")
+	scopeFlag := cmdutil.Str(cmd, "scope")
+
+	if name == "" {
+		name = defaultProfileName
+	}
+
+	baseURL, err := resolveBaseURLFlags(cmd)
+	if err != nil {
+		return err
+	}
+
+	env := defaultProfileName
+	if cmdutil.Bool(cmd, "live") {
+		env = "live"
+		if name == defaultProfileName {
+			name = "live"
+		}
+	}
+
+	scope := oauth.DefaultScopes
+	if scopeFlag != "" {
+		scope = strings.ReplaceAll(scopeFlag, ",", " ")
+	} else if term.IsTerminal(int(os.Stdin.Fd())) {
+		selected := promptScopes()
+		if len(selected) > 0 {
+			scope = strings.Join(selected, " ")
+		}
+	}
+
+	token, err := oauth.Login(env, scope)
+	if err != nil {
+		return err
+	}
+
+	if !noValidate {
+		req, _ := http.NewRequest("GET", baseURL+"/v2/account", nil)
+		req.Header.Set("Authorization", "Bearer "+token.AccessToken)
+		resp, err := (&http.Client{Timeout: 10 * time.Second}).Do(req)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to validate token against %s: %w\nHint: use --no-validate to skip", baseURL, err)
 		}
+		_ = resp.Body.Close()
 
-		if cmdutil.Changed(cmd, "secret") {
-			fmt.Fprintln(os.Stderr, "Warning: passing secrets via flags may expose them in shell history.")
-			fmt.Fprintln(os.Stderr, "  Use `alpaca profile login` interactively or ALPACA_SECRET_KEY env var.")
+		if resp.StatusCode == 401 || resp.StatusCode == 403 {
+			return fmt.Errorf("token validation failed (HTTP %d against %s)\nHint: the token may not have the required scopes, or the account may not match", resp.StatusCode, baseURL)
 		}
+		if resp.StatusCode >= 400 {
+			return fmt.Errorf("unexpected response: HTTP %d from %s", resp.StatusCode, baseURL)
+		}
+	}
 
-		if key == "" || secret == "" {
-			reader := bufio.NewReader(os.Stdin)
-			if key == "" {
-				fmt.Print("API Key: ")
-				key, _ = reader.ReadString('\n')
-				key = strings.TrimSpace(key)
-			}
-			if secret == "" {
-				fmt.Print("Secret Key: ")
-				if term.IsTerminal(int(os.Stdin.Fd())) {
-					raw, _ := term.ReadPassword(int(os.Stdin.Fd()))
-					secret = string(raw)
-					fmt.Println()
-				} else {
-					secret, _ = reader.ReadString('\n')
-					secret = strings.TrimSpace(secret)
+	p := &config.Profile{
+		AccessToken: token.AccessToken,
+		Scopes:      token.Scope,
+		BaseURL:     baseURL,
+		DataURL:     dataURL,
+	}
+	if err := config.SaveProfile(name, p); err != nil {
+		return fmt.Errorf("saving profile: %w", err)
+	}
+
+	globalCfg := loadOrCreateGlobal()
+	globalCfg.DefaultProfile = name
+	if err := config.SaveGlobalConfig(globalCfg); err != nil {
+		return fmt.Errorf("saving global config: %w", err)
+	}
+
+	color.Green("✓ Logged in to %s (%s)", name, baseURL)
+	if token.Scope != "" {
+		fmt.Fprintf(os.Stderr, "  Scopes: %s\n", token.Scope)
+	}
+	fmt.Fprintf(os.Stderr, "  Credentials stored in %s/profiles/\n", config.Dir())
+	return nil
+}
+
+type scopeOption struct {
+	Value       string
+	Description string
+}
+
+var availableScopes = []scopeOption{
+	{"account:write", "Manage account settings and watchlists"},
+	{"trading", "Place, cancel, and modify orders"},
+	{"data", "Access market data"},
+}
+
+func promptScopes() []string {
+	fmt.Fprintln(os.Stderr, "\nSelect scopes to authorize (all selected by default):")
+	for i, s := range availableScopes {
+		fmt.Fprintf(os.Stderr, "  %d. %-16s %s\n", i+1, s.Value, s.Description)
+	}
+	fmt.Fprintf(os.Stderr, "\nPress Enter for all, or type scope numbers (e.g. 1,2): ")
+
+	reader := bufio.NewReader(os.Stdin)
+	line, _ := reader.ReadString('\n')
+	line = strings.TrimSpace(line)
+
+	if line == "" {
+		all := make([]string, len(availableScopes))
+		for i, s := range availableScopes {
+			all[i] = s.Value
+		}
+		return all
+	}
+
+	var selected []string
+	for _, part := range strings.Split(line, ",") {
+		part = strings.TrimSpace(part)
+		idx := 0
+		if _, err := fmt.Sscanf(part, "%d", &idx); err == nil && idx >= 1 && idx <= len(availableScopes) {
+			selected = append(selected, availableScopes[idx-1].Value)
+		} else {
+			for _, s := range availableScopes {
+				if s.Value == part {
+					selected = append(selected, s.Value)
+					break
 				}
 			}
 		}
+	}
+	return selected
+}
 
-		if key == "" || secret == "" {
-			return fmt.Errorf("both API key and secret key are required")
+func loginWithAPIKey(cmd *cobra.Command) error {
+	key := cmdutil.Str(cmd, "key")
+	secret := cmdutil.Str(cmd, "secret")
+	name := cmdutil.Str(cmd, "name")
+	dataURL := cmdutil.Str(cmd, "data-url")
+	noValidate := cmdutil.Bool(cmd, "no-validate")
+
+	if name == "" {
+		name = defaultProfileName
+	}
+
+	baseURL, err := resolveBaseURLFlags(cmd)
+	if err != nil {
+		return err
+	}
+
+	if cmdutil.Changed(cmd, "secret") {
+		fmt.Fprintln(os.Stderr, "Warning: passing secrets via flags may expose them in shell history.")
+		fmt.Fprintln(os.Stderr, "  Use `alpaca profile login --api-key` interactively or ALPACA_SECRET_KEY env var.")
+	}
+
+	if key == "" || secret == "" {
+		reader := bufio.NewReader(os.Stdin)
+		if key == "" {
+			fmt.Print("API Key: ")
+			key, _ = reader.ReadString('\n')
+			key = strings.TrimSpace(key)
 		}
-
-		if !noValidate {
-			req, _ := http.NewRequest("GET", baseURL+"/v2/account", nil)
-			req.Header.Set("APCA-API-KEY-ID", key)
-			req.Header.Set("APCA-API-SECRET-KEY", secret)
-			resp, err := (&http.Client{Timeout: 10 * time.Second}).Do(req)
-			if err != nil {
-				return fmt.Errorf("failed to connect to %s: %w\nHint: use --no-validate to skip credential check", baseURL, err)
+		if secret == "" {
+			fmt.Print("Secret Key: ")
+			if term.IsTerminal(int(os.Stdin.Fd())) {
+				raw, _ := term.ReadPassword(int(os.Stdin.Fd()))
+				secret = string(raw)
+				fmt.Println()
+			} else {
+				secret, _ = reader.ReadString('\n')
+				secret = strings.TrimSpace(secret)
 			}
-			_ = resp.Body.Close()
-
-			if resp.StatusCode == 401 || resp.StatusCode == 403 {
-				return fmt.Errorf("invalid credentials (validated against %s)\nHint: use --base-url to specify the correct API endpoint, or --no-validate to skip", baseURL)
-			}
-			if resp.StatusCode >= 400 {
-				return fmt.Errorf("unexpected response: HTTP %d from %s", resp.StatusCode, baseURL)
-			}
 		}
+	}
 
-		p := &config.Profile{
-			APIKey:    key,
-			SecretKey: secret,
-			BaseURL:   baseURL,
-			DataURL:   dataURL,
-		}
-		if err := config.SaveProfile(name, p); err != nil {
-			return fmt.Errorf("saving profile: %w", err)
-		}
+	if key == "" || secret == "" {
+		return fmt.Errorf("both API key and secret key are required")
+	}
 
-		globalCfg := loadOrCreateGlobal()
-		globalCfg.DefaultProfile = name
-		if err := config.SaveGlobalConfig(globalCfg); err != nil {
-			return fmt.Errorf("saving global config: %w", err)
+	if !noValidate {
+		req, _ := http.NewRequest("GET", baseURL+"/v2/account", nil)
+		req.Header.Set("APCA-API-KEY-ID", key)
+		req.Header.Set("APCA-API-SECRET-KEY", secret)
+		resp, err := (&http.Client{Timeout: 10 * time.Second}).Do(req)
+		if err != nil {
+			return fmt.Errorf("failed to connect to %s: %w\nHint: use --no-validate to skip credential check", baseURL, err)
 		}
+		_ = resp.Body.Close()
 
-		color.Green("✓ Logged in to %s (%s)", name, baseURL)
-		fmt.Fprintf(os.Stderr, "  Credentials stored in %s/profiles/\n", config.Dir())
-		fmt.Fprintln(os.Stderr, "  For CI/automation, use ALPACA_API_KEY and ALPACA_SECRET_KEY env vars instead.")
-		return nil
-	},
+		if resp.StatusCode == 401 || resp.StatusCode == 403 {
+			return fmt.Errorf("invalid credentials (validated against %s)\nHint: use --base-url to specify the correct API endpoint, or --no-validate to skip", baseURL)
+		}
+		if resp.StatusCode >= 400 {
+			return fmt.Errorf("unexpected response: HTTP %d from %s", resp.StatusCode, baseURL)
+		}
+	}
+
+	p := &config.Profile{
+		APIKey:    key,
+		SecretKey: secret,
+		BaseURL:   baseURL,
+		DataURL:   dataURL,
+	}
+	if err := config.SaveProfile(name, p); err != nil {
+		return fmt.Errorf("saving profile: %w", err)
+	}
+
+	globalCfg := loadOrCreateGlobal()
+	globalCfg.DefaultProfile = name
+	if err := config.SaveGlobalConfig(globalCfg); err != nil {
+		return fmt.Errorf("saving global config: %w", err)
+	}
+
+	color.Green("✓ Logged in to %s (%s)", name, baseURL)
+	fmt.Fprintf(os.Stderr, "  Credentials stored in %s/profiles/\n", config.Dir())
+	fmt.Fprintln(os.Stderr, "  For CI/automation, use ALPACA_API_KEY and ALPACA_SECRET_KEY env vars instead.")
+	return nil
 }
 
 var profileLogoutCmd = &cobra.Command{
@@ -122,7 +260,7 @@ var profileLogoutCmd = &cobra.Command{
   alpaca profile logout live`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		name := "paper"
+		name := defaultProfileName
 		if len(args) > 0 {
 			name = args[0]
 		}
@@ -152,15 +290,26 @@ var profileStatusCmd = &cobra.Command{
 		fmt.Printf("Data URL:  %s\n", resolved.DataURL)
 
 		if resolved.HasCredentials() {
-			masked := resolved.APIKey
-			if len(masked) > 6 {
-				masked = masked[:6] + strings.Repeat("*", len(masked)-6)
+			if resolved.IsOAuth() {
+				masked := resolved.AccessToken
+				if len(masked) > 8 {
+					masked = masked[:8] + strings.Repeat("*", len(masked)-8)
+				}
+				fmt.Printf("Auth:      OAuth (bearer token: %s)\n", masked)
+				if resolved.Scopes != "" {
+					fmt.Printf("Scopes:    %s\n", strings.ReplaceAll(resolved.Scopes, " ", ", "))
+				}
+			} else {
+				masked := resolved.APIKey
+				if len(masked) > 6 {
+					masked = masked[:6] + strings.Repeat("*", len(masked)-6)
+				}
+				fmt.Printf("Auth:      API key (%s)\n", masked)
 			}
-			fmt.Printf("API Key:   %s\n", masked)
 			color.Green("✓ Authenticated")
 		} else {
 			color.Yellow("✗ Not authenticated")
-			fmt.Println("Hint: run `alpaca profile login` to set up credentials")
+			fmt.Println("Hint: run `alpaca profile login` to authenticate")
 		}
 		return nil
 	},
@@ -269,8 +418,10 @@ Available keys:
 }
 
 func init() {
-	profileLoginCmd.Flags().String("key", "", "API key")
-	profileLoginCmd.Flags().String("secret", "", "Secret key")
+	profileLoginCmd.Flags().Bool("api-key", false, "Use API key/secret authentication instead of OAuth")
+	profileLoginCmd.Flags().String("key", "", "API key (requires --api-key)")
+	profileLoginCmd.Flags().String("secret", "", "Secret key (requires --api-key)")
+	profileLoginCmd.Flags().String("scope", "", "OAuth scopes, comma-separated (default: all)")
 	profileLoginCmd.Flags().String("name", "", "Profile name (default: paper)")
 	profileLoginCmd.Flags().Bool("paper", false, "Use paper trading URL (default)")
 	profileLoginCmd.Flags().Bool("live", false, "Use live trading URL")
@@ -294,7 +445,7 @@ func resolveBaseURLFlags(cmd *cobra.Command) (string, error) {
 	if u := cmdutil.Str(cmd, "base-url"); u != "" {
 		return config.ResolveBaseURL(u), nil
 	}
-	return config.ResolveBaseURL("paper"), nil
+	return config.ResolveBaseURL(defaultProfileName), nil
 }
 
 func loadOrCreateGlobal() *config.Config {

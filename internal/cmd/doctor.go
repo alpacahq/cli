@@ -48,10 +48,17 @@ var doctorCmd = &cobra.Command{
 		printCheck(w, true, "active profile: "+resolved.ProfileName)
 
 		if !resolved.HasCredentials() {
-			allOK = printCheck(w, false, "no API credentials — run `alpaca profile login`")
+			allOK = printCheck(w, false, "no credentials — run `alpaca profile login`")
 			return doctorResult(w, allOK)
 		}
-		printCheck(w, true, "API credentials configured")
+		if resolved.IsOAuth() {
+			printCheck(w, true, "OAuth token configured")
+			if resolved.Scopes != "" {
+				fmt.Fprintf(w, "  Scopes:   %s\n", resolved.Scopes)
+			}
+		} else {
+			printCheck(w, true, "API key credentials configured")
+		}
 
 		fmt.Fprintf(w, "\nConnectivity:\n")
 		c := client.New(resolved)

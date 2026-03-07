@@ -25,16 +25,17 @@ const (
 const maxRetries = 3
 
 type Client struct {
-	HTTP      *http.Client
-	BaseURL   string
-	DataURL   string
-	APIKey    string
-	Secret    string
-	UserAgent string
-	Verbose   bool
-	Debug     bool
-	Quiet     bool
-	Timeout   time.Duration
+	HTTP        *http.Client
+	BaseURL     string
+	DataURL     string
+	APIKey      string
+	Secret      string
+	AccessToken string
+	UserAgent   string
+	Verbose     bool
+	Debug       bool
+	Quiet       bool
+	Timeout     time.Duration
 }
 
 type APIError struct {
@@ -80,7 +81,7 @@ func (e *APIError) Hint() string {
 	case 401:
 		return "Invalid credentials. Run `alpaca profile login` to re-authenticate."
 	case 403:
-		return "Access denied. Check your API key permissions or account status."
+		return "Access denied. Check your permissions or account status. If using OAuth, you may need additional scopes — run `alpaca profile login` to re-authorize."
 	}
 	return ""
 }
@@ -89,13 +90,14 @@ var Version = "dev"
 
 func New(cfg *config.Resolved) *Client {
 	return &Client{
-		HTTP:      &http.Client{Timeout: 30 * time.Second},
-		BaseURL:   strings.TrimRight(cfg.BaseURL, "/"),
-		DataURL:   strings.TrimRight(cfg.DataURL, "/"),
-		APIKey:    cfg.APIKey,
-		Secret:    cfg.SecretKey,
-		UserAgent: "alpaca-cli/" + Version,
-		Timeout:   30 * time.Second,
+		HTTP:        &http.Client{Timeout: 30 * time.Second},
+		BaseURL:     strings.TrimRight(cfg.BaseURL, "/"),
+		DataURL:     strings.TrimRight(cfg.DataURL, "/"),
+		APIKey:      cfg.APIKey,
+		Secret:      cfg.SecretKey,
+		AccessToken: cfg.AccessToken,
+		UserAgent:   "alpaca-cli/" + Version,
+		Timeout:     30 * time.Second,
 	}
 }
 
@@ -195,8 +197,12 @@ func (c *Client) do(method, reqURL string, body any) (json.RawMessage, error) {
 		return nil, fmt.Errorf("creating request: %w", err)
 	}
 
-	req.Header.Set("APCA-API-KEY-ID", c.APIKey)
-	req.Header.Set("APCA-API-SECRET-KEY", c.Secret)
+	if c.AccessToken != "" {
+		req.Header.Set("Authorization", "Bearer "+c.AccessToken)
+	} else {
+		req.Header.Set("APCA-API-KEY-ID", c.APIKey)
+		req.Header.Set("APCA-API-SECRET-KEY", c.Secret)
+	}
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
@@ -281,6 +287,9 @@ func (c *Client) scrub(s string) string {
 	}
 	if c.Secret != "" {
 		s = strings.ReplaceAll(s, c.Secret, "[REDACTED]")
+	}
+	if c.AccessToken != "" {
+		s = strings.ReplaceAll(s, c.AccessToken, "[REDACTED]")
 	}
 	return s
 }
