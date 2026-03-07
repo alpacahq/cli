@@ -77,15 +77,10 @@ var calendarCmd = &cobra.Command{
 
 var portfolioCmd = &cobra.Command{
 	Use:   "portfolio",
-	Short: "Portfolio equity and P&L history",
-}
-
-var portfolioHistoryCmd = &cobra.Command{
-	Use:   "history",
 	Short: api.GetAccountPortfolioHistoryOp.Summary(),
 	Long:  "Returns portfolio equity and P&L history. Output is always JSON due to complex time-series structure.",
-	Example: `  alpaca portfolio history
-  alpaca portfolio history --period 1M --timeframe 1D`,
+	Example: `  alpaca account portfolio
+  alpaca account portfolio --period 1M --timeframe 1D`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		params := getAccountPortfolioHistoryParamsFromFlags(cmd)
 
@@ -100,9 +95,9 @@ var portfolioHistoryCmd = &cobra.Command{
 var newsCmd = &cobra.Command{
 	Use:   "news",
 	Short: api.NewsOp.Summary(),
-	Example: `  alpaca news
-  alpaca news --symbols AAPL,MSFT --limit 10
-  alpaca news --symbols AAPL --all --max 100`,
+	Example: `  alpaca data news
+  alpaca data news --symbols AAPL,MSFT --limit 10
+  alpaca data news --symbols AAPL --all --max 100`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		params := newsParamsFromFlags(cmd)
 		if params.Limit == 0 {
@@ -147,10 +142,9 @@ func init() {
 	cmdutil.RegisterFlags(calendarCmd, api.LegacyCalendarOp.Flags(), nil)
 	calendarCmd.Flags().String("market", "", "Market MIC for v3 calendar (e.g. XNYS)")
 
-	cmdutil.RegisterFlags(portfolioHistoryCmd, api.GetAccountPortfolioHistoryOp.Flags(), &cmdutil.FlagOpts{
+	cmdutil.RegisterFlags(portfolioCmd, api.GetAccountPortfolioHistoryOp.Flags(), &cmdutil.FlagOpts{
 		Exclude: map[string]bool{"extended_hours": true},
 	})
-	portfolioCmd.AddCommand(portfolioHistoryCmd)
 
 	cmdutil.RegisterFlags(newsCmd, api.NewsOp.Flags(), nil)
 	addPaginationFlags(newsCmd)

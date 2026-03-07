@@ -7,12 +7,12 @@ import (
 )
 
 func TestActivity(t *testing.T) {
-	out := alpaca(t, "activity", "list", "--page-size", "5", "--json")
+	out := alpaca(t, "account", "activity", "list", "--page-size", "5", "--json")
 	_ = parseJSONArray(t, out)
 }
 
 func TestPortfolioHistory(t *testing.T) {
-	out := alpaca(t, "portfolio", "history", "--period", "1W", "--timeframe", "1D", "--json")
+	out := alpaca(t, "account", "portfolio", "--period", "1W", "--timeframe", "1D", "--json")
 	data := parseJSONMap(t, out)
 	if data["equity"] == nil && data["timestamp"] == nil {
 		t.Error("portfolio history missing expected fields")
@@ -28,7 +28,7 @@ func TestAssetList(t *testing.T) {
 }
 
 func TestScreenerMostActives(t *testing.T) {
-	out := alpaca(t, "screener", "most-actives", "--top", "5", "--json")
+	out := alpaca(t, "data", "screener", "most-actives", "--top", "5", "--json")
 	actives := parseJSONArray(t, out)
 	if len(actives) == 0 {
 		t.Error("screener response returned no results")

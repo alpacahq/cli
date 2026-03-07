@@ -61,7 +61,7 @@ func TestDataSnapshot(t *testing.T) {
 }
 
 func TestDataNews(t *testing.T) {
-	out := alpaca(t, "news", "--symbols", "AAPL", "--limit", "5", "--json")
+	out := alpaca(t, "data", "news", "--symbols", "AAPL", "--limit", "5", "--json")
 	news := parseJSONArray(t, out)
 
 	if len(news) == 0 {

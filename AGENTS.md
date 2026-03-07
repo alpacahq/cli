@@ -54,6 +54,10 @@ Hand-written concerns per command:
 - Output column selection and rendering
 - Custom flags not from OAS (`--dry-run`, `--client-id`, `--market`)
 
+## No backward compatibility
+
+This project is pre-1.0. Command names, flag names, and output formats can change freely. Do not add aliases, shims, or deprecation wrappers for old paths. Just make the change and update docs.
+
 ## Flag naming invariant
 
 Flags always use OAS-generated kebab-case names. No aliases. `FlagOpts` does not support aliases — this is enforced at the type level. If a flag name needs to change, change it in the spec.

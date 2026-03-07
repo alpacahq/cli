@@ -25,15 +25,15 @@ var screenerMostActivesCmd = fetchCmd("most-actives", api.MostActivesOp, func(cm
 	}
 	return resp.MostActives, nil
 }, func(c *cobra.Command) {
-	c.Example = `  alpaca screener most-actives
-  alpaca screener most-actives --by trades --top 10`
+	c.Example = `  alpaca data screener most-actives
+  alpaca data screener most-actives --by trades --top 10`
 })
 
 var screenerMoversCmd = &cobra.Command{
 	Use:   "movers",
 	Short: api.MoversOp.Summary(),
-	Example: `  alpaca screener movers
-  alpaca screener movers --market crypto --top 5`,
+	Example: `  alpaca data screener movers
+  alpaca data screener movers --market crypto --top 5`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		market := cmdutil.Str(cmd, "market")
 		if market == "" {

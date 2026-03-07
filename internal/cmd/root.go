@@ -177,31 +177,25 @@ func init() {
 	rootCmd.Flags().Bool("help-all", false, "Print full reference for every command")
 
 	tradingGroup := &cobra.Group{ID: "trading", Title: "Trading"}
-	dataGroup := &cobra.Group{ID: "data", Title: "Market Data"}
 	accountGroup := &cobra.Group{ID: "account", Title: "Account & Assets"}
 	utilGroup := &cobra.Group{ID: "util", Title: "Utilities"}
 
-	rootCmd.AddGroup(tradingGroup, dataGroup, accountGroup, utilGroup)
+	rootCmd.AddGroup(tradingGroup, accountGroup, utilGroup)
 
 	orderCmd.GroupID = tradingGroup.ID
 	positionCmd.GroupID = tradingGroup.ID
 	optionCmd.GroupID = tradingGroup.ID
-
-	dataCmd.GroupID = dataGroup.ID
-	screenerCmd.GroupID = dataGroup.ID
-	newsCmd.GroupID = dataGroup.ID
+	clockCmd.GroupID = tradingGroup.ID
+	calendarCmd.GroupID = tradingGroup.ID
+	dataCmd.GroupID = tradingGroup.ID
 
 	accountCmd.GroupID = accountGroup.ID
-	activityCmd.GroupID = accountGroup.ID
 	assetCmd.GroupID = accountGroup.ID
-	portfolioCmd.GroupID = accountGroup.ID
 	corporateActionCmd.GroupID = accountGroup.ID
 	watchlistCmd.GroupID = accountGroup.ID
 	walletCmd.GroupID = accountGroup.ID
 
 	profileCmd.GroupID = utilGroup.ID
-	clockCmd.GroupID = utilGroup.ID
-	calendarCmd.GroupID = utilGroup.ID
 	apiCmd.GroupID = utilGroup.ID
 	setupCmd.GroupID = utilGroup.ID
 	updateCmd.GroupID = utilGroup.ID
@@ -217,11 +211,7 @@ func init() {
 	rootCmd.AddCommand(watchlistCmd)
 	rootCmd.AddCommand(clockCmd)
 	rootCmd.AddCommand(calendarCmd)
-	rootCmd.AddCommand(portfolioCmd)
-	rootCmd.AddCommand(newsCmd)
 	rootCmd.AddCommand(optionCmd)
-	rootCmd.AddCommand(activityCmd)
-	rootCmd.AddCommand(screenerCmd)
 	rootCmd.AddCommand(corporateActionCmd)
 	rootCmd.AddCommand(walletCmd)
 	rootCmd.AddCommand(apiCmd)

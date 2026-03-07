@@ -17,10 +17,10 @@ var activityCmd = &cobra.Command{
 var activityListCmd = &cobra.Command{
 	Use:   "list",
 	Short: api.GetAccountActivitiesOp.Summary(),
-	Example: `  alpaca activity list
-  alpaca activity list --activity-types FILL --page-size 20
-  alpaca activity list --activity-types DIV --after 2025-01-01
-  alpaca activity list --activity-types FILL,TRANS --direction desc`,
+	Example: `  alpaca account activity list
+  alpaca account activity list --activity-types FILL --page-size 20
+  alpaca account activity list --activity-types DIV --after 2025-01-01
+  alpaca account activity list --activity-types FILL,TRANS --direction desc`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		actType := cmdutil.Str(cmd, "activity-types")
 

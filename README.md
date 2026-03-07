@@ -119,10 +119,12 @@ alpaca position list --json
 | `alpaca position get <symbol>` | Get position for a symbol |
 | `alpaca position close <symbol>` | Close a position |
 | `alpaca position close-all` | Close all positions |
-| `alpaca option chain <symbol>` | Options chain (contracts) |
+| `alpaca option contracts <symbol>` | List option contracts |
 | `alpaca option get <id>` | Option contract details |
 | `alpaca option exercise <id>` | Exercise an option |
 | `alpaca option do-not-exercise <id>` | Mark option as do-not-exercise |
+| `alpaca clock` | Market clock (supports `--markets` for v3) |
+| `alpaca calendar` | Trading calendar (supports `--market` for v3) |
 
 ### Market Data
 
@@ -152,9 +154,9 @@ alpaca position list --json
 | `alpaca data logo <symbol>` | Company logo URL |
 | `alpaca data meta exchanges` | Exchange code reference |
 | `alpaca data meta conditions <ticktype>` | Trade/quote condition codes |
-| `alpaca screener most-actives` | Most active stocks |
-| `alpaca screener movers` | Top market movers |
-| `alpaca news` | Market news |
+| `alpaca data screener most-actives` | Most active stocks |
+| `alpaca data screener movers` | Top market movers |
+| `alpaca data news` | Market news |
 
 ### Account & Assets
 
@@ -163,12 +165,12 @@ alpaca position list --json
 | `alpaca account get` | Account details (equity, buying power) |
 | `alpaca account config get` | Account configuration |
 | `alpaca account config set` | Update account settings |
-| `alpaca activity list` | Account activity (fills, dividends, etc.) |
+| `alpaca account activity list` | Account activity (fills, dividends, etc.) |
+| `alpaca account portfolio` | Portfolio equity and P&L history |
 | `alpaca asset list` | Browse equities and crypto |
 | `alpaca asset get <symbol>` | Asset details |
 | `alpaca asset treasury` | US Treasury bonds |
 | `alpaca asset bond` | US Corporate bonds |
-| `alpaca portfolio history` | Portfolio value history |
 | `alpaca corporate-action list` | Corporate action announcements |
 | `alpaca corporate-action get <id>` | Get a specific announcement |
 | `alpaca watchlist list` | List all watchlists |
@@ -195,8 +197,6 @@ alpaca position list --json
 
 | Command | Description |
 |---------|-------------|
-| `alpaca clock` | Market clock (supports `--markets` for v3) |
-| `alpaca calendar` | Trading calendar (supports `--market` for v3) |
 | `alpaca profile login` | Authenticate via browser OAuth (or `--api-key`) |
 | `alpaca profile logout [name]` | Remove a profile |
 | `alpaca profile status` | Show the active profile |
@@ -402,7 +402,7 @@ Data commands support auto-pagination with `--all`:
 ```bash
 alpaca data bars AAPL --start 2025-01-01 --all
 alpaca data trades AAPL --start 2025-01-01 --all --max 5000
-alpaca news --symbols AAPL --all --max 100
+alpaca data news --symbols AAPL --all --max 100
 ```
 
 `--max` limits the total number of items returned (default: 10,000).

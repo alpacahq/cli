@@ -139,6 +139,8 @@ func init() {
 	dataCmd.AddCommand(dataFixedIncomeCmd)
 	dataCmd.AddCommand(dataLogoCmd)
 	dataCmd.AddCommand(dataMetaCmd)
+	dataCmd.AddCommand(screenerCmd)
+	dataCmd.AddCommand(newsCmd)
 }
 
 func renderMapValues(w io.Writer, format string, cols []output.Column, data any) error {

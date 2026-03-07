@@ -76,8 +76,8 @@ func TestCommandSmoke(t *testing.T) {
 			status:   200,
 		},
 		{
-			name:     "activity list trades",
-			args:     []string{"activity", "list", "--activity-types", "FILL"},
+			name:     "account activity list trades",
+			args:     []string{"account", "activity", "list", "--activity-types", "FILL"},
 			response: `[]`,
 			status:   200,
 		},

@@ -58,4 +58,6 @@ func init() {
 
 	accountCmd.AddCommand(accountGetCmd)
 	accountCmd.AddCommand(accountConfigCmd)
+	accountCmd.AddCommand(activityCmd)
+	accountCmd.AddCommand(portfolioCmd)
 }

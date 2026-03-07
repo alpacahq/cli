@@ -194,7 +194,7 @@ Data commands support auto-pagination:
 ```bash
 alpaca data bars AAPL --start 2025-01-01 --all
 alpaca data trades AAPL --start 2025-01-01 --all --max 5000
-alpaca news --symbols AAPL --all --max 100
+alpaca data news --symbols AAPL --all --max 100
 ```
 
 `--all` fetches all available pages. `--max` caps the number of items (default: 10,000).
