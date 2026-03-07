@@ -23,7 +23,7 @@ var watchlistListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.RenderWithHint(cmd.OutOrStdout(), getOutput(), nil, watchlists, "No watchlists. Create one with `alpaca watchlist create`.")
+		return output.RenderWithHint(cmd.OutOrStdout(), getOutput(), columnsForOp(api.GetWatchlistsOp), watchlists, "No watchlists. Create one with `alpaca watchlist create`.")
 	},
 }
 
@@ -34,7 +34,7 @@ func watchlistFetchRunE(fetch func(key string) (*api.Watchlist, error)) func(*co
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, wl)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), columnsForOp(api.GetWatchlistByIDOp), wl)
 	}
 }
 
@@ -56,7 +56,7 @@ func watchlistAddRunE(add func(key, symbol string) (*api.Watchlist, error)) func
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, wl)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), columnsForOp(api.AddAssetToWatchlistOp), wl)
 	}
 }
 
@@ -87,7 +87,7 @@ var watchlistCreateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, wl)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), columnsForOp(api.PostWatchlistOp), wl)
 	},
 }
 
@@ -96,10 +96,7 @@ var watchlistUpdateCmd = &cobra.Command{
 	Short: api.UpdateWatchlistByIDOp.Summary,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		body := &api.UpdateWatchlistRequest{}
-		if cmdutil.Changed(cmd, "name") {
-			body.Name = cmdutil.Str(cmd, "name")
-		}
+		body, _ := updateWatchlistRequestBodyFromFlags(cmd)
 		symbols := cmdutil.Str(cmd, "symbols")
 		if symbols != "" {
 			body.Symbols = strings.Split(symbols, ",")
@@ -109,7 +106,7 @@ var watchlistUpdateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, wl)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), columnsForOp(api.UpdateWatchlistByIDOp), wl)
 	},
 }
 
@@ -173,7 +170,7 @@ var watchlistUpdateByNameCmd = &cobra.Command{
 	Example: `  alpaca watchlist update-by-name "Tech Stocks" --symbols AAPL,MSFT,GOOG`,
 	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		body := &api.UpdateWatchlistRequest{}
+		body, _ := updateWatchlistRequestBodyFromFlags(cmd)
 		if cmdutil.Changed(cmd, "new-name") {
 			body.Name = cmdutil.Str(cmd, "new-name")
 		}
@@ -188,7 +185,7 @@ var watchlistUpdateByNameCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, wl)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), columnsForOp(api.UpdateWatchlistByNameOp), wl)
 	},
 }
 

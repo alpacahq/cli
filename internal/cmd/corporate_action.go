@@ -19,7 +19,7 @@ var corporateActionListCmd = &cobra.Command{
 	Example: `  alpaca corporate-action list --ca-types reverse_split --since 2025-01-01 --until 2025-12-31
   alpaca corporate-action list --ca-types cash_dividend --symbol AAPL --since 2025-01-01 --until 2025-06-30`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := cmdutil.RequireAll(cmd, "ca-types", "since", "until"); err != nil {
+		if err := cmdutil.RequireAll(cmd, api.GetV2CorporateActionsAnnouncementsOp.RequiredFlags()...); err != nil {
 			return err
 		}
 
@@ -29,7 +29,7 @@ var corporateActionListCmd = &cobra.Command{
 			return err
 		}
 
-		return output.Render(cmd.OutOrStdout(), getOutput(), nil, data)
+		return output.Render(cmd.OutOrStdout(), getOutput(), columnsForOp(api.GetV2CorporateActionsAnnouncementsOp), data)
 	},
 }
 
@@ -42,7 +42,7 @@ var corporateActionGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, data)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), columnsForOp(api.GetV2CorporateActionsAnnouncementsIDOp), data)
 	},
 }
 

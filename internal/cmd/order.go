@@ -159,17 +159,7 @@ var orderReplaceCmd = &cobra.Command{
 	Example: `  alpaca order replace <order-id> --qty 20 --limit-price 190.00`,
 	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		body := &api.PatchOrderRequest{}
-		p := cmdutil.NewPatchHelper(cmd)
-
-		p.Str("qty", &body.Qty)
-		p.Str("limit-price", &body.LimitPrice)
-		p.Str("stop-price", &body.StopPrice)
-		p.Str("trail", &body.Trail)
-		p.Str("client-order-id", &body.ClientOrderID)
-		if cmdutil.Changed(cmd, "time-in-force") {
-			body.TimeInForce = api.TimeInForce(cmdutil.Str(cmd, "time-in-force"))
-		}
+		body, _ := patchOrderRequestBodyFromFlags(cmd)
 
 		order, err := tradingClient.PatchOrderByOrderID(args[0], body)
 		if err != nil {

@@ -362,7 +362,7 @@ func TestNoEmptyFlagDescriptions(t *testing.T) {
 // Catches accidental empty slices or missing arguments.
 func TestRenderCallsUseColumnDefinitions(t *testing.T) {
 	renderCall := regexp.MustCompile(`output\.(Render|PrintSingle|RenderWithHint)\(`)
-	validColumns := regexp.MustCompile(`\w+Columns\(\)|\bcols\b|\bcolumns\(\)|\bnil\b`)
+	validColumns := regexp.MustCompile(`\w+Columns\(\)|\bcols\b|\bcolumns\(\)|\bnil\b|columnsForOp\(`)
 
 	dir := cmdDir()
 	entries, err := os.ReadDir(dir)

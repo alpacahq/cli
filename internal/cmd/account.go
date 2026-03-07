@@ -22,7 +22,7 @@ var accountGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, account)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), columnsForOp(api.GetAccountOp), account)
 	},
 }
 
@@ -36,7 +36,7 @@ var accountConfigGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, config)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), columnsForOp(api.GetAccountConfigOp), config)
 	},
 }
 
@@ -46,21 +46,8 @@ var accountConfigSetCmd = &cobra.Command{
 	Example: `  alpaca account config set --no-shorting true
   alpaca account config set --dtbp-check entry`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		body := &api.AccountConfigurations{}
-		p := cmdutil.NewPatchHelper(cmd)
-
-		p.Str("dtbp-check", &body.DTBPCheck)
-		p.Bool("no-shorting", &body.NoShorting)
-		p.Str("pdt-check", &body.PDTCheck)
-		p.Bool("fractional-trading", &body.FractionalTrading)
-		p.Bool("suspend-trade", &body.SuspendTrade)
-		p.Str("trade-confirm-email", &body.TradeConfirmEmail)
-		p.Str("max-margin-multiplier", &body.MaxMarginMultiplier)
-		p.Int("max-options-trading-level", &body.MaxOptionsTradingLevel)
-		p.Bool("disable-overnight-trading", &body.DisableOvernightTrading)
-		p.Bool("ptp-no-exception-entry", &body.PtpNoExceptionEntry)
-
-		if !p.AnyChanged() {
+		body, changed := accountConfigurationsBodyFromFlags(cmd)
+		if !changed {
 			return cmd.Help()
 		}
 
@@ -68,7 +55,7 @@ var accountConfigSetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, config)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), columnsForOp(api.PatchAccountConfigOp), config)
 	},
 }
 

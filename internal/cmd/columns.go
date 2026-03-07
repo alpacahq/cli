@@ -2,9 +2,26 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/output"
 )
+
+// columnsForOp creates columns from the operation's response schema.
+// Field ordering follows the schema definition rather than alphabetical
+// sort (which columnsFromData uses), giving deterministic output.
+func columnsForOp(op api.Op) []output.Column {
+	fields := op.ResponseFields()
+	if len(fields) == 0 {
+		return nil
+	}
+	cols := make([]output.Column, len(fields))
+	for i, f := range fields {
+		cols[i] = col(f.Name, strings.ToUpper(strings.ReplaceAll(f.Name, "_", " ")))
+	}
+	return cols
+}
 
 // col creates a column with an explicit header.
 // Timestamp formatting is auto-detected from the field name.

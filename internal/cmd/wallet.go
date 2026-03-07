@@ -22,7 +22,7 @@ var walletListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), nil, wallet)
+		return output.Render(cmd.OutOrStdout(), getOutput(), columnsForOp(api.ListCryptoFundingWalletsOp), wallet)
 	},
 }
 
@@ -41,7 +41,7 @@ var walletTransferListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), nil, transfers)
+		return output.Render(cmd.OutOrStdout(), getOutput(), columnsForOp(api.ListCryptoFundingTransfersOp), transfers)
 	},
 }
 
@@ -54,7 +54,7 @@ var walletTransferGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, transfer)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), columnsForOp(api.GetCryptoFundingTransferOp), transfer)
 	},
 }
 
@@ -75,7 +75,7 @@ var walletTransferCreateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, transfer)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), columnsForOp(api.CreateCryptoTransferForAccountOp), transfer)
 	},
 }
 
@@ -94,7 +94,7 @@ var walletTransferEstimateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, resp)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), columnsForOp(api.GetCryptoTransferEstimateOp), resp)
 	},
 }
 
@@ -113,7 +113,7 @@ var walletWhitelistListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), nil, addrs)
+		return output.Render(cmd.OutOrStdout(), getOutput(), columnsForOp(api.ListWhitelistedAddressOp), addrs)
 	},
 }
 
@@ -133,7 +133,7 @@ var walletWhitelistAddCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), nil, addr)
+		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), columnsForOp(api.CreateWhitelistedAddressOp), addr)
 	},
 }
 

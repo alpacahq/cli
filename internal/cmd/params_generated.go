@@ -1270,3 +1270,40 @@ func usTreasuriesParamsFromFlags(cmd *cobra.Command) *api.UsTreasuriesParams {
 	}
 	return p
 }
+
+func accountConfigurationsBodyFromFlags(cmd *cobra.Command) (*api.AccountConfigurations, bool) {
+	body := &api.AccountConfigurations{}
+	p := cmdutil.NewPatchHelper(cmd)
+	p.Bool("disable-overnight-trading", &body.DisableOvernightTrading)
+	p.Str("dtbp-check", &body.DTBPCheck)
+	p.Bool("fractional-trading", &body.FractionalTrading)
+	p.Str("max-margin-multiplier", &body.MaxMarginMultiplier)
+	p.Int("max-options-trading-level", &body.MaxOptionsTradingLevel)
+	p.Bool("no-shorting", &body.NoShorting)
+	p.Str("pdt-check", &body.PDTCheck)
+	p.Bool("ptp-no-exception-entry", &body.PtpNoExceptionEntry)
+	p.Bool("suspend-trade", &body.SuspendTrade)
+	p.Str("trade-confirm-email", &body.TradeConfirmEmail)
+	return body, p.AnyChanged()
+}
+
+func patchOrderRequestBodyFromFlags(cmd *cobra.Command) (*api.PatchOrderRequest, bool) {
+	body := &api.PatchOrderRequest{}
+	p := cmdutil.NewPatchHelper(cmd)
+	p.Str("client-order-id", &body.ClientOrderID)
+	p.Str("limit-price", &body.LimitPrice)
+	p.Str("qty", &body.Qty)
+	p.Str("stop-price", &body.StopPrice)
+	p.Str("trail", &body.Trail)
+	if cmdutil.Changed(cmd, "time-in-force") {
+		body.TimeInForce = api.TimeInForce(cmdutil.Str(cmd, "time-in-force"))
+	}
+	return body, p.AnyChanged() || cmdutil.Changed(cmd, "time-in-force")
+}
+
+func updateWatchlistRequestBodyFromFlags(cmd *cobra.Command) (*api.UpdateWatchlistRequest, bool) {
+	body := &api.UpdateWatchlistRequest{}
+	p := cmdutil.NewPatchHelper(cmd)
+	p.Str("name", &body.Name)
+	return body, p.AnyChanged()
+}

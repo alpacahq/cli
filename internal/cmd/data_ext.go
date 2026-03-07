@@ -25,8 +25,7 @@ var dataForexRatesCmd = &cobra.Command{
 	Example: `  alpaca data forex rates --currency-pairs EUR/USD,GBP/USD --start 2025-01-01
   alpaca data forex rates --currency-pairs USD/JPY --timeframe 1Hour`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		_, err := cmdutil.RequireStr(cmd, "currency-pairs")
-		if err != nil {
+		if err := cmdutil.RequireAll(cmd, api.RatesOp.RequiredFlags()...); err != nil {
 			return err
 		}
 
@@ -44,8 +43,7 @@ var dataForexLatestCmd = &cobra.Command{
 	Short:   api.LatestRatesOp.Summary,
 	Example: `  alpaca data forex latest --currency-pairs EUR/USD,GBP/USD`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		_, err := cmdutil.RequireStr(cmd, "currency-pairs")
-		if err != nil {
+		if err := cmdutil.RequireAll(cmd, api.LatestRatesOp.RequiredFlags()...); err != nil {
 			return err
 		}
 
@@ -65,8 +63,7 @@ var dataCryptoOrderbookCmd = &cobra.Command{
 	Short:   api.CryptoLatestOrderbooksOp.Summary,
 	Example: `  alpaca data crypto-orderbook --symbols BTC/USD,ETH/USD`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		_, err := cmdutil.RequireStr(cmd, "symbols")
-		if err != nil {
+		if err := cmdutil.RequireAll(cmd, api.CryptoLatestOrderbooksOp.RequiredFlags()...); err != nil {
 			return err
 		}
 
@@ -87,8 +84,7 @@ var dataAuctionsCmd = &cobra.Command{
 	Example: `  alpaca data auctions --symbols AAPL --start 2025-01-01
   alpaca data auctions --symbols AAPL,MSFT --limit 10`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		_, err := cmdutil.RequireStr(cmd, "symbols")
-		if err != nil {
+		if err := cmdutil.RequireAll(cmd, api.StockAuctionsOp.RequiredFlags()...); err != nil {
 			return err
 		}
 
@@ -124,8 +120,7 @@ var dataFixedIncomeCmd = &cobra.Command{
 	Short:   api.FixedIncomeLatestPricesOp.Summary,
 	Example: `  alpaca data fixed-income --isins 912797KR1,912797LB5`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		_, err := cmdutil.RequireStr(cmd, "isins")
-		if err != nil {
+		if err := cmdutil.RequireAll(cmd, api.FixedIncomeLatestPricesOp.RequiredFlags()...); err != nil {
 			return err
 		}
 
