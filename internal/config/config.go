@@ -9,6 +9,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const (
+	EnvLive  = "live"
+	EnvPaper = "paper"
+)
+
 type Config struct {
 	DefaultProfile string `yaml:"default_profile"`
 	Output         string `yaml:"output"`
@@ -49,7 +54,7 @@ func Dir() string {
 
 func Load(profileFlag, outputFlag string) (*Resolved, error) {
 	cfg := loadGlobalConfig()
-	profileName := resolve(profileFlag, os.Getenv("ALPACA_PROFILE"), cfg.DefaultProfile, "paper")
+	profileName := resolve(profileFlag, os.Getenv("ALPACA_PROFILE"), cfg.DefaultProfile, EnvPaper)
 	profile := loadProfile(profileName)
 
 	r := &Resolved{
@@ -105,9 +110,9 @@ func (r *Resolved) Validate() error {
 // Empty string defaults to the paper trading URL.
 func ResolveBaseURL(value string) string {
 	switch strings.ToLower(strings.TrimSpace(value)) {
-	case "live":
+	case EnvLive:
 		return "https://api.alpaca.markets"
-	case "", "paper":
+	case "", EnvPaper:
 		return "https://paper-api.alpaca.markets"
 	default:
 		return strings.TrimRight(value, "/")

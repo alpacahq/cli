@@ -18,7 +18,7 @@ import (
 	"golang.org/x/term"
 )
 
-const defaultProfileName = "paper"
+const defaultProfileName = config.EnvPaper
 
 var profileCmd = &cobra.Command{
 	Use:   "profile",
@@ -60,9 +60,9 @@ func loginWithOAuth(cmd *cobra.Command) error {
 
 	env := defaultProfileName
 	if cmdutil.Bool(cmd, "live") {
-		env = "live"
+		env = config.EnvLive
 		if name == defaultProfileName {
-			name = "live"
+			name = config.EnvLive
 		}
 	}
 
@@ -431,7 +431,7 @@ func init() {
 
 func resolveBaseURLFlags(cmd *cobra.Command) (string, error) {
 	if cmdutil.Bool(cmd, "live") {
-		return config.ResolveBaseURL("live"), nil
+		return config.ResolveBaseURL(config.EnvLive), nil
 	}
 	if u := cmdutil.Str(cmd, "base-url"); u != "" {
 		return config.ResolveBaseURL(u), nil
