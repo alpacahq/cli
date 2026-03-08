@@ -106,7 +106,7 @@ var dataTradesCmd = &cobra.Command{
 
 var dataSnapshotCmd = fetchCmd("snapshot <symbol>", api.StockSnapshotSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.Snapshot(args[0], stockSnapshotSingleParamsFromFlags(cmd).Values())
-}, withJSON, func(c *cobra.Command) {
+}, jsonOnly, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
 	c.Long = "Returns the latest snapshot for a symbol. Output is always JSON due to complex nested structure."
 	c.Example = `  alpaca data snapshot AAPL

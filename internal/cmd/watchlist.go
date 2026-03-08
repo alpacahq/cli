@@ -35,7 +35,7 @@ var watchlistCreateCmd = fetchCmd("create <name>", api.PostWatchlistOp, func(cmd
 		body.Symbols = strings.Split(symbols, ",")
 	}
 	return tradingClient.PostWatchlist(body)
-}, withFlags(&cmdutil.FlagOpts{Exclude: map[string]bool{"name": true}}),
+}, flagOpts(&cmdutil.FlagOpts{Exclude: map[string]bool{"name": true}}),
 	func(c *cobra.Command) {
 		c.Args = cobra.ExactArgs(1)
 		c.Example = `  alpaca watchlist create "Tech Stocks" --symbols AAPL,MSFT,GOOG`
@@ -79,7 +79,7 @@ var watchlistRemoveCmd = actionCmd("remove <id> <symbol>", api.RemoveAssetFromWa
 
 var watchlistGetByNameCmd = fetchCmd("get-by-name <name>", api.GetWatchlistByNameOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return tradingClient.GetWatchlistByName(&api.GetWatchlistByNameParams{Name: args[0]})
-}, withFlags(&cmdutil.FlagOpts{Exclude: map[string]bool{"name": true}}),
+}, flagOpts(&cmdutil.FlagOpts{Exclude: map[string]bool{"name": true}}),
 	func(c *cobra.Command) {
 		c.Args = cobra.ExactArgs(1)
 		c.Example = `  alpaca watchlist get-by-name "Tech Stocks"`
@@ -88,7 +88,7 @@ var watchlistGetByNameCmd = fetchCmd("get-by-name <name>", api.GetWatchlistByNam
 var watchlistDeleteByNameCmd = actionCmd("delete-by-name <name>", api.DeleteWatchlistByNameOp, "Watchlist deleted.", func(cmd *cobra.Command, args []string) error {
 	_, err := tradingClient.DeleteWatchlistByName(&api.DeleteWatchlistByNameParams{Name: args[0]})
 	return err
-}, withFlags(&cmdutil.FlagOpts{Exclude: map[string]bool{"name": true}}),
+}, flagOpts(&cmdutil.FlagOpts{Exclude: map[string]bool{"name": true}}),
 	func(c *cobra.Command) {
 		c.Args = cobra.ExactArgs(1)
 		c.Example = `  alpaca watchlist delete-by-name "Tech Stocks"`
@@ -106,7 +106,7 @@ var watchlistUpdateByNameCmd = fetchCmd("update-by-name <name>", api.UpdateWatch
 	return tradingClient.UpdateWatchlistByName(
 		&api.UpdateWatchlistByNameParams{Name: args[0]}, body,
 	)
-}, withFlags(&cmdutil.FlagOpts{Exclude: map[string]bool{"name": true}}),
+}, flagOpts(&cmdutil.FlagOpts{Exclude: map[string]bool{"name": true}}),
 	func(c *cobra.Command) {
 		c.Flags().String("new-name", "", "New name for the watchlist")
 		c.Args = cobra.ExactArgs(1)
@@ -118,7 +118,7 @@ var watchlistAddByNameCmd = fetchCmd("add-by-name <name> <symbol>", api.AddAsset
 		&api.AddAssetToWatchlistByNameParams{Name: args[0]},
 		&api.AddAssetToWatchlistByNameRequest{Symbol: args[1]},
 	)
-}, withFlags(&cmdutil.FlagOpts{Exclude: map[string]bool{"name": true, "symbol": true}}),
+}, flagOpts(&cmdutil.FlagOpts{Exclude: map[string]bool{"name": true, "symbol": true}}),
 	func(c *cobra.Command) {
 		c.Args = cobra.ExactArgs(2)
 		c.Example = `  alpaca watchlist add-by-name "Tech Stocks" NVDA`

@@ -18,15 +18,15 @@ var (
 	cmdFlagOpts = map[*cobra.Command]*cmdutil.FlagOpts{}
 )
 
-// withJSON marks a command as JSON-only output. Use for responses with complex
+// jsonOnly marks a command as JSON-only output. Use for responses with complex
 // nested or map-of-symbols structures where tabular rendering doesn't make sense.
-func withJSON(c *cobra.Command) {
+func jsonOnly(c *cobra.Command) {
 	cmdJSON[c] = true
 }
 
-// withFlags sets custom FlagOpts for OAS flag registration. Use to exclude
+// flagOpts sets custom FlagOpts for OAS flag registration. Use to exclude
 // params that are positional args, or to override defaults shown in --help.
-func withFlags(opts *cmdutil.FlagOpts) func(*cobra.Command) {
+func flagOpts(opts *cmdutil.FlagOpts) func(*cobra.Command) {
 	return func(c *cobra.Command) {
 		cmdFlagOpts[c] = opts
 	}
@@ -38,8 +38,8 @@ func withFlags(opts *cmdutil.FlagOpts) func(*cobra.Command) {
 // on the command (excluded positional-arg params are skipped).
 //
 // OAS flags are registered after configure closures run, using FlagOpts
-// from withFlags (if any). Configure closures should NOT call RegisterFlags
-// for OAS flags — use withFlags instead.
+// from flagOpts (if any). Configure closures should NOT call RegisterFlags
+// for OAS flags — use flagOpts instead.
 func fetchCmd(use string, op api.Op, fetch func(cmd *cobra.Command, args []string) (any, error), configure ...func(*cobra.Command)) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   use,
@@ -101,7 +101,7 @@ func actionCmd(use string, op api.Op, msg string, do func(cmd *cobra.Command, ar
 
 // registeredRequired returns only those RequiredFlags from the op that are
 // actually registered on the command. Params promoted to positional args
-// (excluded via withFlags) are silently skipped.
+// (excluded via flagOpts) are silently skipped.
 func registeredRequired(cmd *cobra.Command, op api.Op) []string {
 	all := op.RequiredFlags()
 	if len(all) == 0 {

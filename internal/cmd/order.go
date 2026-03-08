@@ -137,7 +137,7 @@ var orderCancelAllCmd = fetchCmd("cancel-all", api.DeleteAllOrdersOp, func(cmd *
 var orderReplaceCmd = fetchCmd("replace <order-id>", api.PatchOrderByOrderIDOp, func(cmd *cobra.Command, args []string) (any, error) {
 	body, _ := patchOrderRequestBodyFromFlags(cmd)
 	return tradingClient.PatchOrderByOrderID(args[0], body)
-}, withFlags(&cmdutil.FlagOpts{Exclude: map[string]bool{"advanced_instructions": true}}),
+}, flagOpts(&cmdutil.FlagOpts{Exclude: map[string]bool{"advanced_instructions": true}}),
 	func(c *cobra.Command) {
 		c.Args = cobra.ExactArgs(1)
 		c.Example = `  alpaca order replace <order-id> --qty 20 --limit-price 190.00`

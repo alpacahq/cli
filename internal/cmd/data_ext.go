@@ -22,7 +22,7 @@ var dataForexRatesCmd = fetchCmd("rates", api.RatesOp, func(cmd *cobra.Command, 
 		return nil, err
 	}
 	return resp.Rates, nil
-}, withJSON, func(c *cobra.Command) {
+}, jsonOnly, func(c *cobra.Command) {
 	c.Example = `  alpaca data forex rates --currency-pairs EUR/USD,GBP/USD --start 2025-01-01
   alpaca data forex rates --currency-pairs USD/JPY --timeframe 1Hour`
 })
@@ -33,7 +33,7 @@ var dataForexLatestCmd = fetchCmd("latest", api.LatestRatesOp, func(cmd *cobra.C
 		return nil, err
 	}
 	return resp.Rates, nil
-}, withJSON, func(c *cobra.Command) {
+}, jsonOnly, func(c *cobra.Command) {
 	c.Example = `  alpaca data forex latest --currency-pairs EUR/USD,GBP/USD`
 })
 
@@ -45,7 +45,7 @@ var dataCryptoOrderbookCmd = fetchCmd("crypto-orderbook", api.CryptoLatestOrderb
 		return nil, err
 	}
 	return resp.Orderbooks, nil
-}, withJSON, func(c *cobra.Command) {
+}, jsonOnly, func(c *cobra.Command) {
 	c.Example = `  alpaca data crypto-orderbook --symbols BTC/USD,ETH/USD`
 })
 
@@ -57,7 +57,7 @@ var dataAuctionsCmd = fetchCmd("auctions", api.StockAuctionsOp, func(cmd *cobra.
 		return nil, err
 	}
 	return resp.Auctions, nil
-}, withJSON, func(c *cobra.Command) {
+}, jsonOnly, func(c *cobra.Command) {
 	c.Example = `  alpaca data auctions --symbols AAPL --start 2025-01-01
   alpaca data auctions --symbols AAPL,MSFT --limit 10`
 })
@@ -66,7 +66,7 @@ var dataAuctionsCmd = fetchCmd("auctions", api.StockAuctionsOp, func(cmd *cobra.
 
 var dataCorporateActionsCmd = fetchCmd("corporate-actions", api.CorporateActionsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CorporateActions(corporateActionsParamsFromFlags(cmd))
-}, withJSON, func(c *cobra.Command) {
+}, jsonOnly, func(c *cobra.Command) {
 	c.Example = `  alpaca data corporate-actions --symbols AAPL --types forward_split --start 2025-01-01`
 })
 
@@ -78,7 +78,7 @@ var dataFixedIncomeCmd = fetchCmd("fixed-income", api.FixedIncomeLatestPricesOp,
 		return nil, err
 	}
 	return resp.Prices, nil
-}, withJSON, func(c *cobra.Command) {
+}, jsonOnly, func(c *cobra.Command) {
 	c.Example = `  alpaca data fixed-income --isins 912797KR1,912797LB5`
 })
 
@@ -86,7 +86,7 @@ var dataFixedIncomeCmd = fetchCmd("fixed-income", api.FixedIncomeLatestPricesOp,
 
 var dataLogoCmd = fetchCmd("logo <symbol>", api.LogosOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.Logos(args[0], logosParamsFromFlags(cmd))
-}, withJSON, func(c *cobra.Command) {
+}, jsonOnly, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
 	c.Example = `  alpaca data logo AAPL`
 })
@@ -100,13 +100,13 @@ var dataMetaCmd = &cobra.Command{
 
 var dataMetaExchangesCmd = fetchCmd("exchanges", api.StockMetaExchangesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.StockMetaExchanges()
-}, withJSON, func(c *cobra.Command) {
+}, jsonOnly, func(c *cobra.Command) {
 	c.Example = `  alpaca data meta exchanges`
 })
 
 var dataMetaConditionsCmd = fetchCmd("conditions <ticktype>", api.StockMetaConditionsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.StockMetaConditions(args[0], stockMetaConditionsParamsFromFlags(cmd))
-}, withJSON, func(c *cobra.Command) {
+}, jsonOnly, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
 	c.Example = `  alpaca data meta conditions trade`
 })

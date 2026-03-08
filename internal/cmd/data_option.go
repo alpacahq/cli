@@ -21,7 +21,7 @@ var dataOptionBarsCmd = fetchCmd("bars", api.OptionBarsOp, func(cmd *cobra.Comma
 		return nil, err
 	}
 	return resp.Bars, nil
-}, withJSON, withFlags(&cmdutil.FlagOpts{Defaults: map[string]string{"timeframe": "1Day"}}),
+}, jsonOnly, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"timeframe": "1Day"}}),
 	func(c *cobra.Command) {
 		c.Example = `  alpaca data option bars --symbols AAPL250620C00200000 --start 2025-01-01
   alpaca data option bars --symbols AAPL250620C00200000,AAPL250620P00200000 --timeframe 1Day`
@@ -33,7 +33,7 @@ var dataOptionTradesCmd = fetchCmd("trades", api.OptionTradesOp, func(cmd *cobra
 		return nil, err
 	}
 	return resp.Trades, nil
-}, withJSON, func(c *cobra.Command) {
+}, jsonOnly, func(c *cobra.Command) {
 	c.Example = `  alpaca data option trades --symbols AAPL250620C00200000 --start 2025-01-01`
 })
 
@@ -43,7 +43,7 @@ var dataOptionSnapshotCmd = fetchCmd("snapshot", api.OptionSnapshotsOp, func(cmd
 		return nil, err
 	}
 	return resp.Snapshots, nil
-}, withJSON, func(c *cobra.Command) {
+}, jsonOnly, func(c *cobra.Command) {
 	c.Example = `  alpaca data option snapshot --symbols AAPL250620C00200000
   alpaca data option snapshot --symbols AAPL250620C00200000,AAPL250620P00200000`
 })
@@ -54,7 +54,7 @@ var dataOptionChainCmd = fetchCmd("chain <underlying>", api.OptionChainOp, func(
 		return nil, err
 	}
 	return resp.Snapshots, nil
-}, withJSON, func(c *cobra.Command) {
+}, jsonOnly, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
 	c.Example = `  alpaca data option chain AAPL
   alpaca data option chain SPY --expiration-date 2025-06-20 --type call`
@@ -66,7 +66,7 @@ var dataOptionLatestQuotesCmd = fetchCmd("latest-quotes", api.OptionLatestQuotes
 		return nil, err
 	}
 	return resp.Quotes, nil
-}, withJSON, func(c *cobra.Command) {
+}, jsonOnly, func(c *cobra.Command) {
 	c.Example = `  alpaca data option latest-quotes --symbols AAPL250620C00200000`
 })
 
@@ -76,19 +76,19 @@ var dataOptionLatestTradesCmd = fetchCmd("latest-trades", api.OptionLatestTrades
 		return nil, err
 	}
 	return resp.Trades, nil
-}, withJSON, func(c *cobra.Command) {
+}, jsonOnly, func(c *cobra.Command) {
 	c.Example = `  alpaca data option latest-trades --symbols AAPL250620C00200000`
 })
 
 var dataOptionExchangesCmd = fetchCmd("exchanges", api.OptionMetaExchangesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.OptionMetaExchanges()
-}, withJSON, func(c *cobra.Command) {
+}, jsonOnly, func(c *cobra.Command) {
 	c.Example = `  alpaca data option exchanges`
 })
 
 var dataOptionConditionsCmd = fetchCmd("conditions <ticktype>", api.OptionMetaConditionsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.OptionMetaConditions(args[0])
-}, withJSON, func(c *cobra.Command) {
+}, jsonOnly, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
 	c.Example = `  alpaca data option conditions trade`
 })

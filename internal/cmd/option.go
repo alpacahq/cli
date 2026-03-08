@@ -17,7 +17,7 @@ var optionContractsCmd = fetchCmd("contracts <underlying>", api.GetOptionsContra
 	params := getOptionsContractsParamsFromFlags(cmd)
 	params.UnderlyingSymbols = args[0]
 	return tradingClient.GetOptionsContracts(params)
-}, withFlags(&cmdutil.FlagOpts{Exclude: map[string]bool{"underlying_symbols": true}}),
+}, flagOpts(&cmdutil.FlagOpts{Exclude: map[string]bool{"underlying_symbols": true}}),
 	func(c *cobra.Command) {
 		c.Args = cobra.ExactArgs(1)
 		c.Long = "List option contracts for an underlying symbol. For market data (greeks, pricing), use `data option chain`."
