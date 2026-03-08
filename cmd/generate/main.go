@@ -1631,6 +1631,13 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 	}
 	fmt.Fprintf(&buf, "}\n\n")
 
+	fmt.Fprintf(&buf, "// AllOps lists every generated Op for iteration in tests and tooling.\n")
+	fmt.Fprintf(&buf, "var AllOps = []Op{\n")
+	for _, op := range ops {
+		fmt.Fprintf(&buf, "\t%sOp,\n", op.goName)
+	}
+	fmt.Fprintf(&buf, "}\n")
+
 	return buf.String()
 }
 

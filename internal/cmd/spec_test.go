@@ -276,83 +276,33 @@ func TestValidateMethods(t *testing.T) {
 	})
 }
 
-// TestNoEmptyFlagDescriptions scans the generated descriptions.go for all
-// FlagDef variables, then verifies every flag used by command source has
-// a non-empty Description and valid Name. No manual map needed — new flag
-// sets are discovered automatically.
-func TestNoEmptyFlagDescriptions(t *testing.T) {
-	root := projectRoot()
-	descData, err := os.ReadFile(filepath.Join(root, "internal", "api", "descriptions.go"))
-	if err != nil {
-		t.Fatal(err)
+// TestAllOpsValid iterates every generated Op via api.AllOps and validates
+// summaries, flag descriptions, and kebab-case names. Replaces the old
+// TestNoEmptyFlagDescriptions (which matched a removed pattern) and
+// TestTypedDescriptionsCompile (which required a hand-curated map).
+func TestAllOpsValid(t *testing.T) {
+	if len(api.AllOps) == 0 {
+		t.Fatal("api.AllOps is empty — generator may not have run")
 	}
-
-	// Discover all generated flag set variables: var XxxFlags = []FlagDef{
-	flagSetDecl := regexp.MustCompile(`var (\w+Flags) = \[\]FlagDef\{`)
-	generatedSets := map[string]bool{}
-	for _, m := range flagSetDecl.FindAllStringSubmatch(string(descData), -1) {
-		generatedSets[m[1]] = true
-	}
-
-	// Find which flag sets are referenced in command source
-	flagRef := regexp.MustCompile(`api\.(\w+Flags)`)
-	dir := cmdDir()
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	referenced := map[string]bool{}
-	for _, e := range entries {
-		if e.IsDir() || !strings.HasSuffix(e.Name(), ".go") || strings.HasSuffix(e.Name(), "_test.go") {
+	for _, op := range api.AllOps {
+		summary := op.Summary()
+		if summary == "" {
+			t.Errorf("op has empty Summary()")
 			continue
 		}
-		data, err := os.ReadFile(filepath.Join(dir, e.Name()))
-		if err != nil {
-			t.Fatal(err)
-		}
-		for _, m := range flagRef.FindAllStringSubmatch(string(data), -1) {
-			referenced[m[1]] = true
-		}
-	}
-
-	// Verify every referenced flag set exists in generated code
-	for name := range referenced {
-		if !generatedSets[name] {
-			t.Errorf("command source references api.%s but it doesn't exist in descriptions.go", name)
-		}
-	}
-
-	// Structurally scan each FlagDef in descriptions.go for empty descriptions/names
-	flagEntry := regexp.MustCompile(`\{Name: "([^"]*)"[^}]*Description: "([^"]*)"`)
-	src := string(descData)
-	lines := strings.Split(src, "\n")
-	var currentSet string
-	setDecl := regexp.MustCompile(`^var (\w+Flags) = \[\]FlagDef\{`)
-	anyVarOrType := regexp.MustCompile(`^(var|type) `)
-	for _, line := range lines {
-		if m := setDecl.FindStringSubmatch(line); m != nil {
-			currentSet = m[1]
-			continue
-		}
-		if anyVarOrType.MatchString(strings.TrimSpace(line)) {
-			currentSet = ""
-			continue
-		}
-		if currentSet == "" || !referenced[currentSet] {
-			continue
-		}
-		if m := flagEntry.FindStringSubmatch(line); m != nil {
-			name, desc := m[1], m[2]
-			if name == "" {
-				t.Errorf("%s: FlagDef has empty Name", currentSet)
+		t.Run(summary, func(t *testing.T) {
+			for _, f := range op.Flags() {
+				if f.Name == "" {
+					t.Error("FlagDef has empty Name")
+				}
+				if f.Description == "" {
+					t.Errorf("flag %q has empty Description", f.Name)
+				}
+				if strings.Contains(f.Name, "_") {
+					t.Errorf("flag %q contains underscore (should be kebab-case)", f.Name)
+				}
 			}
-			if desc == "" {
-				t.Errorf("%s: flag %q has empty description", currentSet, name)
-			}
-			if strings.Contains(name, "_") {
-				t.Errorf("%s: flag %q contains underscore (should be kebab-case)", currentSet, name)
-			}
-		}
+		})
 	}
 }
 
@@ -388,95 +338,6 @@ func TestRenderCallsUseColumnDefinitions(t *testing.T) {
 				t.Errorf("%s:%d: output.Render/PrintSingle call missing column definitions or nil:\n  %s",
 					e.Name(), i+1, strings.TrimSpace(line))
 			}
-		}
-	}
-}
-
-// TestTypedDescriptionsCompile verifies that the typed description structs
-// referenced in command source code have non-empty Summary fields.
-// Field references are caught at compile time; this test catches empty values.
-func TestTypedDescriptionsCompile(t *testing.T) {
-	opRef := regexp.MustCompile(`api\.(\w+Op)\.Summary\(\)`)
-
-	dir := cmdDir()
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	summaries := map[string]string{
-		"PostOrderOp":                            api.PostOrderOp.Summary(),
-		"GetAllOrdersOp":                         api.GetAllOrdersOp.Summary(),
-		"GetOrderByOrderIDOp":                    api.GetOrderByOrderIDOp.Summary(),
-		"DeleteOrderByOrderIDOp":                 api.DeleteOrderByOrderIDOp.Summary(),
-		"DeleteAllOrdersOp":                      api.DeleteAllOrdersOp.Summary(),
-		"PatchOrderByOrderIDOp":                  api.PatchOrderByOrderIDOp.Summary(),
-		"GetAllOpenPositionsOp":                  api.GetAllOpenPositionsOp.Summary(),
-		"GetOpenPositionOp":                      api.GetOpenPositionOp.Summary(),
-		"DeleteOpenPositionOp":                   api.DeleteOpenPositionOp.Summary(),
-		"DeleteAllOpenPositionsOp":               api.DeleteAllOpenPositionsOp.Summary(),
-		"GetAccountOp":                           api.GetAccountOp.Summary(),
-		"GetAccountConfigOp":                     api.GetAccountConfigOp.Summary(),
-		"PatchAccountConfigOp":                   api.PatchAccountConfigOp.Summary(),
-		"LegacyClockOp":                          api.LegacyClockOp.Summary(),
-		"LegacyCalendarOp":                       api.LegacyCalendarOp.Summary(),
-		"GetAccountPortfolioHistoryOp":           api.GetAccountPortfolioHistoryOp.Summary(),
-		"NewsOp":                                 api.NewsOp.Summary(),
-		"GetAccountActivitiesOp":                 api.GetAccountActivitiesOp.Summary(),
-		"MostActivesOp":                          api.MostActivesOp.Summary(),
-		"MoversOp":                               api.MoversOp.Summary(),
-		"GetV2AssetsOp":                          api.GetV2AssetsOp.Summary(),
-		"GetV2AssetsSymbolOrAssetIDOp":           api.GetV2AssetsSymbolOrAssetIDOp.Summary(),
-		"UsTreasuriesOp":                         api.UsTreasuriesOp.Summary(),
-		"UsCorporatesOp":                         api.UsCorporatesOp.Summary(),
-		"GetV2CorporateActionsAnnouncementsOp":   api.GetV2CorporateActionsAnnouncementsOp.Summary(),
-		"GetV2CorporateActionsAnnouncementsIDOp": api.GetV2CorporateActionsAnnouncementsIDOp.Summary(),
-		"GetOptionsContractsOp":                  api.GetOptionsContractsOp.Summary(),
-		"GetOptionContractSymbolOrIDOp":          api.GetOptionContractSymbolOrIDOp.Summary(),
-		"OptionExerciseOp":                       api.OptionExerciseOp.Summary(),
-		"OptionDoNotExerciseOp":                  api.OptionDoNotExerciseOp.Summary(),
-		"ListCryptoFundingWalletsOp":             api.ListCryptoFundingWalletsOp.Summary(),
-		"ListCryptoFundingTransfersOp":           api.ListCryptoFundingTransfersOp.Summary(),
-		"GetCryptoFundingTransferOp":             api.GetCryptoFundingTransferOp.Summary(),
-		"CreateCryptoTransferForAccountOp":       api.CreateCryptoTransferForAccountOp.Summary(),
-		"ListWhitelistedAddressOp":               api.ListWhitelistedAddressOp.Summary(),
-		"CreateWhitelistedAddressOp":             api.CreateWhitelistedAddressOp.Summary(),
-		"DeleteWhitelistedAddressOp":             api.DeleteWhitelistedAddressOp.Summary(),
-		"RatesOp":                                api.RatesOp.Summary(),
-		"LatestRatesOp":                          api.LatestRatesOp.Summary(),
-		"CryptoLatestOrderbooksOp":               api.CryptoLatestOrderbooksOp.Summary(),
-		"StockAuctionsOp":                        api.StockAuctionsOp.Summary(),
-		"CorporateActionsOp":                     api.CorporateActionsOp.Summary(),
-		"FixedIncomeLatestPricesOp":              api.FixedIncomeLatestPricesOp.Summary(),
-		"OptionBarsOp":                           api.OptionBarsOp.Summary(),
-		"OptionTradesOp":                         api.OptionTradesOp.Summary(),
-		"OptionSnapshotsOp":                      api.OptionSnapshotsOp.Summary(),
-		"OptionChainOp":                          api.OptionChainOp.Summary(),
-		"OptionLatestQuotesOp":                   api.OptionLatestQuotesOp.Summary(),
-		"OptionLatestTradesOp":                   api.OptionLatestTradesOp.Summary(),
-		"GetAccountActivitiesByActivityTypeOp":   api.GetAccountActivitiesByActivityTypeOp.Summary(),
-	}
-
-	referenced := map[string]bool{}
-	for _, e := range entries {
-		if e.IsDir() || !strings.HasSuffix(e.Name(), ".go") || strings.HasSuffix(e.Name(), "_test.go") {
-			continue
-		}
-		data, err := os.ReadFile(filepath.Join(dir, e.Name()))
-		if err != nil {
-			t.Fatal(err)
-		}
-		for _, m := range opRef.FindAllStringSubmatch(string(data), -1) {
-			referenced[m[1]] = true
-		}
-	}
-
-	for name, summary := range summaries {
-		if !referenced[name] {
-			continue
-		}
-		if summary == "" {
-			t.Errorf("%s.Summary is empty", name)
 		}
 	}
 }
