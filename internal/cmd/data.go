@@ -212,25 +212,7 @@ func init() {
 }
 
 func extractBars(data json.RawMessage, symbol string) json.RawMessage {
-	var m map[string]json.RawMessage
-	if err := json.Unmarshal(data, &m); err != nil {
-		verboseLog("extractBars: unmarshal top-level: %v", err)
-		return data
-	}
-
-	if bars, ok := m["bars"]; ok {
-		var multi map[string]json.RawMessage
-		if err := json.Unmarshal(bars, &multi); err == nil {
-			if symBars, ok := multi[symbol]; ok {
-				return symBars
-			}
-		} else {
-			verboseLog("extractBars: unmarshal bars: %v", err)
-		}
-		return bars
-	}
-
-	return data
+	return extractArray(data, symbol, "bars")
 }
 
 func extractArray(data json.RawMessage, symbol, key string) json.RawMessage {

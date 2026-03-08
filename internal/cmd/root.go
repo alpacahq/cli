@@ -143,9 +143,9 @@ var rootCmd = &cobra.Command{
 		var err error
 		outputOverride := ""
 		if jsonFlag {
-			outputOverride = output.FormatJSON
+			outputOverride = string(output.FormatJSON)
 		} else if csvFlag {
-			outputOverride = output.FormatCSV
+			outputOverride = string(output.FormatCSV)
 		}
 		cfg, err = config.Load(profileFlag, outputOverride)
 		if err != nil {
@@ -190,43 +190,16 @@ func init() {
 
 	rootCmd.AddGroup(tradingGroup, accountGroup, utilGroup)
 
-	orderCmd.GroupID = tradingGroup.ID
-	positionCmd.GroupID = tradingGroup.ID
-	optionCmd.GroupID = tradingGroup.ID
-	clockCmd.GroupID = tradingGroup.ID
-	calendarCmd.GroupID = tradingGroup.ID
-	dataCmd.GroupID = tradingGroup.ID
+	addGroup(rootCmd, tradingGroup.ID, orderCmd, positionCmd, optionCmd, clockCmd, calendarCmd, dataCmd)
+	addGroup(rootCmd, accountGroup.ID, accountCmd, assetCmd, corporateActionCmd, watchlistCmd, walletCmd)
+	addGroup(rootCmd, utilGroup.ID, profileCmd, apiCmd, setupCmd, updateCmd, versionCmd, doctorCmd)
+}
 
-	accountCmd.GroupID = accountGroup.ID
-	assetCmd.GroupID = accountGroup.ID
-	corporateActionCmd.GroupID = accountGroup.ID
-	watchlistCmd.GroupID = accountGroup.ID
-	walletCmd.GroupID = accountGroup.ID
-
-	profileCmd.GroupID = utilGroup.ID
-	apiCmd.GroupID = utilGroup.ID
-	setupCmd.GroupID = utilGroup.ID
-	updateCmd.GroupID = utilGroup.ID
-	versionCmd.GroupID = utilGroup.ID
-
-	rootCmd.AddCommand(versionCmd)
-	rootCmd.AddCommand(profileCmd)
-	rootCmd.AddCommand(accountCmd)
-	rootCmd.AddCommand(orderCmd)
-	rootCmd.AddCommand(positionCmd)
-	rootCmd.AddCommand(assetCmd)
-	rootCmd.AddCommand(dataCmd)
-	rootCmd.AddCommand(watchlistCmd)
-	rootCmd.AddCommand(clockCmd)
-	rootCmd.AddCommand(calendarCmd)
-	rootCmd.AddCommand(optionCmd)
-	rootCmd.AddCommand(corporateActionCmd)
-	rootCmd.AddCommand(walletCmd)
-	rootCmd.AddCommand(apiCmd)
-	rootCmd.AddCommand(updateCmd)
-	rootCmd.AddCommand(doctorCmd)
-
-	doctorCmd.GroupID = utilGroup.ID
+func addGroup(parent *cobra.Command, groupID string, cmds ...*cobra.Command) {
+	for _, c := range cmds {
+		c.GroupID = groupID
+		parent.AddCommand(c)
+	}
 }
 
 func needsAuth(cmd *cobra.Command) bool {
@@ -241,7 +214,7 @@ func needsAuth(cmd *cobra.Command) bool {
 	return true
 }
 
-func getOutput() string {
+func getOutput() output.Format {
 	if jsonFlag {
 		return output.FormatJSON
 	}
@@ -249,7 +222,7 @@ func getOutput() string {
 		return output.FormatCSV
 	}
 	if cfg != nil {
-		return cfg.Output
+		return output.Format(cfg.Output)
 	}
 	return output.FormatTable
 }

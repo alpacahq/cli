@@ -87,17 +87,8 @@ func loginWithOAuth(cmd *cobra.Command) error {
 	if !noValidate {
 		req, _ := http.NewRequest("GET", baseURL+"/v2/account", nil)
 		req.Header.Set("Authorization", "Bearer "+token.AccessToken)
-		resp, err := (&http.Client{Timeout: 10 * time.Second}).Do(req)
-		if err != nil {
-			return fmt.Errorf("failed to validate token against %s: %w\nHint: use --no-validate to skip", baseURL, err)
-		}
-		_ = resp.Body.Close()
-
-		if resp.StatusCode == 401 || resp.StatusCode == 403 {
-			return fmt.Errorf("token validation failed (HTTP %d against %s)\nHint: the token may not have the required scopes, or the account may not match", resp.StatusCode, baseURL)
-		}
-		if resp.StatusCode >= 400 {
-			return fmt.Errorf("unexpected response: HTTP %d from %s", resp.StatusCode, baseURL)
+		if err := validateCredentials(req, baseURL); err != nil {
+			return err
 		}
 	}
 
@@ -208,17 +199,8 @@ func loginWithAPIKey(cmd *cobra.Command) error {
 		req, _ := http.NewRequest("GET", baseURL+"/v2/account", nil)
 		req.Header.Set("APCA-API-KEY-ID", key)
 		req.Header.Set("APCA-API-SECRET-KEY", secret)
-		resp, err := (&http.Client{Timeout: 10 * time.Second}).Do(req)
-		if err != nil {
-			return fmt.Errorf("failed to connect to %s: %w\nHint: use --no-validate to skip credential check", baseURL, err)
-		}
-		_ = resp.Body.Close()
-
-		if resp.StatusCode == 401 || resp.StatusCode == 403 {
-			return fmt.Errorf("invalid credentials (validated against %s)\nHint: use --base-url to specify the correct API endpoint, or --no-validate to skip", baseURL)
-		}
-		if resp.StatusCode >= 400 {
-			return fmt.Errorf("unexpected response: HTTP %d from %s", resp.StatusCode, baseURL)
+		if err := validateCredentials(req, baseURL); err != nil {
+			return err
 		}
 	}
 
@@ -427,6 +409,22 @@ func init() {
 	profileCmd.AddCommand(profileListCmd)
 	profileCmd.AddCommand(profileSwitchCmd)
 	profileCmd.AddCommand(profileSetCmd)
+}
+
+func validateCredentials(req *http.Request, baseURL string) error {
+	resp, err := (&http.Client{Timeout: 10 * time.Second}).Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to connect to %s: %w\nHint: use --no-validate to skip credential check", baseURL, err)
+	}
+	_ = resp.Body.Close()
+
+	if resp.StatusCode == 401 || resp.StatusCode == 403 {
+		return fmt.Errorf("invalid credentials (validated against %s)\nHint: use --base-url to specify the correct API endpoint, or --no-validate to skip", baseURL)
+	}
+	if resp.StatusCode >= 400 {
+		return fmt.Errorf("unexpected response: HTTP %d from %s", resp.StatusCode, baseURL)
+	}
+	return nil
 }
 
 func resolveBaseURLFlags(cmd *cobra.Command) (string, error) {

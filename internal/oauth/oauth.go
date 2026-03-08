@@ -28,10 +28,6 @@ type Token struct {
 // 3. Receives the authorization code via callback
 // 4. Exchanges the code for an access token
 func Login(env, scope string) (*Token, error) {
-	if ClientID == "" || ClientSecret == "" {
-		return nil, fmt.Errorf("OAuth client credentials not configured\nHint: set ALPACA_OAUTH_CLIENT_ID and ALPACA_OAUTH_CLIENT_SECRET environment variables")
-	}
-
 	state, err := randomState()
 	if err != nil {
 		return nil, fmt.Errorf("generating state: %w", err)

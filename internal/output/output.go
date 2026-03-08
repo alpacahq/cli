@@ -14,10 +14,12 @@ import (
 	"github.com/fatih/color"
 )
 
+type Format string
+
 const (
-	FormatJSON  = "json"
-	FormatCSV   = "csv"
-	FormatTable = "table"
+	FormatJSON  Format = "json"
+	FormatCSV   Format = "csv"
+	FormatTable Format = "table"
 )
 
 type Column struct {
@@ -26,18 +28,13 @@ type Column struct {
 	Format func(any) string
 }
 
-func Render(w io.Writer, format string, columns []Column, data any) error {
-	switch format {
-	case FormatJSON:
-		return JSON(w, data)
-	case FormatCSV:
-		return CSV(w, columns, data)
-	default:
+func Render(w io.Writer, format Format, columns []Column, data any) error {
+	return dispatch(w, format, columns, data, func() error {
 		return Table(w, columns, data)
-	}
+	})
 }
 
-func RenderWithHint(w io.Writer, format string, columns []Column, data any, emptyHint string) error {
+func RenderWithHint(w io.Writer, format Format, columns []Column, data any, emptyHint string) error {
 	if format != FormatJSON && format != FormatCSV && emptyHint != "" {
 		rows := toRows(data)
 		if len(rows) == 0 {
@@ -46,6 +43,17 @@ func RenderWithHint(w io.Writer, format string, columns []Column, data any, empt
 		}
 	}
 	return Render(w, format, columns, data)
+}
+
+func dispatch(w io.Writer, format Format, columns []Column, data any, tableFn func() error) error {
+	switch format {
+	case FormatJSON:
+		return JSON(w, data)
+	case FormatCSV:
+		return CSV(w, columns, data)
+	default:
+		return tableFn()
+	}
 }
 
 func JSON(w io.Writer, data any) error {
@@ -117,13 +125,8 @@ func CSV(w io.Writer, columns []Column, data any) error {
 	return cw.Error()
 }
 
-func PrintSingle(w io.Writer, format string, columns []Column, data any) error {
-	switch format {
-	case FormatJSON:
-		return JSON(w, data)
-	case FormatCSV:
-		return CSV(w, columns, data)
-	default:
+func PrintSingle(w io.Writer, format Format, columns []Column, data any) error {
+	return dispatch(w, format, columns, data, func() error {
 		row := toMap(data)
 		if row == nil {
 			return fmt.Errorf("no data")
@@ -139,7 +142,7 @@ func PrintSingle(w io.Writer, format string, columns []Column, data any) error {
 			_, _ = fmt.Fprintf(tw, "%s:\t%s\n", c.Header, val)
 		}
 		return tw.Flush()
-	}
+	})
 }
 
 func colorPL(val string) string {

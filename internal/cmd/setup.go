@@ -8,6 +8,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/alpacahq/cli/internal/cmdutil"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
@@ -38,9 +39,9 @@ Installed to user-level directories (no sudo required):
   alpaca setup --completions-only
   alpaca setup --man-only`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		shell := mustStr(cmd, "shell")
-		compOnly := mustBool(cmd, "completions-only")
-		manOnly := mustBool(cmd, "man-only")
+		shell := cmdutil.Str(cmd, "shell")
+		compOnly := cmdutil.Bool(cmd, "completions-only")
+		manOnly := cmdutil.Bool(cmd, "man-only")
 
 		if shell == "" {
 			shell = detectShell()
@@ -77,16 +78,6 @@ func init() {
 	setupCmd.MarkFlagsMutuallyExclusive("completions-only", "man-only")
 
 	rootCmd.AddCommand(setupCmd)
-}
-
-func mustStr(cmd *cobra.Command, name string) string {
-	v, _ := cmd.Flags().GetString(name)
-	return v
-}
-
-func mustBool(cmd *cobra.Command, name string) bool {
-	v, _ := cmd.Flags().GetBool(name)
-	return v
 }
 
 func isSupportedShell(shell string) bool {
