@@ -1273,7 +1273,7 @@ func (o usCorporatesOp) RequiredFlags() []string {
 
 func (o usCorporatesOp) Flags() []FlagDef {
 	return []FlagDef{
-		{Name: "bond-status", OASName: "bond_status", Type: "string", Description: "status of the bond", Completions: []string{"matured", "outstanding", "pre_issuance"}, OpName: "UsCorporates"},
+		{Name: "bond-status", OASName: "bond_status", Type: "string", Description: "filter by bond status (outstanding, matured, or pre_issuance)", Completions: []string{"matured", "outstanding", "pre_issuance"}, OpName: "UsCorporates"},
 		{Name: "cusips", OASName: "cusips", Type: "string", Description: "A comma-separated list of CUSIPs with a limit of 1000", OpName: "UsCorporates"},
 		{Name: "isins", OASName: "isins", Type: "string", Description: "A comma-separated list of ISINs with a limit of 1000", OpName: "UsCorporates"},
 		{Name: "tickers", OASName: "tickers", Type: "string", Description: "A comma-separated list of tickers with a limit of 1000", OpName: "UsCorporates"},
@@ -1298,10 +1298,10 @@ func (o usTreasuriesOp) RequiredFlags() []string {
 
 func (o usTreasuriesOp) Flags() []FlagDef {
 	return []FlagDef{
-		{Name: "bond-status", OASName: "bond_status", Type: "string", Description: "status of the bond", Completions: []string{"matured", "outstanding", "pre_issuance"}, OpName: "UsTreasuries"},
+		{Name: "bond-status", OASName: "bond_status", Type: "string", Description: "filter by bond status (outstanding, matured, or pre_issuance)", Completions: []string{"matured", "outstanding", "pre_issuance"}, OpName: "UsTreasuries"},
 		{Name: "cusips", OASName: "cusips", Type: "string", Description: "A comma-separated list of CUSIPs with a limit of 1000", OpName: "UsTreasuries"},
 		{Name: "isins", OASName: "isins", Type: "string", Description: "A comma-separated list of ISINs with a limit of 1000", OpName: "UsTreasuries"},
-		{Name: "subtype", OASName: "subtype", Type: "string", Description: "subtype of the treasury", Completions: []string{"bill", "bond", "floating", "note", "strips", "tips"}, OpName: "UsTreasuries"},
+		{Name: "subtype", OASName: "subtype", Type: "string", Description: "filter by treasury subtype, e.g. bond, bill, note, strips, tips, or floating", Completions: []string{"bill", "bond", "floating", "note", "strips", "tips"}, OpName: "UsTreasuries"},
 	}
 }
 
@@ -1370,7 +1370,7 @@ func (o createCryptoPerpTransferForAccountOp) Flags() []FlagDef {
 	return []FlagDef{
 		{Name: "address", OASName: "address", Type: "string", Description: "destination wallet address", OpName: "CreateCryptoPerpTransferForAccount"},
 		{Name: "amount", OASName: "amount", Type: "string", Description: "amount, denoted in the specified asset, to be withdrawn from the user’s wallet", OpName: "CreateCryptoPerpTransferForAccount"},
-		{Name: "asset", OASName: "asset", Type: "string", Description: "asset", OpName: "CreateCryptoPerpTransferForAccount"},
+		{Name: "asset", OASName: "asset", Type: "string", Description: "crypto asset symbol, e.g. BTC, ETH, USDT", OpName: "CreateCryptoPerpTransferForAccount"},
 	}
 }
 
@@ -1394,7 +1394,7 @@ func (o createCryptoTransferForAccountOp) Flags() []FlagDef {
 	return []FlagDef{
 		{Name: "address", OASName: "address", Type: "string", Description: "destination wallet address", OpName: "CreateCryptoTransferForAccount"},
 		{Name: "amount", OASName: "amount", Type: "string", Description: "amount, denoted in the specified asset, to be withdrawn from the user’s wallet", OpName: "CreateCryptoTransferForAccount"},
-		{Name: "asset", OASName: "asset", Type: "string", Description: "asset", OpName: "CreateCryptoTransferForAccount"},
+		{Name: "asset", OASName: "asset", Type: "string", Description: "crypto asset symbol, e.g. BTC, ETH, USDT", OpName: "CreateCryptoTransferForAccount"},
 	}
 }
 
@@ -1875,7 +1875,7 @@ func (o getAccountPortfolioHistoryOp) Flags() []FlagDef {
 		{Name: "cashflow-types", OASName: "cashflow_types", Type: "string", Description: "cashflow activities to include in the report. One of 'ALL', 'NONE', or a comma-separated list of activity types", OpName: "GetAccountPortfolioHistory"},
 		{Name: "end", OASName: "end", Type: "string", Description: "timestamp the data is returned up to in RFC3339 format (including timezone specification)", OpName: "GetAccountPortfolioHistory"},
 		{Name: "extended-hours", OASName: "extended_hours", Type: "string", Description: "**deprecated**: Users are strongly advised to **rely on the intraday_reporting query parameter** for better control\no...", OpName: "GetAccountPortfolioHistory"},
-		{Name: "intraday-reporting", OASName: "intraday_reporting", Type: "string", Default: "market_hours", Description: "for intraday resolutions (<1D) this specfies which timestamps to return data points for:\n\nAllowed values are:\n- **mar...", Completions: []string{"continuous", "extended_hours", "market_hours"}, OpName: "GetAccountPortfolioHistory"},
+		{Name: "intraday-reporting", OASName: "intraday_reporting", Type: "string", Default: "market_hours", Description: "for intraday resolutions (<1D) this specifies which timestamps to return data points for:\n\nAllowed values are:\n- **ma...", Completions: []string{"continuous", "extended_hours", "market_hours"}, OpName: "GetAccountPortfolioHistory"},
 		{Name: "period", OASName: "period", Type: "string", Description: "duration of the data in number + unit format, such as 1D, where unit can be D for day, W for week, M for month and A ...", OpName: "GetAccountPortfolioHistory"},
 		{Name: "pnl-reset", OASName: "pnl_reset", Type: "string", Default: "per_day", Description: "pnl_reset defines how we are calculating the baseline values for Profit And Loss (pnl) for queries with timeframe les...", Completions: []string{"no_reset", "per_day"}, OpName: "GetAccountPortfolioHistory"},
 		{Name: "start", OASName: "start", Type: "string", Description: "timestamp the data is returned starting from in RFC3339 format (including timezone specification)", OpName: "GetAccountPortfolioHistory"},
@@ -1923,7 +1923,7 @@ func (o getAllOrdersOp) Flags() []FlagDef {
 	return []FlagDef{
 		{Name: "after", OASName: "after", Type: "string", Description: "response will include only ones submitted after this timestamp (exclusive.)", OpName: "GetAllOrders"},
 		{Name: "after-order-id", OASName: "after_order_id", Type: "string", Description: "return orders submitted after the order with this ID (exclusive).\nMutually exclusive with before_order_id", OpName: "GetAllOrders"},
-		{Name: "asset-class", OASName: "asset_class", Type: "string", Description: "A comma seperated list of asset classes, the response will include only orders in the specified asset classes", OpName: "GetAllOrders"},
+		{Name: "asset-class", OASName: "asset_class", Type: "string", Description: "A comma-separated list of asset classes, the response will include only orders in the specified asset classes", OpName: "GetAllOrders"},
 		{Name: "before-order-id", OASName: "before_order_id", Type: "string", Description: "return orders submitted before the order with this ID (exclusive).\nMutually exclusive with after_order_id", OpName: "GetAllOrders"},
 		{Name: "direction", OASName: "direction", Type: "string", Description: "chronological order of response based on the submission time. asc or desc. Defaults to desc", Completions: []string{"asc", "desc"}, OpName: "GetAllOrders"},
 		{Name: "limit", OASName: "limit", Type: "int", Description: "maximum number of orders in response. Defaults to 50 and max is 500", OpName: "GetAllOrders"},
@@ -2231,7 +2231,7 @@ func (o listCryptoFundingWalletsOp) RequiredFlags() []string {
 
 func (o listCryptoFundingWalletsOp) Flags() []FlagDef {
 	return []FlagDef{
-		{Name: "asset", OASName: "asset", Type: "string", Description: "asset", OpName: "ListCryptoFundingWallets"},
+		{Name: "asset", OASName: "asset", Type: "string", Description: "filter by crypto asset symbol, e.g. BTC, ETH, USDT. If specified and no wallet exists, one will be created", OpName: "ListCryptoFundingWallets"},
 		{Name: "network", OASName: "network", Type: "string", Description: "optional network identifier", Completions: []string{"ethereum", "solana"}, OpName: "ListCryptoFundingWallets"},
 	}
 }
@@ -2283,7 +2283,7 @@ type listWhitelistedAddressOp struct{}
 var ListWhitelistedAddressOp = listWhitelistedAddressOp{}
 
 func (o listWhitelistedAddressOp) Summary() string {
-	return "List an array of whitelisted addresses"
+	return "Get an array of whitelisted addresses"
 }
 
 func (o listWhitelistedAddressOp) ResponseFields() []ResponseField {
@@ -2303,7 +2303,7 @@ type listWhitelistedPerpAddressOp struct{}
 var ListWhitelistedPerpAddressOp = listWhitelistedPerpAddressOp{}
 
 func (o listWhitelistedPerpAddressOp) Summary() string {
-	return "List an array of whitelisted addresses"
+	return "Get an array of whitelisted addresses"
 }
 
 func (o listWhitelistedPerpAddressOp) ResponseFields() []ResponseField {
@@ -2502,8 +2502,8 @@ func (o postWatchlistOp) RequiredFlags() []string {
 
 func (o postWatchlistOp) Flags() []FlagDef {
 	return []FlagDef{
-		{Name: "name", OASName: "name", Type: "string", Description: "name", OpName: "PostWatchlist"},
-		{Name: "symbols", OASName: "symbols", Type: "string", Description: "symbols", OpName: "PostWatchlist"},
+		{Name: "name", OASName: "name", Type: "string", Description: "watchlist name", OpName: "PostWatchlist"},
+		{Name: "symbols", OASName: "symbols", Type: "string", Description: "list of asset symbols to include in the watchlist", OpName: "PostWatchlist"},
 	}
 }
 
@@ -2568,8 +2568,8 @@ func (o updateWatchlistByIDOp) RequiredFlags() []string {
 
 func (o updateWatchlistByIDOp) Flags() []FlagDef {
 	return []FlagDef{
-		{Name: "name", OASName: "name", Type: "string", Description: "name", OpName: "UpdateWatchlistByID"},
-		{Name: "symbols", OASName: "symbols", Type: "string", Description: "symbols", OpName: "UpdateWatchlistByID"},
+		{Name: "name", OASName: "name", Type: "string", Description: "watchlist name", OpName: "UpdateWatchlistByID"},
+		{Name: "symbols", OASName: "symbols", Type: "string", Description: "list of asset symbols to include in the watchlist", OpName: "UpdateWatchlistByID"},
 	}
 }
 
@@ -2592,7 +2592,7 @@ func (o updateWatchlistByNameOp) RequiredFlags() []string {
 func (o updateWatchlistByNameOp) Flags() []FlagDef {
 	return []FlagDef{
 		{Name: "name", OASName: "name", Type: "string", Description: "name of the watchlist", OpName: "UpdateWatchlistByName", Required: true},
-		{Name: "symbols", OASName: "symbols", Type: "string", Description: "symbols", OpName: "UpdateWatchlistByName"},
+		{Name: "symbols", OASName: "symbols", Type: "string", Description: "list of asset symbols to include in the watchlist", OpName: "UpdateWatchlistByName"},
 	}
 }
 
@@ -2803,9 +2803,9 @@ var ResponseSchemas = map[string][]ResponseField{
 	},
 	"CreateCryptoPerpTransferForAccount": {
 		{Name: "amount", Type: "string", Description: "amount of transfer denominated in the underlying crypto asset"},
-		{Name: "asset", Type: "string", Description: "symbol of crypto asset for given transfer (e.g. BTC )"},
+		{Name: "asset", Type: "string", Description: "symbol of crypto asset for given transfer (e.g. BTC)"},
 		{Name: "chain", Type: "string", Description: "underlying network for given transfer"},
-		{Name: "created_at", Type: "string", Description: "timedate when transfer was created"},
+		{Name: "created_at", Type: "string", Description: "timestamp when transfer was created"},
 		{Name: "direction", Type: "enum", Description: "direction", EnumValues: []string{"INCOMING", "OUTGOING"}},
 		{Name: "fees", Type: "string", Description: "fees"},
 		{Name: "from_address", Type: "string", Description: "originating address of the transfer"},
@@ -2818,9 +2818,9 @@ var ResponseSchemas = map[string][]ResponseField{
 	},
 	"CreateCryptoTransferForAccount": {
 		{Name: "amount", Type: "string", Description: "amount of transfer denominated in the underlying crypto asset"},
-		{Name: "asset", Type: "string", Description: "symbol of crypto asset for given transfer (e.g. BTC )"},
+		{Name: "asset", Type: "string", Description: "symbol of crypto asset for given transfer (e.g. BTC)"},
 		{Name: "chain", Type: "string", Description: "underlying network for given transfer"},
-		{Name: "created_at", Type: "string", Description: "timedate when transfer was created"},
+		{Name: "created_at", Type: "string", Description: "timestamp when transfer was created"},
 		{Name: "direction", Type: "enum", Description: "direction", EnumValues: []string{"INCOMING", "OUTGOING"}},
 		{Name: "fees", Type: "string", Description: "fees"},
 		{Name: "from_address", Type: "string", Description: "originating address of the transfer"},
@@ -3065,9 +3065,9 @@ var ResponseSchemas = map[string][]ResponseField{
 	},
 	"GetCryptoFundingTransfer": {
 		{Name: "amount", Type: "string", Description: "amount of transfer denominated in the underlying crypto asset"},
-		{Name: "asset", Type: "string", Description: "symbol of crypto asset for given transfer (e.g. BTC )"},
+		{Name: "asset", Type: "string", Description: "symbol of crypto asset for given transfer (e.g. BTC)"},
 		{Name: "chain", Type: "string", Description: "underlying network for given transfer"},
-		{Name: "created_at", Type: "string", Description: "timedate when transfer was created"},
+		{Name: "created_at", Type: "string", Description: "timestamp when transfer was created"},
 		{Name: "direction", Type: "enum", Description: "direction", EnumValues: []string{"INCOMING", "OUTGOING"}},
 		{Name: "fees", Type: "string", Description: "fees"},
 		{Name: "from_address", Type: "string", Description: "originating address of the transfer"},
@@ -3080,9 +3080,9 @@ var ResponseSchemas = map[string][]ResponseField{
 	},
 	"GetCryptoPerpFundingTransfer": {
 		{Name: "amount", Type: "string", Description: "amount of transfer denominated in the underlying crypto asset"},
-		{Name: "asset", Type: "string", Description: "symbol of crypto asset for given transfer (e.g. BTC )"},
+		{Name: "asset", Type: "string", Description: "symbol of crypto asset for given transfer (e.g. BTC)"},
 		{Name: "chain", Type: "string", Description: "underlying network for given transfer"},
-		{Name: "created_at", Type: "string", Description: "timedate when transfer was created"},
+		{Name: "created_at", Type: "string", Description: "timestamp when transfer was created"},
 		{Name: "direction", Type: "enum", Description: "direction", EnumValues: []string{"INCOMING", "OUTGOING"}},
 		{Name: "fees", Type: "string", Description: "fees"},
 		{Name: "from_address", Type: "string", Description: "originating address of the transfer"},
@@ -3208,9 +3208,9 @@ var ResponseSchemas = map[string][]ResponseField{
 	},
 	"ListCryptoFundingTransfers": {
 		{Name: "amount", Type: "string", Description: "amount of transfer denominated in the underlying crypto asset"},
-		{Name: "asset", Type: "string", Description: "symbol of crypto asset for given transfer (e.g. BTC )"},
+		{Name: "asset", Type: "string", Description: "symbol of crypto asset for given transfer (e.g. BTC)"},
 		{Name: "chain", Type: "string", Description: "underlying network for given transfer"},
-		{Name: "created_at", Type: "string", Description: "timedate when transfer was created"},
+		{Name: "created_at", Type: "string", Description: "timestamp when transfer was created"},
 		{Name: "direction", Type: "enum", Description: "direction", EnumValues: []string{"INCOMING", "OUTGOING"}},
 		{Name: "fees", Type: "string", Description: "fees"},
 		{Name: "from_address", Type: "string", Description: "originating address of the transfer"},
@@ -3228,9 +3228,9 @@ var ResponseSchemas = map[string][]ResponseField{
 	},
 	"ListCryptoPerpFundingTransfers": {
 		{Name: "amount", Type: "string", Description: "amount of transfer denominated in the underlying crypto asset"},
-		{Name: "asset", Type: "string", Description: "symbol of crypto asset for given transfer (e.g. BTC )"},
+		{Name: "asset", Type: "string", Description: "symbol of crypto asset for given transfer (e.g. BTC)"},
 		{Name: "chain", Type: "string", Description: "underlying network for given transfer"},
-		{Name: "created_at", Type: "string", Description: "timedate when transfer was created"},
+		{Name: "created_at", Type: "string", Description: "timestamp when transfer was created"},
 		{Name: "direction", Type: "enum", Description: "direction", EnumValues: []string{"INCOMING", "OUTGOING"}},
 		{Name: "fees", Type: "string", Description: "fees"},
 		{Name: "from_address", Type: "string", Description: "originating address of the transfer"},
@@ -3458,8 +3458,8 @@ var OperationSummaries = map[string]string{
 	"ListCryptoFundingWallets":           "Retrieve crypto funding wallets",
 	"ListCryptoPerpFundingTransfers":     "Retrieve crypto funding transfers",
 	"ListCryptoPerpFundingWallets":       "Retrieve crypto funding wallets",
-	"ListWhitelistedAddress":             "List an array of whitelisted addresses",
-	"ListWhitelistedPerpAddress":         "List an array of whitelisted addresses",
+	"ListWhitelistedAddress":             "Get an array of whitelisted addresses",
+	"ListWhitelistedPerpAddress":         "Get an array of whitelisted addresses",
 	"OptionBars":                         "Get historical bars",
 	"PatchAccountConfig":                 "Update account configurations",
 	"PatchOrderByOrderID":                "Replace order by ID",
@@ -3472,16 +3472,10 @@ var OperationSummaries = map[string]string{
 
 // ArrayResponses tracks which operations return arrays vs single objects.
 var ArrayResponses = map[string]bool{
-	"DeleteAllOpenPositions":         true,
-	"DeleteAllOrders":                true,
-	"GetV2Assets":                    true,
-	"GetAllOpenPositions":            true,
-	"GetAllOrders":                   true,
-	"GetWatchlists":                  true,
-	"ListCryptoFundingTransfers":     true,
-	"ListCryptoFundingWallets":       true,
-	"ListCryptoPerpFundingTransfers": true,
-	"ListCryptoPerpFundingWallets":   true,
-	"ListWhitelistedAddress":         true,
-	"ListWhitelistedPerpAddress":     true,
+	"DeleteAllOpenPositions": true,
+	"DeleteAllOrders":        true,
+	"GetV2Assets":            true,
+	"GetAllOpenPositions":    true,
+	"GetAllOrders":           true,
+	"GetWatchlists":          true,
 }

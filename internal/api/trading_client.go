@@ -807,14 +807,14 @@ func (p *ListCryptoPerpFundingWalletsParams) Values() url.Values {
 }
 
 // ListCryptoPerpFundingWallets — Retrieve Crypto Funding Wallets
-func (c *TradingClient) ListCryptoPerpFundingWallets(params *ListCryptoPerpFundingWalletsParams) ([]CryptoWallet, error) {
+func (c *TradingClient) ListCryptoPerpFundingWallets(params *ListCryptoPerpFundingWalletsParams) (*CryptoWallet, error) {
 	path := "/v2/perpetuals/wallets"
 	data, err := c.Raw.Get(path, params.Values())
 	if err != nil {
 		return nil, err
 	}
-	var result []CryptoWallet
-	return result, json.Unmarshal(data, &result)
+	var result CryptoWallet
+	return &result, json.Unmarshal(data, &result)
 }
 
 type GetCryptoPerpTransferEstimateParams struct {
@@ -855,14 +855,14 @@ func (c *TradingClient) GetCryptoPerpTransferEstimate(params *GetCryptoPerpTrans
 }
 
 // ListCryptoPerpFundingTransfers — Retrieve Crypto Funding Transfers
-func (c *TradingClient) ListCryptoPerpFundingTransfers() ([]CryptoTransfer, error) {
+func (c *TradingClient) ListCryptoPerpFundingTransfers() (*CryptoTransfer, error) {
 	path := "/v2/perpetuals/wallets/transfers"
 	data, err := c.Raw.Get(path, nil)
 	if err != nil {
 		return nil, err
 	}
-	var result []CryptoTransfer
-	return result, json.Unmarshal(data, &result)
+	var result CryptoTransfer
+	return &result, json.Unmarshal(data, &result)
 }
 
 // CreateCryptoPerpTransferForAccount — Request a New Withdrawal
@@ -888,14 +888,14 @@ func (c *TradingClient) GetCryptoPerpFundingTransfer(TransferID string) (*Crypto
 }
 
 // ListWhitelistedPerpAddress — An array of whitelisted addresses
-func (c *TradingClient) ListWhitelistedPerpAddress() ([]WhitelistedAddress, error) {
+func (c *TradingClient) ListWhitelistedPerpAddress() (*WhitelistedAddress, error) {
 	path := "/v2/perpetuals/wallets/whitelists"
 	data, err := c.Raw.Get(path, nil)
 	if err != nil {
 		return nil, err
 	}
-	var result []WhitelistedAddress
-	return result, json.Unmarshal(data, &result)
+	var result WhitelistedAddress
+	return &result, json.Unmarshal(data, &result)
 }
 
 type CreateWhitelistedPerpAddressRequest struct {
@@ -1044,14 +1044,14 @@ func (p *ListCryptoFundingWalletsParams) Values() url.Values {
 var ListCryptoFundingWalletsParamsNetworkValues = []string{"ethereum", "solana"}
 
 // ListCryptoFundingWallets — Retrieve Crypto Funding Wallets
-func (c *TradingClient) ListCryptoFundingWallets(params *ListCryptoFundingWalletsParams) ([]CryptoWallet, error) {
+func (c *TradingClient) ListCryptoFundingWallets(params *ListCryptoFundingWalletsParams) (*CryptoWallet, error) {
 	path := "/v2/wallets"
 	data, err := c.Raw.Get(path, params.Values())
 	if err != nil {
 		return nil, err
 	}
-	var result []CryptoWallet
-	return result, json.Unmarshal(data, &result)
+	var result CryptoWallet
+	return &result, json.Unmarshal(data, &result)
 }
 
 type GetCryptoTransferEstimateParams struct {
@@ -1092,14 +1092,14 @@ func (c *TradingClient) GetCryptoTransferEstimate(params *GetCryptoTransferEstim
 }
 
 // ListCryptoFundingTransfers — Retrieve Crypto Funding Transfers
-func (c *TradingClient) ListCryptoFundingTransfers() ([]CryptoTransfer, error) {
+func (c *TradingClient) ListCryptoFundingTransfers() (*CryptoTransfer, error) {
 	path := "/v2/wallets/transfers"
 	data, err := c.Raw.Get(path, nil)
 	if err != nil {
 		return nil, err
 	}
-	var result []CryptoTransfer
-	return result, json.Unmarshal(data, &result)
+	var result CryptoTransfer
+	return &result, json.Unmarshal(data, &result)
 }
 
 // CreateCryptoTransferForAccount — Request a New Withdrawal
@@ -1125,14 +1125,14 @@ func (c *TradingClient) GetCryptoFundingTransfer(TransferID string) (*CryptoTran
 }
 
 // ListWhitelistedAddress — An array of whitelisted addresses
-func (c *TradingClient) ListWhitelistedAddress() ([]WhitelistedAddress, error) {
+func (c *TradingClient) ListWhitelistedAddress() (*WhitelistedAddress, error) {
 	path := "/v2/wallets/whitelists"
 	data, err := c.Raw.Get(path, nil)
 	if err != nil {
 		return nil, err
 	}
-	var result []WhitelistedAddress
-	return result, json.Unmarshal(data, &result)
+	var result WhitelistedAddress
+	return &result, json.Unmarshal(data, &result)
 }
 
 type CreateWhitelistedAddressRequest struct {

@@ -32,6 +32,6 @@ man:
 
 spec-update:
 	@echo "Fetching latest OpenAPI specs..."
-	curl -sSfL "https://docs.alpaca.markets/_mock/openapi/trading/bundled" | python3 -m json.tool > api/specs/trading-api.json
-	curl -sSfL "https://docs.alpaca.markets/_mock/openapi/data/bundled" | python3 -m json.tool > api/specs/market-data-api.json
+	curl -sSfL "https://docs.alpaca.markets/openapi/trading-api.json" | python3 -m json.tool > api/specs/trading-api.json
+	curl -sSfL "https://docs.alpaca.markets/openapi/market-data-api.json" | python3 -m json.tool > api/specs/market-data-api.json
 	@echo "Specs updated. Run 'make generate' to regenerate client code."
