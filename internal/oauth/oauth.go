@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"html"
 	"io"
 	"net"
 	"net/http"
@@ -220,5 +221,5 @@ func errorPage(desc string) string {
 <p style="color: #999;">Return to your terminal for details.</p>
 </div>
 </body>
-</html>`, desc)
+</html>`, html.EscapeString(desc))
 }
