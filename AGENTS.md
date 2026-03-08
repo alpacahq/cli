@@ -62,6 +62,20 @@ This project is pre-1.0. Command names, flag names, and output formats can chang
 
 Flags always use OAS-generated kebab-case names. No aliases. `FlagOpts` does not support aliases — this is enforced at the type level. If a flag name needs to change, change it in the spec.
 
+## OAS specs are read-only inputs
+
+The files in `api/specs/` are copies of upstream OpenAPI specs. **Never edit them in this repo.** If a spec is wrong, fix it at the source and re-import. The generator and CLI code must work around spec bugs until the upstream is corrected.
+
+## Self-healing workarounds
+
+When the upstream OAS has a bug that requires a workaround in CLI code, record it here. After any spec update (`api/specs/*.json` changes), check each item below. If the upstream fix has landed, remove the workaround code and delete the entry.
+
+If this list is empty, there is nothing to do.
+
+| Workaround | File | What to check | Remove when |
+|---|---|---|---|
+| `position close-all` uses `tradingClient.Raw.Delete` instead of generated `DeleteAllOpenPositions` | `internal/cmd/position.go` | `PositionClosedReponse.status` in `api/specs/trading-api.json` — declared as `string` but API returns `integer` (HTTP status code). The spec's own `x-examples` confirms `"status": 200`. | Spec changes `status` type to `integer`. Then switch back to `tradingClient.DeleteAllOpenPositions(...)` and delete the comment. |
+
 ## After every change
 
 ```
