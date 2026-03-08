@@ -11,42 +11,31 @@ var dataOptionCmd = &cobra.Command{
 	Short: "Options market data",
 }
 
-var dataOptionBarsCmd = &cobra.Command{
-	Use:   "bars",
-	Short: api.OptionBarsOp.Summary(),
-	Example: `  alpaca data option bars --symbols AAPL250620C00200000 --start 2025-01-01
-  alpaca data option bars --symbols AAPL250620C00200000,AAPL250620P00200000 --timeframe 1Day`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if _, err := cmdutil.RequireStr(cmd, "symbols"); err != nil {
-			return err
-		}
-		params := optionBarsParamsFromFlags(cmd)
-		if params.Timeframe == "" {
-			params.Timeframe = "1Day"
-		}
-		resp, err := dataClient.OptionBars(params)
-		if err != nil {
-			return err
-		}
-		return renderMapValues(cmd.OutOrStdout(), getOutput(), barColumns(), resp.Bars)
-	},
-}
+var dataOptionBarsCmd = fetchCmd("bars", api.OptionBarsOp, func(cmd *cobra.Command, args []string) (any, error) {
+	params := optionBarsParamsFromFlags(cmd)
+	if params.Timeframe == "" {
+		params.Timeframe = "1Day"
+	}
+	resp, err := dataClient.OptionBars(params)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Bars, nil
+}, withJSON, withFlags(&cmdutil.FlagOpts{Defaults: map[string]string{"timeframe": "1Day"}}),
+	func(c *cobra.Command) {
+		c.Example = `  alpaca data option bars --symbols AAPL250620C00200000 --start 2025-01-01
+  alpaca data option bars --symbols AAPL250620C00200000,AAPL250620P00200000 --timeframe 1Day`
+	})
 
-var dataOptionTradesCmd = &cobra.Command{
-	Use:     "trades",
-	Short:   api.OptionTradesOp.Summary(),
-	Example: `  alpaca data option trades --symbols AAPL250620C00200000 --start 2025-01-01`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if _, err := cmdutil.RequireStr(cmd, "symbols"); err != nil {
-			return err
-		}
-		resp, err := dataClient.OptionTrades(optionTradesParamsFromFlags(cmd))
-		if err != nil {
-			return err
-		}
-		return renderMapValues(cmd.OutOrStdout(), getOutput(), tradeColumns(), resp.Trades)
-	},
-}
+var dataOptionTradesCmd = fetchCmd("trades", api.OptionTradesOp, func(cmd *cobra.Command, args []string) (any, error) {
+	resp, err := dataClient.OptionTrades(optionTradesParamsFromFlags(cmd))
+	if err != nil {
+		return nil, err
+	}
+	return resp.Trades, nil
+}, withJSON, func(c *cobra.Command) {
+	c.Example = `  alpaca data option trades --symbols AAPL250620C00200000 --start 2025-01-01`
+})
 
 var dataOptionSnapshotCmd = fetchCmd("snapshot", api.OptionSnapshotsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	resp, err := dataClient.OptionSnapshots(optionSnapshotsParamsFromFlags(cmd))
@@ -105,12 +94,6 @@ var dataOptionConditionsCmd = fetchCmd("conditions <ticktype>", api.OptionMetaCo
 })
 
 func init() {
-	cmdutil.RegisterFlags(dataOptionBarsCmd, api.OptionBarsOp.Flags(), &cmdutil.FlagOpts{
-		Defaults: map[string]string{"timeframe": "1Day"},
-	})
-
-	cmdutil.RegisterFlags(dataOptionTradesCmd, api.OptionTradesOp.Flags(), nil)
-
 	dataOptionCmd.AddCommand(dataOptionBarsCmd)
 	dataOptionCmd.AddCommand(dataOptionTradesCmd)
 	dataOptionCmd.AddCommand(dataOptionSnapshotCmd)

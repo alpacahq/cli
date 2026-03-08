@@ -67,14 +67,12 @@ var activityListCmd = fetchCmd("list", api.GetAccountActivitiesOp, func(cmd *cob
 
 var portfolioCmd = fetchCmd("portfolio", api.GetAccountPortfolioHistoryOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return tradingClient.GetAccountPortfolioHistory(getAccountPortfolioHistoryParamsFromFlags(cmd))
-}, withJSON, func(c *cobra.Command) {
-	cmdutil.RegisterFlags(c, api.GetAccountPortfolioHistoryOp.Flags(), &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"extended_hours": true},
-	})
-	c.Long = "Returns portfolio equity and P&L history. Output is always JSON due to complex time-series structure."
-	c.Example = `  alpaca account portfolio
+}, withJSON, withFlags(&cmdutil.FlagOpts{Exclude: map[string]bool{"extended_hours": true}}),
+	func(c *cobra.Command) {
+		c.Long = "Returns portfolio equity and P&L history. Output is always JSON due to complex time-series structure."
+		c.Example = `  alpaca account portfolio
   alpaca account portfolio --period 1M --timeframe 1D`
-})
+	})
 
 func init() {
 	accountConfigCmd.AddCommand(accountConfigGetCmd)

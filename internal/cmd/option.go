@@ -17,16 +17,14 @@ var optionContractsCmd = fetchCmd("contracts <underlying>", api.GetOptionsContra
 	params := getOptionsContractsParamsFromFlags(cmd)
 	params.UnderlyingSymbols = args[0]
 	return tradingClient.GetOptionsContracts(params)
-}, func(c *cobra.Command) {
-	cmdutil.RegisterFlags(c, api.GetOptionsContractsOp.Flags(), &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"underlying_symbols": true},
-	})
-	c.Args = cobra.ExactArgs(1)
-	c.Long = "List option contracts for an underlying symbol. For market data (greeks, pricing), use `data option chain`."
-	c.Example = `  alpaca option contracts AAPL
+}, withFlags(&cmdutil.FlagOpts{Exclude: map[string]bool{"underlying_symbols": true}}),
+	func(c *cobra.Command) {
+		c.Args = cobra.ExactArgs(1)
+		c.Long = "List option contracts for an underlying symbol. For market data (greeks, pricing), use `data option chain`."
+		c.Example = `  alpaca option contracts AAPL
   alpaca option contracts AAPL --expiration-date 2025-06-20 --type call
   alpaca option contracts SPY --strike-price-gte 400 --strike-price-lte 450`
-})
+	})
 
 var optionGetCmd = fetchCmd("get <symbol-or-id>", api.GetOptionContractSymbolOrIDOp, func(_ *cobra.Command, args []string) (any, error) {
 	return tradingClient.GetOptionContractSymbolOrID(args[0])

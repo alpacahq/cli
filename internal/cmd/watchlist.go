@@ -35,13 +35,11 @@ var watchlistCreateCmd = fetchCmd("create <name>", api.PostWatchlistOp, func(cmd
 		body.Symbols = strings.Split(symbols, ",")
 	}
 	return tradingClient.PostWatchlist(body)
-}, func(c *cobra.Command) {
-	cmdutil.RegisterFlags(c, api.PostWatchlistOp.Flags(), &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"name": true},
+}, withFlags(&cmdutil.FlagOpts{Exclude: map[string]bool{"name": true}}),
+	func(c *cobra.Command) {
+		c.Args = cobra.ExactArgs(1)
+		c.Example = `  alpaca watchlist create "Tech Stocks" --symbols AAPL,MSFT,GOOG`
 	})
-	c.Args = cobra.ExactArgs(1)
-	c.Example = `  alpaca watchlist create "Tech Stocks" --symbols AAPL,MSFT,GOOG`
-})
 
 var watchlistUpdateCmd = fetchCmd("update <id>", api.UpdateWatchlistByIDOp, func(cmd *cobra.Command, args []string) (any, error) {
 	body, _ := updateWatchlistRequestBodyFromFlags(cmd)
@@ -81,24 +79,20 @@ var watchlistRemoveCmd = actionCmd("remove <id> <symbol>", api.RemoveAssetFromWa
 
 var watchlistGetByNameCmd = fetchCmd("get-by-name <name>", api.GetWatchlistByNameOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return tradingClient.GetWatchlistByName(&api.GetWatchlistByNameParams{Name: args[0]})
-}, func(c *cobra.Command) {
-	cmdutil.RegisterFlags(c, api.GetWatchlistByNameOp.Flags(), &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"name": true},
+}, withFlags(&cmdutil.FlagOpts{Exclude: map[string]bool{"name": true}}),
+	func(c *cobra.Command) {
+		c.Args = cobra.ExactArgs(1)
+		c.Example = `  alpaca watchlist get-by-name "Tech Stocks"`
 	})
-	c.Args = cobra.ExactArgs(1)
-	c.Example = `  alpaca watchlist get-by-name "Tech Stocks"`
-})
 
 var watchlistDeleteByNameCmd = actionCmd("delete-by-name <name>", api.DeleteWatchlistByNameOp, "Watchlist deleted.", func(cmd *cobra.Command, args []string) error {
 	_, err := tradingClient.DeleteWatchlistByName(&api.DeleteWatchlistByNameParams{Name: args[0]})
 	return err
-}, func(c *cobra.Command) {
-	cmdutil.RegisterFlags(c, api.DeleteWatchlistByNameOp.Flags(), &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"name": true},
+}, withFlags(&cmdutil.FlagOpts{Exclude: map[string]bool{"name": true}}),
+	func(c *cobra.Command) {
+		c.Args = cobra.ExactArgs(1)
+		c.Example = `  alpaca watchlist delete-by-name "Tech Stocks"`
 	})
-	c.Args = cobra.ExactArgs(1)
-	c.Example = `  alpaca watchlist delete-by-name "Tech Stocks"`
-})
 
 var watchlistUpdateByNameCmd = fetchCmd("update-by-name <name>", api.UpdateWatchlistByNameOp, func(cmd *cobra.Command, args []string) (any, error) {
 	body, _ := updateWatchlistRequestBodyFromFlags(cmd)
@@ -112,27 +106,23 @@ var watchlistUpdateByNameCmd = fetchCmd("update-by-name <name>", api.UpdateWatch
 	return tradingClient.UpdateWatchlistByName(
 		&api.UpdateWatchlistByNameParams{Name: args[0]}, body,
 	)
-}, func(c *cobra.Command) {
-	cmdutil.RegisterFlags(c, api.UpdateWatchlistByNameOp.Flags(), &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"name": true},
+}, withFlags(&cmdutil.FlagOpts{Exclude: map[string]bool{"name": true}}),
+	func(c *cobra.Command) {
+		c.Flags().String("new-name", "", "New name for the watchlist")
+		c.Args = cobra.ExactArgs(1)
+		c.Example = `  alpaca watchlist update-by-name "Tech Stocks" --symbols AAPL,MSFT,GOOG`
 	})
-	c.Flags().String("new-name", "", "New name for the watchlist")
-	c.Args = cobra.ExactArgs(1)
-	c.Example = `  alpaca watchlist update-by-name "Tech Stocks" --symbols AAPL,MSFT,GOOG`
-})
 
 var watchlistAddByNameCmd = fetchCmd("add-by-name <name> <symbol>", api.AddAssetToWatchlistByNameOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return tradingClient.AddAssetToWatchlistByName(
 		&api.AddAssetToWatchlistByNameParams{Name: args[0]},
 		&api.AddAssetToWatchlistByNameRequest{Symbol: args[1]},
 	)
-}, func(c *cobra.Command) {
-	cmdutil.RegisterFlags(c, api.AddAssetToWatchlistByNameOp.Flags(), &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"name": true, "symbol": true},
+}, withFlags(&cmdutil.FlagOpts{Exclude: map[string]bool{"name": true, "symbol": true}}),
+	func(c *cobra.Command) {
+		c.Args = cobra.ExactArgs(2)
+		c.Example = `  alpaca watchlist add-by-name "Tech Stocks" NVDA`
 	})
-	c.Args = cobra.ExactArgs(2)
-	c.Example = `  alpaca watchlist add-by-name "Tech Stocks" NVDA`
-})
 
 func init() {
 	watchlistCmd.AddCommand(watchlistListCmd)

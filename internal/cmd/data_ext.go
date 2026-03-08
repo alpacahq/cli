@@ -2,9 +2,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"fmt"
-	"io"
-	"os"
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
@@ -19,24 +16,16 @@ var dataForexCmd = &cobra.Command{
 	Short: "Foreign exchange rate data",
 }
 
-var dataForexRatesCmd = &cobra.Command{
-	Use:   "rates",
-	Short: api.RatesOp.Summary(),
-	Example: `  alpaca data forex rates --currency-pairs EUR/USD,GBP/USD --start 2025-01-01
-  alpaca data forex rates --currency-pairs USD/JPY --timeframe 1Hour`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := cmdutil.RequireAll(cmd, api.RatesOp.RequiredFlags()...); err != nil {
-			return err
-		}
-
-		resp, err := dataClient.Rates(ratesParamsFromFlags(cmd))
-		if err != nil {
-			return err
-		}
-
-		return renderMapValues(cmd.OutOrStdout(), getOutput(), forexRateColumns(), resp.Rates)
-	},
-}
+var dataForexRatesCmd = fetchCmd("rates", api.RatesOp, func(cmd *cobra.Command, args []string) (any, error) {
+	resp, err := dataClient.Rates(ratesParamsFromFlags(cmd))
+	if err != nil {
+		return nil, err
+	}
+	return resp.Rates, nil
+}, withJSON, func(c *cobra.Command) {
+	c.Example = `  alpaca data forex rates --currency-pairs EUR/USD,GBP/USD --start 2025-01-01
+  alpaca data forex rates --currency-pairs USD/JPY --timeframe 1Hour`
+})
 
 var dataForexLatestCmd = fetchCmd("latest", api.LatestRatesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	resp, err := dataClient.LatestRates(latestRatesParamsFromFlags(cmd))
@@ -216,8 +205,6 @@ var newsCmd = fetchCmd("news", api.NewsOp, func(cmd *cobra.Command, args []strin
 })
 
 func init() {
-	cmdutil.RegisterFlags(dataForexRatesCmd, api.RatesOp.Flags(), nil)
-
 	dataForexCmd.AddCommand(dataForexRatesCmd)
 	dataForexCmd.AddCommand(dataForexLatestCmd)
 
@@ -240,20 +227,4 @@ func init() {
 	dataCmd.AddCommand(dataMetaCmd)
 	dataCmd.AddCommand(screenerCmd)
 	dataCmd.AddCommand(newsCmd)
-}
-
-func renderMapValues(w io.Writer, format string, cols []output.Column, data any) error {
-	j, _ := json.Marshal(data)
-	var m map[string]json.RawMessage
-	if json.Unmarshal(j, &m) == nil {
-		if len(m) == 1 {
-			for _, v := range m {
-				return output.Render(w, format, cols, v)
-			}
-		}
-		if len(m) > 1 && format != output.FormatJSON && !quietFlag {
-			fmt.Fprintf(os.Stderr, "Hint: multi-symbol response (%d symbols); rendering as JSON. Use --json for structured output.\n", len(m))
-		}
-	}
-	return output.JSON(w, data)
 }

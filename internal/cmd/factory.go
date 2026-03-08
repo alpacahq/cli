@@ -11,27 +11,35 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// cmdColumns allows per-command column overrides set via configure closures
-// for commands that need custom columns (e.g. positions with P/L coloring).
-var cmdColumns = map[*cobra.Command][]output.Column{}
+// Per-command overrides set via configure closures.
+var (
+	cmdColumns  = map[*cobra.Command][]output.Column{}
+	cmdJSON     = map[*cobra.Command]bool{}
+	cmdFlagOpts = map[*cobra.Command]*cmdutil.FlagOpts{}
+)
 
-// cmdJSON marks commands that should always render JSON regardless of format flags.
-var cmdJSON = map[*cobra.Command]bool{}
-
-// withJSON is a configure closure that marks a command as JSON-only output.
-// Use for responses with complex nested or map-of-symbols structures where
-// tabular rendering doesn't make sense.
+// withJSON marks a command as JSON-only output. Use for responses with complex
+// nested or map-of-symbols structures where tabular rendering doesn't make sense.
 func withJSON(c *cobra.Command) {
 	cmdJSON[c] = true
 }
 
+// withFlags sets custom FlagOpts for OAS flag registration. Use to exclude
+// params that are positional args, or to override defaults shown in --help.
+func withFlags(opts *cmdutil.FlagOpts) func(*cobra.Command) {
+	return func(c *cobra.Command) {
+		cmdFlagOpts[c] = opts
+	}
+}
+
 // fetchCmd creates a command that fetches data and renders it.
 // Slices render as tables; single objects render as key-value pairs.
-// RequiredFlags from the op are enforced automatically.
+// RequiredFlags from the op are enforced for flags actually registered
+// on the command (excluded positional-arg params are skipped).
 //
-// Op flags are auto-registered with nil FlagOpts. If a configure closure
-// registers flags first (e.g. with custom FlagOpts), auto-registration
-// is skipped.
+// OAS flags are registered after configure closures run, using FlagOpts
+// from withFlags (if any). Configure closures should NOT call RegisterFlags
+// for OAS flags — use withFlags instead.
 func fetchCmd(use string, op api.Op, fetch func(cmd *cobra.Command, args []string) (any, error), configure ...func(*cobra.Command)) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   use,
@@ -64,7 +72,7 @@ func fetchCmd(use string, op api.Op, fetch func(cmd *cobra.Command, args []strin
 	for _, fn := range configure {
 		fn(cmd)
 	}
-	autoRegisterFlags(cmd, op)
+	cmdutil.RegisterFlags(cmd, op.Flags(), cmdFlagOpts[cmd])
 	return cmd
 }
 
@@ -87,13 +95,13 @@ func actionCmd(use string, op api.Op, msg string, do func(cmd *cobra.Command, ar
 	for _, fn := range configure {
 		fn(cmd)
 	}
-	autoRegisterFlags(cmd, op)
+	cmdutil.RegisterFlags(cmd, op.Flags(), cmdFlagOpts[cmd])
 	return cmd
 }
 
 // registeredRequired returns only those RequiredFlags from the op that are
-// actually registered on the command. Flags excluded via FlagOpts.Exclude
-// (because they're positional args) are silently skipped.
+// actually registered on the command. Params promoted to positional args
+// (excluded via withFlags) are silently skipped.
 func registeredRequired(cmd *cobra.Command, op api.Op) []string {
 	all := op.RequiredFlags()
 	if len(all) == 0 {
@@ -106,21 +114,6 @@ func registeredRequired(cmd *cobra.Command, op api.Op) []string {
 		}
 	}
 	return present
-}
-
-// autoRegisterFlags registers op flags with nil FlagOpts unless a configure
-// closure already called RegisterFlags (detected via the "op" annotation that
-// RegisterFlags always sets). This correctly handles the case where a configure
-// closure excludes ALL flags — the annotation is still set.
-func autoRegisterFlags(cmd *cobra.Command, op api.Op) {
-	if cmd.Annotations != nil && cmd.Annotations["op"] != "" {
-		return
-	}
-	flags := op.Flags()
-	if len(flags) == 0 {
-		return
-	}
-	cmdutil.RegisterFlags(cmd, flags, nil)
 }
 
 // isSliceResult reports whether data should be rendered as a list (table)

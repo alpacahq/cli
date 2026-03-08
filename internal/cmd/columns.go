@@ -116,13 +116,3 @@ func tradeColumns() []output.Column {
 		col("x", "EXCHANGE"),
 	}
 }
-
-// forexRateColumns maps abbreviated API fields to human-readable headers.
-func forexRateColumns() []output.Column {
-	return []output.Column{
-		col("t", "TIMESTAMP"),
-		col("bp", "BID"),
-		col("ap", "ASK"),
-		col("mp", "MID"),
-	}
-}
