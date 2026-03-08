@@ -36,6 +36,7 @@ func discoverOptionSymbol(t *testing.T) string {
 }
 
 func TestDataOptionChain(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "data", "option", "chain", "AAPL", "--json")
 	chain := parseJSONMap(t, out)
 	if len(chain) == 0 {
@@ -44,6 +45,7 @@ func TestDataOptionChain(t *testing.T) {
 }
 
 func TestDataOptionSnapshot(t *testing.T) {
+	t.Parallel()
 	sym := discoverOptionSymbol(t)
 	out := alpaca(t, "data", "option", "snapshot", "--symbols", sym, "--json")
 	data := parseJSONMap(t, out)
@@ -53,6 +55,7 @@ func TestDataOptionSnapshot(t *testing.T) {
 }
 
 func TestDataOptionLatestQuotes(t *testing.T) {
+	t.Parallel()
 	sym := discoverOptionSymbol(t)
 	out := alpaca(t, "data", "option", "latest-quotes", "--symbols", sym, "--json")
 	data := parseJSONMap(t, out)
@@ -62,6 +65,7 @@ func TestDataOptionLatestQuotes(t *testing.T) {
 }
 
 func TestDataOptionExchanges(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "data", "option", "exchanges", "--json")
 	data := parseJSONMap(t, out)
 	if len(data) == 0 {
@@ -70,6 +74,7 @@ func TestDataOptionExchanges(t *testing.T) {
 }
 
 func TestDataOptionConditions(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "data", "option", "conditions", "trade", "--json")
 	data := parseJSONMap(t, out)
 	if len(data) == 0 {
@@ -78,6 +83,7 @@ func TestDataOptionConditions(t *testing.T) {
 }
 
 func TestDataOptionBars(t *testing.T) {
+	t.Parallel()
 	sym := discoverOptionSymbol(t)
 	// Option contracts may not have historical bar data — just verify the command runs
 	stdout, _, code := alpacaWithStderr(t, "data", "option", "bars", "--symbols", sym, "--start", daysAgo(90), "--json")
@@ -89,6 +95,7 @@ func TestDataOptionBars(t *testing.T) {
 }
 
 func TestDataOptionTrades(t *testing.T) {
+	t.Parallel()
 	sym := discoverOptionSymbol(t)
 	stdout, _, code := alpacaWithStderr(t, "data", "option", "trades", "--symbols", sym, "--start", daysAgo(90), "--json")
 	if code != 0 {
@@ -99,6 +106,7 @@ func TestDataOptionTrades(t *testing.T) {
 }
 
 func TestDataOptionLatestTrades(t *testing.T) {
+	t.Parallel()
 	sym := discoverOptionSymbol(t)
 	stdout, _, code := alpacaWithStderr(t, "data", "option", "latest-trades", "--symbols", sym, "--json")
 	if code != 0 {

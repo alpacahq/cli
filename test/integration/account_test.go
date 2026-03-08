@@ -35,16 +35,19 @@ func TestAccountConfigSet(t *testing.T) {
 }
 
 func TestAccountActivityList_WithType(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "account", "activity", "list", "--activity-types", "FILL", "--page-size", "5", "--json")
 	_ = parseJSONArray(t, out)
 }
 
 func TestAccountActivityList_Pagination(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "account", "activity", "list", "--page-size", "2", "--direction", "asc", "--json")
 	_ = parseJSONArray(t, out)
 }
 
 func TestAccountPortfolio_WithParams(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "account", "portfolio", "--period", "1W", "--timeframe", "1D", "--json")
 	data := parseJSONMap(t, out)
 	requireFields(t, data, "equity", "timestamp")

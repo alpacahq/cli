@@ -8,6 +8,7 @@ import (
 )
 
 func TestOutput_Table_AccountGet(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "account", "get")
 	lines := strings.Split(strings.TrimSpace(string(out)), "\n")
 	if len(lines) < 2 {
@@ -16,12 +17,14 @@ func TestOutput_Table_AccountGet(t *testing.T) {
 }
 
 func TestOutput_JSON_AccountGet(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "account", "get", "--json")
 	acct := parseJSONMap(t, out)
 	requireFields(t, acct, "id", "status")
 }
 
 func TestOutput_CSV_AccountGet(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "account", "get", "--csv")
 	s := strings.TrimSpace(string(out))
 	if !strings.Contains(s, ",") {
@@ -33,16 +36,19 @@ func TestOutput_CSV_AccountGet(t *testing.T) {
 }
 
 func TestOutput_Table_OrderList(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "order", "list", "--status", "all", "--limit", "1")
 	_ = string(out)
 }
 
 func TestOutput_JSON_OrderList(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "order", "list", "--status", "all", "--limit", "1", "--json")
 	_ = parseJSONArray(t, out)
 }
 
 func TestOutput_CSV_OrderList(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "order", "list", "--status", "all", "--limit", "1", "--csv")
 	lines := strings.Split(strings.TrimSpace(string(out)), "\n")
 	if len(lines) < 1 {
@@ -54,6 +60,7 @@ func TestOutput_CSV_OrderList(t *testing.T) {
 }
 
 func TestOutput_Table_AssetGet(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "asset", "get", "AAPL")
 	s := string(out)
 	if !strings.Contains(s, "AAPL") {

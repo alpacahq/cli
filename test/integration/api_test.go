@@ -7,6 +7,7 @@ import (
 )
 
 func TestAPI_Get(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "api", "get", "/v2/clock")
 	clock := parseJSONMap(t, out)
 	requireFields(t, clock, "is_open")
@@ -73,6 +74,7 @@ func TestAPI_Delete(t *testing.T) {
 }
 
 func TestAPI_UseDataAPI(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "api", "get", "/v2/stocks/AAPL/trades/latest", "--use-data-api")
 	trade := parseJSONMap(t, out)
 	requireFields(t, trade, "trade")

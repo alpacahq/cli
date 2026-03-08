@@ -7,6 +7,7 @@ import (
 )
 
 func TestOptionContracts(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "option", "contracts", "AAPL", "--json")
 	wrapper := parseJSONMap(t, out)
 	contracts, ok := wrapper["option_contracts"].([]any)
@@ -18,6 +19,7 @@ func TestOptionContracts(t *testing.T) {
 }
 
 func TestOptionContracts_Filter(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "option", "contracts", "AAPL", "--type", "call", "--json")
 	wrapper := parseJSONMap(t, out)
 	contracts, ok := wrapper["option_contracts"].([]any)
@@ -33,6 +35,7 @@ func TestOptionContracts_Filter(t *testing.T) {
 }
 
 func TestOptionGet(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "option", "contracts", "AAPL", "--json")
 	wrapper := parseJSONMap(t, out)
 	contracts, ok := wrapper["option_contracts"].([]any)

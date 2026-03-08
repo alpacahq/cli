@@ -8,6 +8,7 @@ import (
 )
 
 func TestVerboseFlag(t *testing.T) {
+	t.Parallel()
 	stdout, stderr, code := alpacaWithStderr(t, "account", "get", "--verbose", "--json")
 	if code != 0 {
 		t.Fatalf("expected exit 0, got %d (stderr: %s)", code, stderr)
@@ -20,6 +21,7 @@ func TestVerboseFlag(t *testing.T) {
 }
 
 func TestDebugFlag(t *testing.T) {
+	t.Parallel()
 	stdout, stderr, code := alpacaWithStderr(t, "account", "get", "--debug", "--json")
 	if code != 0 {
 		t.Fatalf("expected exit 0, got %d (stderr: %s)", code, stderr)
@@ -32,12 +34,14 @@ func TestDebugFlag(t *testing.T) {
 }
 
 func TestTimeoutFlag(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "account", "get", "--timeout", "10", "--json")
 	acct := parseJSONMap(t, out)
 	requireFields(t, acct, "id")
 }
 
 func TestQuietFlag(t *testing.T) {
+	t.Parallel()
 	_, stderr, code := alpacaWithStderr(t, "order", "list", "--quiet", "--json")
 	if code != 0 {
 		t.Fatalf("expected exit 0, got %d", code)
@@ -51,6 +55,7 @@ func TestQuietFlag(t *testing.T) {
 }
 
 func TestHelpAll(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "--help-all")
 	s := string(out)
 	for _, cmd := range []string{"order", "position", "account", "data", "watchlist"} {
@@ -61,6 +66,7 @@ func TestHelpAll(t *testing.T) {
 }
 
 func TestUnknownCommand(t *testing.T) {
+	t.Parallel()
 	_, stderr, code := alpacaWithStderr(t, "notacommand")
 	if code == 0 {
 		t.Fatal("unknown command should return non-zero exit code")

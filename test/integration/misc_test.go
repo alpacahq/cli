@@ -8,11 +8,13 @@ import (
 )
 
 func TestActivity(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "account", "activity", "list", "--page-size", "5", "--json")
 	_ = parseJSONArray(t, out)
 }
 
 func TestPortfolioHistory(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "account", "portfolio", "--period", "1W", "--timeframe", "1D", "--json")
 	data := parseJSONMap(t, out)
 	if data["equity"] == nil && data["timestamp"] == nil {
@@ -21,6 +23,7 @@ func TestPortfolioHistory(t *testing.T) {
 }
 
 func TestAssetList(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "asset", "list", "--status", "active", "--asset-class", "us_equity", "--json")
 	assets := parseJSONArray(t, out)
 	if len(assets) == 0 {
@@ -29,6 +32,7 @@ func TestAssetList(t *testing.T) {
 }
 
 func TestScreenerMostActives(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "data", "screener", "most-actives", "--top", "5", "--json")
 	actives := parseJSONArray(t, out)
 	if len(actives) == 0 {
@@ -37,6 +41,7 @@ func TestScreenerMostActives(t *testing.T) {
 }
 
 func TestAPIPassthrough(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "api", "get", "/v2/clock", "--json")
 	clock := parseJSONMap(t, out)
 	if clock["is_open"] == nil {
@@ -45,8 +50,7 @@ func TestAPIPassthrough(t *testing.T) {
 }
 
 func TestDoctor(t *testing.T) {
-	// Doctor may report "some checks failed" in isolated config dir,
-	// but should still run and produce output.
+	t.Parallel()
 	stdout, stderr, _ := alpacaWithStderr(t, "doctor")
 	combined := string(stdout) + string(stderr)
 	if !strings.Contains(combined, "trading") && !strings.Contains(combined, "Trading") &&
@@ -56,6 +60,7 @@ func TestDoctor(t *testing.T) {
 }
 
 func TestProfileStatus(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "profile", "status")
 	s := string(out)
 	if s == "" {
@@ -64,7 +69,7 @@ func TestProfileStatus(t *testing.T) {
 }
 
 func TestProfileList(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "profile", "list")
-	_ = string(out) // just ensure exit 0
+	_ = string(out)
 }
-

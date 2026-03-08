@@ -8,6 +8,7 @@ import (
 )
 
 func TestOrderLifecycle(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "order", "submit", "AAPL",
 		"--qty", "1",
 		"--side", "buy",

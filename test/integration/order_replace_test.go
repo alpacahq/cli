@@ -9,6 +9,7 @@ import (
 )
 
 func TestOrderReplace(t *testing.T) {
+	t.Parallel()
 	// Use crypto limit order — crypto is 24/7, so the order transitions
 	// out of "accepted" immediately unlike equity orders outside market hours.
 	// Crypto min cost basis is $10; qty 10 * $1.00 = $10
@@ -51,6 +52,7 @@ func TestOrderReplace(t *testing.T) {
 }
 
 func TestOrderSubmit_LimitOrder(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "order", "submit", "AAPL",
 		"--qty", "1",
 		"--side", "buy",
@@ -62,7 +64,7 @@ func TestOrderSubmit_LimitOrder(t *testing.T) {
 	order := parseJSONMap(t, out)
 	id := order["id"].(string)
 	t.Cleanup(func() {
-		alpacaWithStderr(t, "order", "cancel", id)
+		_ = makeCmd("order", "cancel", id).Run()
 	})
 
 	if order["type"] != "limit" {
@@ -72,7 +74,8 @@ func TestOrderSubmit_LimitOrder(t *testing.T) {
 }
 
 func TestOrderSubmit_StopOrder(t *testing.T) {
-	out := alpaca(t, "order", "submit", "AAPL",
+	t.Parallel()
+	out := alpaca(t, "order", "submit", "MSFT",
 		"--qty", "1",
 		"--side", "sell",
 		"--type", "stop",
@@ -83,7 +86,7 @@ func TestOrderSubmit_StopOrder(t *testing.T) {
 	order := parseJSONMap(t, out)
 	id := order["id"].(string)
 	t.Cleanup(func() {
-		alpacaWithStderr(t, "order", "cancel", id)
+		_ = makeCmd("order", "cancel", id).Run()
 	})
 
 	if order["type"] != "stop" {
@@ -93,7 +96,8 @@ func TestOrderSubmit_StopOrder(t *testing.T) {
 }
 
 func TestOrderSubmit_StopLimitOrder(t *testing.T) {
-	out := alpaca(t, "order", "submit", "AAPL",
+	t.Parallel()
+	out := alpaca(t, "order", "submit", "GOOG",
 		"--qty", "1",
 		"--side", "sell",
 		"--type", "stop_limit",
@@ -105,7 +109,7 @@ func TestOrderSubmit_StopLimitOrder(t *testing.T) {
 	order := parseJSONMap(t, out)
 	id := order["id"].(string)
 	t.Cleanup(func() {
-		alpacaWithStderr(t, "order", "cancel", id)
+		_ = makeCmd("order", "cancel", id).Run()
 	})
 
 	if order["type"] != "stop_limit" {
@@ -115,7 +119,8 @@ func TestOrderSubmit_StopLimitOrder(t *testing.T) {
 }
 
 func TestOrderSubmit_TrailingStopOrder(t *testing.T) {
-	out := alpaca(t, "order", "submit", "AAPL",
+	t.Parallel()
+	out := alpaca(t, "order", "submit", "AMZN",
 		"--qty", "1",
 		"--side", "sell",
 		"--type", "trailing_stop",
@@ -126,7 +131,7 @@ func TestOrderSubmit_TrailingStopOrder(t *testing.T) {
 	order := parseJSONMap(t, out)
 	id := order["id"].(string)
 	t.Cleanup(func() {
-		alpacaWithStderr(t, "order", "cancel", id)
+		_ = makeCmd("order", "cancel", id).Run()
 	})
 
 	if order["type"] != "trailing_stop" {
@@ -136,6 +141,7 @@ func TestOrderSubmit_TrailingStopOrder(t *testing.T) {
 }
 
 func TestOrderSubmit_Notional(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "order", "submit", "BTC/USD",
 		"--notional", "10",
 		"--side", "buy",
@@ -153,7 +159,8 @@ func TestOrderSubmit_Notional(t *testing.T) {
 }
 
 func TestOrderSubmit_ClientOrderID(t *testing.T) {
-	clientID := "integ-test-" + time.Now().Format("20060102150405")
+	t.Parallel()
+	clientID := "integ-test-" + time.Now().Format("20060102150405.000")
 	out := alpaca(t, "order", "submit", "AAPL",
 		"--qty", "1",
 		"--side", "buy",
@@ -166,7 +173,7 @@ func TestOrderSubmit_ClientOrderID(t *testing.T) {
 	order := parseJSONMap(t, out)
 	id := order["id"].(string)
 	t.Cleanup(func() {
-		alpacaWithStderr(t, "order", "cancel", id)
+		_ = makeCmd("order", "cancel", id).Run()
 	})
 
 	if order["client_order_id"] != clientID {
@@ -188,6 +195,7 @@ func TestOrderSubmit_ClientOrderID(t *testing.T) {
 }
 
 func TestOrderSubmit_DryRun(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "order", "submit", "AAPL",
 		"--qty", "1",
 		"--side", "buy",
@@ -205,6 +213,7 @@ func TestOrderSubmit_DryRun(t *testing.T) {
 }
 
 func TestOrderList_StatusFilter(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "order", "list", "--status", "all", "--limit", "5", "--json")
 	_ = parseJSONArray(t, out)
 
@@ -213,6 +222,7 @@ func TestOrderList_StatusFilter(t *testing.T) {
 }
 
 func TestOrderList_SymbolFilter(t *testing.T) {
+	t.Parallel()
 	_ = submitTestOrder(t)
 
 	out := alpaca(t, "order", "list", "--status", "open", "--symbols", "AAPL", "--json")
@@ -225,6 +235,7 @@ func TestOrderList_SymbolFilter(t *testing.T) {
 }
 
 func TestOrderList_Limit(t *testing.T) {
+	t.Parallel()
 	// Ensure at least 2 orders exist
 	_ = submitTestOrder(t)
 	_ = submitTestOrder(t)
@@ -237,6 +248,7 @@ func TestOrderList_Limit(t *testing.T) {
 }
 
 func TestOrderList_Direction(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "order", "list", "--status", "all", "--limit", "5", "--direction", "asc", "--json")
 	orders := parseJSONArray(t, out)
 

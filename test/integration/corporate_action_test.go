@@ -7,6 +7,7 @@ import (
 )
 
 func TestCorporateActionList(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "corporate-action", "list",
 		"--ca-types", "dividend",
 		"--since", daysAgo(180),
@@ -17,6 +18,7 @@ func TestCorporateActionList(t *testing.T) {
 }
 
 func TestCorporateActionGet(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "corporate-action", "list",
 		"--ca-types", "dividend",
 		"--since", daysAgo(180),

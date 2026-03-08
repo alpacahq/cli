@@ -7,6 +7,7 @@ import (
 )
 
 func TestDataCryptoOrderbook(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "data", "crypto-orderbook", "--symbols", "BTC/USD", "--json")
 	data := parseJSONMap(t, out)
 	if len(data) == 0 {
@@ -15,6 +16,7 @@ func TestDataCryptoOrderbook(t *testing.T) {
 }
 
 func TestDataAuctions(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "data", "auctions", "--symbols", "AAPL", "--start", daysAgo(100), "--end", daysAgo(93), "--json")
 	data := parseJSONMap(t, out)
 	if len(data) == 0 {
@@ -23,6 +25,7 @@ func TestDataAuctions(t *testing.T) {
 }
 
 func TestDataCorporateActions(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "data", "corporate-actions", "--symbols", "AAPL", "--json")
 	data := parseJSONMap(t, out)
 	if len(data) == 0 {
@@ -31,6 +34,7 @@ func TestDataCorporateActions(t *testing.T) {
 }
 
 func TestDataMetaExchanges(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "data", "meta", "exchanges", "--json")
 	data := parseJSONMap(t, out)
 	if len(data) == 0 {
@@ -39,6 +43,7 @@ func TestDataMetaExchanges(t *testing.T) {
 }
 
 func TestDataMetaConditions(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "data", "meta", "conditions", "trade", "--tape", "A", "--json")
 	data := parseJSONMap(t, out)
 	if len(data) == 0 {
@@ -47,6 +52,7 @@ func TestDataMetaConditions(t *testing.T) {
 }
 
 func TestDataScreenerMovers(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "data", "screener", "movers", "--json")
 	data := parseJSONMap(t, out)
 	if len(data) == 0 {

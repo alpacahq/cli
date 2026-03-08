@@ -7,6 +7,7 @@ import (
 )
 
 func TestDataQuotes(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "data", "quotes", "AAPL",
 		"--start", daysAgo(95),
 		"--end", daysAgo(94),
@@ -18,6 +19,7 @@ func TestDataQuotes(t *testing.T) {
 }
 
 func TestDataTrades(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "data", "trades", "AAPL",
 		"--start", daysAgo(95),
 		"--end", daysAgo(94),
@@ -29,12 +31,14 @@ func TestDataTrades(t *testing.T) {
 }
 
 func TestDataLatestBar(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "data", "latest", "bar", "AAPL", "--json")
 	bar := parseJSONMap(t, out)
 	requireFields(t, bar, "o", "h", "l", "c", "v")
 }
 
 func TestDataBars_Timeframe(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "data", "bars", "AAPL",
 		"--start", daysAgo(95),
 		"--end", daysAgo(94),
@@ -46,6 +50,7 @@ func TestDataBars_Timeframe(t *testing.T) {
 }
 
 func TestDataBars_Adjustment(t *testing.T) {
+	t.Parallel()
 	out := alpaca(t, "data", "bars", "AAPL",
 		"--start", daysAgo(100),
 		"--end", daysAgo(93),

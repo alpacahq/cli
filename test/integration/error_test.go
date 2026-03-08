@@ -8,6 +8,7 @@ import (
 )
 
 func TestAPIError_InvalidOrderReturnsStructuredJSON(t *testing.T) {
+	t.Parallel()
 	_, stderr, code := alpacaFail(t,
 		"order", "submit", "AAPL",
 		"--qty", "-1",
@@ -26,7 +27,7 @@ func TestAPIError_InvalidOrderReturnsStructuredJSON(t *testing.T) {
 }
 
 func TestAPIError_InvalidAuth(t *testing.T) {
-	// Valid creds succeed, so test with a bogus order ID to trigger a 404.
+	t.Parallel()
 	_, stderr, code := alpacaFail(t,
 		"order", "get", "00000000-0000-0000-0000-000000000000",
 		"--json",
@@ -41,6 +42,7 @@ func TestAPIError_InvalidAuth(t *testing.T) {
 }
 
 func TestAPIError_HumanReadable(t *testing.T) {
+	t.Parallel()
 	_, stderr, _ := alpacaFail(t,
 		"order", "get", "00000000-0000-0000-0000-000000000000",
 	)
@@ -51,6 +53,7 @@ func TestAPIError_HumanReadable(t *testing.T) {
 }
 
 func TestAPIError_NonExistentPosition(t *testing.T) {
+	t.Parallel()
 	_, stderr, code := alpacaFail(t, "position", "get", "ZZZZZZZZZ", "--json")
 	if code == 0 {
 		t.Fatal("expected non-zero exit code for non-existent position")
@@ -62,6 +65,7 @@ func TestAPIError_NonExistentPosition(t *testing.T) {
 }
 
 func TestAPIError_NonExistentOrderCancel(t *testing.T) {
+	t.Parallel()
 	_, stderr, code := alpacaFail(t,
 		"order", "cancel", "00000000-0000-0000-0000-000000000001",
 		"--json",
@@ -76,6 +80,7 @@ func TestAPIError_NonExistentOrderCancel(t *testing.T) {
 }
 
 func TestAPIError_NonExistentAsset(t *testing.T) {
+	t.Parallel()
 	_, stderr, code := alpacaFail(t, "asset", "get", "ZZZZZZZZZ", "--json")
 	if code == 0 {
 		t.Fatal("expected non-zero exit code for non-existent asset")
@@ -87,6 +92,7 @@ func TestAPIError_NonExistentAsset(t *testing.T) {
 }
 
 func TestExitCode_APIErrorIs1(t *testing.T) {
+	t.Parallel()
 	_, _, code := alpacaFail(t,
 		"order", "get", "00000000-0000-0000-0000-000000000000",
 	)
@@ -96,6 +102,7 @@ func TestExitCode_APIErrorIs1(t *testing.T) {
 }
 
 func TestAPIError_JSONErrorStructure(t *testing.T) {
+	t.Parallel()
 	_, stderr, code := alpacaFail(t,
 		"order", "get", "00000000-0000-0000-0000-000000000000",
 		"--json",
