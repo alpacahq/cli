@@ -15,6 +15,16 @@ import (
 // for commands that need custom columns (e.g. positions with P/L coloring).
 var cmdColumns = map[*cobra.Command][]output.Column{}
 
+// cmdJSON marks commands that should always render JSON regardless of format flags.
+var cmdJSON = map[*cobra.Command]bool{}
+
+// withJSON is a configure closure that marks a command as JSON-only output.
+// Use for responses with complex nested or map-of-symbols structures where
+// tabular rendering doesn't make sense.
+func withJSON(c *cobra.Command) {
+	cmdJSON[c] = true
+}
+
 // fetchCmd creates a command that fetches data and renders it.
 // Slices render as tables; single objects render as key-value pairs.
 // RequiredFlags from the op are enforced automatically.
@@ -28,7 +38,7 @@ func fetchCmd(use string, op api.Op, fetch func(cmd *cobra.Command, args []strin
 		Short: op.Summary(),
 	}
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		if req := op.RequiredFlags(); len(req) > 0 {
+		if req := registeredRequired(cmd, op); len(req) > 0 {
 			if err := cmdutil.RequireAll(cmd, req...); err != nil {
 				return err
 			}
@@ -36,6 +46,9 @@ func fetchCmd(use string, op api.Op, fetch func(cmd *cobra.Command, args []strin
 		data, err := fetch(cmd, args)
 		if err != nil {
 			return err
+		}
+		if cmdJSON[cmd] {
+			return output.JSON(cmd.OutOrStdout(), data)
 		}
 		cols := cmdColumns[cmd]
 		if cols == nil {
@@ -78,46 +91,36 @@ func actionCmd(use string, op api.Op, msg string, do func(cmd *cobra.Command, ar
 	return cmd
 }
 
+// registeredRequired returns only those RequiredFlags from the op that are
+// actually registered on the command. Flags excluded via FlagOpts.Exclude
+// (because they're positional args) are silently skipped.
+func registeredRequired(cmd *cobra.Command, op api.Op) []string {
+	all := op.RequiredFlags()
+	if len(all) == 0 {
+		return nil
+	}
+	var present []string
+	for _, name := range all {
+		if cmd.Flags().Lookup(name) != nil {
+			present = append(present, name)
+		}
+	}
+	return present
+}
+
 // autoRegisterFlags registers op flags with nil FlagOpts unless a configure
-// closure already registered them (detected by checking for any known flag).
+// closure already called RegisterFlags (detected via the "op" annotation that
+// RegisterFlags always sets). This correctly handles the case where a configure
+// closure excludes ALL flags — the annotation is still set.
 func autoRegisterFlags(cmd *cobra.Command, op api.Op) {
+	if cmd.Annotations != nil && cmd.Annotations["op"] != "" {
+		return
+	}
 	flags := op.Flags()
 	if len(flags) == 0 {
 		return
 	}
-	for _, f := range flags {
-		if cmd.Flags().Lookup(f.Name) != nil {
-			return // configure already handled registration
-		}
-	}
 	cmdutil.RegisterFlags(cmd, flags, nil)
-}
-
-// jsonCmd creates a command that fetches data and always renders it as JSON.
-// Use for responses with complex nested or map-of-symbols structures where
-// tabular rendering doesn't make sense.
-func jsonCmd(use string, op api.Op, fetch func(cmd *cobra.Command, args []string) (any, error), configure ...func(*cobra.Command)) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   use,
-		Short: op.Summary(),
-	}
-	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		if req := op.RequiredFlags(); len(req) > 0 {
-			if err := cmdutil.RequireAll(cmd, req...); err != nil {
-				return err
-			}
-		}
-		data, err := fetch(cmd, args)
-		if err != nil {
-			return err
-		}
-		return output.JSON(cmd.OutOrStdout(), data)
-	}
-	for _, fn := range configure {
-		fn(cmd)
-	}
-	autoRegisterFlags(cmd, op)
-	return cmd
 }
 
 // isSliceResult reports whether data should be rendered as a list (table)

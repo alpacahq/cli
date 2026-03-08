@@ -1,11 +1,7 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/alpacahq/cli/internal/api"
-	"github.com/alpacahq/cli/internal/cmdutil"
-	"github.com/alpacahq/cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -32,44 +28,22 @@ var positionGetCmd = fetchCmd("get <symbol>", api.GetOpenPositionOp, func(cmd *c
 	cmdColumns[c] = positionColumns()
 })
 
-var positionCloseCmd = &cobra.Command{
-	Use:   "close <symbol>",
-	Short: api.DeleteOpenPositionOp.Summary(),
-	Example: `  alpaca position close AAPL
+var positionCloseCmd = fetchCmd("close <symbol>", api.DeleteOpenPositionOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.DeleteOpenPosition(args[0], deleteOpenPositionParamsFromFlags(cmd))
+}, func(c *cobra.Command) {
+	c.Args = cobra.ExactArgs(1)
+	c.Example = `  alpaca position close AAPL
   alpaca position close AAPL --qty 5
-  alpaca position close AAPL --percentage 50`,
-	Args: cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		params := deleteOpenPositionParamsFromFlags(cmd)
-		order, err := tradingClient.DeleteOpenPosition(args[0], params)
-		if err != nil {
-			return err
-		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), orderColumns(), order)
-	},
-}
+  alpaca position close AAPL --percentage 50`
+	cmdColumns[c] = orderColumns()
+})
 
-var positionCloseAllCmd = &cobra.Command{
-	Use:   "close-all",
-	Short: api.DeleteAllOpenPositionsOp.Summary(),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		canceled, err := tradingClient.DeleteAllOpenPositions(deleteAllOpenPositionsParamsFromFlags(cmd))
-		if err != nil {
-			return err
-		}
-		format := getOutput()
-		if format == output.FormatJSON || format == output.FormatCSV {
-			return output.JSON(cmd.OutOrStdout(), canceled)
-		}
-		_, _ = fmt.Fprintln(cmd.OutOrStdout(), "All positions closed.")
-		return nil
-	},
-}
+var positionCloseAllCmd = actionCmd("close-all", api.DeleteAllOpenPositionsOp, "All positions closed.", func(cmd *cobra.Command, args []string) error {
+	_, err := tradingClient.DeleteAllOpenPositions(deleteAllOpenPositionsParamsFromFlags(cmd))
+	return err
+})
 
 func init() {
-	cmdutil.RegisterFlags(positionCloseCmd, api.DeleteOpenPositionOp.Flags(), nil)
-	cmdutil.RegisterFlags(positionCloseAllCmd, api.DeleteAllOpenPositionsOp.Flags(), nil)
-
 	positionCmd.AddCommand(positionListCmd)
 	positionCmd.AddCommand(positionGetCmd)
 	positionCmd.AddCommand(positionCloseCmd)

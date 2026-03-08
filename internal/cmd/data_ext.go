@@ -38,66 +38,66 @@ var dataForexRatesCmd = &cobra.Command{
 	},
 }
 
-var dataForexLatestCmd = jsonCmd("latest", api.LatestRatesOp, func(cmd *cobra.Command, args []string) (any, error) {
+var dataForexLatestCmd = fetchCmd("latest", api.LatestRatesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	resp, err := dataClient.LatestRates(latestRatesParamsFromFlags(cmd))
 	if err != nil {
 		return nil, err
 	}
 	return resp.Rates, nil
-}, func(c *cobra.Command) {
+}, withJSON, func(c *cobra.Command) {
 	c.Example = `  alpaca data forex latest --currency-pairs EUR/USD,GBP/USD`
 })
 
 // --- Crypto Orderbook ---
 
-var dataCryptoOrderbookCmd = jsonCmd("crypto-orderbook", api.CryptoLatestOrderbooksOp, func(cmd *cobra.Command, args []string) (any, error) {
+var dataCryptoOrderbookCmd = fetchCmd("crypto-orderbook", api.CryptoLatestOrderbooksOp, func(cmd *cobra.Command, args []string) (any, error) {
 	resp, err := dataClient.CryptoLatestOrderbooks("us", cryptoLatestOrderbooksParamsFromFlags(cmd))
 	if err != nil {
 		return nil, err
 	}
 	return resp.Orderbooks, nil
-}, func(c *cobra.Command) {
+}, withJSON, func(c *cobra.Command) {
 	c.Example = `  alpaca data crypto-orderbook --symbols BTC/USD,ETH/USD`
 })
 
 // --- Auctions ---
 
-var dataAuctionsCmd = jsonCmd("auctions", api.StockAuctionsOp, func(cmd *cobra.Command, args []string) (any, error) {
+var dataAuctionsCmd = fetchCmd("auctions", api.StockAuctionsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	resp, err := dataClient.StockAuctions(stockAuctionsParamsFromFlags(cmd))
 	if err != nil {
 		return nil, err
 	}
 	return resp.Auctions, nil
-}, func(c *cobra.Command) {
+}, withJSON, func(c *cobra.Command) {
 	c.Example = `  alpaca data auctions --symbols AAPL --start 2025-01-01
   alpaca data auctions --symbols AAPL,MSFT --limit 10`
 })
 
 // --- Corporate Actions (market data) ---
 
-var dataCorporateActionsCmd = jsonCmd("corporate-actions", api.CorporateActionsOp, func(cmd *cobra.Command, args []string) (any, error) {
+var dataCorporateActionsCmd = fetchCmd("corporate-actions", api.CorporateActionsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CorporateActions(corporateActionsParamsFromFlags(cmd))
-}, func(c *cobra.Command) {
+}, withJSON, func(c *cobra.Command) {
 	c.Example = `  alpaca data corporate-actions --symbols AAPL --types forward_split --start 2025-01-01`
 })
 
 // --- Fixed Income Data ---
 
-var dataFixedIncomeCmd = jsonCmd("fixed-income", api.FixedIncomeLatestPricesOp, func(cmd *cobra.Command, args []string) (any, error) {
+var dataFixedIncomeCmd = fetchCmd("fixed-income", api.FixedIncomeLatestPricesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	resp, err := dataClient.FixedIncomeLatestPrices(fixedIncomeLatestPricesParamsFromFlags(cmd))
 	if err != nil {
 		return nil, err
 	}
 	return resp.Prices, nil
-}, func(c *cobra.Command) {
+}, withJSON, func(c *cobra.Command) {
 	c.Example = `  alpaca data fixed-income --isins 912797KR1,912797LB5`
 })
 
 // --- Logo ---
 
-var dataLogoCmd = jsonCmd("logo <symbol>", api.LogosOp, func(cmd *cobra.Command, args []string) (any, error) {
+var dataLogoCmd = fetchCmd("logo <symbol>", api.LogosOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.Logos(args[0], logosParamsFromFlags(cmd))
-}, func(c *cobra.Command) {
+}, withJSON, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
 	c.Example = `  alpaca data logo AAPL`
 })
@@ -109,15 +109,15 @@ var dataMetaCmd = &cobra.Command{
 	Short: "Stock exchange and condition reference data",
 }
 
-var dataMetaExchangesCmd = jsonCmd("exchanges", api.StockMetaExchangesOp, func(cmd *cobra.Command, args []string) (any, error) {
+var dataMetaExchangesCmd = fetchCmd("exchanges", api.StockMetaExchangesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.StockMetaExchanges()
-}, func(c *cobra.Command) {
+}, withJSON, func(c *cobra.Command) {
 	c.Example = `  alpaca data meta exchanges`
 })
 
-var dataMetaConditionsCmd = jsonCmd("conditions <ticktype>", api.StockMetaConditionsOp, func(cmd *cobra.Command, args []string) (any, error) {
+var dataMetaConditionsCmd = fetchCmd("conditions <ticktype>", api.StockMetaConditionsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.StockMetaConditions(args[0], stockMetaConditionsParamsFromFlags(cmd))
-}, func(c *cobra.Command) {
+}, withJSON, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
 	c.Example = `  alpaca data meta conditions trade`
 })
@@ -130,11 +130,7 @@ var screenerCmd = &cobra.Command{
 }
 
 var screenerMostActivesCmd = fetchCmd("most-actives", api.MostActivesOp, func(cmd *cobra.Command, args []string) (any, error) {
-	params := &api.MostActivesParams{
-		By:  cmdutil.Str(cmd, "by"),
-		Top: cmdutil.Int(cmd, "top"),
-	}
-	resp, err := dataClient.MostActives(params)
+	resp, err := dataClient.MostActives(mostActivesParamsFromFlags(cmd))
 	if err != nil {
 		return nil, err
 	}
@@ -155,11 +151,7 @@ var screenerMoversCmd = &cobra.Command{
 			market = "stocks"
 		}
 
-		params := &api.MoversParams{
-			Top: cmdutil.Int(cmd, "top"),
-		}
-
-		resp, err := dataClient.Movers(market, params)
+		resp, err := dataClient.Movers(market, moversParamsFromFlags(cmd))
 		if err != nil {
 			return err
 		}
@@ -184,49 +176,44 @@ var screenerMoversCmd = &cobra.Command{
 
 // --- News ---
 
-var newsCmd = &cobra.Command{
-	Use:   "news",
-	Short: api.NewsOp.Summary(),
-	Example: `  alpaca data news
-  alpaca data news --symbols AAPL,MSFT --limit 10
-  alpaca data news --symbols AAPL --all --max 100`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		params := newsParamsFromFlags(cmd)
-		if params.Limit == 0 {
-			params.Limit = 10
-		}
+var newsCmd = fetchCmd("news", api.NewsOp, func(cmd *cobra.Command, args []string) (any, error) {
+	params := newsParamsFromFlags(cmd)
+	if params.Limit == 0 {
+		params.Limit = 10
+	}
 
-		if cmdutil.Bool(cmd, "all") {
-			max := cmdutil.Int(cmd, "max")
-			var allNews []api.News
-			for page := 0; page < maxPages; page++ {
-				resp, err := dataClient.News(params)
-				if err != nil {
-					return err
-				}
-				allNews = append(allNews, resp.News...)
-				if max > 0 && len(allNews) >= max {
-					allNews = allNews[:max]
-					break
-				}
-				if resp.NextPageToken == "" {
-					break
-				}
-				params.PageToken = resp.NextPageToken
+	if cmdutil.Bool(cmd, "all") {
+		max := cmdutil.Int(cmd, "max")
+		var allNews []api.News
+		for page := 0; page < maxPages; page++ {
+			resp, err := dataClient.News(params)
+			if err != nil {
+				return nil, err
 			}
-			newsData, _ := json.Marshal(allNews)
-			return output.Render(cmd.OutOrStdout(), getOutput(), nil, json.RawMessage(newsData))
+			allNews = append(allNews, resp.News...)
+			if max > 0 && len(allNews) >= max {
+				allNews = allNews[:max]
+				break
+			}
+			if resp.NextPageToken == "" {
+				break
+			}
+			params.PageToken = resp.NextPageToken
 		}
+		return allNews, nil
+	}
 
-		resp, err := dataClient.News(params)
-		if err != nil {
-			return err
-		}
-
-		newsData, _ := json.Marshal(resp.News)
-		return output.Render(cmd.OutOrStdout(), getOutput(), nil, json.RawMessage(newsData))
-	},
-}
+	resp, err := dataClient.News(params)
+	if err != nil {
+		return nil, err
+	}
+	return resp.News, nil
+}, func(c *cobra.Command) {
+	addPaginationFlags(c)
+	c.Example = `  alpaca data news
+  alpaca data news --symbols AAPL,MSFT --limit 10
+  alpaca data news --symbols AAPL --all --max 100`
+})
 
 func init() {
 	cmdutil.RegisterFlags(dataForexRatesCmd, api.RatesOp.Flags(), nil)
@@ -242,9 +229,6 @@ func init() {
 	_ = screenerMoversCmd.RegisterFlagCompletionFunc("market", cobra.FixedCompletions(api.MarketTypeValues, cobra.ShellCompDirectiveNoFileComp))
 	screenerCmd.AddCommand(screenerMostActivesCmd)
 	screenerCmd.AddCommand(screenerMoversCmd)
-
-	cmdutil.RegisterFlags(newsCmd, api.NewsOp.Flags(), nil)
-	addPaginationFlags(newsCmd)
 
 	dataCmd.AddCommand(dataOptionCmd)
 	dataCmd.AddCommand(dataForexCmd)

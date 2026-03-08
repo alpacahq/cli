@@ -104,95 +104,73 @@ var dataTradesCmd = &cobra.Command{
 	),
 }
 
-var dataSnapshotCmd = &cobra.Command{
-	Use:   "snapshot <symbol>",
-	Short: "Get latest snapshot (bar + quote + trade)",
-	Long:  "Returns the latest snapshot for a symbol. Output is always JSON due to complex nested structure.",
-	Example: `  alpaca data snapshot AAPL
-  alpaca data snapshot BTC/USD --feed sip`,
-	Args: cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		data, err := dataClient.Snapshot(args[0], stockSnapshotSingleParamsFromFlags(cmd).Values())
-		if err != nil {
-			return err
-		}
-		return output.JSON(cmd.OutOrStdout(), data)
-	},
-}
+var dataSnapshotCmd = fetchCmd("snapshot <symbol>", api.StockSnapshotSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return dataClient.Snapshot(args[0], stockSnapshotSingleParamsFromFlags(cmd).Values())
+}, withJSON, func(c *cobra.Command) {
+	c.Args = cobra.ExactArgs(1)
+	c.Long = "Returns the latest snapshot for a symbol. Output is always JSON due to complex nested structure."
+	c.Example = `  alpaca data snapshot AAPL
+  alpaca data snapshot BTC/USD --feed sip`
+})
 
 var dataLatestCmd = &cobra.Command{
 	Use:   "latest",
 	Short: "Get latest market data",
 }
 
-var dataLatestTradeCmd = &cobra.Command{
-	Use:   "trade <symbol>",
-	Short: "Get latest trade",
-	Example: `  alpaca data latest trade AAPL
-  alpaca data latest trade AAPL --feed sip`,
-	Args: cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		symbol := args[0]
-		data, err := dataClient.LatestTrade(symbol, stockLatestTradeSingleParamsFromFlags(cmd).Values())
-		if err != nil {
-			return err
-		}
+var dataLatestTradeCmd = fetchCmd("trade <symbol>", api.StockLatestTradeSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
+	symbol := args[0]
+	data, err := dataClient.LatestTrade(symbol, stockLatestTradeSingleParamsFromFlags(cmd).Values())
+	if err != nil {
+		return nil, err
+	}
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, err
+	}
+	return extractSingle(m, symbol, "trade", "trades"), nil
+}, func(c *cobra.Command) {
+	c.Args = cobra.ExactArgs(1)
+	c.Example = `  alpaca data latest trade AAPL
+  alpaca data latest trade AAPL --feed sip`
+	cmdColumns[c] = tradeColumns()
+})
 
-		var m map[string]any
-		if err := json.Unmarshal(data, &m); err != nil {
-			return err
-		}
+var dataLatestQuoteCmd = fetchCmd("quote <symbol>", api.StockLatestQuoteSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
+	symbol := args[0]
+	data, err := dataClient.LatestQuote(symbol, stockLatestQuoteSingleParamsFromFlags(cmd).Values())
+	if err != nil {
+		return nil, err
+	}
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, err
+	}
+	return extractSingle(m, symbol, "quote", "quotes"), nil
+}, func(c *cobra.Command) {
+	c.Args = cobra.ExactArgs(1)
+	c.Example = `  alpaca data latest quote AAPL
+  alpaca data latest quote AAPL --json`
+	cmdColumns[c] = quoteColumns()
+})
 
-		trade := extractSingle(m, symbol, "trade", "trades")
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), tradeColumns(), trade)
-	},
-}
-
-var dataLatestQuoteCmd = &cobra.Command{
-	Use:   "quote <symbol>",
-	Short: "Get latest quote",
-	Example: `  alpaca data latest quote AAPL
-  alpaca data latest quote AAPL --json`,
-	Args: cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		symbol := args[0]
-		data, err := dataClient.LatestQuote(symbol, stockLatestQuoteSingleParamsFromFlags(cmd).Values())
-		if err != nil {
-			return err
-		}
-
-		var m map[string]any
-		if err := json.Unmarshal(data, &m); err != nil {
-			return err
-		}
-
-		quote := extractSingle(m, symbol, "quote", "quotes")
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), quoteColumns(), quote)
-	},
-}
-
-var dataLatestBarCmd = &cobra.Command{
-	Use:   "bar <symbol>",
-	Short: "Get latest bar",
-	Example: `  alpaca data latest bar AAPL
-  alpaca data latest bar BTC/USD`,
-	Args: cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		symbol := args[0]
-		data, err := dataClient.LatestBar(symbol, stockLatestBarSingleParamsFromFlags(cmd).Values())
-		if err != nil {
-			return err
-		}
-
-		var m map[string]any
-		if err := json.Unmarshal(data, &m); err != nil {
-			return err
-		}
-
-		bar := extractSingle(m, symbol, "bar", "bars")
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), barColumns(), bar)
-	},
-}
+var dataLatestBarCmd = fetchCmd("bar <symbol>", api.StockLatestBarSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
+	symbol := args[0]
+	data, err := dataClient.LatestBar(symbol, stockLatestBarSingleParamsFromFlags(cmd).Values())
+	if err != nil {
+		return nil, err
+	}
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, err
+	}
+	return extractSingle(m, symbol, "bar", "bars"), nil
+}, func(c *cobra.Command) {
+	c.Args = cobra.ExactArgs(1)
+	c.Example = `  alpaca data latest bar AAPL
+  alpaca data latest bar BTC/USD`
+	cmdColumns[c] = barColumns()
+})
 
 func addPaginationFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool("all", false, "Fetch all pages")
@@ -218,17 +196,9 @@ func init() {
 	_ = dataTradesCmd.RegisterFlagCompletionFunc("feed", feedCompletions)
 	addPaginationFlags(dataTradesCmd)
 
-	cmdutil.RegisterFlags(dataSnapshotCmd, api.StockSnapshotSingleOp.Flags(), nil)
-	_ = dataSnapshotCmd.RegisterFlagCompletionFunc("feed", feedCompletions)
-
-	cmdutil.RegisterFlags(dataLatestTradeCmd, api.StockLatestTradeSingleOp.Flags(), nil)
-	_ = dataLatestTradeCmd.RegisterFlagCompletionFunc("feed", feedCompletions)
-
-	cmdutil.RegisterFlags(dataLatestQuoteCmd, api.StockLatestQuoteSingleOp.Flags(), nil)
-	_ = dataLatestQuoteCmd.RegisterFlagCompletionFunc("feed", feedCompletions)
-
-	cmdutil.RegisterFlags(dataLatestBarCmd, api.StockLatestBarSingleOp.Flags(), nil)
-	_ = dataLatestBarCmd.RegisterFlagCompletionFunc("feed", feedCompletions)
+	for _, c := range []*cobra.Command{dataSnapshotCmd, dataLatestTradeCmd, dataLatestQuoteCmd, dataLatestBarCmd} {
+		_ = c.RegisterFlagCompletionFunc("feed", feedCompletions)
+	}
 
 	dataLatestCmd.AddCommand(dataLatestTradeCmd)
 	dataLatestCmd.AddCommand(dataLatestQuoteCmd)

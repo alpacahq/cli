@@ -1,11 +1,10 @@
 package cmd
 
 import (
-	"encoding/json"
+	"fmt"
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
-	"github.com/alpacahq/cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -28,24 +27,16 @@ var accountConfigGetCmd = fetchCmd("get", api.GetAccountConfigOp, func(cmd *cobr
   alpaca account config get --json`
 })
 
-var accountConfigSetCmd = &cobra.Command{
-	Use:   "set",
-	Short: api.PatchAccountConfigOp.Summary(),
-	Example: `  alpaca account config set --no-shorting true
-  alpaca account config set --dtbp-check entry`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		body, changed := accountConfigurationsBodyFromFlags(cmd)
-		if !changed {
-			return cmd.Help()
-		}
-
-		config, err := tradingClient.PatchAccountConfig(body)
-		if err != nil {
-			return err
-		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), columnsForOp(api.PatchAccountConfigOp), config)
-	},
-}
+var accountConfigSetCmd = fetchCmd("set", api.PatchAccountConfigOp, func(cmd *cobra.Command, args []string) (any, error) {
+	body, changed := accountConfigurationsBodyFromFlags(cmd)
+	if !changed {
+		return nil, fmt.Errorf("specify at least one flag to change (see '%s --help')", cmd.CommandPath())
+	}
+	return tradingClient.PatchAccountConfig(body)
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca account config set --no-shorting true
+  alpaca account config set --dtbp-check entry`
+})
 
 var accountConfigCmd = &cobra.Command{
 	Use:   "config",
@@ -59,70 +50,37 @@ var activityCmd = &cobra.Command{
 	Short: "Account activities (fills, dividends, transfers, etc.)",
 }
 
-var activityListCmd = &cobra.Command{
-	Use:   "list",
-	Short: api.GetAccountActivitiesOp.Summary(),
-	Example: `  alpaca account activity list
+var activityListCmd = fetchCmd("list", api.GetAccountActivitiesOp, func(cmd *cobra.Command, args []string) (any, error) {
+	actType := cmdutil.Str(cmd, "activity-types")
+	if actType != "" {
+		return tradingClient.GetAccountActivitiesByActivityType(actType, getAccountActivitiesByActivityTypeParamsFromFlags(cmd))
+	}
+	return tradingClient.GetAccountActivities(getAccountActivitiesParamsFromFlags(cmd))
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca account activity list
   alpaca account activity list --activity-types FILL --page-size 20
   alpaca account activity list --activity-types DIV --after 2025-01-01
-  alpaca account activity list --activity-types FILL,TRANS --direction desc`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		actType := cmdutil.Str(cmd, "activity-types")
-
-		var data json.RawMessage
-		var err error
-
-		if actType != "" {
-			data, err = tradingClient.GetAccountActivitiesByActivityType(actType, getAccountActivitiesByActivityTypeParamsFromFlags(cmd))
-		} else {
-			data, err = tradingClient.GetAccountActivities(getAccountActivitiesParamsFromFlags(cmd))
-		}
-		if err != nil {
-			return err
-		}
-
-		out := getOutput()
-
-		var items []map[string]any
-		if err := json.Unmarshal(data, &items); err != nil {
-			return output.JSON(cmd.OutOrStdout(), data)
-		}
-
-		return output.Render(cmd.OutOrStdout(), out, nil, data)
-	},
-}
+  alpaca account activity list --activity-types FILL,TRANS --direction desc`
+})
 
 // --- Portfolio ---
 
-var portfolioCmd = &cobra.Command{
-	Use:   "portfolio",
-	Short: api.GetAccountPortfolioHistoryOp.Summary(),
-	Long:  "Returns portfolio equity and P&L history. Output is always JSON due to complex time-series structure.",
-	Example: `  alpaca account portfolio
-  alpaca account portfolio --period 1M --timeframe 1D`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		params := getAccountPortfolioHistoryParamsFromFlags(cmd)
-
-		history, err := tradingClient.GetAccountPortfolioHistory(params)
-		if err != nil {
-			return err
-		}
-		return output.JSON(cmd.OutOrStdout(), history)
-	},
-}
+var portfolioCmd = fetchCmd("portfolio", api.GetAccountPortfolioHistoryOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.GetAccountPortfolioHistory(getAccountPortfolioHistoryParamsFromFlags(cmd))
+}, withJSON, func(c *cobra.Command) {
+	cmdutil.RegisterFlags(c, api.GetAccountPortfolioHistoryOp.Flags(), &cmdutil.FlagOpts{
+		Exclude: map[string]bool{"extended_hours": true},
+	})
+	c.Long = "Returns portfolio equity and P&L history. Output is always JSON due to complex time-series structure."
+	c.Example = `  alpaca account portfolio
+  alpaca account portfolio --period 1M --timeframe 1D`
+})
 
 func init() {
-	cmdutil.RegisterFlags(accountConfigSetCmd, api.PatchAccountConfigOp.Flags(), nil)
-
 	accountConfigCmd.AddCommand(accountConfigGetCmd)
 	accountConfigCmd.AddCommand(accountConfigSetCmd)
 
-	cmdutil.RegisterFlags(activityListCmd, api.GetAccountActivitiesOp.Flags(), nil)
 	activityCmd.AddCommand(activityListCmd)
-
-	cmdutil.RegisterFlags(portfolioCmd, api.GetAccountPortfolioHistoryOp.Flags(), &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"extended_hours": true},
-	})
 
 	accountCmd.AddCommand(accountGetCmd)
 	accountCmd.AddCommand(accountConfigCmd)
