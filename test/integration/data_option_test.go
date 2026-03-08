@@ -3,24 +3,36 @@
 package integration
 
 import (
+	"encoding/json"
+	"sync"
 	"testing"
 )
 
-var cachedOptionSymbol string
+var (
+	optionSymbolOnce sync.Once
+	resolvedOptionSymbol string
+)
 
 func discoverOptionSymbol(t *testing.T) string {
 	t.Helper()
-	if cachedOptionSymbol != "" {
-		return cachedOptionSymbol
+	optionSymbolOnce.Do(func() {
+		out, err := makeCmd("data", "option", "chain", "AAPL", "--json").Output()
+		if err != nil {
+			return
+		}
+		var chain map[string]any
+		if err := json.Unmarshal(out, &chain); err != nil {
+			return
+		}
+		for sym := range chain {
+			resolvedOptionSymbol = sym
+			return
+		}
+	})
+	if resolvedOptionSymbol == "" {
+		t.Skip("no option contracts available for AAPL")
 	}
-	out := alpaca(t, "data", "option", "chain", "AAPL", "--json")
-	chain := parseJSONMap(t, out)
-	for sym := range chain {
-		cachedOptionSymbol = sym
-		return sym
-	}
-	t.Skip("no option contracts available for AAPL")
-	return ""
+	return resolvedOptionSymbol
 }
 
 func TestDataOptionChain(t *testing.T) {

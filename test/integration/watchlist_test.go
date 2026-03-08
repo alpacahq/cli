@@ -3,7 +3,6 @@
 package integration
 
 import (
-	"os/exec"
 	"testing"
 	"time"
 )
@@ -20,73 +19,72 @@ func TestWatchlistLifecycle(t *testing.T) {
 		t.Fatal("watchlist missing id")
 	}
 	t.Cleanup(func() {
-		alpaca(t, "watchlist", "delete", wlID)
+		_ = makeCmd("watchlist", "delete", wlID).Run()
 	})
 
-	if wl["name"] != "cli-integration-test" {
-		t.Errorf("expected name 'cli-integration-test', got %v", wl["name"])
-	}
-
-	time.Sleep(300 * time.Millisecond)
-
-	out = alpaca(t, "watchlist", "get", wlID, "--json")
-	fetched := parseJSONMap(t, out)
-	if fetched["id"] != wlID {
-		t.Errorf("get returned wrong watchlist: %v", fetched["id"])
-	}
-
-	out = alpaca(t, "watchlist", "list", "--json")
-	lists := parseJSONArray(t, out)
-	found := false
-	for _, item := range lists {
-		if item["id"] == wlID {
-			found = true
-			break
+	t.Run("create_fields", func(t *testing.T) {
+		if wl["name"] != "cli-integration-test" {
+			t.Errorf("expected name 'cli-integration-test', got %v", wl["name"])
 		}
-	}
-	if !found {
-		t.Error("created watchlist not found in list")
-	}
-
-	alpaca(t, "watchlist", "add", wlID, "GOOG")
+	})
 
 	time.Sleep(300 * time.Millisecond)
 
-	alpaca(t, "watchlist", "remove", wlID, "MSFT")
+	t.Run("get", func(t *testing.T) {
+		out := alpaca(t, "watchlist", "get", wlID, "--json")
+		fetched := parseJSONMap(t, out)
+		if fetched["id"] != wlID {
+			t.Errorf("get returned wrong watchlist: %v", fetched["id"])
+		}
+	})
 
-	time.Sleep(300 * time.Millisecond)
+	t.Run("list", func(t *testing.T) {
+		out := alpaca(t, "watchlist", "list", "--json")
+		lists := parseJSONArray(t, out)
+		if !containsID(lists, wlID) {
+			t.Error("created watchlist not found in list")
+		}
+	})
 
-	out = alpaca(t, "watchlist", "get", wlID, "--json")
-	updated := parseJSONMap(t, out)
-	assets, _ := updated["assets"].([]any)
-	symbols := make([]string, 0, len(assets))
-	for _, a := range assets {
-		if m, ok := a.(map[string]any); ok {
-			if s, ok := m["symbol"].(string); ok {
-				symbols = append(symbols, s)
+	t.Run("add_remove_symbols", func(t *testing.T) {
+		alpaca(t, "watchlist", "add", wlID, "GOOG")
+		time.Sleep(300 * time.Millisecond)
+
+		alpaca(t, "watchlist", "remove", wlID, "MSFT")
+		time.Sleep(300 * time.Millisecond)
+
+		out := alpaca(t, "watchlist", "get", wlID, "--json")
+		updated := parseJSONMap(t, out)
+		assets, _ := updated["assets"].([]any)
+		symbols := make([]string, 0, len(assets))
+		for _, a := range assets {
+			if m, ok := a.(map[string]any); ok {
+				if s, ok := m["symbol"].(string); ok {
+					symbols = append(symbols, s)
+				}
 			}
 		}
-	}
-	hasAAPL, hasGOOG, hasMSFT := false, false, false
-	for _, s := range symbols {
-		switch s {
-		case "AAPL":
-			hasAAPL = true
-		case "GOOG":
-			hasGOOG = true
-		case "MSFT":
-			hasMSFT = true
+		hasAAPL, hasGOOG, hasMSFT := false, false, false
+		for _, s := range symbols {
+			switch s {
+			case "AAPL":
+				hasAAPL = true
+			case "GOOG":
+				hasGOOG = true
+			case "MSFT":
+				hasMSFT = true
+			}
 		}
-	}
-	if !hasAAPL {
-		t.Error("watchlist should still contain AAPL")
-	}
-	if !hasGOOG {
-		t.Error("watchlist should contain GOOG after add")
-	}
-	if hasMSFT {
-		t.Error("watchlist should not contain MSFT after remove")
-	}
+		if !hasAAPL {
+			t.Error("watchlist should still contain AAPL")
+		}
+		if !hasGOOG {
+			t.Error("watchlist should contain GOOG after add")
+		}
+		if hasMSFT {
+			t.Error("watchlist should not contain MSFT after remove")
+		}
+	})
 }
 
 func TestWatchlistByNameOps(t *testing.T) {
@@ -102,37 +100,43 @@ func TestWatchlistByNameOps(t *testing.T) {
 		t.Fatal("watchlist missing id")
 	}
 	t.Cleanup(func() {
-		cmd := exec.Command(cliBinary, "watchlist", "delete", wlID)
-		cmd.Env = cliEnv()
-		_ = cmd.Run() // best-effort; delete-by-name at end of test may have already removed it
+		_ = makeCmd("watchlist", "delete", wlID).Run()
 	})
 
 	time.Sleep(300 * time.Millisecond)
 
-	out = alpaca(t, "watchlist", "get-by-name", name, "--json")
-	fetched := parseJSONMap(t, out)
-	if fetched["name"] != name {
-		t.Errorf("get-by-name returned wrong name: %v", fetched["name"])
-	}
+	t.Run("get_by_name", func(t *testing.T) {
+		out := alpaca(t, "watchlist", "get-by-name", name, "--json")
+		fetched := parseJSONMap(t, out)
+		if fetched["name"] != name {
+			t.Errorf("get-by-name returned wrong name: %v", fetched["name"])
+		}
+	})
 
-	out = alpaca(t, "watchlist", "add-by-name", name, "MSFT", "--json")
-	added := parseJSONMap(t, out)
-	if added["name"] != name {
-		t.Errorf("add-by-name returned wrong name: %v", added["name"])
-	}
-
-	time.Sleep(300 * time.Millisecond)
-
-	out = alpaca(t, "watchlist", "update-by-name", name,
-		"--symbols", "GOOG,TSLA",
-		"--json",
-	)
-	updated := parseJSONMap(t, out)
-	if updated["name"] != name {
-		t.Errorf("update-by-name returned wrong name: %v", updated["name"])
-	}
+	t.Run("add_by_name", func(t *testing.T) {
+		out := alpaca(t, "watchlist", "add-by-name", name, "MSFT", "--json")
+		added := parseJSONMap(t, out)
+		if added["name"] != name {
+			t.Errorf("add-by-name returned wrong name: %v", added["name"])
+		}
+	})
 
 	time.Sleep(300 * time.Millisecond)
 
-	alpaca(t, "watchlist", "delete-by-name", name)
+	t.Run("update_by_name", func(t *testing.T) {
+		out := alpaca(t, "watchlist", "update-by-name", name,
+			"--symbols", "GOOG,TSLA",
+			"--json",
+		)
+		updated := parseJSONMap(t, out)
+		if updated["name"] != name {
+			t.Errorf("update-by-name returned wrong name: %v", updated["name"])
+		}
+	})
+
+	time.Sleep(300 * time.Millisecond)
+
+	t.Run("delete_by_name", func(t *testing.T) {
+		alpaca(t, "watchlist", "delete-by-name", name)
+	})
 }

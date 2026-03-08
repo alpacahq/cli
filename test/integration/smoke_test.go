@@ -17,44 +17,25 @@ func TestSmoke_Version(t *testing.T) {
 func TestSmoke_Account(t *testing.T) {
 	out := alpaca(t, "account", "get", "--json")
 	acct := parseJSONMap(t, out)
-
-	for _, field := range []string{"id", "status", "equity", "buying_power", "cash"} {
-		if _, ok := acct[field]; !ok {
-			t.Errorf("account missing field: %s", field)
-		}
-	}
+	requireFields(t, acct, "id", "status", "equity", "buying_power", "cash")
 }
 
 func TestSmoke_Clock(t *testing.T) {
 	out := alpaca(t, "clock", "--json")
 	clock := parseJSONMap(t, out)
-
-	for _, field := range []string{"is_open", "next_open", "next_close"} {
-		if _, ok := clock[field]; !ok {
-			t.Errorf("clock missing field: %s", field)
-		}
-	}
+	requireFields(t, clock, "is_open", "next_open", "next_close")
 }
 
 func TestSmoke_Calendar(t *testing.T) {
 	out := alpaca(t, "calendar", "--start", "2025-01-01", "--end", "2025-01-31", "--json")
-	days := parseJSONArray(t, out)
-
-	if len(days) == 0 {
-		t.Fatal("expected at least one calendar day")
-	}
-	if _, ok := days[0]["date"]; !ok {
-		t.Error("calendar entry missing 'date' field")
-	}
+	days := requireArrayNonEmpty(t, out)
+	requireFields(t, days[0], "date")
 }
 
 func TestSmoke_AccountConfig(t *testing.T) {
 	out := alpaca(t, "account", "config", "get", "--json")
 	cfg := parseJSONMap(t, out)
-
-	if _, ok := cfg["dtbp_check"]; !ok {
-		t.Error("account config missing 'dtbp_check'")
-	}
+	requireFields(t, cfg, "dtbp_check")
 }
 
 func TestSmoke_Assets(t *testing.T) {

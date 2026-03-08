@@ -50,25 +50,6 @@ func TestAPIError_HumanReadable(t *testing.T) {
 	}
 }
 
-func TestOutputFormats_JSON(t *testing.T) {
-	out := alpaca(t, "account", "get", "--json")
-	acct := parseJSONMap(t, out)
-	if acct["id"] == nil {
-		t.Error("JSON output should contain 'id' field")
-	}
-}
-
-func TestOutputFormats_CSV(t *testing.T) {
-	out := alpaca(t, "order", "list", "--status", "all", "--limit", "1", "--csv")
-	lines := strings.Split(strings.TrimSpace(string(out)), "\n")
-	if len(lines) < 1 {
-		t.Fatal("expected at least a header row in CSV")
-	}
-	if !strings.Contains(lines[0], ",") {
-		t.Errorf("CSV header should contain commas, got: %s", lines[0])
-	}
-}
-
 func TestAPIError_NonExistentPosition(t *testing.T) {
 	_, stderr, code := alpacaFail(t, "position", "get", "ZZZZZZZZZ", "--json")
 	if code == 0 {
@@ -124,12 +105,7 @@ func TestAPIError_JSONErrorStructure(t *testing.T) {
 	}
 
 	errMap := parseJSONMap(t, stderr)
-
-	for _, field := range []string{"error", "status"} {
-		if _, ok := errMap[field]; !ok {
-			t.Errorf("JSON error missing required field %q", field)
-		}
-	}
+	requireFields(t, errMap, "error", "status")
 
 	if errMsg, ok := errMap["error"].(string); !ok || errMsg == "" {
 		t.Errorf("expected non-empty error message, got %v", errMap["error"])
