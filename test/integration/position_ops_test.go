@@ -22,24 +22,19 @@ func TestPositionClose(t *testing.T) {
 	closed := parseJSONMap(t, out)
 	requireFields(t, closed, "id", "symbol", "status")
 
-	time.Sleep(2 * time.Second)
-
-	// Verify position is gone
-	_, _, code := alpacaWithStderr(t, "position", "get", symbol, "--json")
-	if code == 0 {
-		t.Error("position should be gone after close")
-	}
+	pollFor(t, 10*time.Second, "position to be closed", func() bool {
+		_, _, code := alpacaWithStderr(t, "position", "get", symbol, "--json")
+		return code != 0
+	})
 }
 
 func TestPositionCloseAll(t *testing.T) {
 	_ = submitCryptoFill(t)
 
 	alpaca(t, "position", "close-all")
-	time.Sleep(2 * time.Second)
 
-	out := alpaca(t, "position", "list", "--json")
-	positions := parseJSONArray(t, out)
-	if len(positions) > 0 {
-		t.Errorf("expected 0 positions after close-all, got %d", len(positions))
-	}
+	pollFor(t, 10*time.Second, "all positions to be closed", func() bool {
+		out := alpaca(t, "position", "list", "--json")
+		return len(parseJSONArray(t, out)) == 0
+	})
 }

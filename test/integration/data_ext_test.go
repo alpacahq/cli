@@ -15,7 +15,7 @@ func TestDataCryptoOrderbook(t *testing.T) {
 }
 
 func TestDataAuctions(t *testing.T) {
-	out := alpaca(t, "data", "auctions", "--symbols", "AAPL", "--start", "2025-01-02", "--end", "2025-01-10", "--json")
+	out := alpaca(t, "data", "auctions", "--symbols", "AAPL", "--start", daysAgo(100), "--end", daysAgo(93), "--json")
 	data := parseJSONMap(t, out)
 	if len(data) == 0 {
 		t.Error("expected non-empty auctions response")

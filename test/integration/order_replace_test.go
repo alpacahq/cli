@@ -26,15 +26,11 @@ func TestOrderReplace(t *testing.T) {
 		_ = makeCmd("order", "cancel", id).Run()
 	})
 
-	// Poll until order leaves "accepted" status (up to 10s)
-	for i := 0; i < 20; i++ {
-		time.Sleep(500 * time.Millisecond)
+	pollFor(t, 10*time.Second, "order to leave accepted status", func() bool {
 		out = alpaca(t, "order", "get", id, "--json")
 		o := parseJSONMap(t, out)
-		if o["status"] != "accepted" && o["status"] != "pending_new" {
-			break
-		}
-	}
+		return o["status"] != "accepted" && o["status"] != "pending_new"
+	})
 
 	out = alpaca(t, "order", "replace", id,
 		"--qty", "11",
@@ -48,13 +44,10 @@ func TestOrderReplace(t *testing.T) {
 		t.Fatal("replace returned no order id")
 	}
 
-	time.Sleep(1 * time.Second)
-
-	out = alpaca(t, "order", "get", newID, "--json")
-	fetched := parseJSONMap(t, out)
-	if fetched["qty"] != "11" {
-		t.Errorf("expected qty 11, got %v", fetched["qty"])
-	}
+	pollFor(t, 5*time.Second, "replaced order qty to update", func() bool {
+		out = alpaca(t, "order", "get", newID, "--json")
+		return parseJSONMap(t, out)["qty"] == "11"
+	})
 }
 
 func TestOrderSubmit_LimitOrder(t *testing.T) {
@@ -180,10 +173,15 @@ func TestOrderSubmit_ClientOrderID(t *testing.T) {
 		t.Errorf("expected client_order_id %q, got %v", clientID, order["client_order_id"])
 	}
 
-	time.Sleep(500 * time.Millisecond)
-
-	out = alpaca(t, "order", "get", "--client-id", clientID, "--json")
-	fetched := parseJSONMap(t, out)
+	var fetched map[string]any
+	pollFor(t, 5*time.Second, "order to be retrievable by client-id", func() bool {
+		stdout, _, code := alpacaWithStderr(t, "order", "get", "--client-id", clientID, "--json")
+		if code != 0 {
+			return false
+		}
+		fetched = parseJSONMap(t, stdout)
+		return true
+	})
 	if fetched["id"] != id {
 		t.Errorf("get by client-id returned wrong order: got %v, want %s", fetched["id"], id)
 	}

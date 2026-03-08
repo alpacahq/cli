@@ -15,8 +15,9 @@ func TestClock_V3_Markets(t *testing.T) {
 }
 
 func TestCalendar_V3_Market(t *testing.T) {
+	calStart, calEnd := monthRange(3)
 	out := alpaca(t, "calendar", "--market", "XNYS",
-		"--start", "2025-01-01", "--end", "2025-01-31", "--json")
+		"--start", calStart, "--end", calEnd, "--json")
 	// V3 calendar returns {"calendar": [...], "market": {...}}
 	data := parseJSONMap(t, out)
 	cal, ok := data["calendar"].([]any)

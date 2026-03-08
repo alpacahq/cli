@@ -35,8 +35,6 @@ func TestOrderLifecycle(t *testing.T) {
 		}
 	})
 
-	time.Sleep(500 * time.Millisecond)
-
 	t.Run("get", func(t *testing.T) {
 		out := alpaca(t, "order", "get", orderID, "--json")
 		fetched := parseJSONMap(t, out)
@@ -46,23 +44,19 @@ func TestOrderLifecycle(t *testing.T) {
 	})
 
 	t.Run("list_open", func(t *testing.T) {
-		out := alpaca(t, "order", "list", "--status", "open", "--json")
-		orders := parseJSONArray(t, out)
-		if !containsID(orders, orderID) {
-			t.Error("open orders list does not contain our order")
-		}
+		pollFor(t, 5*time.Second, "order to appear in open list", func() bool {
+			out := alpaca(t, "order", "list", "--status", "open", "--json")
+			return containsID(parseJSONArray(t, out), orderID)
+		})
 	})
 
 	t.Run("cancel", func(t *testing.T) {
 		alpaca(t, "order", "cancel", orderID)
-		time.Sleep(500 * time.Millisecond)
-
-		out := alpaca(t, "order", "get", orderID, "--json")
-		cancelled := parseJSONMap(t, out)
-		status, _ := cancelled["status"].(string)
-		if status != "canceled" && status != "cancelled" && status != "pending_cancel" {
-			t.Errorf("expected order to be canceled, got %v", status)
-		}
+		pollFor(t, 5*time.Second, "order to be canceled", func() bool {
+			out := alpaca(t, "order", "get", orderID, "--json")
+			status, _ := parseJSONMap(t, out)["status"].(string)
+			return status == "canceled" || status == "cancelled" || status == "pending_cancel"
+		})
 	})
 }
 
@@ -79,17 +73,15 @@ func TestOrderCancelAll(t *testing.T) {
 		)
 	}
 
-	time.Sleep(500 * time.Millisecond)
+	pollFor(t, 5*time.Second, "orders to appear", func() bool {
+		out := alpaca(t, "order", "list", "--status", "open", "--json")
+		return len(parseJSONArray(t, out)) >= 2
+	})
 
-	// Cancel all
 	alpaca(t, "order", "cancel-all")
 
-	time.Sleep(1 * time.Second)
-
-	// Verify no open orders remain
-	out := alpaca(t, "order", "list", "--status", "open", "--json")
-	orders := parseJSONArray(t, out)
-	if len(orders) > 0 {
-		t.Errorf("expected 0 open orders after cancel-all, got %d", len(orders))
-	}
+	pollFor(t, 10*time.Second, "all orders to be canceled", func() bool {
+		out := alpaca(t, "order", "list", "--status", "open", "--json")
+		return len(parseJSONArray(t, out)) == 0
+	})
 }

@@ -80,7 +80,7 @@ func TestDataOptionConditions(t *testing.T) {
 func TestDataOptionBars(t *testing.T) {
 	sym := discoverOptionSymbol(t)
 	// Option contracts may not have historical bar data — just verify the command runs
-	stdout, _, code := alpacaWithStderr(t, "data", "option", "bars", "--symbols", sym, "--start", "2025-01-02", "--json")
+	stdout, _, code := alpacaWithStderr(t, "data", "option", "bars", "--symbols", sym, "--start", daysAgo(90), "--json")
 	if code != 0 {
 		t.Skip("option bars not available for this contract")
 	}
@@ -90,7 +90,7 @@ func TestDataOptionBars(t *testing.T) {
 
 func TestDataOptionTrades(t *testing.T) {
 	sym := discoverOptionSymbol(t)
-	stdout, _, code := alpacaWithStderr(t, "data", "option", "trades", "--symbols", sym, "--start", "2025-01-02", "--json")
+	stdout, _, code := alpacaWithStderr(t, "data", "option", "trades", "--symbols", sym, "--start", daysAgo(90), "--json")
 	if code != 0 {
 		t.Skip("option trades not available for this contract")
 	}

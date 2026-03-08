@@ -8,8 +8,8 @@ import (
 
 func TestDataQuotes(t *testing.T) {
 	out := alpaca(t, "data", "quotes", "AAPL",
-		"--start", "2025-01-02",
-		"--end", "2025-01-03",
+		"--start", daysAgo(95),
+		"--end", daysAgo(94),
 		"--limit", "5",
 		"--json",
 	)
@@ -19,8 +19,8 @@ func TestDataQuotes(t *testing.T) {
 
 func TestDataTrades(t *testing.T) {
 	out := alpaca(t, "data", "trades", "AAPL",
-		"--start", "2025-01-02",
-		"--end", "2025-01-03",
+		"--start", daysAgo(95),
+		"--end", daysAgo(94),
 		"--limit", "5",
 		"--json",
 	)
@@ -36,8 +36,8 @@ func TestDataLatestBar(t *testing.T) {
 
 func TestDataBars_Timeframe(t *testing.T) {
 	out := alpaca(t, "data", "bars", "AAPL",
-		"--start", "2025-01-02",
-		"--end", "2025-01-03",
+		"--start", daysAgo(95),
+		"--end", daysAgo(94),
 		"--timeframe", "1Hour",
 		"--json",
 	)
@@ -47,8 +47,8 @@ func TestDataBars_Timeframe(t *testing.T) {
 
 func TestDataBars_Adjustment(t *testing.T) {
 	out := alpaca(t, "data", "bars", "AAPL",
-		"--start", "2025-01-02",
-		"--end", "2025-01-10",
+		"--start", daysAgo(100),
+		"--end", daysAgo(93),
 		"--timeframe", "1Day",
 		"--adjustment", "split",
 		"--json",

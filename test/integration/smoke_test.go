@@ -27,7 +27,8 @@ func TestSmoke_Clock(t *testing.T) {
 }
 
 func TestSmoke_Calendar(t *testing.T) {
-	out := alpaca(t, "calendar", "--start", "2025-01-01", "--end", "2025-01-31", "--json")
+	calStart, calEnd := monthRange(3)
+	out := alpaca(t, "calendar", "--start", calStart, "--end", calEnd, "--json")
 	days := requireArrayNonEmpty(t, out)
 	requireFields(t, days[0], "date")
 }

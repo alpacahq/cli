@@ -201,6 +201,32 @@ func containsID(items []map[string]any, id string) bool {
 	return false
 }
 
+func daysAgo(n int) string {
+	return time.Now().AddDate(0, 0, -n).Format("2006-01-02")
+}
+
+func monthRange(monthsAgo int) (start, end string) {
+	now := time.Now()
+	y, m, _ := now.Date()
+	first := time.Date(y, m-time.Month(monthsAgo), 1, 0, 0, 0, 0, time.UTC)
+	last := first.AddDate(0, 1, -1)
+	return first.Format("2006-01-02"), last.Format("2006-01-02")
+}
+
+func pollFor(t *testing.T, timeout time.Duration, desc string, fn func() bool) {
+	t.Helper()
+	deadline := time.Now().Add(timeout)
+	for {
+		if fn() {
+			return
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("timed out after %v waiting for %s", timeout, desc)
+		}
+		time.Sleep(200 * time.Millisecond)
+	}
+}
+
 // submitTestOrder places a safe GTC limit buy of AAPL at $1.00 (will never fill).
 // Returns the order ID. Registers t.Cleanup to cancel.
 func submitTestOrder(t *testing.T) string {
@@ -223,7 +249,10 @@ func submitTestOrder(t *testing.T) string {
 		cmd.Env = cliEnv()
 		_ = cmd.Run()
 	})
-	time.Sleep(300 * time.Millisecond)
+	pollFor(t, 5*time.Second, "order to be retrievable", func() bool {
+		_, _, code := alpacaWithStderr(t, "order", "get", id, "--json")
+		return code == 0
+	})
 	return id
 }
 
@@ -241,19 +270,14 @@ func submitCryptoFill(t *testing.T) string {
 	)
 
 	symbol := "BTC/USD"
-	for i := 0; i < 30; i++ {
-		time.Sleep(500 * time.Millisecond)
-		stdout, _, code := alpacaWithStderr(t, "position", "get", symbol, "--json")
-		if code == 0 {
-			_ = parseJSONMap(t, stdout)
-			t.Cleanup(func() {
-				cmd := exec.Command(cliBinary, "position", "close", symbol)
-				cmd.Env = cliEnv()
-				_ = cmd.Run()
-			})
-			return symbol
-		}
-	}
-	t.Fatal("BTC/USD position did not appear within 15s")
-	return ""
+	t.Cleanup(func() {
+		cmd := exec.Command(cliBinary, "position", "close", symbol)
+		cmd.Env = cliEnv()
+		_ = cmd.Run()
+	})
+	pollFor(t, 15*time.Second, "BTC/USD position to appear", func() bool {
+		_, _, code := alpacaWithStderr(t, "position", "get", symbol, "--json")
+		return code == 0
+	})
+	return symbol
 }

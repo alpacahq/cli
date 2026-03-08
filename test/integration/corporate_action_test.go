@@ -9,8 +9,8 @@ import (
 func TestCorporateActionList(t *testing.T) {
 	out := alpaca(t, "corporate-action", "list",
 		"--ca-types", "dividend",
-		"--since", "2025-01-01",
-		"--until", "2025-03-01",
+		"--since", daysAgo(180),
+		"--until", daysAgo(90),
 		"--json",
 	)
 	_ = parseJSONArray(t, out)
@@ -19,8 +19,8 @@ func TestCorporateActionList(t *testing.T) {
 func TestCorporateActionGet(t *testing.T) {
 	out := alpaca(t, "corporate-action", "list",
 		"--ca-types", "dividend",
-		"--since", "2025-01-01",
-		"--until", "2025-03-01",
+		"--since", daysAgo(180),
+		"--until", daysAgo(90),
 		"--json",
 	)
 	actions := parseJSONArray(t, out)
