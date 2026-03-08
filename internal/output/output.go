@@ -34,17 +34,6 @@ func Render(w io.Writer, format Format, columns []Column, data any) error {
 	})
 }
 
-func RenderWithHint(w io.Writer, format Format, columns []Column, data any, emptyHint string) error {
-	if format != FormatJSON && format != FormatCSV && emptyHint != "" {
-		rows := toRows(data)
-		if len(rows) == 0 {
-			_, _ = fmt.Fprintln(w, emptyHint)
-			return nil
-		}
-	}
-	return Render(w, format, columns, data)
-}
-
 func dispatch(w io.Writer, format Format, columns []Column, data any, tableFn func() error) error {
 	switch format {
 	case FormatJSON:

@@ -2,11 +2,9 @@ package cmd
 
 import (
 	"encoding/json"
-	"net/url"
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
-	"github.com/alpacahq/cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -15,94 +13,91 @@ var dataCmd = &cobra.Command{
 	Short: "Access market data",
 }
 
-// runDataCmd builds a RunE for single-symbol data commands (bars, quotes, trades)
-// that share the same fetch → optional pagination → extract → render pattern.
-func runDataCmd(
-	paramsFromFlags func(cmd *cobra.Command) url.Values,
-	fetch func(symbol string, params url.Values) (json.RawMessage, error),
-	extract func(data json.RawMessage, symbol string) json.RawMessage,
-	columns func() []output.Column,
-) func(cmd *cobra.Command, args []string) error {
-	return func(cmd *cobra.Command, args []string) error {
-		symbol := args[0]
-		params := paramsFromFlags(cmd)
-
-		if cmdutil.Bool(cmd, "all") {
-			data, err := fetchAllDataPages(
-				func(pt string) (json.RawMessage, error) {
-					if pt != "" {
-						params.Set("page_token", pt)
-					}
-					return fetch(symbol, params)
-				},
-				func(raw json.RawMessage) json.RawMessage { return extract(raw, symbol) },
-				cmdutil.Int(cmd, "max"),
-			)
-			if err != nil {
-				return err
-			}
-			return output.Render(cmd.OutOrStdout(), getOutput(), columns(), data)
-		}
-
-		data, err := fetch(symbol, params)
-		if err != nil {
-			return err
-		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), columns(), extract(data, symbol))
+func fetchPaginated(
+	cmd *cobra.Command,
+	symbol string,
+	fetch func(string, string) (json.RawMessage, error),
+	extract func(json.RawMessage, string) json.RawMessage,
+) (any, error) {
+	if cmdutil.Bool(cmd, "all") {
+		return fetchAllDataPages(
+			func(pt string) (json.RawMessage, error) { return fetch(symbol, pt) },
+			func(raw json.RawMessage) json.RawMessage { return extract(raw, symbol) },
+			cmdutil.Int(cmd, "max"),
+		)
 	}
+	data, err := fetch(symbol, "")
+	if err != nil {
+		return nil, err
+	}
+	return extract(data, symbol), nil
 }
 
-var dataBarsCmd = &cobra.Command{
-	Use:   "bars <symbol>",
-	Short: "Get historical price bars",
-	Example: `  alpaca data bars AAPL --start 2025-01-01 --timeframe 1Day
+var dataBarsCmd = fetchCmd("bars <symbol>", api.StockBarSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
+	p := stockBarSingleParamsFromFlags(cmd)
+	if p.Timeframe == "" {
+		p.Timeframe = "1Day"
+	}
+	params := p.Values()
+	return fetchPaginated(cmd, args[0],
+		func(sym, pt string) (json.RawMessage, error) {
+			if pt != "" {
+				params.Set("page_token", pt)
+			}
+			return dataClient.Bars(sym, params)
+		},
+		extractBars,
+	)
+}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"timeframe": "1Day"}}),
+	func(c *cobra.Command) {
+		c.Args = cobra.ExactArgs(1)
+		c.Example = `  alpaca data bars AAPL --start 2025-01-01 --timeframe 1Day
   alpaca data bars BTC/USD --start 2025-01-01 --timeframe 1Hour
   alpaca data bars AAPL --start 2025-01-01 --end 2025-06-01 --limit 100
-  alpaca data bars AAPL --start 2025-01-01 --all`,
-	Args: cobra.ExactArgs(1),
-	RunE: runDataCmd(
-		func(cmd *cobra.Command) url.Values {
-			p := stockBarSingleParamsFromFlags(cmd)
-			if p.Timeframe == "" {
-				p.Timeframe = "1Day"
+  alpaca data bars AAPL --start 2025-01-01 --all`
+		cmdColumns[c] = barColumns()
+		addPaginationFlags(c)
+	})
+
+var dataQuotesCmd = fetchCmd("quotes <symbol>", api.StockQuoteSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
+	params := stockQuoteSingleParamsFromFlags(cmd).Values()
+	return fetchPaginated(cmd, args[0],
+		func(sym, pt string) (json.RawMessage, error) {
+			if pt != "" {
+				params.Set("page_token", pt)
 			}
-			return p.Values()
+			return dataClient.Quotes(sym, params)
 		},
-		func(sym string, p url.Values) (json.RawMessage, error) { return dataClient.Bars(sym, p) },
-		extractBars,
-		barColumns,
-	),
-}
-
-var dataQuotesCmd = &cobra.Command{
-	Use:   "quotes <symbol>",
-	Short: "Get historical quotes",
-	Example: `  alpaca data quotes AAPL --start 2025-01-01
-  alpaca data quotes AAPL --start 2025-01-01 --end 2025-01-31 --limit 50
-  alpaca data quotes AAPL --start 2025-01-01 --all --max 5000`,
-	Args: cobra.ExactArgs(1),
-	RunE: runDataCmd(
-		func(cmd *cobra.Command) url.Values { return stockQuoteSingleParamsFromFlags(cmd).Values() },
-		func(sym string, p url.Values) (json.RawMessage, error) { return dataClient.Quotes(sym, p) },
 		func(data json.RawMessage, sym string) json.RawMessage { return extractArray(data, sym, "quotes") },
-		quoteColumns,
-	),
-}
+	)
+}, func(c *cobra.Command) {
+	c.Args = cobra.ExactArgs(1)
+	c.Example = `  alpaca data quotes AAPL --start 2025-01-01
+  alpaca data quotes AAPL --start 2025-01-01 --end 2025-01-31 --limit 50
+  alpaca data quotes AAPL --start 2025-01-01 --all --max 5000`
+	cmdColumns[c] = quoteColumns()
+	addPaginationFlags(c)
+})
 
-var dataTradesCmd = &cobra.Command{
-	Use:   "trades <symbol>",
-	Short: "Get historical trades",
-	Example: `  alpaca data trades AAPL --start 2025-01-01
-  alpaca data trades AAPL --start 2025-01-01 --limit 100
-  alpaca data trades AAPL --start 2025-01-01 --all`,
-	Args: cobra.ExactArgs(1),
-	RunE: runDataCmd(
-		func(cmd *cobra.Command) url.Values { return stockTradeSingleParamsFromFlags(cmd).Values() },
-		func(sym string, p url.Values) (json.RawMessage, error) { return dataClient.Trades(sym, p) },
+var dataTradesCmd = fetchCmd("trades <symbol>", api.StockTradeSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
+	params := stockTradeSingleParamsFromFlags(cmd).Values()
+	return fetchPaginated(cmd, args[0],
+		func(sym, pt string) (json.RawMessage, error) {
+			if pt != "" {
+				params.Set("page_token", pt)
+			}
+			return dataClient.Trades(sym, params)
+		},
 		func(data json.RawMessage, sym string) json.RawMessage { return extractArray(data, sym, "trades") },
-		tradeColumns,
-	),
-}
+	)
+}, func(c *cobra.Command) {
+	c.Args = cobra.ExactArgs(1)
+	c.Example = `  alpaca data trades AAPL --start 2025-01-01
+  alpaca data trades AAPL --start 2025-01-01 --limit 100
+  alpaca data trades AAPL --start 2025-01-01 --all`
+	cmdColumns[c] = tradeColumns()
+	addPaginationFlags(c)
+})
 
 var dataSnapshotCmd = fetchCmd("snapshot <symbol>", api.StockSnapshotSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.Snapshot(args[0], stockSnapshotSingleParamsFromFlags(cmd).Values())
@@ -180,23 +175,11 @@ func addPaginationFlags(cmd *cobra.Command) {
 func init() {
 	feedCompletions := cobra.FixedCompletions([]string{"iex", "sip", "otc", "delayed_sip"}, cobra.ShellCompDirectiveNoFileComp)
 
-	cmdutil.RegisterFlags(dataBarsCmd, api.StockBarSingleOp.Flags(), &cmdutil.FlagOpts{
-		Defaults: map[string]string{"timeframe": "1Day"},
-	})
-	addPaginationFlags(dataBarsCmd)
 	_ = dataBarsCmd.RegisterFlagCompletionFunc("feed", feedCompletions)
 	_ = dataBarsCmd.RegisterFlagCompletionFunc("timeframe", cobra.FixedCompletions([]string{"1Min", "5Min", "15Min", "1Hour", "1Day", "1Week", "1Month"}, cobra.ShellCompDirectiveNoFileComp))
 	_ = dataBarsCmd.RegisterFlagCompletionFunc("adjustment", cobra.FixedCompletions([]string{"raw", "split", "dividend", "all"}, cobra.ShellCompDirectiveNoFileComp))
 
-	cmdutil.RegisterFlags(dataQuotesCmd, api.StockQuoteSingleOp.Flags(), nil)
-	_ = dataQuotesCmd.RegisterFlagCompletionFunc("feed", feedCompletions)
-	addPaginationFlags(dataQuotesCmd)
-
-	cmdutil.RegisterFlags(dataTradesCmd, api.StockTradeSingleOp.Flags(), nil)
-	_ = dataTradesCmd.RegisterFlagCompletionFunc("feed", feedCompletions)
-	addPaginationFlags(dataTradesCmd)
-
-	for _, c := range []*cobra.Command{dataSnapshotCmd, dataLatestTradeCmd, dataLatestQuoteCmd, dataLatestBarCmd} {
+	for _, c := range []*cobra.Command{dataQuotesCmd, dataTradesCmd, dataSnapshotCmd, dataLatestTradeCmd, dataLatestQuoteCmd, dataLatestBarCmd} {
 		_ = c.RegisterFlagCompletionFunc("feed", feedCompletions)
 	}
 

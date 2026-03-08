@@ -10,8 +10,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const orderStatusOpen = "open"
-
 var orderCmd = &cobra.Command{
 	Use:   "order",
 	Short: "Manage orders",
@@ -61,39 +59,23 @@ var orderSubmitCmd = &cobra.Command{
 	},
 }
 
-var orderListCmd = &cobra.Command{
-	Use:   "list",
-	Short: api.GetAllOrdersOp.Summary(),
-	Example: `  alpaca order list
+var orderListCmd = fetchCmd("list", api.GetAllOrdersOp, func(cmd *cobra.Command, args []string) (any, error) {
+	params := getAllOrdersParamsFromFlags(cmd)
+	orders, err := tradingClient.GetAllOrders(params)
+	if err != nil {
+		return nil, err
+	}
+	if params.Nested && getOutput() != output.FormatJSON {
+		return expandOrderLegs(orders), nil
+	}
+	return orders, nil
+}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"status": "open"}}),
+	func(c *cobra.Command) {
+		c.Example = `  alpaca order list
   alpaca order list --status closed --limit 20
-  alpaca order list --symbols AAPL,MSFT --after 2025-01-01`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		params := getAllOrdersParamsFromFlags(cmd)
-		if params.Status == "" {
-			params.Status = orderStatusOpen
-		}
-
-		orders, err := tradingClient.GetAllOrders(params)
-		if err != nil {
-			return err
-		}
-
-		hint := "No open orders."
-		if params.Status != orderStatusOpen {
-			hint = "No orders found."
-		}
-
-		if !params.Nested {
-			return output.RenderWithHint(cmd.OutOrStdout(), getOutput(), orderColumns(), orders, hint)
-		}
-
-		format := getOutput()
-		if format == output.FormatJSON {
-			return output.JSON(cmd.OutOrStdout(), orders)
-		}
-		return output.RenderWithHint(cmd.OutOrStdout(), format, orderColumns(), expandOrderLegs(orders), hint)
-	},
-}
+  alpaca order list --symbols AAPL,MSFT --after 2025-01-01`
+		cmdColumns[c] = orderColumns()
+	})
 
 var orderGetCmd = fetchCmd("get [order-id]", api.GetOrderByOrderIDOp, func(cmd *cobra.Command, args []string) (any, error) {
 	clientID := cmdutil.Str(cmd, "client-id")
@@ -150,8 +132,6 @@ func init() {
 		Defaults: map[string]string{"type": "market"},
 	})
 	orderSubmitCmd.Flags().Bool("dry-run", false, "Print the request body without submitting")
-
-	cmdutil.RegisterFlags(orderListCmd, api.GetAllOrdersOp.Flags(), nil)
 
 	orderCmd.AddCommand(orderSubmitCmd)
 	orderCmd.AddCommand(orderListCmd)

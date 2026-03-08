@@ -311,7 +311,7 @@ func TestAllOpsValid(t *testing.T) {
 // passes explicit column definitions or nil (for auto-discovery).
 // Catches accidental empty slices or missing arguments.
 func TestRenderCallsUseColumnDefinitions(t *testing.T) {
-	renderCall := regexp.MustCompile(`output\.(Render|PrintSingle|RenderWithHint)\(`)
+	renderCall := regexp.MustCompile(`output\.(Render|PrintSingle)\(`)
 	validColumns := regexp.MustCompile(`\w+Columns\(\)|\bcols\b|\bcolumns\(\)|\bnil\b|columnsForOp\(`)
 
 	dir := cmdDir()

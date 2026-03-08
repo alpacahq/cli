@@ -158,42 +158,6 @@ func TestRender_CSV(t *testing.T) {
 	}
 }
 
-func TestRenderWithHint_EmptyTable(t *testing.T) {
-	var buf bytes.Buffer
-	cols := []Column{{Header: "NAME", Field: "name"}}
-	data := json.RawMessage(`[]`)
-	if err := RenderWithHint(&buf, "table", cols, data, "No items found."); err != nil {
-		t.Fatal(err)
-	}
-	if !strings.Contains(buf.String(), "No items found.") {
-		t.Errorf("expected hint, got: %s", buf.String())
-	}
-}
-
-func TestRenderWithHint_EmptyJSON(t *testing.T) {
-	var buf bytes.Buffer
-	cols := []Column{{Header: "NAME", Field: "name"}}
-	data := json.RawMessage(`[]`)
-	if err := RenderWithHint(&buf, "json", cols, data, "No items found."); err != nil {
-		t.Fatal(err)
-	}
-	if !strings.Contains(buf.String(), "[]") {
-		t.Errorf("expected empty JSON array, got: %s", buf.String())
-	}
-}
-
-func TestRenderWithHint_NonEmpty(t *testing.T) {
-	var buf bytes.Buffer
-	cols := []Column{{Header: "NAME", Field: "name"}}
-	data := json.RawMessage(`[{"name":"test"}]`)
-	if err := RenderWithHint(&buf, "table", cols, data, "Should not appear"); err != nil {
-		t.Fatal(err)
-	}
-	if strings.Contains(buf.String(), "Should not appear") {
-		t.Error("hint should not appear for non-empty data")
-	}
-}
-
 func TestPrintSingle_Table(t *testing.T) {
 	var buf bytes.Buffer
 	cols := []Column{
