@@ -896,7 +896,7 @@ func buildPathExpr(path string, pathParams []paramInfo) string {
 		placeholder := "{" + p.name + "}"
 		if strings.Contains(expr, placeholder) {
 			expr = strings.Replace(expr, placeholder, "%s", 1)
-			fmtArgs = append(fmtArgs, p.goName)
+			fmtArgs = append(fmtArgs, "url.PathEscape("+p.goName+")")
 		}
 	}
 	if len(fmtArgs) > 0 {

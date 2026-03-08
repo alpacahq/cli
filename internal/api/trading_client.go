@@ -127,7 +127,7 @@ var GetAccountActivitiesByActivityTypeParamsDirectionValues = []string{"asc", "d
 
 // GetAccountActivitiesByActivityType — Retrieve Account Activities of Specific Type
 func (c *TradingClient) GetAccountActivitiesByActivityType(ActivityType string, params *GetAccountActivitiesByActivityTypeParams) (json.RawMessage, error) {
-	path := fmt.Sprintf("/v2/account/activities/%s", ActivityType)
+	path := fmt.Sprintf("/v2/account/activities/%s", url.PathEscape(ActivityType))
 	data, err := c.Raw.Get(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -337,7 +337,7 @@ func (c *TradingClient) UsTreasuries(params *UsTreasuriesParams) (*UsTreasuriesR
 
 // GetV2AssetsSymbolOrAssetID — Get an Asset by ID or Symbol
 func (c *TradingClient) GetV2AssetsSymbolOrAssetID(SymbolOrAssetID string) (*Assets, error) {
-	path := fmt.Sprintf("/v2/assets/%s", SymbolOrAssetID)
+	path := fmt.Sprintf("/v2/assets/%s", url.PathEscape(SymbolOrAssetID))
 	data, err := c.Raw.Get(path, nil)
 	if err != nil {
 		return nil, err
@@ -439,7 +439,7 @@ func (c *TradingClient) GetV2CorporateActionsAnnouncements(params *GetV2Corporat
 
 // GetV2CorporateActionsAnnouncementsID — Retrieve a Specific Announcement
 func (c *TradingClient) GetV2CorporateActionsAnnouncementsID(ID string) (json.RawMessage, error) {
-	path := fmt.Sprintf("/v2/corporate_actions/announcements/%s", ID)
+	path := fmt.Sprintf("/v2/corporate_actions/announcements/%s", url.PathEscape(ID))
 	data, err := c.Raw.Get(path, nil)
 	if err != nil {
 		return nil, err
@@ -532,7 +532,7 @@ func (c *TradingClient) GetOptionsContracts(params *GetOptionsContractsParams) (
 
 // GetOptionContractSymbolOrID — Get an option contract by ID or Symbol
 func (c *TradingClient) GetOptionContractSymbolOrID(SymbolOrID string) (*OptionContract, error) {
-	path := fmt.Sprintf("/v2/options/contracts/%s", SymbolOrID)
+	path := fmt.Sprintf("/v2/options/contracts/%s", url.PathEscape(SymbolOrID))
 	data, err := c.Raw.Get(path, nil)
 	if err != nil {
 		return nil, err
@@ -671,7 +671,7 @@ func (p *GetOrderByOrderIDParams) Values() url.Values {
 
 // GetOrderByOrderID — Get Order by ID
 func (c *TradingClient) GetOrderByOrderID(OrderID string, params *GetOrderByOrderIDParams) (*Order, error) {
-	path := fmt.Sprintf("/v2/orders/%s", OrderID)
+	path := fmt.Sprintf("/v2/orders/%s", url.PathEscape(OrderID))
 	data, err := c.Raw.Get(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -682,7 +682,7 @@ func (c *TradingClient) GetOrderByOrderID(OrderID string, params *GetOrderByOrde
 
 // PatchOrderByOrderID — Replace Order by ID
 func (c *TradingClient) PatchOrderByOrderID(OrderID string, body *PatchOrderRequest) (*Order, error) {
-	path := fmt.Sprintf("/v2/orders/%s", OrderID)
+	path := fmt.Sprintf("/v2/orders/%s", url.PathEscape(OrderID))
 	data, err := c.Raw.Patch(path, nil, body)
 	if err != nil {
 		return nil, err
@@ -693,7 +693,7 @@ func (c *TradingClient) PatchOrderByOrderID(OrderID string, body *PatchOrderRequ
 
 // DeleteOrderByOrderID — Delete Order by ID
 func (c *TradingClient) DeleteOrderByOrderID(OrderID string) (json.RawMessage, error) {
-	path := fmt.Sprintf("/v2/orders/%s", OrderID)
+	path := fmt.Sprintf("/v2/orders/%s", url.PathEscape(OrderID))
 	data, err := c.Raw.Delete(path, nil)
 	if err != nil {
 		return nil, err
@@ -878,7 +878,7 @@ func (c *TradingClient) CreateCryptoPerpTransferForAccount(body *CreateCryptoTra
 
 // GetCryptoPerpFundingTransfer — Retrieve a Crypto Funding Transfer
 func (c *TradingClient) GetCryptoPerpFundingTransfer(TransferID string) (*CryptoTransfer, error) {
-	path := fmt.Sprintf("/v2/perpetuals/wallets/transfers/%s", TransferID)
+	path := fmt.Sprintf("/v2/perpetuals/wallets/transfers/%s", url.PathEscape(TransferID))
 	data, err := c.Raw.Get(path, nil)
 	if err != nil {
 		return nil, err
@@ -916,7 +916,7 @@ func (c *TradingClient) CreateWhitelistedPerpAddress(body *CreateWhitelistedPerp
 
 // DeleteWhitelistedPerpAddress — Delete a whitelisted address
 func (c *TradingClient) DeleteWhitelistedPerpAddress(WhitelistedAddressID string) (json.RawMessage, error) {
-	path := fmt.Sprintf("/v2/perpetuals/wallets/whitelists/%s", WhitelistedAddressID)
+	path := fmt.Sprintf("/v2/perpetuals/wallets/whitelists/%s", url.PathEscape(WhitelistedAddressID))
 	data, err := c.Raw.Delete(path, nil)
 	if err != nil {
 		return nil, err
@@ -963,7 +963,7 @@ func (c *TradingClient) DeleteAllOpenPositions(params *DeleteAllOpenPositionsPar
 
 // GetOpenPosition — Get an Open Position
 func (c *TradingClient) GetOpenPosition(SymbolOrAssetID string) (*Position, error) {
-	path := fmt.Sprintf("/v2/positions/%s", SymbolOrAssetID)
+	path := fmt.Sprintf("/v2/positions/%s", url.PathEscape(SymbolOrAssetID))
 	data, err := c.Raw.Get(path, nil)
 	if err != nil {
 		return nil, err
@@ -993,7 +993,7 @@ func (p *DeleteOpenPositionParams) Values() url.Values {
 
 // DeleteOpenPosition — Close a Position
 func (c *TradingClient) DeleteOpenPosition(SymbolOrAssetID string, params *DeleteOpenPositionParams) (*Order, error) {
-	path := fmt.Sprintf("/v2/positions/%s", SymbolOrAssetID)
+	path := fmt.Sprintf("/v2/positions/%s", url.PathEscape(SymbolOrAssetID))
 	data, err := c.Raw.Delete(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -1004,7 +1004,7 @@ func (c *TradingClient) DeleteOpenPosition(SymbolOrAssetID string, params *Delet
 
 // OptionDoNotExercise — Do Not Exercise an Options Position
 func (c *TradingClient) OptionDoNotExercise(SymbolOrContractID string) (json.RawMessage, error) {
-	path := fmt.Sprintf("/v2/positions/%s/do-not-exercise", SymbolOrContractID)
+	path := fmt.Sprintf("/v2/positions/%s/do-not-exercise", url.PathEscape(SymbolOrContractID))
 	data, err := c.Raw.Post(path, nil, nil)
 	if err != nil {
 		return nil, err
@@ -1014,7 +1014,7 @@ func (c *TradingClient) OptionDoNotExercise(SymbolOrContractID string) (json.Raw
 
 // OptionExercise — Exercise an Options Position
 func (c *TradingClient) OptionExercise(SymbolOrContractID string) (json.RawMessage, error) {
-	path := fmt.Sprintf("/v2/positions/%s/exercise", SymbolOrContractID)
+	path := fmt.Sprintf("/v2/positions/%s/exercise", url.PathEscape(SymbolOrContractID))
 	data, err := c.Raw.Post(path, nil, nil)
 	if err != nil {
 		return nil, err
@@ -1115,7 +1115,7 @@ func (c *TradingClient) CreateCryptoTransferForAccount(body *CreateCryptoTransfe
 
 // GetCryptoFundingTransfer — Retrieve a Crypto Funding Transfer
 func (c *TradingClient) GetCryptoFundingTransfer(TransferID string) (*CryptoTransfer, error) {
-	path := fmt.Sprintf("/v2/wallets/transfers/%s", TransferID)
+	path := fmt.Sprintf("/v2/wallets/transfers/%s", url.PathEscape(TransferID))
 	data, err := c.Raw.Get(path, nil)
 	if err != nil {
 		return nil, err
@@ -1153,7 +1153,7 @@ func (c *TradingClient) CreateWhitelistedAddress(body *CreateWhitelistedAddressR
 
 // DeleteWhitelistedAddress — Delete a whitelisted address
 func (c *TradingClient) DeleteWhitelistedAddress(WhitelistedAddressID string) (json.RawMessage, error) {
-	path := fmt.Sprintf("/v2/wallets/whitelists/%s", WhitelistedAddressID)
+	path := fmt.Sprintf("/v2/wallets/whitelists/%s", url.PathEscape(WhitelistedAddressID))
 	data, err := c.Raw.Delete(path, nil)
 	if err != nil {
 		return nil, err
@@ -1185,7 +1185,7 @@ func (c *TradingClient) PostWatchlist(body *UpdateWatchlistRequest) (*Watchlist,
 
 // GetWatchlistByID — Get Watchlist by ID
 func (c *TradingClient) GetWatchlistByID(WatchlistID string) (*Watchlist, error) {
-	path := fmt.Sprintf("/v2/watchlists/%s", WatchlistID)
+	path := fmt.Sprintf("/v2/watchlists/%s", url.PathEscape(WatchlistID))
 	data, err := c.Raw.Get(path, nil)
 	if err != nil {
 		return nil, err
@@ -1196,7 +1196,7 @@ func (c *TradingClient) GetWatchlistByID(WatchlistID string) (*Watchlist, error)
 
 // AddAssetToWatchlist — Add Asset to Watchlist
 func (c *TradingClient) AddAssetToWatchlist(WatchlistID string, body *AddAssetToWatchlistRequest) (*Watchlist, error) {
-	path := fmt.Sprintf("/v2/watchlists/%s", WatchlistID)
+	path := fmt.Sprintf("/v2/watchlists/%s", url.PathEscape(WatchlistID))
 	data, err := c.Raw.Post(path, nil, body)
 	if err != nil {
 		return nil, err
@@ -1207,7 +1207,7 @@ func (c *TradingClient) AddAssetToWatchlist(WatchlistID string, body *AddAssetTo
 
 // UpdateWatchlistByID — Update Watchlist By Id
 func (c *TradingClient) UpdateWatchlistByID(WatchlistID string, body *UpdateWatchlistRequest) (*Watchlist, error) {
-	path := fmt.Sprintf("/v2/watchlists/%s", WatchlistID)
+	path := fmt.Sprintf("/v2/watchlists/%s", url.PathEscape(WatchlistID))
 	data, err := c.Raw.Put(path, nil, body)
 	if err != nil {
 		return nil, err
@@ -1218,7 +1218,7 @@ func (c *TradingClient) UpdateWatchlistByID(WatchlistID string, body *UpdateWatc
 
 // DeleteWatchlistByID — Delete Watchlist By Id
 func (c *TradingClient) DeleteWatchlistByID(WatchlistID string) (json.RawMessage, error) {
-	path := fmt.Sprintf("/v2/watchlists/%s", WatchlistID)
+	path := fmt.Sprintf("/v2/watchlists/%s", url.PathEscape(WatchlistID))
 	data, err := c.Raw.Delete(path, nil)
 	if err != nil {
 		return nil, err
@@ -1228,7 +1228,7 @@ func (c *TradingClient) DeleteWatchlistByID(WatchlistID string) (json.RawMessage
 
 // RemoveAssetFromWatchlist — Delete Symbol from Watchlist
 func (c *TradingClient) RemoveAssetFromWatchlist(WatchlistID string, Symbol string) (*Watchlist, error) {
-	path := fmt.Sprintf("/v2/watchlists/%s/%s", WatchlistID, Symbol)
+	path := fmt.Sprintf("/v2/watchlists/%s/%s", url.PathEscape(WatchlistID), url.PathEscape(Symbol))
 	data, err := c.Raw.Delete(path, nil)
 	if err != nil {
 		return nil, err
@@ -1371,7 +1371,7 @@ var CalendarParamsTimezoneValues = []string{"UTC"}
 
 // Calendar — Get Market Calendar
 func (c *TradingClient) Calendar(Market string, params *CalendarParams) (*PublicCalendarResp, error) {
-	path := fmt.Sprintf("/v3/calendar/%s", Market)
+	path := fmt.Sprintf("/v3/calendar/%s", url.PathEscape(Market))
 	data, err := c.Raw.Get(path, params.Values())
 	if err != nil {
 		return nil, err

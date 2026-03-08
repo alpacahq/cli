@@ -3,6 +3,7 @@
 package integration
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -41,5 +42,29 @@ func TestAPIPassthrough(t *testing.T) {
 	if clock["is_open"] == nil {
 		t.Error("api get /v2/clock missing 'is_open'")
 	}
+}
+
+func TestDoctor(t *testing.T) {
+	// Doctor may report "some checks failed" in isolated config dir,
+	// but should still run and produce output.
+	stdout, stderr, _ := alpacaWithStderr(t, "doctor")
+	combined := string(stdout) + string(stderr)
+	if !strings.Contains(combined, "trading") && !strings.Contains(combined, "Trading") &&
+		!strings.Contains(combined, "API") && !strings.Contains(combined, "check") {
+		t.Error("doctor output should mention API or trading checks")
+	}
+}
+
+func TestProfileStatus(t *testing.T) {
+	out := alpaca(t, "profile", "status")
+	s := string(out)
+	if s == "" {
+		t.Error("profile status should produce output")
+	}
+}
+
+func TestProfileList(t *testing.T) {
+	out := alpaca(t, "profile", "list")
+	_ = string(out) // just ensure exit 0
 }
 

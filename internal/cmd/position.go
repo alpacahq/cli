@@ -1,9 +1,18 @@
 package cmd
 
 import (
+	"strings"
+
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/spf13/cobra"
 )
+
+// normalizeSymbol converts order-style crypto symbols (BTC/USD) to
+// position-style symbols (BTCUSD) since the positions API doesn't
+// accept slashes in the path.
+func normalizeSymbol(s string) string {
+	return strings.ReplaceAll(s, "/", "")
+}
 
 var positionCmd = &cobra.Command{
 	Use:   "position",
@@ -20,7 +29,7 @@ var positionListCmd = fetchCmd("list", api.GetAllOpenPositionsOp, func(cmd *cobr
 })
 
 var positionGetCmd = fetchCmd("get <symbol>", api.GetOpenPositionOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return tradingClient.GetOpenPosition(args[0])
+	return tradingClient.GetOpenPosition(normalizeSymbol(args[0]))
 }, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
 	c.Example = `  alpaca position get AAPL
@@ -29,7 +38,7 @@ var positionGetCmd = fetchCmd("get <symbol>", api.GetOpenPositionOp, func(cmd *c
 })
 
 var positionCloseCmd = fetchCmd("close <symbol>", api.DeleteOpenPositionOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return tradingClient.DeleteOpenPosition(args[0], deleteOpenPositionParamsFromFlags(cmd))
+	return tradingClient.DeleteOpenPosition(normalizeSymbol(args[0]), deleteOpenPositionParamsFromFlags(cmd))
 }, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
 	c.Example = `  alpaca position close AAPL
@@ -39,7 +48,12 @@ var positionCloseCmd = fetchCmd("close <symbol>", api.DeleteOpenPositionOp, func
 })
 
 var positionCloseAllCmd = actionCmd("close-all", api.DeleteAllOpenPositionsOp, "All positions closed.", func(cmd *cobra.Command, args []string) error {
-	_, err := tradingClient.DeleteAllOpenPositions(deleteAllOpenPositionsParamsFromFlags(cmd))
+	// Use raw client to avoid typed unmarshal — the upstream OAS spec
+	// declares PositionClosedReponse.status as string but the API returns
+	// an integer (HTTP status code). Until the spec is fixed, bypass the
+	// generated client method.
+	params := deleteAllOpenPositionsParamsFromFlags(cmd)
+	_, err := tradingClient.Raw.Delete("/v2/positions", params.Values())
 	return err
 })
 

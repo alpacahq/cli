@@ -3,6 +3,7 @@
 package integration
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,13 +13,16 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 )
 
 var cliBinary string
 
 func TestMain(m *testing.M) {
-	if os.Getenv("ALPACA_TEST_API_KEY") == "" || os.Getenv("ALPACA_TEST_SECRET_KEY") == "" {
-		fmt.Fprintln(os.Stderr, "Skipping integration tests: ALPACA_TEST_API_KEY and ALPACA_TEST_SECRET_KEY must be set")
+	hasAPIKey := os.Getenv("ALPACA_TEST_API_KEY") != "" && os.Getenv("ALPACA_TEST_SECRET_KEY") != ""
+	hasToken := os.Getenv("ALPACA_TEST_ACCESS_TOKEN") != ""
+	if !hasAPIKey && !hasToken {
+		fmt.Fprintln(os.Stderr, "Skipping integration tests: set ALPACA_TEST_API_KEY+ALPACA_TEST_SECRET_KEY or ALPACA_TEST_ACCESS_TOKEN")
 		os.Exit(0)
 	}
 
@@ -48,6 +52,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+// alpaca runs the CLI and returns stdout. Fatals on non-zero exit.
 func alpaca(t *testing.T, args ...string) []byte {
 	t.Helper()
 	cmd := exec.Command(cliBinary, args...)
@@ -63,6 +68,42 @@ func alpaca(t *testing.T, args ...string) []byte {
 		t.Fatalf("alpaca %s failed: %v", strings.Join(args, " "), err)
 	}
 	return out
+}
+
+// alpacaWithStderr runs the CLI and returns both stdout and stderr.
+// Does NOT fatal on non-zero exit — caller must check.
+func alpacaWithStderr(t *testing.T, args ...string) (stdout, stderr []byte, exitCode int) {
+	t.Helper()
+	cmd := exec.Command(cliBinary, args...)
+	cmd.Env = cliEnv()
+	var stderrBuf bytes.Buffer
+	cmd.Stderr = &stderrBuf
+	stdout, err := cmd.Output()
+	if err != nil {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
+			return stdout, stderrBuf.Bytes(), exitErr.ExitCode()
+		}
+		t.Fatalf("alpaca %s failed unexpectedly: %v", strings.Join(args, " "), err)
+	}
+	return stdout, stderrBuf.Bytes(), 0
+}
+
+// alpacaFail runs the CLI and expects non-zero exit. Fatals if it succeeds.
+func alpacaFail(t *testing.T, args ...string) (stdout, stderr []byte, exitCode int) {
+	t.Helper()
+	cmd := exec.Command(cliBinary, args...)
+	cmd.Env = cliEnv()
+	stdout, err := cmd.Output()
+	if err != nil {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
+			return stdout, exitErr.Stderr, exitErr.ExitCode()
+		}
+		t.Fatalf("alpaca %s failed unexpectedly: %v", strings.Join(args, " "), err)
+	}
+	t.Fatalf("alpaca %s succeeded but expected failure", strings.Join(args, " "))
+	return nil, nil, 0
 }
 
 func parseJSON[T any](t *testing.T, data []byte) T {
@@ -82,6 +123,26 @@ func parseJSONArray(t *testing.T, data []byte) []map[string]any {
 	return parseJSON[[]map[string]any](t, data)
 }
 
+// requireFields asserts that the JSON map has all listed fields.
+func requireFields(t *testing.T, m map[string]any, fields ...string) {
+	t.Helper()
+	for _, f := range fields {
+		if _, ok := m[f]; !ok {
+			t.Errorf("missing required field %q", f)
+		}
+	}
+}
+
+// requireArrayNonEmpty parses a JSON array and fails if empty.
+func requireArrayNonEmpty(t *testing.T, data []byte) []map[string]any {
+	t.Helper()
+	arr := parseJSONArray(t, data)
+	if len(arr) == 0 {
+		t.Fatal("expected non-empty array")
+	}
+	return arr
+}
+
 func cliEnv() []string {
 	baseURL := os.Getenv("ALPACA_TEST_BASE_URL")
 	if baseURL == "" {
@@ -92,13 +153,21 @@ func cliEnv() []string {
 		dataURL = "https://data.alpaca.markets"
 	}
 
-	return append(os.Environ(),
-		"ALPACA_API_KEY="+os.Getenv("ALPACA_TEST_API_KEY"),
-		"ALPACA_SECRET_KEY="+os.Getenv("ALPACA_TEST_SECRET_KEY"),
+	env := append(os.Environ(),
 		"ALPACA_BASE_URL="+baseURL,
 		"ALPACA_DATA_URL="+dataURL,
 		"ALPACA_CONFIG_DIR="+os.TempDir()+"/alpaca-cli-test-config",
 	)
+
+	if token := os.Getenv("ALPACA_TEST_ACCESS_TOKEN"); token != "" {
+		env = append(env, "ALPACA_ACCESS_TOKEN="+token)
+	} else {
+		env = append(env,
+			"ALPACA_API_KEY="+os.Getenv("ALPACA_TEST_API_KEY"),
+			"ALPACA_SECRET_KEY="+os.Getenv("ALPACA_TEST_SECRET_KEY"),
+		)
+	}
+	return env
 }
 
 func projectRoot() string {
@@ -116,20 +185,11 @@ func projectRoot() string {
 	return "."
 }
 
-func alpacaFail(t *testing.T, args ...string) (stdout, stderr []byte, exitCode int) {
-	t.Helper()
+// makeCmd creates an exec.Command for the CLI with the test environment.
+func makeCmd(args ...string) *exec.Cmd {
 	cmd := exec.Command(cliBinary, args...)
 	cmd.Env = cliEnv()
-	stdout, err := cmd.Output()
-	if err != nil {
-		var exitErr *exec.ExitError
-		if errors.As(err, &exitErr) {
-			return stdout, exitErr.Stderr, exitErr.ExitCode()
-		}
-		t.Fatalf("alpaca %s failed unexpectedly: %v", strings.Join(args, " "), err)
-	}
-	t.Fatalf("alpaca %s succeeded but expected failure", strings.Join(args, " "))
-	return nil, nil, 0
+	return cmd
 }
 
 func containsID(items []map[string]any, id string) bool {
@@ -139,4 +199,61 @@ func containsID(items []map[string]any, id string) bool {
 		}
 	}
 	return false
+}
+
+// submitTestOrder places a safe GTC limit buy of AAPL at $1.00 (will never fill).
+// Returns the order ID. Registers t.Cleanup to cancel.
+func submitTestOrder(t *testing.T) string {
+	t.Helper()
+	out := alpaca(t, "order", "submit", "AAPL",
+		"--qty", "1",
+		"--side", "buy",
+		"--type", "limit",
+		"--limit-price", "1.00",
+		"--time-in-force", "gtc",
+		"--json",
+	)
+	order := parseJSONMap(t, out)
+	id, ok := order["id"].(string)
+	if !ok || id == "" {
+		t.Fatal("order missing id")
+	}
+	t.Cleanup(func() {
+		cmd := exec.Command(cliBinary, "order", "cancel", id)
+		cmd.Env = cliEnv()
+		_ = cmd.Run()
+	})
+	time.Sleep(300 * time.Millisecond)
+	return id
+}
+
+// submitCryptoFill places a BTC/USD market buy for $1 notional and polls
+// until a position appears. Crypto trades 24/7 so this works regardless of
+// equity market hours. Registers t.Cleanup to close the position.
+func submitCryptoFill(t *testing.T) string {
+	t.Helper()
+	alpaca(t, "order", "submit", "BTC/USD",
+		"--notional", "10",
+		"--side", "buy",
+		"--type", "market",
+		"--time-in-force", "gtc",
+		"--json",
+	)
+
+	symbol := "BTC/USD"
+	for i := 0; i < 30; i++ {
+		time.Sleep(500 * time.Millisecond)
+		stdout, _, code := alpacaWithStderr(t, "position", "get", symbol, "--json")
+		if code == 0 {
+			_ = parseJSONMap(t, stdout)
+			t.Cleanup(func() {
+				cmd := exec.Command(cliBinary, "position", "close", symbol)
+				cmd.Env = cliEnv()
+				_ = cmd.Run()
+			})
+			return symbol
+		}
+	}
+	t.Fatal("BTC/USD position did not appear within 15s")
+	return ""
 }

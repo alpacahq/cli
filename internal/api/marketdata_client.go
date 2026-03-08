@@ -97,7 +97,7 @@ func (p *CryptoPerpLatestBarsParams) Values() url.Values {
 
 // CryptoPerpLatestBars — Latest bars
 func (c *MarketDataClient) CryptoPerpLatestBars(Loc string, params *CryptoPerpLatestBarsParams) (*CryptoLatestBarsResp, error) {
-	path := fmt.Sprintf("/v1beta1/crypto-perps/%s/latest/bars", Loc)
+	path := fmt.Sprintf("/v1beta1/crypto-perps/%s/latest/bars", url.PathEscape(Loc))
 	data, err := c.Raw.GetData(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -123,7 +123,7 @@ func (p *CryptoPerpLatestOrderbooksParams) Values() url.Values {
 
 // CryptoPerpLatestOrderbooks — Latest orderbook
 func (c *MarketDataClient) CryptoPerpLatestOrderbooks(Loc string, params *CryptoPerpLatestOrderbooksParams) (*CryptoLatestOrderbooksResp, error) {
-	path := fmt.Sprintf("/v1beta1/crypto-perps/%s/latest/orderbooks", Loc)
+	path := fmt.Sprintf("/v1beta1/crypto-perps/%s/latest/orderbooks", url.PathEscape(Loc))
 	data, err := c.Raw.GetData(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -149,7 +149,7 @@ func (p *CryptoPerpLatestFuturesPricingParams) Values() url.Values {
 
 // CryptoPerpLatestFuturesPricing — Latest pricing
 func (c *MarketDataClient) CryptoPerpLatestFuturesPricing(Loc string, params *CryptoPerpLatestFuturesPricingParams) (*CryptoPerpLatestFuturesPricingResp, error) {
-	path := fmt.Sprintf("/v1beta1/crypto-perps/%s/latest/pricing", Loc)
+	path := fmt.Sprintf("/v1beta1/crypto-perps/%s/latest/pricing", url.PathEscape(Loc))
 	data, err := c.Raw.GetData(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -175,7 +175,7 @@ func (p *CryptoPerpLatestQuotesParams) Values() url.Values {
 
 // CryptoPerpLatestQuotes — Latest quotes
 func (c *MarketDataClient) CryptoPerpLatestQuotes(Loc string, params *CryptoPerpLatestQuotesParams) (*CryptoLatestQuotesResp, error) {
-	path := fmt.Sprintf("/v1beta1/crypto-perps/%s/latest/quotes", Loc)
+	path := fmt.Sprintf("/v1beta1/crypto-perps/%s/latest/quotes", url.PathEscape(Loc))
 	data, err := c.Raw.GetData(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -201,7 +201,7 @@ func (p *CryptoPerpLatestTradesParams) Values() url.Values {
 
 // CryptoPerpLatestTrades — Latest trades
 func (c *MarketDataClient) CryptoPerpLatestTrades(Loc string, params *CryptoPerpLatestTradesParams) (*CryptoLatestTradesResp, error) {
-	path := fmt.Sprintf("/v1beta1/crypto-perps/%s/latest/trades", Loc)
+	path := fmt.Sprintf("/v1beta1/crypto-perps/%s/latest/trades", url.PathEscape(Loc))
 	data, err := c.Raw.GetData(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -331,7 +331,7 @@ func (p *LogosParams) Values() url.Values {
 
 // Logos — Logos
 func (c *MarketDataClient) Logos(Symbol string, params *LogosParams) (json.RawMessage, error) {
-	path := fmt.Sprintf("/v1beta1/logos/%s", Symbol)
+	path := fmt.Sprintf("/v1beta1/logos/%s", url.PathEscape(Symbol))
 	data, err := c.Raw.GetData(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -449,7 +449,7 @@ func (c *MarketDataClient) OptionBars(params *OptionBarsParams) (*OptionBarsResp
 
 // OptionMetaConditions — Condition codes
 func (c *MarketDataClient) OptionMetaConditions(Ticktype string) (json.RawMessage, error) {
-	path := fmt.Sprintf("/v1beta1/options/meta/conditions/%s", Ticktype)
+	path := fmt.Sprintf("/v1beta1/options/meta/conditions/%s", url.PathEscape(Ticktype))
 	data, err := c.Raw.GetData(path, nil)
 	if err != nil {
 		return nil, err
@@ -604,7 +604,7 @@ var OptionChainParamsTypeValues = []string{"call", "put"}
 
 // OptionChain — Option chain
 func (c *MarketDataClient) OptionChain(UnderlyingSymbol string, params *OptionChainParams) (*OptionSnapshotsResp, error) {
-	path := fmt.Sprintf("/v1beta1/options/snapshots/%s", UnderlyingSymbol)
+	path := fmt.Sprintf("/v1beta1/options/snapshots/%s", url.PathEscape(UnderlyingSymbol))
 	data, err := c.Raw.GetData(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -742,7 +742,7 @@ func (p *MoversParams) Values() url.Values {
 
 // Movers — Top market movers
 func (c *MarketDataClient) Movers(MarketType string, params *MoversParams) (*MoversResp, error) {
-	path := fmt.Sprintf("/v1beta1/screener/%s/movers", MarketType)
+	path := fmt.Sprintf("/v1beta1/screener/%s/movers", url.PathEscape(MarketType))
 	data, err := c.Raw.GetData(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -794,7 +794,7 @@ var CryptoBarsParamsSortValues = []string{"asc", "desc"}
 
 // CryptoBars — Historical bars
 func (c *MarketDataClient) CryptoBars(Loc string, params *CryptoBarsParams) (*CryptoBarsResp, error) {
-	path := fmt.Sprintf("/v1beta3/crypto/%s/bars", Loc)
+	path := fmt.Sprintf("/v1beta3/crypto/%s/bars", url.PathEscape(Loc))
 	data, err := c.Raw.GetData(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -820,7 +820,7 @@ func (p *CryptoLatestBarsParams) Values() url.Values {
 
 // CryptoLatestBars — Latest bars
 func (c *MarketDataClient) CryptoLatestBars(Loc string, params *CryptoLatestBarsParams) (*CryptoLatestBarsResp, error) {
-	path := fmt.Sprintf("/v1beta3/crypto/%s/latest/bars", Loc)
+	path := fmt.Sprintf("/v1beta3/crypto/%s/latest/bars", url.PathEscape(Loc))
 	data, err := c.Raw.GetData(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -846,7 +846,7 @@ func (p *CryptoLatestOrderbooksParams) Values() url.Values {
 
 // CryptoLatestOrderbooks — Latest orderbook
 func (c *MarketDataClient) CryptoLatestOrderbooks(Loc string, params *CryptoLatestOrderbooksParams) (*CryptoLatestOrderbooksResp, error) {
-	path := fmt.Sprintf("/v1beta3/crypto/%s/latest/orderbooks", Loc)
+	path := fmt.Sprintf("/v1beta3/crypto/%s/latest/orderbooks", url.PathEscape(Loc))
 	data, err := c.Raw.GetData(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -872,7 +872,7 @@ func (p *CryptoLatestQuotesParams) Values() url.Values {
 
 // CryptoLatestQuotes — Latest quotes
 func (c *MarketDataClient) CryptoLatestQuotes(Loc string, params *CryptoLatestQuotesParams) (*CryptoLatestQuotesResp, error) {
-	path := fmt.Sprintf("/v1beta3/crypto/%s/latest/quotes", Loc)
+	path := fmt.Sprintf("/v1beta3/crypto/%s/latest/quotes", url.PathEscape(Loc))
 	data, err := c.Raw.GetData(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -898,7 +898,7 @@ func (p *CryptoLatestTradesParams) Values() url.Values {
 
 // CryptoLatestTrades — Latest trades
 func (c *MarketDataClient) CryptoLatestTrades(Loc string, params *CryptoLatestTradesParams) (*CryptoLatestTradesResp, error) {
-	path := fmt.Sprintf("/v1beta3/crypto/%s/latest/trades", Loc)
+	path := fmt.Sprintf("/v1beta3/crypto/%s/latest/trades", url.PathEscape(Loc))
 	data, err := c.Raw.GetData(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -946,7 +946,7 @@ var CryptoQuotesParamsSortValues = []string{"asc", "desc"}
 
 // CryptoQuotes — Historical quotes
 func (c *MarketDataClient) CryptoQuotes(Loc string, params *CryptoQuotesParams) (*CryptoQuotesResp, error) {
-	path := fmt.Sprintf("/v1beta3/crypto/%s/quotes", Loc)
+	path := fmt.Sprintf("/v1beta3/crypto/%s/quotes", url.PathEscape(Loc))
 	data, err := c.Raw.GetData(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -972,7 +972,7 @@ func (p *CryptoSnapshotsParams) Values() url.Values {
 
 // CryptoSnapshots — Snapshots
 func (c *MarketDataClient) CryptoSnapshots(Loc string, params *CryptoSnapshotsParams) (*CryptoSnapshotsResp, error) {
-	path := fmt.Sprintf("/v1beta3/crypto/%s/snapshots", Loc)
+	path := fmt.Sprintf("/v1beta3/crypto/%s/snapshots", url.PathEscape(Loc))
 	data, err := c.Raw.GetData(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -1020,7 +1020,7 @@ var CryptoTradesParamsSortValues = []string{"asc", "desc"}
 
 // CryptoTrades — Historical trades
 func (c *MarketDataClient) CryptoTrades(Loc string, params *CryptoTradesParams) (*CryptoTradesResp, error) {
-	path := fmt.Sprintf("/v1beta3/crypto/%s/trades", Loc)
+	path := fmt.Sprintf("/v1beta3/crypto/%s/trades", url.PathEscape(Loc))
 	data, err := c.Raw.GetData(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -1214,7 +1214,7 @@ var StockMetaConditionsParamsTapeValues = []string{"A", "B", "C"}
 
 // StockMetaConditions — Condition codes
 func (c *MarketDataClient) StockMetaConditions(Ticktype string, params *StockMetaConditionsParams) (json.RawMessage, error) {
-	path := fmt.Sprintf("/v2/stocks/meta/conditions/%s", Ticktype)
+	path := fmt.Sprintf("/v2/stocks/meta/conditions/%s", url.PathEscape(Ticktype))
 	data, err := c.Raw.GetData(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -1510,7 +1510,7 @@ var StockAuctionSingleParamsSortValues = []string{"asc", "desc"}
 
 // StockAuctionSingle — Historical auctions (single)
 func (c *MarketDataClient) StockAuctionSingle(Symbol string, params *StockAuctionSingleParams) (*StockAuctionsRespSingle, error) {
-	path := fmt.Sprintf("/v2/stocks/%s/auctions", Symbol)
+	path := fmt.Sprintf("/v2/stocks/%s/auctions", url.PathEscape(Symbol))
 	data, err := c.Raw.GetData(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -1576,7 +1576,7 @@ var StockBarSingleParamsSortValues = []string{"asc", "desc"}
 
 // StockBarSingle — Historical bars (single symbol)
 func (c *MarketDataClient) StockBarSingle(Symbol string, params *StockBarSingleParams) (*StockBarsRespSingle, error) {
-	path := fmt.Sprintf("/v2/stocks/%s/bars", Symbol)
+	path := fmt.Sprintf("/v2/stocks/%s/bars", url.PathEscape(Symbol))
 	data, err := c.Raw.GetData(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -1608,7 +1608,7 @@ var StockLatestBarSingleParamsFeedValues = []string{"boats", "delayed_sip", "iex
 
 // StockLatestBarSingle — Latest bar (single symbol)
 func (c *MarketDataClient) StockLatestBarSingle(Symbol string, params *StockLatestBarSingleParams) (*StockLatestBarsRespSingle, error) {
-	path := fmt.Sprintf("/v2/stocks/%s/bars/latest", Symbol)
+	path := fmt.Sprintf("/v2/stocks/%s/bars/latest", url.PathEscape(Symbol))
 	data, err := c.Raw.GetData(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -1666,7 +1666,7 @@ var StockQuoteSingleParamsSortValues = []string{"asc", "desc"}
 
 // StockQuoteSingle — Historical quotes (single symbol)
 func (c *MarketDataClient) StockQuoteSingle(Symbol string, params *StockQuoteSingleParams) (*StockQuotesRespSingle, error) {
-	path := fmt.Sprintf("/v2/stocks/%s/quotes", Symbol)
+	path := fmt.Sprintf("/v2/stocks/%s/quotes", url.PathEscape(Symbol))
 	data, err := c.Raw.GetData(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -1698,7 +1698,7 @@ var StockLatestQuoteSingleParamsFeedValues = []string{"boats", "delayed_sip", "i
 
 // StockLatestQuoteSingle — Latest quote (single symbol)
 func (c *MarketDataClient) StockLatestQuoteSingle(Symbol string, params *StockLatestQuoteSingleParams) (*StockLatestQuotesRespSingle, error) {
-	path := fmt.Sprintf("/v2/stocks/%s/quotes/latest", Symbol)
+	path := fmt.Sprintf("/v2/stocks/%s/quotes/latest", url.PathEscape(Symbol))
 	data, err := c.Raw.GetData(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -1730,7 +1730,7 @@ var StockSnapshotSingleParamsFeedValues = []string{"boats", "delayed_sip", "iex"
 
 // StockSnapshotSingle — Snapshot (single symbol)
 func (c *MarketDataClient) StockSnapshotSingle(Symbol string, params *StockSnapshotSingleParams) (json.RawMessage, error) {
-	path := fmt.Sprintf("/v2/stocks/%s/snapshot", Symbol)
+	path := fmt.Sprintf("/v2/stocks/%s/snapshot", url.PathEscape(Symbol))
 	data, err := c.Raw.GetData(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -1787,7 +1787,7 @@ var StockTradeSingleParamsSortValues = []string{"asc", "desc"}
 
 // StockTradeSingle — Historical trades (single symbol)
 func (c *MarketDataClient) StockTradeSingle(Symbol string, params *StockTradeSingleParams) (*StockTradesRespSingle, error) {
-	path := fmt.Sprintf("/v2/stocks/%s/trades", Symbol)
+	path := fmt.Sprintf("/v2/stocks/%s/trades", url.PathEscape(Symbol))
 	data, err := c.Raw.GetData(path, params.Values())
 	if err != nil {
 		return nil, err
@@ -1819,7 +1819,7 @@ var StockLatestTradeSingleParamsFeedValues = []string{"boats", "delayed_sip", "i
 
 // StockLatestTradeSingle — Latest trade (single symbol)
 func (c *MarketDataClient) StockLatestTradeSingle(Symbol string, params *StockLatestTradeSingleParams) (*StockLatestTradesRespSingle, error) {
-	path := fmt.Sprintf("/v2/stocks/%s/trades/latest", Symbol)
+	path := fmt.Sprintf("/v2/stocks/%s/trades/latest", url.PathEscape(Symbol))
 	data, err := c.Raw.GetData(path, params.Values())
 	if err != nil {
 		return nil, err
