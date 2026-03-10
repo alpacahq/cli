@@ -74,7 +74,6 @@ If this list is empty, there is nothing to do.
 
 | Workaround | File | What to check | Remove when |
 |---|---|---|---|
-| `position close-all` uses `tradingClient.Raw.Delete` instead of generated `DeleteAllOpenPositions` | `internal/cmd/position.go` | `PositionClosedReponse.status` in `api/specs/trading-api.json` — declared as `string` but API returns `integer` (HTTP status code). The spec's own `x-examples` confirms `"status": 200`. | Spec changes `status` type to `integer`. Then switch back to `tradingClient.DeleteAllOpenPositions(...)` and delete the comment. |
 
 ## After every change
 

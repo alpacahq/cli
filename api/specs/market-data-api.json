@@ -410,6 +410,7 @@
                     {
                         "name": "placeholder",
                         "in": "query",
+                        "description": "If true, returns a placeholder image when no logo is available. Defaults to true.",
                         "schema": {
                             "type": "boolean",
                             "default": true
@@ -770,7 +771,7 @@
                     }
                 },
                 "operationId": "OptionMetaExchanges",
-                "description": "Returns the mapping between the option exchange codes and the corresponding exchanges names."
+                "description": "Returns the mapping between the option exchange codes and the corresponding exchange names."
             }
         },
         "/v1beta1/options/quotes/latest": {
@@ -3121,7 +3122,7 @@
                     }
                 },
                 "operationId": "StockMetaExchanges",
-                "description": "Returns the mapping between the stock exchange codes and the corresponding exchanges names.\n"
+                "description": "Returns the mapping between the stock exchange codes and the corresponding exchange names.\n"
             }
         },
         "/v2/stocks/quotes": {
@@ -4981,11 +4982,13 @@
             },
             "record_date": {
                 "type": "string",
-                "format": "date"
+                "format": "date",
+                "description": "The date shareholders must own shares to receive the benefit."
             },
             "payable_date": {
                 "type": "string",
-                "format": "date"
+                "format": "date",
+                "description": "The date when the corporate action benefit is paid or distributed."
             },
             "reverse_split": {
                 "type": "object",
@@ -5048,7 +5051,8 @@
             },
             "due_bill_redemption_date": {
                 "type": "string",
-                "format": "date"
+                "format": "date",
+                "description": "The date when due bill obligations are redeemed."
             },
             "forward_split": {
                 "type": "object",
@@ -6991,7 +6995,9 @@
                 "enum": [
                     "us",
                     "us-1",
-                    "eu-1"
+                    "us-2",
+                    "eu-1",
+                    "bs-1"
                 ],
                 "description": "Crypto location from where the historical market data is retrieved.",
                 "x-go-name": "TypeHistoricalLoc"
@@ -7022,7 +7028,9 @@
                 "enum": [
                     "us",
                     "us-1",
-                    "eu-1"
+                    "us-2",
+                    "eu-1",
+                    "bs-1"
                 ],
                 "description": "Crypto location from where the latest market data is retrieved.",
                 "x-go-name": "TypeLatestLoc"

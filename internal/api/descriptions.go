@@ -508,7 +508,7 @@ func (o logosOp) RequiredFlags() []string {
 
 func (o logosOp) Flags() []FlagDef {
 	return []FlagDef{
-		{Name: "placeholder", OASName: "placeholder", Type: "bool", Default: "true", Description: "placeholder", OpName: "Logos"},
+		{Name: "placeholder", OASName: "placeholder", Type: "bool", Default: "true", Description: "if true, returns a placeholder image when no logo is available. Defaults to true", OpName: "Logos"},
 	}
 }
 
@@ -1273,7 +1273,7 @@ func (o usCorporatesOp) RequiredFlags() []string {
 
 func (o usCorporatesOp) Flags() []FlagDef {
 	return []FlagDef{
-		{Name: "bond-status", OASName: "bond_status", Type: "string", Description: "filter by bond status (outstanding, matured, or pre_issuance)", Completions: []string{"matured", "outstanding", "pre_issuance"}, OpName: "UsCorporates"},
+		{Name: "bond-status", OASName: "bond_status", Type: "string", Description: "status of the bond", Completions: []string{"matured", "outstanding", "pre_issuance"}, OpName: "UsCorporates"},
 		{Name: "cusips", OASName: "cusips", Type: "string", Description: "A comma-separated list of CUSIPs with a limit of 1000", OpName: "UsCorporates"},
 		{Name: "isins", OASName: "isins", Type: "string", Description: "A comma-separated list of ISINs with a limit of 1000", OpName: "UsCorporates"},
 		{Name: "tickers", OASName: "tickers", Type: "string", Description: "A comma-separated list of tickers with a limit of 1000", OpName: "UsCorporates"},
@@ -1298,10 +1298,10 @@ func (o usTreasuriesOp) RequiredFlags() []string {
 
 func (o usTreasuriesOp) Flags() []FlagDef {
 	return []FlagDef{
-		{Name: "bond-status", OASName: "bond_status", Type: "string", Description: "filter by bond status (outstanding, matured, or pre_issuance)", Completions: []string{"matured", "outstanding", "pre_issuance"}, OpName: "UsTreasuries"},
+		{Name: "bond-status", OASName: "bond_status", Type: "string", Description: "status of the bond", Completions: []string{"matured", "outstanding", "pre_issuance"}, OpName: "UsTreasuries"},
 		{Name: "cusips", OASName: "cusips", Type: "string", Description: "A comma-separated list of CUSIPs with a limit of 1000", OpName: "UsTreasuries"},
 		{Name: "isins", OASName: "isins", Type: "string", Description: "A comma-separated list of ISINs with a limit of 1000", OpName: "UsTreasuries"},
-		{Name: "subtype", OASName: "subtype", Type: "string", Description: "filter by treasury subtype, e.g. bond, bill, note, strips, tips, or floating", Completions: []string{"bill", "bond", "floating", "note", "strips", "tips"}, OpName: "UsTreasuries"},
+		{Name: "subtype", OASName: "subtype", Type: "string", Description: "subtype of the treasury", Completions: []string{"bill", "bond", "floating", "note", "strips", "tips"}, OpName: "UsTreasuries"},
 	}
 }
 
@@ -2849,7 +2849,7 @@ var ResponseSchemas = map[string][]ResponseField{
 	},
 	"DeleteAllOpenPositions": {
 		{Name: "body", Type: "object", Description: "orders API allows a user to monitor, place and cancel their orders with Alpaca.\n\nEach order has a unique identifier p..."},
-		{Name: "status", Type: "string", Description: "http status code for the attempt to close this position"},
+		{Name: "status", Type: "integer", Description: "HTTP status code for the attempt to close this position"},
 		{Name: "symbol", Type: "string", Description: "symbol name of the asset"},
 	},
 	"DeleteAllOrders": {

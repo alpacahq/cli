@@ -5,22 +5,26 @@ package api
 type CryptoHistoricalLoc string
 
 const (
+	CryptoHistoricalLocBs1 CryptoHistoricalLoc = "bs-1"
 	CryptoHistoricalLocEu1 CryptoHistoricalLoc = "eu-1"
 	CryptoHistoricalLocUs  CryptoHistoricalLoc = "us"
 	CryptoHistoricalLocUs1 CryptoHistoricalLoc = "us-1"
+	CryptoHistoricalLocUs2 CryptoHistoricalLoc = "us-2"
 )
 
-var CryptoHistoricalLocValues = []string{"eu-1", "us", "us-1"}
+var CryptoHistoricalLocValues = []string{"bs-1", "eu-1", "us", "us-1", "us-2"}
 
 type CryptoLatestLoc string
 
 const (
+	CryptoLatestLocBs1 CryptoLatestLoc = "bs-1"
 	CryptoLatestLocEu1 CryptoLatestLoc = "eu-1"
 	CryptoLatestLocUs  CryptoLatestLoc = "us"
 	CryptoLatestLocUs1 CryptoLatestLoc = "us-1"
+	CryptoLatestLocUs2 CryptoLatestLoc = "us-2"
 )
 
-var CryptoLatestLocValues = []string{"eu-1", "us", "us-1"}
+var CryptoLatestLocValues = []string{"bs-1", "eu-1", "us", "us-1", "us-2"}
 
 type CryptoPerpLoc string
 

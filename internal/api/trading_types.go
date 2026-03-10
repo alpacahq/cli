@@ -640,7 +640,7 @@ type Position struct {
 
 type PositionClosedReponse struct {
 	Body   Order  `json:"body,omitempty"`
-	Status string `json:"status"`
+	Status int    `json:"status"`
 	Symbol string `json:"symbol"`
 }
 

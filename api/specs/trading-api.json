@@ -2273,7 +2273,6 @@
                     {
                         "name": "subtype",
                         "in": "query",
-                        "description": "Filter by treasury subtype, e.g. bond, bill, note, strips, tips, or floating.",
                         "schema": {
                             "$ref": "#/components/schemas/treasury_subtype"
                         }
@@ -2281,7 +2280,6 @@
                     {
                         "name": "bond_status",
                         "in": "query",
-                        "description": "Filter by bond status (outstanding, matured, or pre_issuance).",
                         "schema": {
                             "$ref": "#/components/schemas/bond_status"
                         }
@@ -2354,7 +2352,6 @@
                     {
                         "name": "bond_status",
                         "in": "query",
-                        "description": "Filter by bond status (outstanding, matured, or pre_issuance).",
                         "schema": {
                             "$ref": "#/components/schemas/bond_status"
                         }
@@ -3425,7 +3422,6 @@
                 "name": "market",
                 "in": "path",
                 "required": true,
-                "description": "The market identifier (MIC, BIC, or acronym), e.g. NYSE, NASDAQ.",
                 "schema": {
                     "$ref": "#/components/schemas/market"
                 }
@@ -5529,8 +5525,8 @@
                         "description": "Symbol name of the asset"
                     },
                     "status": {
-                        "type": "string",
-                        "description": "Http status code for the attempt to close this position"
+                        "type": "integer",
+                        "description": "HTTP status code for the attempt to close this position"
                     },
                     "body": {
                         "$ref": "#/components/schemas/Order"
@@ -5799,7 +5795,7 @@
                 ]
             },
             "bond_status": {
-                "description": "Status of the bond",
+                "description": "Status of the bond.",
                 "type": "string",
                 "enum": [
                     "outstanding",
@@ -6413,7 +6409,7 @@
             },
             "market": {
                 "type": "string",
-                "description": "The market identifier. MIC, BIC or acronym.",
+                "description": "The market identifier (MIC, BIC, or acronym).",
                 "enum": [
                     "BMO",
                     "BNYM",

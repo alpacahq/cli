@@ -48,12 +48,7 @@ var positionCloseCmd = fetchCmd("close <symbol>", api.DeleteOpenPositionOp, func
 })
 
 var positionCloseAllCmd = actionCmd("close-all", api.DeleteAllOpenPositionsOp, "All positions closed.", func(cmd *cobra.Command, args []string) error {
-	// Use raw client to avoid typed unmarshal — the upstream OAS spec
-	// declares PositionClosedReponse.status as string but the API returns
-	// an integer (HTTP status code). Until the spec is fixed, bypass the
-	// generated client method.
-	params := deleteAllOpenPositionsParamsFromFlags(cmd)
-	_, err := tradingClient.Raw.Delete("/v2/positions", params.Values())
+	_, err := tradingClient.DeleteAllOpenPositions(deleteAllOpenPositionsParamsFromFlags(cmd))
 	return err
 })
 
