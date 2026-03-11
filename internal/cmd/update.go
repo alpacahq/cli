@@ -29,7 +29,16 @@ const (
 var updateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Update alpaca CLI to the latest version",
+	Long: `Update alpaca CLI to the latest version.
+
+Checks GitHub for the latest release and installs it. The install method
+is auto-detected (Homebrew, go install, or binary download) and the
+appropriate upgrade command is shown.
+
+Use --check to see if an update is available without installing.
+Use --check --json for machine-readable output (useful for scripts and agents).`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		suppressUpdateNotice = true
 		checkOnly := cmdutil.Bool(cmd, "check")
 
 		latest, downloadURL, checksumURL, err := getLatestRelease()
@@ -37,8 +46,42 @@ var updateCmd = &cobra.Command{
 			return fmt.Errorf("checking for updates: %w", err)
 		}
 
+		method := detectInstallMethod()
+		saveUpdateState(&updateState{
+			LatestVersion: latest,
+			CheckedAt:     time.Now(),
+			InstallMethod: method,
+		})
+
 		current := version
-		if current == latest || "v"+current == latest {
+		upToDate := versionsEqual(current, latest)
+
+		if checkOnly {
+			if jsonFlag {
+				m := map[string]any{
+					"current":          strings.TrimPrefix(current, "v"),
+					"latest":           strings.TrimPrefix(latest, "v"),
+					"update_available": !upToDate,
+					"install_method":   method,
+					"update_command":   upgradeCommand(method),
+				}
+				enc := json.NewEncoder(os.Stdout)
+				enc.SetIndent("", "  ")
+				return enc.Encode(m)
+			}
+
+			if upToDate {
+				color.Green("Already up to date (%s)", current)
+				return nil
+			}
+
+			fmt.Printf("Current version: %s\n", current)
+			fmt.Printf("Latest version:  %s\n", latest)
+			fmt.Printf("\nRun `%s` to upgrade.\n", upgradeCommand(method))
+			return nil
+		}
+
+		if upToDate {
 			color.Green("Already up to date (%s)", current)
 			return nil
 		}
@@ -46,8 +89,16 @@ var updateCmd = &cobra.Command{
 		fmt.Printf("Current version: %s\n", current)
 		fmt.Printf("Latest version:  %s\n", latest)
 
-		if checkOnly {
-			fmt.Println("\nRun `alpaca update` to upgrade.")
+		if method == installHomebrew {
+			fmt.Println()
+			fmt.Println("This CLI was installed via Homebrew. To update, run:")
+			fmt.Println("  brew upgrade alpaca")
+			return nil
+		}
+		if method == installGoInstall {
+			fmt.Println()
+			fmt.Println("This CLI was installed via go install. To update, run:")
+			fmt.Println("  go install github.com/alpacahq/cli/cmd/alpaca@latest")
 			return nil
 		}
 

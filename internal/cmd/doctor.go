@@ -78,6 +78,24 @@ var doctorCmd = &cobra.Command{
 			printCheck(w, true, "data API: connected")
 		}
 
+		fmt.Fprintf(w, "\nUpdate:\n")
+		state := loadUpdateState()
+		if state != nil && state.LatestVersion != "" {
+			if versionsEqual(version, state.LatestVersion) {
+				printCheck(w, true, fmt.Sprintf("up to date (%s)", version))
+			} else {
+				method := state.InstallMethod
+				if method == "" {
+					method = detectInstallMethod()
+				}
+				allOK = printCheck(w, false, fmt.Sprintf(
+					"update available: %s → %s — run `%s`",
+					version, state.LatestVersion, upgradeCommand(method)))
+			}
+		} else {
+			fmt.Fprintln(w, "  - run `alpaca update --check` to check for updates")
+		}
+
 		return doctorResult(w, allOK)
 	},
 }

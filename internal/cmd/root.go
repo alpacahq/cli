@@ -44,7 +44,12 @@ func Root() *cobra.Command {
 }
 
 func Execute() error {
+	updateCh := checkForUpdateAsync()
+
 	err := rootCmd.Execute()
+
+	showUpdateNotice(updateCh)
+
 	if err != nil {
 		var apiErr *client.APIError
 		if errors.As(err, &apiErr) {
@@ -95,15 +100,42 @@ func printJSONError(apiErr *client.APIError) {
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version of alpaca CLI",
+	Long: `Print the version of alpaca CLI.
+
+Use --json for machine-readable output that includes update availability
+(based on cached state; use "alpaca update --check" for a live check).`,
 	Run: func(cmd *cobra.Command, args []string) {
+		suppressUpdateNotice = true
+		if jsonFlag {
+			state := loadUpdateState()
+			m := map[string]any{
+				"version": version,
+			}
+			if state != nil && state.LatestVersion != "" {
+				latest := strings.TrimPrefix(state.LatestVersion, "v")
+				current := strings.TrimPrefix(version, "v")
+				m["latest"] = latest
+				m["update_available"] = current != latest
+				m["update_command"] = upgradeCommand(detectInstallMethod())
+				m["update_url"] = fmt.Sprintf("https://github.com/%s/%s/releases/tag/%s",
+					repoOwner, repoName, state.LatestVersion)
+			}
+			enc := json.NewEncoder(os.Stdout)
+			enc.SetIndent("", "  ")
+			_ = enc.Encode(m)
+			return
+		}
 		fmt.Printf("alpaca version %s\n", version)
 	},
 }
 
 var rootCmd = &cobra.Command{
-	Use:           "alpaca",
-	Short:         "CLI for Alpaca Trading API",
-	Long:          "Trade stocks & crypto, access market data, and manage your Alpaca account from the command line.",
+	Use:   "alpaca",
+	Short: "CLI for Alpaca Trading API",
+	Long: `Trade stocks & crypto, access market data, and manage your Alpaca account from the command line.
+
+To check for updates:  alpaca update --check
+Programmatic check:    alpaca update --check --json`,
 	SilenceUsage:  true,
 	SilenceErrors: true,
 	RunE: func(cmd *cobra.Command, args []string) error {

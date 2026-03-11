@@ -75,6 +75,17 @@ If this list is empty, there is nothing to do.
 | Workaround | File | What to check | Remove when |
 |---|---|---|---|
 
+## Update notifications
+
+The CLI checks for updates in the background (once per 24h) and caches the result in `~/.config/alpaca/update-state.json`. A stderr notice is shown after command output when an update is available.
+
+- `alpaca update --check --json` — live check, structured output with `update_available`, `install_method`, `update_command`
+- `alpaca version --json` — includes cached update info (no network call)
+- `ALPACA_NO_UPDATE_NOTIFY=1` — suppresses the background notice
+- `--quiet` — also suppresses the notice
+
+The install method is auto-detected (Homebrew, go install, or binary download). For Homebrew and go install users, `alpaca update` redirects to the appropriate package manager command instead of self-replacing the binary.
+
 ## After every change
 
 ```

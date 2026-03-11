@@ -77,12 +77,12 @@ alpaca clock
 
 ## Safety
 
-**Paper trading is the default.** When you run `alpaca profile login`, credentials are stored for paper trading (`paper-api.alpaca.markets`) unless you explicitly pass `--live`.
+**Paper trading is the default.** When you run `alpaca profile login`, credentials are stored for paper trading (`paper-api.alpaca.markets`). Live trading requires API keys.
 
 **Authentication methods:**
 
-- **OAuth (default)** — `alpaca profile login` opens a browser for OAuth authorization. No keys to copy/paste. The CLI starts a temporary localhost server to receive the callback, exchanges the authorization code for a token, and stores it locally.
-- **API keys** — `alpaca profile login --api-key` prompts for API key + secret. Recommended for CI/automation where a browser isn't available.
+- **OAuth (default, paper only)** — `alpaca profile login` opens a browser for OAuth authorization. No keys to copy/paste. The CLI starts a temporary localhost server to receive the callback, exchanges the authorization code for a token, and stores it locally. OAuth is currently restricted to paper trading while the OAuth flow is hardened (PKCE support pending).
+- **API keys (paper and live)** — `alpaca profile login --api-key` prompts for API key + secret. Required for live trading. Recommended for CI/automation where a browser isn't available.
 
 **Credential safety:**
 
@@ -97,11 +97,12 @@ alpaca position list --json
 
 - Passing `--secret` via flags is discouraged (shell history exposure). Use interactive login or env vars.
 
-**OAuth security model:** The CLI is a public OAuth client — the embedded `client_id` is not a secret and serves only as an app identifier. This is the standard approach for native CLI applications, used by GitHub CLI, Google Cloud CLI, Stripe CLI, and others. The user always controls access through the browser consent screen; the client credentials alone grant no access to any account. For details, see:
+**OAuth security model:** The CLI is a first-party public OAuth client — the embedded `client_id` and `client_secret` serve only as app identifiers, not security credentials. This is standard for native CLI apps (GitHub CLI, Google Cloud CLI, Stripe CLI all do the same). The user always controls access through the browser consent screen; the client credentials alone grant no access to any account. For details, see:
 
-- [RFC 8252 Section 8.5](https://datatracker.ietf.org/doc/html/rfc8252#section-8.5) — IETF standard for OAuth in native apps: *"Secrets that are statically included as part of an app distributed to multiple users should not be treated as confidential secrets."*
-- [RFC 9700](https://datatracker.ietf.org/doc/html/rfc9700) — OAuth 2.0 Security Best Current Practice (BCP 240): mandates PKCE, deprecates reliance on static client secrets.
+- [RFC 8252 Section 8.5](https://datatracker.ietf.org/doc/html/rfc8252#section-8.5) — *"Secrets that are statically included as part of an app distributed to multiple users should not be treated as confidential secrets."*
 - [GitHub CLI approach](https://github.com/cli/oauth/issues/1#issuecomment-749151295) — GitHub's `cli/oauth` maintainer on why embedding client secrets in open-source CLIs is acceptable.
+
+Note: OAuth login is restricted to paper trading while the flow does not support PKCE (pending Alpaca OAuth server support). Live trading requires API keys. The authorization code grant with state parameter and localhost redirect URI validation provides adequate security for paper trading.
 
 ## Commands
 
@@ -228,9 +229,9 @@ alpaca position list --csv        # CSV for spreadsheets
 
 ```bash
 alpaca profile login                                 # OAuth via browser, paper (default)
-alpaca profile login --live                          # OAuth for live trading
-alpaca profile login --api-key                       # API key/secret (for CI/automation)
-alpaca profile login --api-key --name live --live    # API key for live trading
+alpaca profile login --api-key                       # API key/secret, paper
+alpaca profile login --api-key --live                # API key/secret, live trading
+alpaca profile login --api-key --name live --live    # API key for live with custom name
 alpaca profile login --name staging --base-url https://staging-api.example.com
 alpaca profile switch live                           # Switch default profile
 ```
@@ -250,6 +251,7 @@ Credentials are stored in `~/.config/alpaca/profiles/`.
 | `ALPACA_CONFIG_DIR` | Config directory (default: `~/.config/alpaca`) |
 | `ALPACA_VERBOSE` | Enable verbose HTTP tracing (any non-empty value) |
 | `ALPACA_DEBUG` | Full HTTP request/response bodies on stderr (implies verbose) |
+| `ALPACA_NO_UPDATE_NOTIFY` | Suppress background update notices (any non-empty value) |
 
 Global flags: `--json`, `--csv`, `--profile`, `--verbose`, `--debug`, `--quiet`, `--timeout`.
 
@@ -492,10 +494,26 @@ make test-integration
 
 ## Self-Update
 
+The CLI checks for updates in the background (once every 24 hours) and shows a notice on stderr when a newer version is available. The upgrade command is tailored to your install method:
+
+| Install method | Upgrade command |
+|---|---|
+| Homebrew | `brew upgrade alpaca` |
+| go install | `go install github.com/alpacahq/cli/cmd/alpaca@latest` |
+| Binary download | `alpaca update` |
+
 ```bash
-alpaca update          # Download and install latest version
+alpaca update          # Download and install latest version (binary installs)
 alpaca update --check  # Check without installing
 ```
+
+For scripts and agents, use the machine-readable check:
+
+```bash
+alpaca update --check --json
+```
+
+Suppress update notices with `ALPACA_NO_UPDATE_NOTIFY=1` or `--quiet`.
 
 ## License
 

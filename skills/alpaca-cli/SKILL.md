@@ -50,7 +50,7 @@ This auto-detects the shell and installs to user-level directories (no `sudo`). 
 
 ## Authentication
 
-**Paper trading is the default.** Credentials stored via `alpaca profile login` point to `paper-api.alpaca.markets` unless `--live` is explicitly passed.
+**Paper trading is the default.** `alpaca profile login` uses OAuth and is paper-only. For live trading, use API keys: `alpaca profile login --api-key --live`.
 
 ### Interactive login (stores credentials on disk)
 
@@ -74,8 +74,8 @@ Env vars override profile credentials.
 ### Multiple profiles
 
 ```bash
-alpaca profile login --name paper              # default paper
-alpaca profile login --name live --live         # live trading
+alpaca profile login --name paper              # OAuth, paper (default)
+alpaca profile login --api-key --name live --live  # API keys, live trading
 alpaca profile switch live                      # switch active profile
 alpaca profile status                           # show active profile
 ```
@@ -165,13 +165,30 @@ Credentials are always scrubbed from debug output.
 | `ALPACA_CONFIG_DIR` | Config directory (default: `~/.config/alpaca`) |
 | `ALPACA_VERBOSE` | Enable verbose HTTP tracing |
 | `ALPACA_DEBUG` | Full HTTP request/response bodies on stderr |
+| `ALPACA_NO_UPDATE_NOTIFY` | Suppress background update notices |
 
 Precedence: flags > env vars > profile config > defaults.
 
 ## Self-update
 
+The CLI checks for updates in the background and shows a notice when a newer version is available. Before starting work, check for updates programmatically:
+
 ```bash
-alpaca update              # download and install latest version
+alpaca update --check --json --quiet
+```
+
+This returns structured output:
+
+```json
+{"current":"0.1.0","latest":"0.2.0","update_available":true,"install_method":"goinstall","update_command":"go install github.com/alpacahq/cli/cmd/alpaca@latest"}
+```
+
+If `update_available` is `true`, run the `update_command` value to upgrade.
+
+Manual commands:
+
+```bash
+alpaca update              # download and install latest version (binary installs)
 alpaca update --check      # check without installing
 ```
 

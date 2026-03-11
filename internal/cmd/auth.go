@@ -28,10 +28,10 @@ var profileCmd = &cobra.Command{
 var profileLoginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Authenticate via browser OAuth or API keys",
-	Example: `  alpaca profile login                    # OAuth via browser (default)
-  alpaca profile login --live             # OAuth for live account
+	Example: `  alpaca profile login                    # OAuth via browser (paper, default)
   alpaca profile login --scope trading    # OAuth with specific scopes
   alpaca profile login --api-key          # API key/secret login
+  alpaca profile login --api-key --live   # API keys for live trading
   alpaca profile login --api-key --key PKXXXXXXXX --secret XXXXXXXX
   alpaca profile login --name dev --base-url https://custom-api.example.com`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -44,6 +44,10 @@ var profileLoginCmd = &cobra.Command{
 }
 
 func loginWithOAuth(cmd *cobra.Command) error {
+	if cmdutil.Bool(cmd, "live") {
+		return fmt.Errorf("OAuth login is currently supported for paper trading only\nFor live trading, use API keys: alpaca profile login --api-key --live")
+	}
+
 	name := cmdutil.Str(cmd, "name")
 	dataURL := cmdutil.Str(cmd, "data-url")
 	noValidate := cmdutil.Bool(cmd, "no-validate")
@@ -59,12 +63,6 @@ func loginWithOAuth(cmd *cobra.Command) error {
 	}
 
 	env := defaultProfileName
-	if cmdutil.Bool(cmd, "live") {
-		env = config.EnvLive
-		if name == defaultProfileName {
-			name = config.EnvLive
-		}
-	}
 
 	scope := oauth.DefaultScopes
 	if scopeFlag != "" {
