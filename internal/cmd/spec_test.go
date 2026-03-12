@@ -159,16 +159,6 @@ func TestHardcodedCompletionsMatchSpec(t *testing.T) {
 		byValueSet[norm] = specEnum{key: key, values: vals}
 	}
 
-	// Known divergences: CLI intentionally uses a different set than the spec.
-	knownDivergences := map[string]string{
-		"asset-class": "CLI includes fixed_income which the spec omits",
-		"exchange":    "CLI uses a broader set of exchanges",
-		"feed":        "stock data feed differs from spec (otc, delayed_sip)",
-		"timeframe":   "no spec enum; free-form in API",
-		"period":      "no spec enum; free-form in API",
-		"adjustment":  "no spec enum",
-	}
-
 	hardcoded := regexp.MustCompile(
 		`RegisterFlagCompletionFunc\("([^"]+)",\s*cobra\.FixedCompletions\(\[\]string\{([^}]+)\}`,
 	)
@@ -193,10 +183,6 @@ func TestHardcodedCompletionsMatchSpec(t *testing.T) {
 		for _, m := range matches {
 			flagName := m[1]
 			rawValues := m[2]
-
-			if _, ok := knownDivergences[flagName]; ok {
-				continue
-			}
 
 			var cliValues []string
 			for _, v := range strings.Split(rawValues, ",") {

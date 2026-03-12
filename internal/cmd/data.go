@@ -173,15 +173,8 @@ func addPaginationFlags(cmd *cobra.Command) {
 }
 
 func init() {
-	feedCompletions := cobra.FixedCompletions([]string{"iex", "sip", "otc", "delayed_sip"}, cobra.ShellCompDirectiveNoFileComp)
-
-	_ = dataBarsCmd.RegisterFlagCompletionFunc("feed", feedCompletions)
 	_ = dataBarsCmd.RegisterFlagCompletionFunc("timeframe", cobra.FixedCompletions([]string{"1Min", "5Min", "15Min", "1Hour", "1Day", "1Week", "1Month"}, cobra.ShellCompDirectiveNoFileComp))
 	_ = dataBarsCmd.RegisterFlagCompletionFunc("adjustment", cobra.FixedCompletions([]string{"raw", "split", "dividend", "all"}, cobra.ShellCompDirectiveNoFileComp))
-
-	for _, c := range []*cobra.Command{dataQuotesCmd, dataTradesCmd, dataSnapshotCmd, dataLatestTradeCmd, dataLatestQuoteCmd, dataLatestBarCmd} {
-		_ = c.RegisterFlagCompletionFunc("feed", feedCompletions)
-	}
 
 	dataLatestCmd.AddCommand(dataLatestTradeCmd)
 	dataLatestCmd.AddCommand(dataLatestQuoteCmd)
