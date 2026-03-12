@@ -26,9 +26,9 @@ api/specs/*.json  →  cmd/generate/main.go  →  internal/api/     (types, clie
 
 ### FromFlags pattern
 
-Query param structs are populated via generated `xParamsFromFlags(cmd)` functions. Each uses `flags.Changed()` guards: excluded flags return false (pflag handles missing flags safely), and unset flags (even those with OAS defaults) are left at their zero value. Only flags the user explicitly provides on the command line populate the struct. This ensures OAS defaults are never sent as explicit query parameters — the server applies its own defaults.
+Generated `xParamsFromFlags(cmd)` functions use `flags.Changed()` guards so only flags the user explicitly passes populate the struct. Unset flags stay at zero value — the server applies its own defaults.
 
-Commands that need a CLI-specific default (different from the server default) apply it post-FromFlags:
+CLI-specific defaults (different from server defaults) are applied post-FromFlags:
 
 ```go
 params := getAllOrdersParamsFromFlags(cmd)
@@ -37,15 +37,13 @@ if params.Status == "" {
 }
 ```
 
-`FlagOpts.Defaults` controls what `--help` shows, not what gets sent to the API. If a `FlagOpts.Defaults` value must be sent, add a post-FromFlags fallback as above.
+`FlagOpts.Defaults` controls what `--help` shows, not what gets sent. If a default must be sent, add a post-FromFlags fallback as above.
 
 Request body construction stays hand-written (enum casts, complex types, `Changed()` for PATCH).
 
 ## What stays hand-written
 
-Cobra commands (`internal/cmd/`) are hand-written because they're UX decisions: which flags to expose, how to group subcommands, what examples to show, which columns to display, and how to format output.
-
-Hand-written concerns per command:
+Cobra commands (`internal/cmd/`) are hand-written — they're UX decisions:
 - `FlagOpts.Exclude` decisions (positional args, deprecated params)
 - `FlagOpts.Defaults` overrides
 - `RequireStr` / `RequireAll` validation
@@ -56,35 +54,36 @@ Hand-written concerns per command:
 
 ## No backward compatibility
 
-This project is pre-1.0. Command names, flag names, and output formats can change freely. Do not add aliases, shims, or deprecation wrappers for old paths. Just make the change and update docs.
+Pre-1.0. No aliases, shims, or deprecation wrappers. Just make the change and update docs.
 
 ## Flag naming invariant
 
-Flags always use OAS-generated kebab-case names. No aliases. `FlagOpts` does not support aliases — this is enforced at the type level. If a flag name needs to change, change it in the spec.
+Flags use OAS-generated kebab-case names, no aliases. `FlagOpts` enforces this at the type level. To change a flag name, change it in the spec.
 
 ## OAS specs are read-only inputs
 
-The files in `api/specs/` are copies of upstream OpenAPI specs. **Never edit them in this repo.** If a spec is wrong, fix it at the source and re-import. The generator and CLI code must work around spec bugs until the upstream is corrected.
+The files in `api/specs/` are copies of upstream specs. **Never edit them in this repo.** Fix bugs at the source and re-import. The generator must work around spec bugs until upstream is corrected.
 
 ## Self-healing workarounds
 
-When the upstream OAS has a bug that requires a workaround in CLI code, record it here. After any spec update (`api/specs/*.json` changes), check each item below. If the upstream fix has landed, remove the workaround code and delete the entry.
-
-If this list is empty, there is nothing to do.
+When upstream OAS bugs require workarounds, record them here. After any spec update, check each entry and remove landed fixes.
 
 | Workaround | File | What to check | Remove when |
 |---|---|---|---|
 
+## User-Agent invariant
+
+Every outbound HTTP request must set `User-Agent: alpaca-cli/<version>`. When creating a standalone `http.NewRequest` anywhere in the codebase, set this header. Use `"alpaca-cli/" + version` in `internal/cmd/` or `oauth.UserAgent` in `internal/oauth/`.
+
 ## Update notifications
 
-The CLI checks for updates in the background (once per 24h) and caches the result in `~/.config/alpaca/update-state.json`. A stderr notice is shown after command output when an update is available.
+Background check (once per 24h), cached in `~/.config/alpaca/update-state.json`. A stderr notice appears when an update is available.
 
-- `alpaca update --check --json` — live check, structured output with `update_available`, `install_method`, `update_command`
-- `alpaca version --json` — includes cached update info (no network call)
-- `ALPACA_NO_UPDATE_NOTIFY=1` — suppresses the background notice
-- `--quiet` — also suppresses the notice
+- `alpaca update --check --json` — live check, structured output
+- `alpaca version --json` — cached update info (no network call)
+- `ALPACA_NO_UPDATE_NOTIFY=1` or `--quiet` — suppresses the notice
 
-The install method is auto-detected (Homebrew, go install, or binary download). For Homebrew and go install users, `alpaca update` redirects to the appropriate package manager command instead of self-replacing the binary.
+Install method is auto-detected (Homebrew, go install, binary). For Homebrew/go install users, `alpaca update` redirects to the appropriate package manager.
 
 ## After every change
 
@@ -96,9 +95,9 @@ Fix any failures you introduce before moving on.
 
 ## Keep docs in sync
 
-When a change affects CLI behavior — new commands, changed flags, modified output formats, auth flow changes, or environment variable additions — check these files and update any that are now stale:
+When a change affects CLI behavior, update any stale docs:
 
-- `README.md` — canonical user-facing documentation
-- `skills/alpaca-cli/SKILL.md` — agent-facing install, auth, and usage skill ([Agent Skills](https://agentskills.io) format)
+- `README.md` — user-facing documentation
+- `skills/alpaca-cli/SKILL.md` — agent-facing skill ([Agent Skills](https://agentskills.io) format)
 
-Code is always the source of truth. If a doc contradicts the code, update the doc.
+Code is the source of truth. If a doc contradicts the code, update the doc.
