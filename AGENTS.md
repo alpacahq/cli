@@ -26,7 +26,7 @@ api/specs/*.json  →  cmd/generate/main.go  →  internal/api/     (types, clie
 
 ### FromFlags pattern
 
-Query param structs are populated via generated `xParamsFromFlags(cmd)` functions. Each uses `flags.Lookup()` + `flags.Changed()` guards: excluded flags are safely skipped, and unset flags (even those with OAS defaults) are left at their zero value. Only flags the user explicitly provides on the command line populate the struct. This ensures OAS defaults are never sent as explicit query parameters — the server applies its own defaults.
+Query param structs are populated via generated `xParamsFromFlags(cmd)` functions. Each uses `flags.Changed()` guards: excluded flags return false (pflag handles missing flags safely), and unset flags (even those with OAS defaults) are left at their zero value. Only flags the user explicitly provides on the command line populate the struct. This ensures OAS defaults are never sent as explicit query parameters — the server applies its own defaults.
 
 Commands that need a CLI-specific default (different from the server default) apply it post-FromFlags:
 
