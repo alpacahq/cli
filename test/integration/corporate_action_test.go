@@ -6,18 +6,7 @@ import (
 	"testing"
 )
 
-func TestCorporateActionList(t *testing.T) {
-	t.Parallel()
-	out := alpaca(t, "corporate-action", "list",
-		"--ca-types", "dividend",
-		"--since", daysAgo(180),
-		"--until", daysAgo(90),
-		"--json",
-	)
-	_ = parseJSONArray(t, out)
-}
-
-func TestCorporateActionGet(t *testing.T) {
+func TestCorporateAction(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "corporate-action", "list",
 		"--ca-types", "dividend",
@@ -26,16 +15,19 @@ func TestCorporateActionGet(t *testing.T) {
 		"--json",
 	)
 	actions := parseJSONArray(t, out)
-	if len(actions) == 0 {
-		t.Skip("no corporate actions found to test get")
-	}
 
-	id, ok := actions[0]["id"].(string)
-	if !ok || id == "" {
-		t.Fatal("corporate action missing id")
-	}
+	t.Run("get", func(t *testing.T) {
+		if len(actions) == 0 {
+			t.Skip("no corporate actions found to test get")
+		}
 
-	out = alpaca(t, "corporate-action", "get", id, "--json")
-	action := parseJSONMap(t, out)
-	requireFields(t, action, "id")
+		id, ok := actions[0]["id"].(string)
+		if !ok || id == "" {
+			t.Fatal("corporate action missing id")
+		}
+
+		out := alpaca(t, "corporate-action", "get", id, "--json")
+		action := parseJSONMap(t, out)
+		requireFields(t, action, "id")
+	})
 }

@@ -153,7 +153,10 @@ func TestOrderSubmit_Notional(t *testing.T) {
 	requireFields(t, order, "id", "notional")
 
 	t.Cleanup(func() {
-		time.Sleep(2 * time.Second)
+		pollFor(t, 10*time.Second, "BTC/USD position to appear for cleanup", func() bool {
+			_, _, code := alpacaWithStderr(t, "position", "get", "BTC/USD", "--json")
+			return code == 0
+		})
 		_ = makeCmd("position", "close", "BTC/USD").Run()
 	})
 }

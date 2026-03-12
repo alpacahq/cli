@@ -56,3 +56,35 @@ func TestSmoke_Assets(t *testing.T) {
 		t.Errorf("expected AAPL to be tradable")
 	}
 }
+
+func TestSmoke_Doctor(t *testing.T) {
+	t.Parallel()
+	stdout, stderr, _ := alpacaWithStderr(t, "doctor")
+	combined := string(stdout) + string(stderr)
+	if !strings.Contains(combined, "trading") && !strings.Contains(combined, "Trading") &&
+		!strings.Contains(combined, "API") && !strings.Contains(combined, "check") {
+		t.Error("doctor output should mention API or trading checks")
+	}
+}
+
+func TestSmoke_ProfileStatus(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "profile", "status")
+	if string(out) == "" {
+		t.Error("profile status should produce output")
+	}
+}
+
+func TestSmoke_ProfileList(t *testing.T) {
+	t.Parallel()
+	_ = string(alpaca(t, "profile", "list"))
+}
+
+func TestSmoke_ScreenerMostActives(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "data", "screener", "most-actives", "--top", "5", "--json")
+	actives := parseJSONArray(t, out)
+	if len(actives) == 0 {
+		t.Error("screener response returned no results")
+	}
+}

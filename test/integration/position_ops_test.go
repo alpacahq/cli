@@ -7,24 +7,24 @@ import (
 	"time"
 )
 
-func TestPositionGet_Success(t *testing.T) {
+func TestPositionOps(t *testing.T) {
 	symbol := submitCryptoFill(t)
 
-	out := alpaca(t, "position", "get", symbol, "--json")
-	pos := parseJSONMap(t, out)
-	requireFields(t, pos, "symbol", "qty", "market_value", "avg_entry_price")
-}
+	t.Run("get", func(t *testing.T) {
+		out := alpaca(t, "position", "get", symbol, "--json")
+		pos := parseJSONMap(t, out)
+		requireFields(t, pos, "symbol", "qty", "market_value", "avg_entry_price")
+	})
 
-func TestPositionClose(t *testing.T) {
-	symbol := submitCryptoFill(t)
+	t.Run("close", func(t *testing.T) {
+		out := alpaca(t, "position", "close", symbol, "--json")
+		closed := parseJSONMap(t, out)
+		requireFields(t, closed, "id", "symbol", "status")
 
-	out := alpaca(t, "position", "close", symbol, "--json")
-	closed := parseJSONMap(t, out)
-	requireFields(t, closed, "id", "symbol", "status")
-
-	pollFor(t, 10*time.Second, "position to be closed", func() bool {
-		_, _, code := alpacaWithStderr(t, "position", "get", symbol, "--json")
-		return code != 0
+		pollFor(t, 10*time.Second, "position to be closed", func() bool {
+			_, _, code := alpacaWithStderr(t, "position", "get", symbol, "--json")
+			return code != 0
+		})
 	})
 }
 
