@@ -7,9 +7,10 @@ import (
 	"time"
 )
 
-func TestWatchlistLifecycle(t *testing.T) {
-	out := alpaca(t, "watchlist", "create",
-		"cli-integration-test",
+func TestWatchlist(t *testing.T) {
+	name := "cli-integration-test"
+
+	out := alpaca(t, "watchlist", "create", name,
 		"--symbols", "AAPL,MSFT",
 		"--json",
 	)
@@ -22,11 +23,9 @@ func TestWatchlistLifecycle(t *testing.T) {
 		_ = makeCmd("watchlist", "delete", wlID).Run()
 	})
 
-	t.Run("create_fields", func(t *testing.T) {
-		if wl["name"] != "cli-integration-test" {
-			t.Errorf("expected name 'cli-integration-test', got %v", wl["name"])
-		}
-	})
+	if wl["name"] != name {
+		t.Errorf("expected name %q, got %v", name, wl["name"])
+	}
 
 	time.Sleep(300 * time.Millisecond)
 
@@ -46,7 +45,7 @@ func TestWatchlistLifecycle(t *testing.T) {
 		}
 	})
 
-	t.Run("add_remove_symbols", func(t *testing.T) {
+	t.Run("add_remove", func(t *testing.T) {
 		alpaca(t, "watchlist", "add", wlID, "GOOG")
 		time.Sleep(300 * time.Millisecond)
 
@@ -56,76 +55,29 @@ func TestWatchlistLifecycle(t *testing.T) {
 		out := alpaca(t, "watchlist", "get", wlID, "--json")
 		updated := parseJSONMap(t, out)
 		assets, _ := updated["assets"].([]any)
-		symbols := make([]string, 0, len(assets))
-		for _, a := range assets {
-			if m, ok := a.(map[string]any); ok {
-				if s, ok := m["symbol"].(string); ok {
-					symbols = append(symbols, s)
-				}
-			}
-		}
-		hasAAPL, hasGOOG, hasMSFT := false, false, false
-		for _, s := range symbols {
-			switch s {
-			case "AAPL":
-				hasAAPL = true
-			case "GOOG":
-				hasGOOG = true
-			case "MSFT":
-				hasMSFT = true
-			}
-		}
-		if !hasAAPL {
-			t.Error("watchlist should still contain AAPL")
-		}
-		if !hasGOOG {
-			t.Error("watchlist should contain GOOG after add")
-		}
-		if hasMSFT {
-			t.Error("watchlist should not contain MSFT after remove")
-		}
-	})
-}
-
-func TestWatchlistByNameOps(t *testing.T) {
-	name := "cli-byname-test"
-
-	out := alpaca(t, "watchlist", "create", name,
-		"--symbols", "AAPL",
-		"--json",
-	)
-	wl := parseJSONMap(t, out)
-	wlID, ok := wl["id"].(string)
-	if !ok || wlID == "" {
-		t.Fatal("watchlist missing id")
-	}
-	t.Cleanup(func() {
-		_ = makeCmd("watchlist", "delete", wlID).Run()
+		symbols := extractSymbols(assets)
+		assertContains(t, symbols, "AAPL", true, "should still contain AAPL")
+		assertContains(t, symbols, "GOOG", true, "should contain GOOG after add")
+		assertContains(t, symbols, "MSFT", false, "should not contain MSFT after remove")
 	})
 
-	time.Sleep(300 * time.Millisecond)
-
-	t.Run("get_by_name", func(t *testing.T) {
+	t.Run("by_name", func(t *testing.T) {
 		out := alpaca(t, "watchlist", "get-by-name", name, "--json")
 		fetched := parseJSONMap(t, out)
 		if fetched["name"] != name {
 			t.Errorf("get-by-name returned wrong name: %v", fetched["name"])
 		}
-	})
 
-	t.Run("add_by_name", func(t *testing.T) {
-		out := alpaca(t, "watchlist", "add-by-name", name, "MSFT", "--json")
+		out = alpaca(t, "watchlist", "add-by-name", name, "TSLA", "--json")
 		added := parseJSONMap(t, out)
 		if added["name"] != name {
 			t.Errorf("add-by-name returned wrong name: %v", added["name"])
 		}
-	})
 
-	time.Sleep(300 * time.Millisecond)
+		time.Sleep(300 * time.Millisecond)
 
-	t.Run("update_by_name", func(t *testing.T) {
-		out := alpaca(t, "watchlist", "update-by-name", name,
-			"--symbols", "GOOG,TSLA",
+		out = alpaca(t, "watchlist", "update-by-name", name,
+			"--symbols", "AAPL",
 			"--json",
 		)
 		updated := parseJSONMap(t, out)
@@ -133,10 +85,23 @@ func TestWatchlistByNameOps(t *testing.T) {
 			t.Errorf("update-by-name returned wrong name: %v", updated["name"])
 		}
 	})
+}
 
-	time.Sleep(300 * time.Millisecond)
+func extractSymbols(assets []any) map[string]bool {
+	out := make(map[string]bool, len(assets))
+	for _, a := range assets {
+		if m, ok := a.(map[string]any); ok {
+			if s, ok := m["symbol"].(string); ok {
+				out[s] = true
+			}
+		}
+	}
+	return out
+}
 
-	t.Run("delete_by_name", func(t *testing.T) {
-		alpaca(t, "watchlist", "delete-by-name", name)
-	})
+func assertContains(t *testing.T, symbols map[string]bool, sym string, want bool, msg string) {
+	t.Helper()
+	if symbols[sym] != want {
+		t.Error(msg)
+	}
 }
