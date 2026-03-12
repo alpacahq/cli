@@ -17,6 +17,9 @@ import (
 	"time"
 )
 
+// UserAgent is set by cmd.SetVersion to include the CLI version.
+var UserAgent = "alpaca-cli/dev"
+
 type Token struct {
 	AccessToken string `json:"access_token"`
 	TokenType   string `json:"token_type"`
@@ -120,11 +123,14 @@ func exchangeCode(code, redirectURI string) (*Token, error) {
 		"redirect_uri":  {redirectURI},
 	}
 
-	resp, err := (&http.Client{Timeout: 15 * time.Second}).Post(
-		TokenURL,
-		"application/x-www-form-urlencoded",
-		strings.NewReader(data.Encode()),
-	)
+	req, err := http.NewRequest("POST", TokenURL, strings.NewReader(data.Encode()))
+	if err != nil {
+		return nil, fmt.Errorf("token exchange failed: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("User-Agent", UserAgent)
+
+	resp, err := (&http.Client{Timeout: 15 * time.Second}).Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("token exchange failed: %w", err)
 	}

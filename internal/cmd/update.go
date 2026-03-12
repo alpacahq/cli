@@ -167,9 +167,13 @@ type ghAsset struct {
 }
 
 func getLatestRelease() (tag, downloadURL, checksumURL string, err error) {
-	client := &http.Client{Timeout: 10 * time.Second}
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", repoOwner, repoName)
-	resp, err := client.Get(url)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return "", "", "", err
+	}
+	req.Header.Set("User-Agent", "alpaca-cli/"+version)
+	resp, err := (&http.Client{Timeout: 10 * time.Second}).Do(req)
 	if err != nil {
 		return "", "", "", err
 	}
@@ -210,8 +214,12 @@ func getLatestRelease() (tag, downloadURL, checksumURL string, err error) {
 }
 
 func downloadBinary(url string) ([]byte, error) {
-	client := &http.Client{Timeout: 60 * time.Second}
-	resp, err := client.Get(url)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", "alpaca-cli/"+version)
+	resp, err := (&http.Client{Timeout: 60 * time.Second}).Do(req)
 	if err != nil {
 		return nil, err
 	}

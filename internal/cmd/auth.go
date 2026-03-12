@@ -402,6 +402,7 @@ func init() {
 }
 
 func validateCredentials(req *http.Request, baseURL string) error {
+	req.Header.Set("User-Agent", "alpaca-cli/"+version)
 	resp, err := (&http.Client{Timeout: 10 * time.Second}).Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to connect to %s: %w\nHint: use --no-validate to skip credential check", baseURL, err)
