@@ -11,8 +11,7 @@ var assetCmd = &cobra.Command{
 }
 
 var assetListCmd = fetchCmd("list", api.GetV2AssetsOp, func(cmd *cobra.Command, args []string) (any, error) {
-	params := getV2AssetsParamsFromFlags(cmd)
-	return tradingClient.GetV2Assets(params)
+	return tradingClient.GetV2Assets(getV2AssetsParamsFromFlags(cmd))
 }, func(c *cobra.Command) {
 	c.Example = `  alpaca asset list
   alpaca asset list --asset-class us_equity --status active

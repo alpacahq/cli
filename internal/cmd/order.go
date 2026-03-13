@@ -59,12 +59,7 @@ var orderSubmitCmd = &cobra.Command{
 }
 
 var orderListCmd = fetchCmd("list", api.GetAllOrdersOp, func(cmd *cobra.Command, args []string) (any, error) {
-	params := getAllOrdersParamsFromFlags(cmd)
-	orders, err := tradingClient.GetAllOrders(params)
-	if err != nil {
-		return nil, err
-	}
-	return orders, nil
+	return tradingClient.GetAllOrders(getAllOrdersParamsFromFlags(cmd))
 }, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"status": "open"}}),
 	func(c *cobra.Command) {
 		c.Example = `  alpaca order list
