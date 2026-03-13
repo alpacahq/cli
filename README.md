@@ -249,8 +249,9 @@ Credentials are stored in `~/.config/alpaca/profiles/`.
 | `ALPACA_PROFILE` | Profile name to use |
 | `ALPACA_OUTPUT` | Default output format (`table`, `json`, `csv`) |
 | `ALPACA_CONFIG_DIR` | Config directory (default: `~/.config/alpaca`) |
-| `ALPACA_VERBOSE` | Enable verbose HTTP tracing (any non-empty value) |
-| `ALPACA_DEBUG` | Full HTTP request/response bodies on stderr (implies verbose) |
+| `ALPACA_VERBOSE` | Show HTTP request summaries on stderr (any non-empty value) |
+| `ALPACA_DEBUG` | Show HTTP request/response headers and bodies on stderr (any non-empty value) |
+| `ALPACA_TRACE` | Show HTTP timing breakdown on stderr — DNS, TLS, TTFB (any non-empty value) |
 | `ALPACA_NO_UPDATE_NOTIFY` | Suppress background update notices (any non-empty value) |
 
 Global flags: `--json`, `--csv`, `--profile`, `--verbose`, `--debug`, `--quiet`, `--timeout`.
@@ -356,27 +357,40 @@ The CLI is fully non-interactive — no TTY detection, no interactive prompts.
 | `1` | API or general error |
 | `2` | Authentication error (401/403) |
 
-### Verbose Tracing
+### Diagnostics
 
-Debug API calls with `--verbose` or `ALPACA_VERBOSE=1`:
+Three orthogonal flags for different debugging needs. Combine as needed.
+
+`--verbose` — request summaries (what happened):
 
 ```bash
 alpaca account get --verbose
 # stderr: GET https://paper-api.alpaca.markets/v2/account → 200 (142ms)
 ```
 
-For full request/response headers and bodies, use `--debug`:
+`--trace` — timing breakdown (why is it slow):
+
+```bash
+alpaca account get --trace
+# stderr: trace: GET https://paper-api.alpaca.markets/v2/account
+# stderr:   dns:     4ms
+# stderr:   tcp:     98ms  (35.194.67.18:443)
+# stderr:   tls:     137ms
+# stderr:   ttfb:    125ms
+# stderr:   total:   365ms → 200
+```
+
+`--debug` — wire-level detail (what was sent/received):
 
 ```bash
 alpaca account get --debug
 # stderr: → GET https://paper-api.alpaca.markets/v2/account
 # stderr: → User-Agent: alpaca-cli/0.1.0
-# stderr: GET https://... → 200 (142ms)
 # stderr: ← Content-Type: application/json
 # stderr: ← {"id":"...","equity":"10000.00",...}
 ```
 
-Credentials are always scrubbed from debug output.
+Credentials are always scrubbed from stderr output.
 
 ### Dry Run
 

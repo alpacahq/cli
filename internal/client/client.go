@@ -2,12 +2,14 @@ package client
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
 	"math"
 	"math/rand/v2"
 	"net/http"
+	"net/http/httptrace"
 	"net/url"
 	"os"
 	"strconv"
@@ -35,6 +37,7 @@ type Client struct {
 	Verbose     bool
 	Debug       bool
 	Quiet       bool
+	Trace       bool
 	Timeout     time.Duration
 }
 
@@ -216,6 +219,12 @@ func (c *Client) do(method, reqURL string, body any) (json.RawMessage, error) {
 		}
 	}
 
+	var tt *traceTimings
+	if c.Trace {
+		tt = newTrace(os.Stderr, method, c.scrub(reqURL))
+		req = req.WithContext(httptrace.WithClientTrace(req.Context(), tt.clientTrace()))
+	}
+
 	resp, err := c.HTTP.Do(req)
 	if err != nil {
 		return nil, &APIError{
@@ -226,7 +235,9 @@ func (c *Client) do(method, reqURL string, body any) (json.RawMessage, error) {
 	defer func() { _ = resp.Body.Close() }()
 
 	elapsed := time.Since(start)
-	if c.Verbose || c.Debug {
+	if tt != nil {
+		tt.finish(os.Stderr, resp.StatusCode, elapsed)
+	} else if c.Verbose {
 		fmt.Fprintf(os.Stderr, "%s %s → %d (%dms)\n", method, c.scrub(reqURL), resp.StatusCode, elapsed.Milliseconds())
 	}
 
@@ -319,4 +330,48 @@ func (c *Client) dataURL(path string, params url.Values) string {
 		u += "?" + params.Encode()
 	}
 	return u
+}
+
+// traceTimings prints each HTTP phase to stderr as it completes.
+type traceTimings struct {
+	w                      io.Writer
+	dnsStart, connectStart time.Time
+	tlsStart, wroteRequest time.Time
+	gotFirstByte           time.Time
+}
+
+func newTrace(w io.Writer, method, url string) *traceTimings {
+	fmt.Fprintf(w, "trace: %s %s\n", method, url)
+	return &traceTimings{w: w}
+}
+
+func (t *traceTimings) clientTrace() *httptrace.ClientTrace {
+	return &httptrace.ClientTrace{
+		DNSStart: func(_ httptrace.DNSStartInfo) { t.dnsStart = time.Now() },
+		DNSDone: func(_ httptrace.DNSDoneInfo) {
+			fmt.Fprintf(t.w, "  dns:     %dms\n", time.Since(t.dnsStart).Milliseconds())
+		},
+		ConnectStart: func(_, _ string) { t.connectStart = time.Now() },
+		ConnectDone: func(_, addr string, _ error) {
+			fmt.Fprintf(t.w, "  tcp:     %dms  (%s)\n", time.Since(t.connectStart).Milliseconds(), addr)
+		},
+		TLSHandshakeStart: func() { t.tlsStart = time.Now() },
+		TLSHandshakeDone: func(_ tls.ConnectionState, _ error) {
+			fmt.Fprintf(t.w, "  tls:     %dms\n", time.Since(t.tlsStart).Milliseconds())
+		},
+		WroteRequest:         func(_ httptrace.WroteRequestInfo) { t.wroteRequest = time.Now() },
+		GotFirstResponseByte: func() { t.gotFirstByte = time.Now() },
+		GotConn: func(info httptrace.GotConnInfo) {
+			if info.Reused {
+				fmt.Fprintf(t.w, "  conn:    reused (%s)\n", info.Conn.RemoteAddr())
+			}
+		},
+	}
+}
+
+func (t *traceTimings) finish(w io.Writer, status int, elapsed time.Duration) {
+	if !t.wroteRequest.IsZero() && !t.gotFirstByte.IsZero() {
+		fmt.Fprintf(w, "  ttfb:    %dms\n", t.gotFirstByte.Sub(t.wroteRequest).Milliseconds())
+	}
+	fmt.Fprintf(w, "  total:   %dms → %d\n", elapsed.Milliseconds(), status)
 }

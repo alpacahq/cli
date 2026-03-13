@@ -30,6 +30,7 @@ var (
 	quietFlag     bool
 	verboseFlag   bool
 	debugFlag     bool
+	traceFlag     bool
 	schemaFlag    bool
 	profileFlag   string
 	timeoutFlag   int
@@ -173,6 +174,9 @@ Programmatic check:    alpaca update --check --json`,
 		if os.Getenv("ALPACA_DEBUG") != "" {
 			debugFlag = true
 		}
+		if os.Getenv("ALPACA_TRACE") != "" {
+			traceFlag = true
+		}
 
 		var err error
 		outputOverride := ""
@@ -191,9 +195,10 @@ Programmatic check:    alpaca update --check --json`,
 				return err
 			}
 			apiClient = client.New(cfg)
-			apiClient.Verbose = verboseFlag || debugFlag
+			apiClient.Verbose = verboseFlag
 			apiClient.Debug = debugFlag
 			apiClient.Quiet = quietFlag
+			apiClient.Trace = traceFlag
 			if timeoutFlag != 30 {
 				apiClient.SetTimeout(time.Duration(timeoutFlag) * time.Second)
 			}
@@ -211,7 +216,8 @@ func init() {
 	rootCmd.MarkFlagsMutuallyExclusive("json", "csv")
 	rootCmd.PersistentFlags().StringVarP(&profileFlag, "profile", "p", "", "Config profile to use")
 	rootCmd.PersistentFlags().BoolVarP(&verboseFlag, "verbose", "v", false, "Show HTTP request details on stderr")
-	rootCmd.PersistentFlags().BoolVar(&debugFlag, "debug", false, "Show full HTTP request/response bodies on stderr (implies --verbose)")
+	rootCmd.PersistentFlags().BoolVar(&debugFlag, "debug", false, "Show HTTP request/response headers and bodies on stderr")
+	rootCmd.PersistentFlags().BoolVar(&traceFlag, "trace", false, "Show HTTP timing breakdown on stderr (DNS, TLS, TTFB)")
 	rootCmd.PersistentFlags().BoolVarP(&quietFlag, "quiet", "q", false, "Suppress non-data output (warnings, hints, color)")
 	rootCmd.PersistentFlags().IntVar(&timeoutFlag, "timeout", 30, "HTTP request timeout in seconds")
 	rootCmd.PersistentFlags().BoolVar(&schemaFlag, "schema", false, "Show response schema for this command and exit")
