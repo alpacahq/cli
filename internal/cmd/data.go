@@ -55,7 +55,6 @@ var dataBarsCmd = fetchCmd("bars <symbol>", api.StockBarSingleOp, func(cmd *cobr
   alpaca data bars BTC/USD --start 2025-01-01 --timeframe 1Hour
   alpaca data bars AAPL --start 2025-01-01 --end 2025-06-01 --limit 100
   alpaca data bars AAPL --start 2025-01-01 --all`
-		cmdColumns[c] = barColumns()
 		addPaginationFlags(c)
 	})
 
@@ -75,7 +74,6 @@ var dataQuotesCmd = fetchCmd("quotes <symbol>", api.StockQuoteSingleOp, func(cmd
 	c.Example = `  alpaca data quotes AAPL --start 2025-01-01
   alpaca data quotes AAPL --start 2025-01-01 --end 2025-01-31 --limit 50
   alpaca data quotes AAPL --start 2025-01-01 --all --max 5000`
-	cmdColumns[c] = quoteColumns()
 	addPaginationFlags(c)
 })
 
@@ -95,7 +93,6 @@ var dataTradesCmd = fetchCmd("trades <symbol>", api.StockTradeSingleOp, func(cmd
 	c.Example = `  alpaca data trades AAPL --start 2025-01-01
   alpaca data trades AAPL --start 2025-01-01 --limit 100
   alpaca data trades AAPL --start 2025-01-01 --all`
-	cmdColumns[c] = tradeColumns()
 	addPaginationFlags(c)
 })
 
@@ -128,7 +125,6 @@ var dataLatestTradeCmd = fetchCmd("trade <symbol>", api.StockLatestTradeSingleOp
 	c.Args = cobra.ExactArgs(1)
 	c.Example = `  alpaca data latest trade AAPL
   alpaca data latest trade AAPL --feed sip`
-	cmdColumns[c] = tradeColumns()
 })
 
 var dataLatestQuoteCmd = fetchCmd("quote <symbol>", api.StockLatestQuoteSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
@@ -144,9 +140,7 @@ var dataLatestQuoteCmd = fetchCmd("quote <symbol>", api.StockLatestQuoteSingleOp
 	return extractSingle(m, symbol, "quote", "quotes"), nil
 }, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
-	c.Example = `  alpaca data latest quote AAPL
-  alpaca data latest quote AAPL --json`
-	cmdColumns[c] = quoteColumns()
+	c.Example = `  alpaca data latest quote AAPL`
 })
 
 var dataLatestBarCmd = fetchCmd("bar <symbol>", api.StockLatestBarSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
@@ -164,7 +158,6 @@ var dataLatestBarCmd = fetchCmd("bar <symbol>", api.StockLatestBarSingleOp, func
 	c.Args = cobra.ExactArgs(1)
 	c.Example = `  alpaca data latest bar AAPL
   alpaca data latest bar BTC/USD`
-	cmdColumns[c] = barColumns()
 })
 
 func addPaginationFlags(cmd *cobra.Command) {

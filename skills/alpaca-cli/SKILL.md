@@ -84,13 +84,13 @@ alpaca profile status                           # show active profile
 
 ```bash
 alpaca version
-alpaca clock --json --quiet
+alpaca clock --quiet
 ```
 
 If authenticated, also verify credentials work:
 
 ```bash
-alpaca account get --json --quiet
+alpaca account get --quiet
 ```
 
 Exit code `0` = success, `2` = auth error.
@@ -99,18 +99,18 @@ Exit code `0` = success, `2` = auth error.
 
 The CLI is fully non-interactive — no TTY detection, no prompts.
 
-### Always use `--json --quiet`
+### Always use `--quiet`
 
-`--json` gives structured output. `--quiet` suppresses all decorative output (warnings, hints, color). Combine both for machine-readable results:
+JSON is the default output format. `--quiet` suppresses all non-data output (warnings, hints). Use it for machine-readable results:
 
 ```bash
-alpaca position list --json --quiet
-alpaca data latest trade AAPL --json --quiet
+alpaca position list --quiet
+alpaca data latest trade AAPL --quiet
 ```
 
 ### Structured errors on stderr
 
-When `--json` or `--quiet` is set, errors are JSON on stderr:
+Errors are always JSON on stderr:
 
 ```json
 {"error":"rate limited","code":0,"status":429,"hint":"Rate limited. Reduce request frequency or add delays between calls."}
@@ -136,7 +136,7 @@ alpaca order submit AAPL --side buy --qty 10 --type limit --limit-price 185.00 -
 
 ```bash
 echo '{"symbol":"AAPL","qty":"1","side":"buy","type":"market","time_in_force":"day"}' \
-  | alpaca api post /v2/orders --json
+  | alpaca api post /v2/orders
 ```
 
 ### Resilience
@@ -161,7 +161,7 @@ Credentials are always scrubbed from debug output.
 | `ALPACA_BASE_URL` | Trading API base URL |
 | `ALPACA_DATA_URL` | Market data API base URL |
 | `ALPACA_PROFILE` | Profile name to use |
-| `ALPACA_OUTPUT` | Default output format (`table`, `json`, `csv`) |
+| `ALPACA_OUTPUT` | Default output format (`json`, `csv`) |
 | `ALPACA_CONFIG_DIR` | Config directory (default: `~/.config/alpaca`) |
 | `ALPACA_VERBOSE` | Enable verbose HTTP tracing |
 | `ALPACA_DEBUG` | Full HTTP request/response bodies on stderr |
@@ -174,7 +174,7 @@ Precedence: flags > env vars > profile config > defaults.
 The CLI checks for updates in the background and shows a notice when a newer version is available. Before starting work, check for updates programmatically:
 
 ```bash
-alpaca update --check --json --quiet
+alpaca update --check --quiet
 ```
 
 This returns structured output:
@@ -230,7 +230,7 @@ alpaca data news --symbols AAPL --all --max 100
 
 - **NEVER** switch to live trading without explicit user intent. `alpaca profile login` defaults to paper trading — do not pass `--live` unless the user specifically asks for it.
 - **NEVER** pass `--secret` as a CLI flag — it leaks into shell history. Use `alpaca profile login` interactively or set `ALPACA_SECRET_KEY` as an env var.
-- **NEVER** omit `--json --quiet` in automation or agent workflows — without them, output includes decorative tables, color codes, and hints that break parsing.
+- **NEVER** omit `--quiet` in automation or agent workflows — without it, output may include hints and warnings on stderr that break parsing.
 - **NEVER** ignore exit code `2` — it means authentication failed. Do not retry; fix credentials first.
 - **NEVER** hardcode API keys in scripts or committed files — use environment variables or profile-based auth.
 - **NEVER** submit live orders without confirming the user's intent — use `--dry-run` to preview first when there is any ambiguity.

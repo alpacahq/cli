@@ -25,7 +25,6 @@ var (
 	apiClient     *client.Client
 	tradingClient *api.TradingClient
 	dataClient    *api.MarketDataClient
-	jsonFlag      bool
 	csvFlag       bool
 	quietFlag     bool
 	verboseFlag   bool
@@ -56,25 +55,11 @@ func Execute() error {
 	if err != nil {
 		var apiErr *client.APIError
 		if errors.As(err, &apiErr) {
-			if jsonFlag || quietFlag {
-				printJSONError(apiErr)
-			} else {
-				fmt.Fprintf(os.Stderr, "Error: %s\n", apiErr)
-				if apiErr.RequestID != "" {
-					fmt.Fprintf(os.Stderr, "Request ID: %s\n", apiErr.RequestID)
-				}
-				if hint := apiErr.Hint(); hint != "" {
-					fmt.Fprintf(os.Stderr, "Hint: %s\n", hint)
-				}
-			}
+			printJSONError(apiErr)
 			os.Exit(apiErr.ExitCode())
 		}
 
-		if jsonFlag || quietFlag {
-			printJSONError(&client.APIError{Message: err.Error()})
-		} else {
-			fmt.Fprintf(os.Stderr, "Error: %s\n", err)
-		}
+		printJSONError(&client.APIError{Message: err.Error()})
 		os.Exit(exitAPIError)
 	}
 	return nil
@@ -103,32 +88,25 @@ func printJSONError(apiErr *client.APIError) {
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version of alpaca CLI",
-	Long: `Print the version of alpaca CLI.
-
-Use --json for machine-readable output that includes update availability
-(based on cached state; use "alpaca update --check" for a live check).`,
+	Long:  `Print the version of alpaca CLI with cached update availability (use "alpaca update --check" for a live check).`,
 	Run: func(cmd *cobra.Command, args []string) {
 		suppressUpdateNotice = true
-		if jsonFlag {
-			state := loadUpdateState()
-			m := map[string]any{
-				"version": version,
-			}
-			if state != nil && state.LatestVersion != "" {
-				latest := strings.TrimPrefix(state.LatestVersion, "v")
-				current := strings.TrimPrefix(version, "v")
-				m["latest"] = latest
-				m["update_available"] = current != latest
-				m["update_command"] = upgradeCommand(detectInstallMethod())
-				m["update_url"] = fmt.Sprintf("https://github.com/%s/%s/releases/tag/%s",
-					repoOwner, repoName, state.LatestVersion)
-			}
-			enc := json.NewEncoder(os.Stdout)
-			enc.SetIndent("", "  ")
-			_ = enc.Encode(m)
-			return
+		state := loadUpdateState()
+		m := map[string]any{
+			"version": version,
 		}
-		fmt.Printf("alpaca version %s\n", version)
+		if state != nil && state.LatestVersion != "" {
+			latest := strings.TrimPrefix(state.LatestVersion, "v")
+			current := strings.TrimPrefix(version, "v")
+			m["latest"] = latest
+			m["update_available"] = current != latest
+			m["update_command"] = upgradeCommand(detectInstallMethod())
+			m["update_url"] = fmt.Sprintf("https://github.com/%s/%s/releases/tag/%s",
+				repoOwner, repoName, state.LatestVersion)
+		}
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		_ = enc.Encode(m)
 	},
 }
 
@@ -137,8 +115,7 @@ var rootCmd = &cobra.Command{
 	Short: "CLI for Alpaca Trading API",
 	Long: `Trade stocks & crypto, access market data, and manage your Alpaca account from the command line.
 
-To check for updates:  alpaca update --check
-Programmatic check:    alpaca update --check --json`,
+To check for updates:  alpaca update --check`,
 	SilenceUsage:  true,
 	SilenceErrors: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -180,9 +157,7 @@ Programmatic check:    alpaca update --check --json`,
 
 		var err error
 		outputOverride := ""
-		if jsonFlag {
-			outputOverride = string(output.FormatJSON)
-		} else if csvFlag {
+		if csvFlag {
 			outputOverride = string(output.FormatCSV)
 		}
 		cfg, err = config.Load(profileFlag, outputOverride)
@@ -211,9 +186,7 @@ Programmatic check:    alpaca update --check --json`,
 }
 
 func init() {
-	rootCmd.PersistentFlags().BoolVar(&jsonFlag, "json", false, "Output as JSON")
 	rootCmd.PersistentFlags().BoolVar(&csvFlag, "csv", false, "Output as CSV")
-	rootCmd.MarkFlagsMutuallyExclusive("json", "csv")
 	rootCmd.PersistentFlags().StringVarP(&profileFlag, "profile", "p", "", "Config profile to use")
 	rootCmd.PersistentFlags().BoolVarP(&verboseFlag, "verbose", "v", false, "Show HTTP request details on stderr")
 	rootCmd.PersistentFlags().BoolVar(&debugFlag, "debug", false, "Show HTTP request/response headers and bodies on stderr")
@@ -255,16 +228,13 @@ func needsAuth(cmd *cobra.Command) bool {
 }
 
 func getOutput() output.Format {
-	if jsonFlag {
-		return output.FormatJSON
-	}
 	if csvFlag {
 		return output.FormatCSV
 	}
 	if cfg != nil {
 		return output.Format(cfg.Output)
 	}
-	return output.FormatTable
+	return output.FormatJSON
 }
 
 func verboseLog(format string, args ...any) {

@@ -10,16 +10,8 @@ import (
 func TestOutput_AccountGet(t *testing.T) {
 	t.Parallel()
 
-	t.Run("table", func(t *testing.T) {
+	t.Run("json_default", func(t *testing.T) {
 		out := alpaca(t, "account", "get")
-		lines := strings.Split(strings.TrimSpace(string(out)), "\n")
-		if len(lines) < 2 {
-			t.Fatal("table output should have at least a header and data row")
-		}
-	})
-
-	t.Run("json", func(t *testing.T) {
-		out := alpaca(t, "account", "get", "--json")
 		acct := parseJSONMap(t, out)
 		requireFields(t, acct, "id", "status")
 	})
@@ -39,12 +31,8 @@ func TestOutput_AccountGet(t *testing.T) {
 func TestOutput_OrderList(t *testing.T) {
 	t.Parallel()
 
-	t.Run("table", func(t *testing.T) {
-		_ = string(alpaca(t, "order", "list", "--status", "all", "--limit", "1"))
-	})
-
-	t.Run("json", func(t *testing.T) {
-		out := alpaca(t, "order", "list", "--status", "all", "--limit", "1", "--json")
+	t.Run("json_default", func(t *testing.T) {
+		out := alpaca(t, "order", "list", "--status", "all", "--limit", "1")
 		_ = parseJSONArray(t, out)
 	})
 
@@ -63,8 +51,8 @@ func TestOutput_OrderList(t *testing.T) {
 func TestOutput_AssetGet(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "asset", "get", "AAPL")
-	s := string(out)
-	if !strings.Contains(s, "AAPL") {
-		t.Error("table output for asset get should contain AAPL")
+	acct := parseJSONMap(t, out)
+	if acct["symbol"] != "AAPL" {
+		t.Error("JSON output for asset get should contain AAPL")
 	}
 }

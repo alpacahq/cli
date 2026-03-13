@@ -8,7 +8,7 @@ import (
 
 func TestDataCryptoOrderbook(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "crypto-orderbook", "--symbols", "BTC/USD", "--json")
+	out := alpaca(t, "data", "crypto-orderbook", "--symbols", "BTC/USD")
 	data := parseJSONMap(t, out)
 	if len(data) == 0 {
 		t.Error("expected non-empty crypto orderbook response")
@@ -17,7 +17,7 @@ func TestDataCryptoOrderbook(t *testing.T) {
 
 func TestDataAuctions(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "auctions", "--symbols", "AAPL", "--start", daysAgo(100), "--end", daysAgo(93), "--json")
+	out := alpaca(t, "data", "auctions", "--symbols", "AAPL", "--start", daysAgo(100), "--end", daysAgo(93))
 	data := parseJSONMap(t, out)
 	if len(data) == 0 {
 		t.Error("expected non-empty auctions response")
@@ -26,7 +26,7 @@ func TestDataAuctions(t *testing.T) {
 
 func TestDataCorporateActions(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "corporate-actions", "--symbols", "AAPL", "--json")
+	out := alpaca(t, "data", "corporate-actions", "--symbols", "AAPL")
 	data := parseJSONMap(t, out)
 	if len(data) == 0 {
 		t.Error("expected non-empty corporate actions response")
@@ -35,7 +35,7 @@ func TestDataCorporateActions(t *testing.T) {
 
 func TestDataMetaExchanges(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "meta", "exchanges", "--json")
+	out := alpaca(t, "data", "meta", "exchanges")
 	data := parseJSONMap(t, out)
 	if len(data) == 0 {
 		t.Error("expected non-empty exchanges map")
@@ -44,7 +44,7 @@ func TestDataMetaExchanges(t *testing.T) {
 
 func TestDataMetaConditions(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "meta", "conditions", "trade", "--tape", "A", "--json")
+	out := alpaca(t, "data", "meta", "conditions", "trade", "--tape", "A")
 	data := parseJSONMap(t, out)
 	if len(data) == 0 {
 		t.Error("expected non-empty conditions map")
@@ -53,7 +53,7 @@ func TestDataMetaConditions(t *testing.T) {
 
 func TestDataScreenerMovers(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "screener", "movers", "--json")
+	out := alpaca(t, "data", "screener", "movers")
 	data := parseJSONMap(t, out)
 	if len(data) == 0 {
 		t.Error("expected non-empty movers response")

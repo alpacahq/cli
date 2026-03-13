@@ -23,9 +23,7 @@ var positionListCmd = fetchCmd("list", api.GetAllOpenPositionsOp, func(cmd *cobr
 	return tradingClient.GetAllOpenPositions()
 }, func(c *cobra.Command) {
 	c.Example = `  alpaca position list
-  alpaca position list --json
   alpaca position list --csv`
-	cmdColumns[c] = positionColumns()
 })
 
 var positionGetCmd = fetchCmd("get <symbol>", api.GetOpenPositionOp, func(cmd *cobra.Command, args []string) (any, error) {
@@ -33,8 +31,7 @@ var positionGetCmd = fetchCmd("get <symbol>", api.GetOpenPositionOp, func(cmd *c
 }, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
 	c.Example = `  alpaca position get AAPL
-  alpaca position get BTC/USD --json`
-	cmdColumns[c] = positionColumns()
+  alpaca position get BTC/USD`
 })
 
 var positionCloseCmd = fetchCmd("close <symbol>", api.DeleteOpenPositionOp, func(cmd *cobra.Command, args []string) (any, error) {
@@ -44,7 +41,6 @@ var positionCloseCmd = fetchCmd("close <symbol>", api.DeleteOpenPositionOp, func
 	c.Example = `  alpaca position close AAPL
   alpaca position close AAPL --qty 5
   alpaca position close AAPL --percentage 50`
-	cmdColumns[c] = orderColumns()
 })
 
 var positionCloseAllCmd = actionCmd("close-all", api.DeleteAllOpenPositionsOp, "All positions closed.", func(cmd *cobra.Command, args []string) error {

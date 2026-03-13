@@ -8,7 +8,7 @@ import (
 
 func TestAssetList_Filter(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "asset", "list", "--asset-class", "us_equity", "--status", "active", "--json")
+	out := alpaca(t, "asset", "list", "--asset-class", "us_equity", "--status", "active")
 	assets := requireArrayNonEmpty(t, out)
 	for _, a := range assets[:min(len(assets), 5)] {
 		if a["class"] != "us_equity" {
@@ -19,13 +19,13 @@ func TestAssetList_Filter(t *testing.T) {
 
 func TestAssetList_Exchange(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "asset", "list", "--exchange", "NASDAQ", "--json")
+	out := alpaca(t, "asset", "list", "--exchange", "NASDAQ")
 	_ = requireArrayNonEmpty(t, out)
 }
 
 func TestAssetList_CryptoClass(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "asset", "list", "--asset-class", "crypto", "--status", "active", "--json")
+	out := alpaca(t, "asset", "list", "--asset-class", "crypto", "--status", "active")
 	assets := requireArrayNonEmpty(t, out)
 	for _, a := range assets[:min(len(assets), 5)] {
 		if a["class"] != "crypto" {

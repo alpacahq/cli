@@ -35,8 +35,7 @@ Checks GitHub for the latest release and installs it. The install method
 is auto-detected (Homebrew, go install, or binary download) and the
 appropriate upgrade command is shown.
 
-Use --check to see if an update is available without installing.
-Use --check --json for machine-readable output (useful for scripts and agents).`,
+Use --check to see if an update is available without installing.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		suppressUpdateNotice = true
 		checkOnly := cmdutil.Bool(cmd, "check")
@@ -57,28 +56,16 @@ Use --check --json for machine-readable output (useful for scripts and agents).`
 		upToDate := versionsEqual(current, latest)
 
 		if checkOnly {
-			if jsonFlag {
-				m := map[string]any{
-					"current":          strings.TrimPrefix(current, "v"),
-					"latest":           strings.TrimPrefix(latest, "v"),
-					"update_available": !upToDate,
-					"install_method":   method,
-					"update_command":   upgradeCommand(method),
-				}
-				enc := json.NewEncoder(os.Stdout)
-				enc.SetIndent("", "  ")
-				return enc.Encode(m)
+			m := map[string]any{
+				"current":          strings.TrimPrefix(current, "v"),
+				"latest":           strings.TrimPrefix(latest, "v"),
+				"update_available": !upToDate,
+				"install_method":   method,
+				"update_command":   upgradeCommand(method),
 			}
-
-			if upToDate {
-				color.Green("Already up to date (%s)", current)
-				return nil
-			}
-
-			fmt.Printf("Current version: %s\n", current)
-			fmt.Printf("Latest version:  %s\n", latest)
-			fmt.Printf("\nRun `%s` to upgrade.\n", upgradeCommand(method))
-			return nil
+			enc := json.NewEncoder(os.Stdout)
+			enc.SetIndent("", "  ")
+			return enc.Encode(m)
 		}
 
 		if upToDate {

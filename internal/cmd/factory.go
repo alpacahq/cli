@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
-	"reflect"
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
@@ -13,13 +11,12 @@ import (
 
 // Per-command overrides set via configure closures.
 var (
-	cmdColumns  = map[*cobra.Command][]output.Column{}
 	cmdJSON     = map[*cobra.Command]bool{}
 	cmdFlagOpts = map[*cobra.Command]*cmdutil.FlagOpts{}
 )
 
 // jsonOnly marks a command as JSON-only output. Use for responses with complex
-// nested or map-of-symbols structures where tabular rendering doesn't make sense.
+// nested or map-of-symbols structures where CSV rendering doesn't make sense.
 func jsonOnly(c *cobra.Command) {
 	cmdJSON[c] = true
 }
@@ -33,7 +30,6 @@ func flagOpts(opts *cmdutil.FlagOpts) func(*cobra.Command) {
 }
 
 // fetchCmd creates a command that fetches data and renders it.
-// Slices render as tables; single objects render as key-value pairs.
 // RequiredFlags from the op are enforced for flags actually registered
 // on the command (excluded positional-arg params are skipped).
 //
@@ -58,16 +54,7 @@ func fetchCmd(use string, op api.Op, fetch func(cmd *cobra.Command, args []strin
 		if cmdJSON[cmd] {
 			return output.JSON(cmd.OutOrStdout(), data)
 		}
-		cols := cmdColumns[cmd]
-		if cols == nil {
-			cols = columnsForOp(op)
-		}
-		w := cmd.OutOrStdout()
-		format := getOutput()
-		if isSliceResult(data) {
-			return output.Render(w, format, cols, data)
-		}
-		return output.PrintSingle(w, format, cols, data)
+		return output.Render(cmd.OutOrStdout(), getOutput(), data)
 	}
 	for _, fn := range configure {
 		fn(cmd)
@@ -114,25 +101,4 @@ func registeredRequired(cmd *cobra.Command, op api.Op) []string {
 		}
 	}
 	return present
-}
-
-// isSliceResult reports whether data should be rendered as a list (table)
-// rather than a single object (key-value).
-func isSliceResult(data any) bool {
-	switch v := data.(type) {
-	case json.RawMessage:
-		for _, b := range v {
-			if b == ' ' || b == '\t' || b == '\n' || b == '\r' {
-				continue
-			}
-			return b == '['
-		}
-		return false
-	default:
-		rv := reflect.ValueOf(data)
-		for rv.Kind() == reflect.Ptr {
-			rv = rv.Elem()
-		}
-		return rv.Kind() == reflect.Slice
-	}
 }

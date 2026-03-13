@@ -107,7 +107,7 @@ func TestCommandSmoke(t *testing.T) {
 			buf := new(bytes.Buffer)
 			root.SetOut(buf)
 			root.SetErr(new(bytes.Buffer))
-			root.SetArgs(append([]string{"--json"}, tt.args...))
+			root.SetArgs(tt.args)
 
 			err := root.Execute()
 			if err != nil {

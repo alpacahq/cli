@@ -65,7 +65,7 @@ func Load(profileFlag, outputFlag string) (*Resolved, error) {
 		Scopes:      profile.Scopes,
 		BaseURL:     resolve(os.Getenv("ALPACA_BASE_URL"), profile.BaseURL),
 		DataURL:     resolve(os.Getenv("ALPACA_DATA_URL"), profile.DataURL),
-		Output:      resolve(outputFlag, os.Getenv("ALPACA_OUTPUT"), cfg.Output, "table"),
+		Output:      resolve(outputFlag, os.Getenv("ALPACA_OUTPUT"), cfg.Output, "json"),
 		Color:       resolve(cfg.Color, "auto"),
 	}
 

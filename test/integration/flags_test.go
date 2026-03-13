@@ -9,7 +9,7 @@ import (
 
 func TestVerboseFlag(t *testing.T) {
 	t.Parallel()
-	stdout, stderr, code := alpacaWithStderr(t, "account", "get", "--verbose", "--json")
+	stdout, stderr, code := alpacaWithStderr(t, "account", "get", "--verbose")
 	if code != 0 {
 		t.Fatalf("expected exit 0, got %d (stderr: %s)", code, stderr)
 	}
@@ -22,7 +22,7 @@ func TestVerboseFlag(t *testing.T) {
 
 func TestDebugFlag(t *testing.T) {
 	t.Parallel()
-	stdout, stderr, code := alpacaWithStderr(t, "account", "get", "--debug", "--json")
+	stdout, stderr, code := alpacaWithStderr(t, "account", "get", "--debug")
 	if code != 0 {
 		t.Fatalf("expected exit 0, got %d (stderr: %s)", code, stderr)
 	}
@@ -35,14 +35,14 @@ func TestDebugFlag(t *testing.T) {
 
 func TestTimeoutFlag(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "account", "get", "--timeout", "10", "--json")
+	out := alpaca(t, "account", "get", "--timeout", "10")
 	acct := parseJSONMap(t, out)
 	requireFields(t, acct, "id")
 }
 
 func TestQuietFlag(t *testing.T) {
 	t.Parallel()
-	_, stderr, code := alpacaWithStderr(t, "order", "list", "--quiet", "--json")
+	_, stderr, code := alpacaWithStderr(t, "order", "list", "--quiet")
 	if code != 0 {
 		t.Fatalf("expected exit 0, got %d", code)
 	}

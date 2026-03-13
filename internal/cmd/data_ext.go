@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
-
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
 	"github.com/alpacahq/cli/internal/output"
@@ -145,21 +143,7 @@ var screenerMoversCmd = &cobra.Command{
 			return err
 		}
 
-		w := cmd.OutOrStdout()
-		format := getOutput()
-		if format == output.FormatJSON || format == output.FormatCSV {
-			return output.Render(w, format, nil, resp)
-		}
-
-		cmd.Println("GAINERS")
-		gainersJSON, _ := json.Marshal(resp.Gainers)
-		if err := output.Render(w, output.FormatTable, nil, json.RawMessage(gainersJSON)); err != nil {
-			return err
-		}
-
-		cmd.Println("\nLOSERS")
-		losersJSON, _ := json.Marshal(resp.Losers)
-		return output.Render(w, output.FormatTable, nil, json.RawMessage(losersJSON))
+		return output.Render(cmd.OutOrStdout(), getOutput(), resp)
 	},
 }
 

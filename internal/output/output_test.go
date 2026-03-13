@@ -18,39 +18,21 @@ func TestJSON(t *testing.T) {
 	}
 }
 
-func TestTable_EmptyData(t *testing.T) {
+func TestJSON_NilSlice(t *testing.T) {
 	var buf bytes.Buffer
-	cols := []Column{{Header: "NAME", Field: "name"}}
-	_ = Table(&buf, cols, json.RawMessage(`[]`))
-	if !strings.Contains(buf.String(), "No results.") {
-		t.Errorf("expected 'No results.', got: %s", buf.String())
-	}
-}
-
-func TestTable_WithRows(t *testing.T) {
-	var buf bytes.Buffer
-	cols := []Column{
-		{Header: "SYMBOL", Field: "symbol"},
-		{Header: "PRICE", Field: "price"},
-	}
-	data := json.RawMessage(`[{"symbol":"AAPL","price":150.25},{"symbol":"MSFT","price":400.50}]`)
-	if err := Table(&buf, cols, data); err != nil {
+	var data []string
+	if err := JSON(&buf, data); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	out := buf.String()
-	if !strings.Contains(out, "SYMBOL") || !strings.Contains(out, "AAPL") {
-		t.Errorf("expected table output with AAPL, got: %s", out)
+	if strings.TrimSpace(buf.String()) != "[]" {
+		t.Errorf("expected [], got: %s", buf.String())
 	}
 }
 
-func TestCSV_Output(t *testing.T) {
+func TestCSV(t *testing.T) {
 	var buf bytes.Buffer
-	cols := []Column{
-		{Header: "ID", Field: "id"},
-		{Header: "NAME", Field: "name"},
-	}
 	data := json.RawMessage(`[{"id":"1","name":"Test"}]`)
-	if err := CSV(&buf, cols, data); err != nil {
+	if err := CSV(&buf, data); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	out := buf.String()
@@ -59,6 +41,28 @@ func TestCSV_Output(t *testing.T) {
 	}
 	if !strings.Contains(out, "1,Test") {
 		t.Errorf("expected CSV row, got: %s", out)
+	}
+}
+
+func TestCSV_SingleObject(t *testing.T) {
+	var buf bytes.Buffer
+	data := json.RawMessage(`{"symbol":"AAPL","price":150.5}`)
+	if err := CSV(&buf, data); err != nil {
+		t.Fatal(err)
+	}
+	out := buf.String()
+	if !strings.Contains(out, "AAPL") {
+		t.Errorf("expected AAPL in CSV, got: %s", out)
+	}
+}
+
+func TestCSV_Empty(t *testing.T) {
+	var buf bytes.Buffer
+	if err := CSV(&buf, json.RawMessage(`[]`)); err != nil {
+		t.Fatal(err)
+	}
+	if buf.Len() != 0 {
+		t.Errorf("expected empty output for empty data, got: %s", buf.String())
 	}
 }
 
@@ -91,41 +95,10 @@ func TestRawField_Types(t *testing.T) {
 	}
 }
 
-func TestColorPL(t *testing.T) {
-	if got := colorPL("0"); got != "0" {
-		t.Errorf("zero: got %q", got)
-	}
-	if got := colorPL("0.00"); got != "0.00" {
-		t.Errorf("0.00: got %q", got)
-	}
-	if got := colorPL(""); got != "" {
-		t.Errorf("empty: got %q", got)
-	}
-}
-
-func TestDollarPL(t *testing.T) {
-	if got := DollarPL(""); got != "$0.00" {
-		t.Errorf("empty: got %q", got)
-	}
-	if got := DollarPL("0"); got != "$0" {
-		t.Errorf("zero: got %q", got)
-	}
-}
-
-func TestPercentPL(t *testing.T) {
-	if got := PercentPL(""); got != "0.00%" {
-		t.Errorf("empty: got %q", got)
-	}
-	if got := PercentPL("0"); got != "0%" {
-		t.Errorf("zero: got %q", got)
-	}
-}
-
 func TestRender_JSON(t *testing.T) {
 	var buf bytes.Buffer
-	cols := []Column{{Header: "NAME", Field: "name"}}
 	data := json.RawMessage(`[{"name":"AAPL"}]`)
-	if err := Render(&buf, "json", cols, data); err != nil {
+	if err := Render(&buf, FormatJSON, data); err != nil {
 		t.Fatal(err)
 	}
 	if !strings.Contains(buf.String(), "AAPL") {
@@ -133,24 +106,10 @@ func TestRender_JSON(t *testing.T) {
 	}
 }
 
-func TestRender_Table(t *testing.T) {
-	var buf bytes.Buffer
-	cols := []Column{{Header: "SYMBOL", Field: "symbol"}}
-	data := json.RawMessage(`[{"symbol":"MSFT"}]`)
-	if err := Render(&buf, "table", cols, data); err != nil {
-		t.Fatal(err)
-	}
-	out := buf.String()
-	if !strings.Contains(out, "SYMBOL") || !strings.Contains(out, "MSFT") {
-		t.Errorf("expected table with SYMBOL/MSFT, got: %s", out)
-	}
-}
-
 func TestRender_CSV(t *testing.T) {
 	var buf bytes.Buffer
-	cols := []Column{{Header: "ID", Field: "id"}}
 	data := json.RawMessage(`[{"id":"123"}]`)
-	if err := Render(&buf, "csv", cols, data); err != nil {
+	if err := Render(&buf, FormatCSV, data); err != nil {
 		t.Fatal(err)
 	}
 	if !strings.Contains(buf.String(), "123") {
@@ -158,38 +117,17 @@ func TestRender_CSV(t *testing.T) {
 	}
 }
 
-func TestPrintSingle_Table(t *testing.T) {
+func TestRender_DefaultIsJSON(t *testing.T) {
 	var buf bytes.Buffer
-	cols := []Column{
-		{Header: "Symbol", Field: "symbol"},
-		{Header: "Price", Field: "price"},
-	}
-	data := json.RawMessage(`{"symbol":"AAPL","price":150.5}`)
-	if err := PrintSingle(&buf, "table", cols, data); err != nil {
+	data := json.RawMessage(`[{"symbol":"MSFT"}]`)
+	if err := Render(&buf, "", data); err != nil {
 		t.Fatal(err)
 	}
-	out := buf.String()
-	if !strings.Contains(out, "Symbol:") || !strings.Contains(out, "AAPL") {
-		t.Errorf("expected key-value format, got: %s", out)
+	var parsed []map[string]any
+	if err := json.Unmarshal(buf.Bytes(), &parsed); err != nil {
+		t.Fatalf("default output should be valid JSON: %v", err)
 	}
-}
-
-func TestPrintSingle_JSON(t *testing.T) {
-	var buf bytes.Buffer
-	cols := []Column{{Header: "Symbol", Field: "symbol"}}
-	data := json.RawMessage(`{"symbol":"AAPL"}`)
-	if err := PrintSingle(&buf, "json", cols, data); err != nil {
-		t.Fatal(err)
-	}
-	if !strings.Contains(buf.String(), "AAPL") {
-		t.Errorf("expected AAPL, got: %s", buf.String())
-	}
-}
-
-func TestPrintSingle_NoData(t *testing.T) {
-	var buf bytes.Buffer
-	cols := []Column{{Header: "Name", Field: "name"}}
-	if err := PrintSingle(&buf, "table", cols, nil); err == nil {
-		t.Error("expected error for nil data")
+	if parsed[0]["symbol"] != "MSFT" {
+		t.Errorf("expected MSFT, got: %v", parsed[0]["symbol"])
 	}
 }

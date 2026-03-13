@@ -12,7 +12,6 @@ func TestDataQuotes(t *testing.T) {
 		"--start", daysAgo(95),
 		"--end", daysAgo(94),
 		"--limit", "5",
-		"--json",
 	)
 	quotes := requireArrayNonEmpty(t, out)
 	requireFields(t, quotes[0], "bp", "ap", "t")
@@ -24,7 +23,6 @@ func TestDataTrades(t *testing.T) {
 		"--start", daysAgo(95),
 		"--end", daysAgo(94),
 		"--limit", "5",
-		"--json",
 	)
 	trades := requireArrayNonEmpty(t, out)
 	requireFields(t, trades[0], "p", "s", "t")
@@ -32,7 +30,7 @@ func TestDataTrades(t *testing.T) {
 
 func TestDataLatestBar(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "latest", "bar", "AAPL", "--json")
+	out := alpaca(t, "data", "latest", "bar", "AAPL")
 	bar := parseJSONMap(t, out)
 	requireFields(t, bar, "o", "h", "l", "c", "v")
 }
@@ -43,7 +41,6 @@ func TestDataBars_Timeframe(t *testing.T) {
 		"--start", daysAgo(95),
 		"--end", daysAgo(94),
 		"--timeframe", "1Hour",
-		"--json",
 	)
 	bars := requireArrayNonEmpty(t, out)
 	requireFields(t, bars[0], "o", "h", "l", "c", "v", "t")
@@ -56,7 +53,6 @@ func TestDataBars_Adjustment(t *testing.T) {
 		"--end", daysAgo(93),
 		"--timeframe", "1Day",
 		"--adjustment", "split",
-		"--json",
 	)
 	bars := requireArrayNonEmpty(t, out)
 	requireFields(t, bars[0], "o", "h", "l", "c", "v")

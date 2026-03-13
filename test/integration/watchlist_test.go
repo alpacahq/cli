@@ -12,7 +12,6 @@ func TestWatchlist(t *testing.T) {
 
 	out := alpaca(t, "watchlist", "create", name,
 		"--symbols", "AAPL,MSFT",
-		"--json",
 	)
 	wl := parseJSONMap(t, out)
 	wlID, ok := wl["id"].(string)
@@ -30,7 +29,7 @@ func TestWatchlist(t *testing.T) {
 	time.Sleep(300 * time.Millisecond)
 
 	t.Run("get", func(t *testing.T) {
-		out := alpaca(t, "watchlist", "get", wlID, "--json")
+		out := alpaca(t, "watchlist", "get", wlID)
 		fetched := parseJSONMap(t, out)
 		if fetched["id"] != wlID {
 			t.Errorf("get returned wrong watchlist: %v", fetched["id"])
@@ -38,7 +37,7 @@ func TestWatchlist(t *testing.T) {
 	})
 
 	t.Run("list", func(t *testing.T) {
-		out := alpaca(t, "watchlist", "list", "--json")
+		out := alpaca(t, "watchlist", "list")
 		lists := parseJSONArray(t, out)
 		if !containsID(lists, wlID) {
 			t.Error("created watchlist not found in list")
@@ -52,7 +51,7 @@ func TestWatchlist(t *testing.T) {
 		alpaca(t, "watchlist", "remove", wlID, "MSFT")
 		time.Sleep(300 * time.Millisecond)
 
-		out := alpaca(t, "watchlist", "get", wlID, "--json")
+		out := alpaca(t, "watchlist", "get", wlID)
 		updated := parseJSONMap(t, out)
 		assets, _ := updated["assets"].([]any)
 		symbols := extractSymbols(assets)
@@ -62,13 +61,13 @@ func TestWatchlist(t *testing.T) {
 	})
 
 	t.Run("by_name", func(t *testing.T) {
-		out := alpaca(t, "watchlist", "get-by-name", name, "--json")
+		out := alpaca(t, "watchlist", "get-by-name", name)
 		fetched := parseJSONMap(t, out)
 		if fetched["name"] != name {
 			t.Errorf("get-by-name returned wrong name: %v", fetched["name"])
 		}
 
-		out = alpaca(t, "watchlist", "add-by-name", name, "TSLA", "--json")
+		out = alpaca(t, "watchlist", "add-by-name", name, "TSLA")
 		added := parseJSONMap(t, out)
 		if added["name"] != name {
 			t.Errorf("add-by-name returned wrong name: %v", added["name"])
@@ -78,7 +77,6 @@ func TestWatchlist(t *testing.T) {
 
 		out = alpaca(t, "watchlist", "update-by-name", name,
 			"--symbols", "AAPL",
-			"--json",
 		)
 		updated := parseJSONMap(t, out)
 		if updated["name"] != name {

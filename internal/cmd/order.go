@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/alpacahq/cli/internal/api"
@@ -55,7 +54,7 @@ var orderSubmitCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintSingle(cmd.OutOrStdout(), getOutput(), orderColumns(), order)
+		return output.Render(cmd.OutOrStdout(), getOutput(), order)
 	},
 }
 
@@ -65,16 +64,12 @@ var orderListCmd = fetchCmd("list", api.GetAllOrdersOp, func(cmd *cobra.Command,
 	if err != nil {
 		return nil, err
 	}
-	if params.Nested && getOutput() != output.FormatJSON {
-		return expandOrderLegs(orders), nil
-	}
 	return orders, nil
 }, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"status": "open"}}),
 	func(c *cobra.Command) {
 		c.Example = `  alpaca order list
   alpaca order list --status closed --limit 20
   alpaca order list --symbols AAPL,MSFT --after 2025-01-01`
-		cmdColumns[c] = orderColumns()
 	})
 
 var orderGetCmd = fetchCmd("get [order-id]", api.GetOrderByOrderIDOp, func(cmd *cobra.Command, args []string) (any, error) {
@@ -95,7 +90,6 @@ var orderGetCmd = fetchCmd("get [order-id]", api.GetOrderByOrderIDOp, func(cmd *
 	c.Example = `  alpaca order get 61e69015-8549-4baf-b96f-9c4f3e8d0c35
   alpaca order get --client-id my-order-123`
 	c.Flags().String("client-id", "", "Look up order by client order ID")
-	cmdColumns[c] = orderColumns()
 })
 
 var orderCancelCmd = actionCmd("cancel <order-id>", api.DeleteOrderByOrderIDOp, "", func(cmd *cobra.Command, args []string) error {
@@ -113,7 +107,6 @@ var orderCancelAllCmd = fetchCmd("cancel-all", api.DeleteAllOrdersOp, func(cmd *
 	return tradingClient.DeleteAllOrders()
 }, func(c *cobra.Command) {
 	c.Example = `  alpaca order cancel-all`
-	cmdColumns[c] = canceledOrderColumns()
 })
 
 var orderReplaceCmd = fetchCmd("replace <order-id>", api.PatchOrderByOrderIDOp, func(cmd *cobra.Command, args []string) (any, error) {
@@ -123,7 +116,6 @@ var orderReplaceCmd = fetchCmd("replace <order-id>", api.PatchOrderByOrderIDOp, 
 	func(c *cobra.Command) {
 		c.Args = cobra.ExactArgs(1)
 		c.Example = `  alpaca order replace <order-id> --qty 20 --limit-price 190.00`
-		cmdColumns[c] = orderColumns()
 	})
 
 func init() {
@@ -152,45 +144,4 @@ func applyBracket(body *api.PostOrderRequest, takeProfit, stopLoss string) {
 	if stopLoss != "" {
 		body.StopLoss = map[string]any{"stop_price": stopLoss}
 	}
-}
-
-func expandOrderLegs(orders []api.Order) []map[string]any {
-	var rows []map[string]any
-	for _, o := range orders {
-		b, err := json.Marshal(o)
-		if err != nil {
-			verboseLog("expandOrderLegs: marshal order: %v", err)
-			continue
-		}
-		var row map[string]any
-		if err := json.Unmarshal(b, &row); err != nil {
-			verboseLog("expandOrderLegs: unmarshal order: %v", err)
-			continue
-		}
-		delete(row, "legs")
-		rows = append(rows, row)
-
-		for i, leg := range o.Legs {
-			b, err = json.Marshal(leg)
-			if err != nil {
-				verboseLog("expandOrderLegs: marshal leg: %v", err)
-				continue
-			}
-			var legRow map[string]any
-			if err := json.Unmarshal(b, &legRow); err != nil {
-				verboseLog("expandOrderLegs: unmarshal leg: %v", err)
-				continue
-			}
-			prefix := " ├─ "
-			if i == len(o.Legs)-1 {
-				prefix = " └─ "
-			}
-			if id, ok := legRow["id"].(string); ok {
-				legRow["id"] = prefix + id
-			}
-			delete(legRow, "legs")
-			rows = append(rows, legRow)
-		}
-	}
-	return rows
 }

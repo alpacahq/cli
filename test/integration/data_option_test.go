@@ -16,7 +16,7 @@ var (
 func discoverOptionSymbol(t *testing.T) string {
 	t.Helper()
 	optionSymbolOnce.Do(func() {
-		out, err := makeCmd("data", "option", "chain", "AAPL", "--json").Output()
+		out, err := makeCmd("data", "option", "chain", "AAPL").Output()
 		if err != nil {
 			return
 		}
@@ -37,7 +37,7 @@ func discoverOptionSymbol(t *testing.T) string {
 
 func TestDataOptionChain(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "option", "chain", "AAPL", "--json")
+	out := alpaca(t, "data", "option", "chain", "AAPL")
 	chain := parseJSONMap(t, out)
 	if len(chain) == 0 {
 		t.Fatal("expected non-empty option chain")
@@ -47,7 +47,7 @@ func TestDataOptionChain(t *testing.T) {
 func TestDataOptionSnapshot(t *testing.T) {
 	t.Parallel()
 	sym := discoverOptionSymbol(t)
-	out := alpaca(t, "data", "option", "snapshot", "--symbols", sym, "--json")
+	out := alpaca(t, "data", "option", "snapshot", "--symbols", sym)
 	data := parseJSONMap(t, out)
 	if len(data) == 0 {
 		t.Error("expected non-empty option snapshot")
@@ -57,7 +57,7 @@ func TestDataOptionSnapshot(t *testing.T) {
 func TestDataOptionLatestQuotes(t *testing.T) {
 	t.Parallel()
 	sym := discoverOptionSymbol(t)
-	out := alpaca(t, "data", "option", "latest-quotes", "--symbols", sym, "--json")
+	out := alpaca(t, "data", "option", "latest-quotes", "--symbols", sym)
 	data := parseJSONMap(t, out)
 	if len(data) == 0 {
 		t.Error("expected non-empty option latest quotes")
@@ -66,7 +66,7 @@ func TestDataOptionLatestQuotes(t *testing.T) {
 
 func TestDataOptionExchanges(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "option", "exchanges", "--json")
+	out := alpaca(t, "data", "option", "exchanges")
 	data := parseJSONMap(t, out)
 	if len(data) == 0 {
 		t.Error("expected non-empty option exchanges")
@@ -75,7 +75,7 @@ func TestDataOptionExchanges(t *testing.T) {
 
 func TestDataOptionConditions(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "option", "conditions", "trade", "--json")
+	out := alpaca(t, "data", "option", "conditions", "trade")
 	data := parseJSONMap(t, out)
 	if len(data) == 0 {
 		t.Error("expected non-empty option conditions")
@@ -86,7 +86,7 @@ func TestDataOptionBars(t *testing.T) {
 	t.Parallel()
 	sym := discoverOptionSymbol(t)
 	// Option contracts may not have historical bar data — just verify the command runs
-	stdout, _, code := alpacaWithStderr(t, "data", "option", "bars", "--symbols", sym, "--start", daysAgo(90), "--json")
+	stdout, _, code := alpacaWithStderr(t, "data", "option", "bars", "--symbols", sym, "--start", daysAgo(90))
 	if code != 0 {
 		t.Skip("option bars not available for this contract")
 	}
@@ -97,7 +97,7 @@ func TestDataOptionBars(t *testing.T) {
 func TestDataOptionTrades(t *testing.T) {
 	t.Parallel()
 	sym := discoverOptionSymbol(t)
-	stdout, _, code := alpacaWithStderr(t, "data", "option", "trades", "--symbols", sym, "--start", daysAgo(90), "--json")
+	stdout, _, code := alpacaWithStderr(t, "data", "option", "trades", "--symbols", sym, "--start", daysAgo(90))
 	if code != 0 {
 		t.Skip("option trades not available for this contract")
 	}
@@ -108,7 +108,7 @@ func TestDataOptionTrades(t *testing.T) {
 func TestDataOptionLatestTrades(t *testing.T) {
 	t.Parallel()
 	sym := discoverOptionSymbol(t)
-	stdout, _, code := alpacaWithStderr(t, "data", "option", "latest-trades", "--symbols", sym, "--json")
+	stdout, _, code := alpacaWithStderr(t, "data", "option", "latest-trades", "--symbols", sym)
 	if code != 0 {
 		t.Skip("option latest trades not available for this contract")
 	}

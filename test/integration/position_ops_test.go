@@ -11,18 +11,18 @@ func TestPositionOps(t *testing.T) {
 	symbol := submitCryptoFill(t)
 
 	t.Run("get", func(t *testing.T) {
-		out := alpaca(t, "position", "get", symbol, "--json")
+		out := alpaca(t, "position", "get", symbol)
 		pos := parseJSONMap(t, out)
 		requireFields(t, pos, "symbol", "qty", "market_value", "avg_entry_price")
 	})
 
 	t.Run("close", func(t *testing.T) {
-		out := alpaca(t, "position", "close", symbol, "--json")
+		out := alpaca(t, "position", "close", symbol)
 		closed := parseJSONMap(t, out)
 		requireFields(t, closed, "id", "symbol", "status")
 
 		pollFor(t, 10*time.Second, "position to be closed", func() bool {
-			_, _, code := alpacaWithStderr(t, "position", "get", symbol, "--json")
+			_, _, code := alpacaWithStderr(t, "position", "get", symbol)
 			return code != 0
 		})
 	})
@@ -34,7 +34,7 @@ func TestPositionCloseAll(t *testing.T) {
 	alpaca(t, "position", "close-all")
 
 	pollFor(t, 10*time.Second, "all positions to be closed", func() bool {
-		out := alpaca(t, "position", "list", "--json")
+		out := alpaca(t, "position", "list")
 		return len(parseJSONArray(t, out)) == 0
 	})
 }

@@ -17,14 +17,14 @@ func TestSmoke_Version(t *testing.T) {
 
 func TestSmoke_Account(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "account", "get", "--json")
+	out := alpaca(t, "account", "get")
 	acct := parseJSONMap(t, out)
 	requireFields(t, acct, "id", "status", "equity", "buying_power", "cash")
 }
 
 func TestSmoke_Clock(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "clock", "--json")
+	out := alpaca(t, "clock")
 	clock := parseJSONMap(t, out)
 	requireFields(t, clock, "is_open", "next_open", "next_close")
 }
@@ -32,21 +32,21 @@ func TestSmoke_Clock(t *testing.T) {
 func TestSmoke_Calendar(t *testing.T) {
 	t.Parallel()
 	calStart, calEnd := monthRange(3)
-	out := alpaca(t, "calendar", "--start", calStart, "--end", calEnd, "--json")
+	out := alpaca(t, "calendar", "--start", calStart, "--end", calEnd)
 	days := requireArrayNonEmpty(t, out)
 	requireFields(t, days[0], "date")
 }
 
 func TestSmoke_AccountConfig(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "account", "config", "get", "--json")
+	out := alpaca(t, "account", "config", "get")
 	cfg := parseJSONMap(t, out)
 	requireFields(t, cfg, "dtbp_check")
 }
 
 func TestSmoke_Assets(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "asset", "get", "AAPL", "--json")
+	out := alpaca(t, "asset", "get", "AAPL")
 	asset := parseJSONMap(t, out)
 
 	if asset["symbol"] != "AAPL" {
@@ -82,7 +82,7 @@ func TestSmoke_ProfileList(t *testing.T) {
 
 func TestSmoke_ScreenerMostActives(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "screener", "most-actives", "--top", "5", "--json")
+	out := alpaca(t, "data", "screener", "most-actives", "--top", "5")
 	actives := parseJSONArray(t, out)
 	if len(actives) == 0 {
 		t.Error("screener response returned no results")

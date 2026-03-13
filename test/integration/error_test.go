@@ -3,7 +3,6 @@
 package integration
 
 import (
-	"strings"
 	"testing"
 )
 
@@ -14,7 +13,6 @@ func TestAPIError_InvalidOrderReturnsStructuredJSON(t *testing.T) {
 		"--qty", "-1",
 		"--side", "buy",
 		"--type", "market",
-		"--json",
 	)
 	if code == 0 {
 		t.Fatal("expected non-zero exit code")
@@ -30,7 +28,6 @@ func TestAPIError_InvalidAuth(t *testing.T) {
 	t.Parallel()
 	_, stderr, code := alpacaFail(t,
 		"order", "get", "00000000-0000-0000-0000-000000000000",
-		"--json",
 	)
 	if code == 0 {
 		t.Fatal("expected non-zero exit code for bogus order ID")
@@ -41,20 +38,9 @@ func TestAPIError_InvalidAuth(t *testing.T) {
 	}
 }
 
-func TestAPIError_HumanReadable(t *testing.T) {
-	t.Parallel()
-	_, stderr, _ := alpacaFail(t,
-		"order", "get", "00000000-0000-0000-0000-000000000000",
-	)
-	output := string(stderr)
-	if !strings.Contains(output, "Error:") {
-		t.Errorf("expected human-readable error with 'Error:' prefix, got: %s", output)
-	}
-}
-
 func TestAPIError_NonExistentPosition(t *testing.T) {
 	t.Parallel()
-	_, stderr, code := alpacaFail(t, "position", "get", "ZZZZZZZZZ", "--json")
+	_, stderr, code := alpacaFail(t, "position", "get", "ZZZZZZZZZ")
 	if code == 0 {
 		t.Fatal("expected non-zero exit code for non-existent position")
 	}
@@ -68,7 +54,6 @@ func TestAPIError_NonExistentOrderCancel(t *testing.T) {
 	t.Parallel()
 	_, stderr, code := alpacaFail(t,
 		"order", "cancel", "00000000-0000-0000-0000-000000000001",
-		"--json",
 	)
 	if code == 0 {
 		t.Fatal("expected non-zero exit code for canceling non-existent order")
@@ -81,7 +66,7 @@ func TestAPIError_NonExistentOrderCancel(t *testing.T) {
 
 func TestAPIError_NonExistentAsset(t *testing.T) {
 	t.Parallel()
-	_, stderr, code := alpacaFail(t, "asset", "get", "ZZZZZZZZZ", "--json")
+	_, stderr, code := alpacaFail(t, "asset", "get", "ZZZZZZZZZ")
 	if code == 0 {
 		t.Fatal("expected non-zero exit code for non-existent asset")
 	}
@@ -105,7 +90,6 @@ func TestAPIError_JSONErrorStructure(t *testing.T) {
 	t.Parallel()
 	_, stderr, code := alpacaFail(t,
 		"order", "get", "00000000-0000-0000-0000-000000000000",
-		"--json",
 	)
 	if code == 0 {
 		t.Fatal("expected non-zero exit code")

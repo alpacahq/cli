@@ -237,7 +237,6 @@ func submitTestOrder(t *testing.T) string {
 		"--type", "limit",
 		"--limit-price", "1.00",
 		"--time-in-force", "gtc",
-		"--json",
 	)
 	order := parseJSONMap(t, out)
 	id, ok := order["id"].(string)
@@ -250,7 +249,7 @@ func submitTestOrder(t *testing.T) string {
 		_ = cmd.Run()
 	})
 	pollFor(t, 5*time.Second, "order to be retrievable", func() bool {
-		_, _, code := alpacaWithStderr(t, "order", "get", id, "--json")
+		_, _, code := alpacaWithStderr(t, "order", "get", id)
 		return code == 0
 	})
 	return id
@@ -266,7 +265,6 @@ func submitCryptoFill(t *testing.T) string {
 		"--side", "buy",
 		"--type", "market",
 		"--time-in-force", "gtc",
-		"--json",
 	)
 
 	symbol := "BTC/USD"
@@ -276,7 +274,7 @@ func submitCryptoFill(t *testing.T) string {
 		_ = cmd.Run()
 	})
 	pollFor(t, 15*time.Second, "BTC/USD position to appear", func() bool {
-		_, _, code := alpacaWithStderr(t, "position", "get", symbol, "--json")
+		_, _, code := alpacaWithStderr(t, "position", "get", symbol)
 		return code == 0
 	})
 	return symbol

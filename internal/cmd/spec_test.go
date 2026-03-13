@@ -292,42 +292,6 @@ func TestAllOpsValid(t *testing.T) {
 	}
 }
 
-// TestRenderCallsUseColumnDefinitions scans all command source files and
-// verifies that every output.Render and output.PrintSingle call either
-// passes explicit column definitions or nil (for auto-discovery).
-// Catches accidental empty slices or missing arguments.
-func TestRenderCallsUseColumnDefinitions(t *testing.T) {
-	renderCall := regexp.MustCompile(`output\.(Render|PrintSingle)\(`)
-	validColumns := regexp.MustCompile(`\w+Columns\(\)|\bcols\b|\bcolumns\(\)|\bnil\b|columnsForOp\(`)
-
-	dir := cmdDir()
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	for _, e := range entries {
-		if e.IsDir() || !strings.HasSuffix(e.Name(), ".go") || strings.HasSuffix(e.Name(), "_test.go") {
-			continue
-		}
-		data, err := os.ReadFile(filepath.Join(dir, e.Name()))
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		lines := strings.Split(string(data), "\n")
-		for i, line := range lines {
-			if !renderCall.MatchString(line) {
-				continue
-			}
-			if !validColumns.MatchString(line) {
-				t.Errorf("%s:%d: output.Render/PrintSingle call missing column definitions or nil:\n  %s",
-					e.Name(), i+1, strings.TrimSpace(line))
-			}
-		}
-	}
-}
-
 // TestGeneratedPostPutPatchPassQueryParams scans the generated trading and market
 // data client files and verifies that every method accepting a *Params argument
 // for POST/PUT/PATCH also passes params.Values() in its body.

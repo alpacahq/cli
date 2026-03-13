@@ -1,12 +1,9 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
 	"github.com/alpacahq/cli/internal/output"
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
@@ -23,27 +20,14 @@ var clockCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			return output.JSON(cmd.OutOrStdout(), resp)
+			return output.Render(cmd.OutOrStdout(), getOutput(), resp)
 		}
 
 		clock, err := tradingClient.LegacyClock()
 		if err != nil {
 			return err
 		}
-
-		if getOutput() == output.FormatJSON {
-			return output.JSON(cmd.OutOrStdout(), clock)
-		}
-
-		w := cmd.OutOrStdout()
-		if clock.IsOpen {
-			_, _ = color.New(color.FgGreen).Fprintln(w, "Market is OPEN")
-		} else {
-			_, _ = color.New(color.FgYellow).Fprintln(w, "Market is CLOSED")
-		}
-		_, _ = fmt.Fprintf(w, "  Next open:  %v\n", clock.NextOpen)
-		_, _ = fmt.Fprintf(w, "  Next close: %v\n", clock.NextClose)
-		return nil
+		return output.Render(cmd.OutOrStdout(), getOutput(), clock)
 	},
 }
 
@@ -61,16 +45,14 @@ var calendarCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			return output.JSON(cmd.OutOrStdout(), resp)
+			return output.Render(cmd.OutOrStdout(), getOutput(), resp)
 		}
 
-		params := legacyCalendarParamsFromFlags(cmd)
-
-		data, err := tradingClient.LegacyCalendar(params)
+		data, err := tradingClient.LegacyCalendar(legacyCalendarParamsFromFlags(cmd))
 		if err != nil {
 			return err
 		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), nil, data)
+		return output.Render(cmd.OutOrStdout(), getOutput(), data)
 	},
 }
 

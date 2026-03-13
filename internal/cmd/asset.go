@@ -24,8 +24,7 @@ var assetGetCmd = fetchCmd("get <symbol>", api.GetV2AssetsSymbolOrAssetIDOp, fun
 }, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
 	c.Example = `  alpaca asset get AAPL
-  alpaca asset get BTC/USD
-  alpaca asset get AAPL --json`
+  alpaca asset get BTC/USD`
 })
 
 var treasuryListCmd = fetchCmd("treasury", api.UsTreasuriesOp, func(cmd *cobra.Command, args []string) (any, error) {

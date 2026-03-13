@@ -8,7 +8,7 @@ import (
 
 func TestAccountConfigSet(t *testing.T) {
 	// Read current config
-	out := alpaca(t, "account", "config", "get", "--json")
+	out := alpaca(t, "account", "config", "get")
 	original := parseJSONMap(t, out)
 	origVal, _ := original["trade_confirm_email"].(string)
 
@@ -19,7 +19,7 @@ func TestAccountConfigSet(t *testing.T) {
 	}
 
 	// Set it
-	alpaca(t, "account", "config", "set", "--trade-confirm-email", newVal, "--json")
+	alpaca(t, "account", "config", "set", "--trade-confirm-email", newVal)
 
 	// Restore original on cleanup
 	t.Cleanup(func() {
@@ -27,7 +27,7 @@ func TestAccountConfigSet(t *testing.T) {
 	})
 
 	// Verify it changed
-	out = alpaca(t, "account", "config", "get", "--json")
+	out = alpaca(t, "account", "config", "get")
 	updated := parseJSONMap(t, out)
 	if updated["trade_confirm_email"] != newVal {
 		t.Errorf("expected trade_confirm_email %q, got %v", newVal, updated["trade_confirm_email"])
@@ -36,19 +36,19 @@ func TestAccountConfigSet(t *testing.T) {
 
 func TestAccountActivityList_WithType(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "account", "activity", "list", "--activity-types", "FILL", "--page-size", "5", "--json")
+	out := alpaca(t, "account", "activity", "list", "--activity-types", "FILL", "--page-size", "5")
 	_ = parseJSONArray(t, out)
 }
 
 func TestAccountActivityList_Pagination(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "account", "activity", "list", "--page-size", "2", "--direction", "asc", "--json")
+	out := alpaca(t, "account", "activity", "list", "--page-size", "2", "--direction", "asc")
 	_ = parseJSONArray(t, out)
 }
 
 func TestAccountPortfolio_WithParams(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "account", "portfolio", "--period", "1W", "--timeframe", "1D", "--json")
+	out := alpaca(t, "account", "portfolio", "--period", "1W", "--timeframe", "1D")
 	data := parseJSONMap(t, out)
 	requireFields(t, data, "equity", "timestamp")
 }

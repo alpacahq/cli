@@ -92,7 +92,7 @@ alpaca clock
 ```bash
 export ALPACA_API_KEY=PK...
 export ALPACA_SECRET_KEY=...
-alpaca position list --json
+alpaca position list
 ```
 
 - Passing `--secret` via flags is discouraged (shell history exposure). Use interactive login or env vars.
@@ -218,8 +218,7 @@ Every command supports `--help` for full flag documentation.
 ## Output Formats
 
 ```bash
-alpaca position list              # Pretty table (default)
-alpaca position list --json       # JSON for scripts and agents
+alpaca position list              # JSON (default)
 alpaca position list --csv        # CSV for spreadsheets
 ```
 
@@ -247,14 +246,14 @@ Credentials are stored in `~/.config/alpaca/profiles/`.
 | `ALPACA_BASE_URL` | Trading API base URL |
 | `ALPACA_DATA_URL` | Market data API base URL |
 | `ALPACA_PROFILE` | Profile name to use |
-| `ALPACA_OUTPUT` | Default output format (`table`, `json`, `csv`) |
+| `ALPACA_OUTPUT` | Default output format (`json`, `csv`) |
 | `ALPACA_CONFIG_DIR` | Config directory (default: `~/.config/alpaca`) |
 | `ALPACA_VERBOSE` | Show HTTP request summaries on stderr (any non-empty value) |
 | `ALPACA_DEBUG` | Show HTTP request/response headers and bodies on stderr (any non-empty value) |
 | `ALPACA_TRACE` | Show HTTP timing breakdown on stderr — DNS, TLS, TTFB (any non-empty value) |
 | `ALPACA_NO_UPDATE_NOTIFY` | Suppress background update notices (any non-empty value) |
 
-Global flags: `--json`, `--csv`, `--profile`, `--verbose`, `--debug`, `--quiet`, `--timeout`.
+Global flags: `--csv`, `--profile`, `--verbose`, `--debug`, `--quiet`, `--timeout`.
 
 Precedence: flags > env vars > profile config > defaults.
 
@@ -330,16 +329,16 @@ export ALPACA_SECRET_KEY=...
 
 ### Clean Output
 
-Use `--json` for structured data and `--quiet` to suppress all non-data output (warnings, hints, color):
+JSON is the default output format. Use `--quiet` to suppress all non-data output (warnings, hints):
 
 ```bash
-alpaca position list --json --quiet
-alpaca data latest trade AAPL --json --quiet
+alpaca position list --quiet
+alpaca data latest trade AAPL --quiet
 ```
 
 ### Structured Errors
 
-When `--json` or `--quiet` is set, errors are JSON on stderr:
+Errors are always JSON on stderr:
 
 ```json
 {"error":"rate limited","code":0,"status":429,"hint":"Rate limited. Reduce request frequency or add delays between calls."}
@@ -406,7 +405,7 @@ Pipe JSON payloads into `alpaca api post/patch`:
 
 ```bash
 echo '{"symbol":"AAPL","qty":"1","side":"buy","type":"market","time_in_force":"day"}' \
-  | alpaca api post /v2/orders --json
+  | alpaca api post /v2/orders
 ```
 
 If both `--data` and stdin are provided, `--data` takes precedence.
@@ -464,22 +463,22 @@ export ALPACA_API_KEY=PK...
 export ALPACA_SECRET_KEY=...
 
 # Check if market is open
-clock=$(alpaca clock --json --quiet)
+clock=$(alpaca clock --quiet)
 is_open=$(echo "$clock" | jq -r '.is_open')
 
 # Place order if open
 if [ "$is_open" = "true" ]; then
-  alpaca order submit AAPL --side buy --qty 10 --type market --json --quiet
+  alpaca order submit AAPL --side buy --qty 10 --type market --quiet
 fi
 
 # Preview before submitting
 alpaca order submit AAPL --side buy --qty 10 --type limit --limit-price 185.00 --dry-run
 
 # Pipe complex payloads
-cat order.json | alpaca api post /v2/orders --json --quiet
+cat order.json | alpaca api post /v2/orders --quiet
 
 # Handle errors programmatically
-if ! result=$(alpaca order get abc123 --json --quiet 2>err.json); then
+if ! result=$(alpaca order get abc123 --quiet 2>err.json); then
   status=$(jq .status err.json)
   echo "Failed with HTTP $status"
 fi
@@ -519,12 +518,6 @@ The CLI checks for updates in the background (once every 24 hours) and shows a n
 ```bash
 alpaca update          # Download and install latest version (binary installs)
 alpaca update --check  # Check without installing
-```
-
-For scripts and agents, use the machine-readable check:
-
-```bash
-alpaca update --check --json
 ```
 
 Suppress update notices with `ALPACA_NO_UPDATE_NOTIFY=1` or `--quiet`.

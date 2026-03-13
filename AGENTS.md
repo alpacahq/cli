@@ -49,7 +49,7 @@ Cobra commands (`internal/cmd/`) are hand-written — they're UX decisions:
 - `RequireStr` / `RequireAll` validation
 - Request body construction (enum casts, complex types, positional arg overrides)
 - `Changed()` checks for PATCH semantics (`order replace`, `watchlist update`)
-- Output column selection and rendering
+- Output format overrides (`jsonOnly` for complex nested responses)
 - Custom flags not from OAS (`--dry-run`, `--client-id`, `--market`)
 
 ## No backward compatibility
@@ -79,8 +79,8 @@ Every outbound HTTP request must set `User-Agent: alpaca-cli/<version>`. When cr
 
 Background check (once per 24h), cached in `~/.config/alpaca/update-state.json`. A stderr notice appears when an update is available.
 
-- `alpaca update --check --json` — live check, structured output
-- `alpaca version --json` — cached update info (no network call)
+- `alpaca update --check` — live check, structured JSON output
+- `alpaca version` — cached update info (no network call)
 - `ALPACA_NO_UPDATE_NOTIFY=1` or `--quiet` — suppresses the notice
 
 Install method is auto-detected (Homebrew, go install, binary). For Homebrew/go install users, `alpaca update` redirects to the appropriate package manager.

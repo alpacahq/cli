@@ -183,7 +183,7 @@ func TestLoad_ProfileFlagOverridesDefault(t *testing.T) {
 func TestLoad_OutputFlagOverridesConfig(t *testing.T) {
 	withTempDir(t)
 
-	_ = SaveGlobalConfig(&Config{Output: "table"})
+	_ = SaveGlobalConfig(&Config{Output: "json"})
 
 	r, err := Load("", "csv")
 	if err != nil {

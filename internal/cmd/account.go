@@ -16,15 +16,13 @@ var accountCmd = &cobra.Command{
 var accountGetCmd = fetchCmd("get", api.GetAccountOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return tradingClient.GetAccount()
 }, func(c *cobra.Command) {
-	c.Example = `  alpaca account get
-  alpaca account get --json`
+	c.Example = `  alpaca account get`
 })
 
 var accountConfigGetCmd = fetchCmd("get", api.GetAccountConfigOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return tradingClient.GetAccountConfig()
 }, func(c *cobra.Command) {
-	c.Example = `  alpaca account config get
-  alpaca account config get --json`
+	c.Example = `  alpaca account config get`
 })
 
 var accountConfigSetCmd = fetchCmd("set", api.PatchAccountConfigOp, func(cmd *cobra.Command, args []string) (any, error) {
