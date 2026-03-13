@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
 	"github.com/spf13/cobra"
@@ -32,24 +30,22 @@ var optionGetCmd = fetchCmd("get <symbol-or-id>", api.GetOptionContractSymbolOrI
 	c.Args = cobra.ExactArgs(1)
 })
 
-var optionExerciseCmd = actionCmd("exercise <symbol-or-id>", api.OptionExerciseOp, "", func(cmd *cobra.Command, args []string) error {
-	_, err := tradingClient.OptionExercise(args[0])
+var optionExerciseCmd = fetchCmd("exercise <symbol-or-id>", api.OptionExerciseOp, func(cmd *cobra.Command, args []string) (any, error) {
+	data, err := tradingClient.OptionExercise(args[0])
 	if err != nil {
-		return err
+		return nil, err
 	}
-	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Option %s exercise requested.\n", args[0])
-	return nil
+	return voidResponse(data), nil
 }, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
 })
 
-var optionDoNotExerciseCmd = actionCmd("do-not-exercise <symbol-or-id>", api.OptionDoNotExerciseOp, "", func(cmd *cobra.Command, args []string) error {
-	_, err := tradingClient.OptionDoNotExercise(args[0])
+var optionDoNotExerciseCmd = fetchCmd("do-not-exercise <symbol-or-id>", api.OptionDoNotExerciseOp, func(cmd *cobra.Command, args []string) (any, error) {
+	data, err := tradingClient.OptionDoNotExercise(args[0])
 	if err != nil {
-		return err
+		return nil, err
 	}
-	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Option %s marked as do-not-exercise.\n", args[0])
-	return nil
+	return voidResponse(data), nil
 }, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
 })

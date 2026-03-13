@@ -92,13 +92,12 @@ var orderGetCmd = fetchCmd("get [order-id]", api.GetOrderByOrderIDOp, func(cmd *
 	c.Flags().String("client-id", "", "Look up order by client order ID")
 })
 
-var orderCancelCmd = actionCmd("cancel <order-id>", api.DeleteOrderByOrderIDOp, "", func(cmd *cobra.Command, args []string) error {
-	_, err := tradingClient.DeleteOrderByOrderID(args[0])
+var orderCancelCmd = fetchCmd("cancel <order-id>", api.DeleteOrderByOrderIDOp, func(cmd *cobra.Command, args []string) (any, error) {
+	data, err := tradingClient.DeleteOrderByOrderID(args[0])
 	if err != nil {
-		return err
+		return nil, err
 	}
-	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Order %s canceled.\n", args[0])
-	return nil
+	return voidResponse(data), nil
 }, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
 })

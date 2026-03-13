@@ -43,9 +43,8 @@ var positionCloseCmd = fetchCmd("close <symbol>", api.DeleteOpenPositionOp, func
   alpaca position close AAPL --percentage 50`
 })
 
-var positionCloseAllCmd = actionCmd("close-all", api.DeleteAllOpenPositionsOp, "All positions closed.", func(cmd *cobra.Command, args []string) error {
-	_, err := tradingClient.DeleteAllOpenPositions(deleteAllOpenPositionsParamsFromFlags(cmd))
-	return err
+var positionCloseAllCmd = fetchCmd("close-all", api.DeleteAllOpenPositionsOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.DeleteAllOpenPositions(deleteAllOpenPositionsParamsFromFlags(cmd))
 })
 
 func init() {

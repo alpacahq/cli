@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/alpacahq/cli/internal/api"
@@ -52,9 +51,12 @@ var watchlistUpdateCmd = fetchCmd("update <id>", api.UpdateWatchlistByIDOp, func
 	c.Args = cobra.ExactArgs(1)
 })
 
-var watchlistDeleteCmd = actionCmd("delete <id>", api.DeleteWatchlistByIDOp, "Watchlist deleted.", func(cmd *cobra.Command, args []string) error {
-	_, err := tradingClient.DeleteWatchlistByID(args[0])
-	return err
+var watchlistDeleteCmd = fetchCmd("delete <id>", api.DeleteWatchlistByIDOp, func(cmd *cobra.Command, args []string) (any, error) {
+	data, err := tradingClient.DeleteWatchlistByID(args[0])
+	if err != nil {
+		return nil, err
+	}
+	return voidResponse(data), nil
 }, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
 })
@@ -65,13 +67,8 @@ var watchlistAddCmd = fetchCmd("add <id> <symbol>", api.AddAssetToWatchlistOp, f
 	c.Args = cobra.ExactArgs(2)
 })
 
-var watchlistRemoveCmd = actionCmd("remove <id> <symbol>", api.RemoveAssetFromWatchlistOp, "", func(cmd *cobra.Command, args []string) error {
-	_, err := tradingClient.RemoveAssetFromWatchlist(args[0], args[1])
-	if err != nil {
-		return err
-	}
-	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Removed %s from watchlist.\n", args[1])
-	return nil
+var watchlistRemoveCmd = fetchCmd("remove <id> <symbol>", api.RemoveAssetFromWatchlistOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.RemoveAssetFromWatchlist(args[0], args[1])
 }, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(2)
 	c.Example = `  alpaca watchlist remove <id> AAPL`
@@ -85,9 +82,12 @@ var watchlistGetByNameCmd = fetchCmd("get-by-name <name>", api.GetWatchlistByNam
 		c.Example = `  alpaca watchlist get-by-name "Tech Stocks"`
 	})
 
-var watchlistDeleteByNameCmd = actionCmd("delete-by-name <name>", api.DeleteWatchlistByNameOp, "Watchlist deleted.", func(cmd *cobra.Command, args []string) error {
-	_, err := tradingClient.DeleteWatchlistByName(&api.DeleteWatchlistByNameParams{Name: args[0]})
-	return err
+var watchlistDeleteByNameCmd = fetchCmd("delete-by-name <name>", api.DeleteWatchlistByNameOp, func(cmd *cobra.Command, args []string) (any, error) {
+	data, err := tradingClient.DeleteWatchlistByName(&api.DeleteWatchlistByNameParams{Name: args[0]})
+	if err != nil {
+		return nil, err
+	}
+	return voidResponse(data), nil
 }, flagOpts(&cmdutil.FlagOpts{Exclude: map[string]bool{"name": true}}),
 	func(c *cobra.Command) {
 		c.Args = cobra.ExactArgs(1)

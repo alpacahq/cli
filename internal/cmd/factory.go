@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"fmt"
+	"encoding/json"
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
@@ -63,27 +63,13 @@ func fetchCmd(use string, op api.Op, fetch func(cmd *cobra.Command, args []strin
 	return cmd
 }
 
-// actionCmd creates a command that performs a side effect and prints a message.
-// If msg is empty, nothing is printed (the do func handles its own output).
-func actionCmd(use string, op api.Op, msg string, do func(cmd *cobra.Command, args []string) error, configure ...func(*cobra.Command)) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   use,
-		Short: op.Summary(),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := do(cmd, args); err != nil {
-				return err
-			}
-			if msg != "" {
-				_, _ = fmt.Fprintln(cmd.OutOrStdout(), msg)
-			}
-			return nil
-		},
+// voidResponse returns data as-is if non-empty, or an empty JSON object
+// for 204 (no content) API responses. Ensures stdout is always valid JSON.
+func voidResponse(data json.RawMessage) json.RawMessage {
+	if len(data) == 0 {
+		return json.RawMessage("{}")
 	}
-	for _, fn := range configure {
-		fn(cmd)
-	}
-	cmdutil.RegisterFlags(cmd, op.Flags(), cmdFlagOpts[cmd])
-	return cmd
+	return data
 }
 
 // registeredRequired returns only those RequiredFlags from the op that are
