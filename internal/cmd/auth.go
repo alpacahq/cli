@@ -83,9 +83,9 @@ func loginWithOAuth(cmd *cobra.Command) error {
 	}
 
 	if !noValidate {
-		req, _ := http.NewRequest("GET", baseURL+"/v2/account", nil)
-		req.Header.Set("Authorization", "Bearer "+token.AccessToken)
-		if err := validateCredentials(req, baseURL); err != nil {
+		if err := validateCredentials(baseURL, map[string]string{
+			"Authorization": "Bearer " + token.AccessToken,
+		}); err != nil {
 			return err
 		}
 	}
@@ -194,10 +194,10 @@ func loginWithAPIKey(cmd *cobra.Command) error {
 	}
 
 	if !noValidate {
-		req, _ := http.NewRequest("GET", baseURL+"/v2/account", nil)
-		req.Header.Set("APCA-API-KEY-ID", key)
-		req.Header.Set("APCA-API-SECRET-KEY", secret)
-		if err := validateCredentials(req, baseURL); err != nil {
+		if err := validateCredentials(baseURL, map[string]string{
+			"APCA-API-KEY-ID":     key,
+			"APCA-API-SECRET-KEY": secret,
+		}); err != nil {
 			return err
 		}
 	}
@@ -401,8 +401,12 @@ func init() {
 	profileCmd.AddCommand(profileSetCmd)
 }
 
-func validateCredentials(req *http.Request, baseURL string) error {
+func validateCredentials(baseURL string, headers map[string]string) error {
+	req, _ := http.NewRequest("GET", baseURL+"/v2/account", nil)
 	req.Header.Set("User-Agent", "alpaca-cli/"+version)
+	for k, v := range headers {
+		req.Header.Set(k, v)
+	}
 	resp, err := (&http.Client{Timeout: 10 * time.Second}).Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to connect to %s: %w\nHint: use --no-validate to skip credential check", baseURL, err)

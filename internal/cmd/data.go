@@ -46,7 +46,7 @@ var dataBarsCmd = fetchCmd("bars <symbol>", api.StockBarSingleOp, func(cmd *cobr
 			}
 			return dataClient.Bars(sym, params)
 		},
-		extractBars,
+		func(data json.RawMessage, sym string) json.RawMessage { return extractArray(data, sym, "bars") },
 	)
 }, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"timeframe": "1Day"}}),
 	func(c *cobra.Command) {
@@ -185,10 +185,6 @@ func init() {
 	dataCmd.AddCommand(dataTradesCmd)
 	dataCmd.AddCommand(dataSnapshotCmd)
 	dataCmd.AddCommand(dataLatestCmd)
-}
-
-func extractBars(data json.RawMessage, symbol string) json.RawMessage {
-	return extractArray(data, symbol, "bars")
 }
 
 func extractArray(data json.RawMessage, symbol, key string) json.RawMessage {

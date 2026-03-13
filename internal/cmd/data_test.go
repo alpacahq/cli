@@ -5,9 +5,9 @@ import (
 	"testing"
 )
 
-func TestExtractBars_SingleSymbol(t *testing.T) {
+func TestExtractArray_Bars_SingleSymbol(t *testing.T) {
 	raw := json.RawMessage(`{"bars":[{"t":"2025-01-02","o":180,"h":185,"l":179,"c":184,"v":1000}]}`)
-	result := extractBars(raw, "AAPL")
+	result := extractArray(raw, "AAPL", "bars")
 	var arr []map[string]any
 	if err := json.Unmarshal(result, &arr); err != nil {
 		t.Fatalf("expected array, got: %s", string(result))
@@ -17,9 +17,9 @@ func TestExtractBars_SingleSymbol(t *testing.T) {
 	}
 }
 
-func TestExtractBars_MultiSymbolMap(t *testing.T) {
+func TestExtractArray_Bars_MultiSymbolMap(t *testing.T) {
 	raw := json.RawMessage(`{"bars":{"AAPL":[{"t":"2025-01-02","o":180}],"MSFT":[{"t":"2025-01-02","o":400}]}}`)
-	result := extractBars(raw, "AAPL")
+	result := extractArray(raw, "AAPL", "bars")
 	var arr []map[string]any
 	if err := json.Unmarshal(result, &arr); err != nil {
 		t.Fatalf("expected array, got: %s", string(result))
@@ -32,9 +32,9 @@ func TestExtractBars_MultiSymbolMap(t *testing.T) {
 	}
 }
 
-func TestExtractBars_InvalidJSON(t *testing.T) {
+func TestExtractArray_Bars_InvalidJSON(t *testing.T) {
 	raw := json.RawMessage(`not json`)
-	result := extractBars(raw, "AAPL")
+	result := extractArray(raw, "AAPL", "bars")
 	if string(result) != "not json" {
 		t.Errorf("expected passthrough, got: %s", string(result))
 	}
