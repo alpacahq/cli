@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"slices"
 	"strings"
 	"time"
 
@@ -316,14 +317,7 @@ var profileSwitchCmd = &cobra.Command{
 			return err
 		}
 
-		found := false
-		for _, p := range profiles {
-			if p == name {
-				found = true
-				break
-			}
-		}
-		if !found {
+		if !slices.Contains(profiles, name) {
 			available := "(none)"
 			if len(profiles) > 0 {
 				available = strings.Join(profiles, ", ")

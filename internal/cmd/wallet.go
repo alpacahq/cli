@@ -79,11 +79,7 @@ var walletWhitelistAddCmd = fetchCmd("add", api.CreateWhitelistedAddressOp, func
 })
 
 var walletWhitelistDeleteCmd = fetchCmd("delete <id>", api.DeleteWhitelistedAddressOp, func(cmd *cobra.Command, args []string) (any, error) {
-	data, err := tradingClient.DeleteWhitelistedAddress(args[0])
-	if err != nil {
-		return nil, err
-	}
-	return voidResponse(data), nil
+	return voidResponse(tradingClient.DeleteWhitelistedAddress(args[0]))
 }, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
 })

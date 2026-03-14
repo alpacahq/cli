@@ -63,13 +63,16 @@ func fetchCmd(use string, op api.Op, fetch func(cmd *cobra.Command, args []strin
 	return cmd
 }
 
-// voidResponse returns data as-is if non-empty, or an empty JSON object
-// for 204 (no content) API responses. Ensures stdout is always valid JSON.
-func voidResponse(data json.RawMessage) json.RawMessage {
-	if len(data) == 0 {
-		return json.RawMessage("{}")
+// voidResponse wraps a client call that may return empty data (204 no content),
+// ensuring stdout is always valid JSON. Returns "{}" for empty responses.
+func voidResponse(data json.RawMessage, err error) (any, error) {
+	if err != nil {
+		return nil, err
 	}
-	return data
+	if len(data) == 0 {
+		return json.RawMessage("{}"), nil
+	}
+	return data, nil
 }
 
 // registeredRequired returns only those RequiredFlags from the op that are

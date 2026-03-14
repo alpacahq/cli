@@ -31,21 +31,13 @@ var optionGetCmd = fetchCmd("get <symbol-or-id>", api.GetOptionContractSymbolOrI
 })
 
 var optionExerciseCmd = fetchCmd("exercise <symbol-or-id>", api.OptionExerciseOp, func(cmd *cobra.Command, args []string) (any, error) {
-	data, err := tradingClient.OptionExercise(args[0])
-	if err != nil {
-		return nil, err
-	}
-	return voidResponse(data), nil
+	return voidResponse(tradingClient.OptionExercise(args[0]))
 }, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
 })
 
 var optionDoNotExerciseCmd = fetchCmd("do-not-exercise <symbol-or-id>", api.OptionDoNotExerciseOp, func(cmd *cobra.Command, args []string) (any, error) {
-	data, err := tradingClient.OptionDoNotExercise(args[0])
-	if err != nil {
-		return nil, err
-	}
-	return voidResponse(data), nil
+	return voidResponse(tradingClient.OptionDoNotExercise(args[0]))
 }, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
 })

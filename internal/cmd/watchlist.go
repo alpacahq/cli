@@ -52,11 +52,7 @@ var watchlistUpdateCmd = fetchCmd("update <id>", api.UpdateWatchlistByIDOp, func
 })
 
 var watchlistDeleteCmd = fetchCmd("delete <id>", api.DeleteWatchlistByIDOp, func(cmd *cobra.Command, args []string) (any, error) {
-	data, err := tradingClient.DeleteWatchlistByID(args[0])
-	if err != nil {
-		return nil, err
-	}
-	return voidResponse(data), nil
+	return voidResponse(tradingClient.DeleteWatchlistByID(args[0]))
 }, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
 })
@@ -83,11 +79,7 @@ var watchlistGetByNameCmd = fetchCmd("get-by-name <name>", api.GetWatchlistByNam
 	})
 
 var watchlistDeleteByNameCmd = fetchCmd("delete-by-name <name>", api.DeleteWatchlistByNameOp, func(cmd *cobra.Command, args []string) (any, error) {
-	data, err := tradingClient.DeleteWatchlistByName(&api.DeleteWatchlistByNameParams{Name: args[0]})
-	if err != nil {
-		return nil, err
-	}
-	return voidResponse(data), nil
+	return voidResponse(tradingClient.DeleteWatchlistByName(&api.DeleteWatchlistByNameParams{Name: args[0]}))
 }, flagOpts(&cmdutil.FlagOpts{Exclude: map[string]bool{"name": true}}),
 	func(c *cobra.Command) {
 		c.Args = cobra.ExactArgs(1)

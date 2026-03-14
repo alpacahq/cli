@@ -88,11 +88,7 @@ var orderGetCmd = fetchCmd("get [order-id]", api.GetOrderByOrderIDOp, func(cmd *
 })
 
 var orderCancelCmd = fetchCmd("cancel <order-id>", api.DeleteOrderByOrderIDOp, func(cmd *cobra.Command, args []string) (any, error) {
-	data, err := tradingClient.DeleteOrderByOrderID(args[0])
-	if err != nil {
-		return nil, err
-	}
-	return voidResponse(data), nil
+	return voidResponse(tradingClient.DeleteOrderByOrderID(args[0]))
 }, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
 })

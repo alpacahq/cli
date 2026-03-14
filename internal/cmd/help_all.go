@@ -56,7 +56,7 @@ func printRootSection(w io.Writer, cmd *cobra.Command) {
 
 	fmt.Fprintf(w, "GLOBAL FLAGS\n")
 	cmd.NonInheritedFlags().VisitAll(func(f *pflag.Flag) {
-		if f.Hidden || skipCommands[f.Name] {
+		if f.Hidden {
 			return
 		}
 		printFlag(w, f, "  ")

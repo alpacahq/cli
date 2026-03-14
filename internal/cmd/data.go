@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"net/url"
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
@@ -13,20 +14,29 @@ var dataCmd = &cobra.Command{
 	Short: "Access market data",
 }
 
+// fetchPaginated returns raw API response for a single page, or accumulates
+// all pages when --all is set. The key param identifies the array field inside
+// the response envelope (e.g. "bars", "trades", "quotes") for pagination extraction.
 func fetchPaginated(
 	cmd *cobra.Command,
 	symbol string,
-	fetch func(string, string) (json.RawMessage, error),
-	extract func(json.RawMessage, string) json.RawMessage,
+	params url.Values,
+	fetch func(string, url.Values) (json.RawMessage, error),
+	key string,
 ) (any, error) {
 	if cmdutil.Bool(cmd, "all") {
 		return fetchAllDataPages(
-			func(pt string) (json.RawMessage, error) { return fetch(symbol, pt) },
-			func(raw json.RawMessage) json.RawMessage { return extract(raw, symbol) },
+			func(pt string) (json.RawMessage, error) {
+				if pt != "" {
+					params.Set("page_token", pt)
+				}
+				return fetch(symbol, params)
+			},
+			func(raw json.RawMessage) json.RawMessage { return extractArray(raw, symbol, key) },
 			cmdutil.Int(cmd, "max"),
 		)
 	}
-	return fetch(symbol, "")
+	return fetch(symbol, params)
 }
 
 var dataBarsCmd = fetchCmd("bars <symbol>", api.StockBarSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
@@ -34,16 +44,7 @@ var dataBarsCmd = fetchCmd("bars <symbol>", api.StockBarSingleOp, func(cmd *cobr
 	if p.Timeframe == "" {
 		p.Timeframe = "1Day"
 	}
-	params := p.Values()
-	return fetchPaginated(cmd, args[0],
-		func(sym, pt string) (json.RawMessage, error) {
-			if pt != "" {
-				params.Set("page_token", pt)
-			}
-			return dataClient.Bars(sym, params)
-		},
-		func(data json.RawMessage, sym string) json.RawMessage { return extractArray(data, sym, "bars") },
-	)
+	return fetchPaginated(cmd, args[0], p.Values(), dataClient.Bars, "bars")
 }, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"timeframe": "1Day"}}),
 	func(c *cobra.Command) {
 		c.Args = cobra.ExactArgs(1)
@@ -55,16 +56,7 @@ var dataBarsCmd = fetchCmd("bars <symbol>", api.StockBarSingleOp, func(cmd *cobr
 	})
 
 var dataQuotesCmd = fetchCmd("quotes <symbol>", api.StockQuoteSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
-	params := stockQuoteSingleParamsFromFlags(cmd).Values()
-	return fetchPaginated(cmd, args[0],
-		func(sym, pt string) (json.RawMessage, error) {
-			if pt != "" {
-				params.Set("page_token", pt)
-			}
-			return dataClient.Quotes(sym, params)
-		},
-		func(data json.RawMessage, sym string) json.RawMessage { return extractArray(data, sym, "quotes") },
-	)
+	return fetchPaginated(cmd, args[0], stockQuoteSingleParamsFromFlags(cmd).Values(), dataClient.Quotes, "quotes")
 }, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
 	c.Example = `  alpaca data quotes AAPL --start 2025-01-01
@@ -74,16 +66,7 @@ var dataQuotesCmd = fetchCmd("quotes <symbol>", api.StockQuoteSingleOp, func(cmd
 })
 
 var dataTradesCmd = fetchCmd("trades <symbol>", api.StockTradeSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
-	params := stockTradeSingleParamsFromFlags(cmd).Values()
-	return fetchPaginated(cmd, args[0],
-		func(sym, pt string) (json.RawMessage, error) {
-			if pt != "" {
-				params.Set("page_token", pt)
-			}
-			return dataClient.Trades(sym, params)
-		},
-		func(data json.RawMessage, sym string) json.RawMessage { return extractArray(data, sym, "trades") },
-	)
+	return fetchPaginated(cmd, args[0], stockTradeSingleParamsFromFlags(cmd).Values(), dataClient.Trades, "trades")
 }, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
 	c.Example = `  alpaca data trades AAPL --start 2025-01-01

@@ -3,7 +3,6 @@ package cmd
 import (
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
-	"github.com/alpacahq/cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -103,25 +102,16 @@ var screenerMostActivesCmd = fetchCmd("most-actives", api.MostActivesOp, func(cm
   alpaca data screener most-actives --by trades --top 10`
 })
 
-var screenerMoversCmd = &cobra.Command{
-	Use:   "movers",
-	Short: api.MoversOp.Summary(),
-	Example: `  alpaca data screener movers
-  alpaca data screener movers --market crypto --top 5`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		market := cmdutil.Str(cmd, "market")
-		if market == "" {
-			market = "stocks"
-		}
-
-		resp, err := dataClient.Movers(market, moversParamsFromFlags(cmd))
-		if err != nil {
-			return err
-		}
-
-		return output.Render(cmd.OutOrStdout(), getOutput(), resp)
-	},
-}
+var screenerMoversCmd = fetchCmd("movers", api.MoversOp, func(cmd *cobra.Command, args []string) (any, error) {
+	market := cmdutil.Str(cmd, "market")
+	if market == "" {
+		market = "stocks"
+	}
+	return dataClient.Movers(market, moversParamsFromFlags(cmd))
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca data screener movers
+  alpaca data screener movers --market crypto --top 5`
+})
 
 // --- News ---
 
@@ -167,7 +157,6 @@ func init() {
 	dataMetaCmd.AddCommand(dataMetaExchangesCmd)
 	dataMetaCmd.AddCommand(dataMetaConditionsCmd)
 
-	cmdutil.RegisterFlags(screenerMoversCmd, api.MoversOp.Flags(), nil)
 	screenerMoversCmd.Flags().String("market", "", "Market: stocks or crypto (default: stocks)")
 	_ = screenerMoversCmd.RegisterFlagCompletionFunc("market", cobra.FixedCompletions(api.MarketTypeValues, cobra.ShellCompDirectiveNoFileComp))
 	screenerCmd.AddCommand(screenerMostActivesCmd)
