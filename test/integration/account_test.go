@@ -40,6 +40,12 @@ func TestAccountActivityList_WithType(t *testing.T) {
 	_ = parseJSONArray(t, out)
 }
 
+func TestAccountActivityListByType(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "account", "activity", "list-by-type", "--activity-type", "FILL", "--page-size", "5")
+	_ = parseJSONArray(t, out)
+}
+
 func TestAccountActivityList_Pagination(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "account", "activity", "list", "--page-size", "2", "--direction", "asc")

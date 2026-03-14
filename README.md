@@ -124,7 +124,8 @@ Note: OAuth login is restricted to paper trading while the flow does not support
 |---------|-------------|
 | `alpaca order submit` | Submit any order type |
 | `alpaca order list` | List orders |
-| `alpaca order get` | Get order details |
+| `alpaca order get` | Get order by ID |
+| `alpaca order get-by-client-id` | Get order by client order ID |
 | `alpaca order cancel` | Cancel an order |
 | `alpaca order cancel-all` | Cancel all open orders |
 | `alpaca order replace` | Replace an existing order |
@@ -136,8 +137,10 @@ Note: OAuth login is restricted to paper trading while the flow does not support
 | `alpaca option get` | Option contract details |
 | `alpaca option exercise` | Exercise an option |
 | `alpaca option do-not-exercise` | Mark option as do-not-exercise |
-| `alpaca clock` | Market clock (supports `--markets` for v3) |
-| `alpaca calendar` | Trading calendar (supports `--market` for v3) |
+| `alpaca clock` | US market clock |
+| `alpaca clock markets` | Multi-market clock (v3) |
+| `alpaca calendar` | US trading calendar |
+| `alpaca calendar market` | Market-specific calendar (v3) |
 
 ### Market Data
 
@@ -179,6 +182,7 @@ Note: OAuth login is restricted to paper trading while the flow does not support
 | `alpaca account config get` | Account configuration |
 | `alpaca account config set` | Update account settings |
 | `alpaca account activity list` | Account activity (fills, dividends, etc.) |
+| `alpaca account activity list-by-type` | Activity filtered by single type |
 | `alpaca account portfolio` | Portfolio equity and P&L history |
 | `alpaca asset list` | Browse equities and crypto |
 | `alpaca asset get` | Asset details |

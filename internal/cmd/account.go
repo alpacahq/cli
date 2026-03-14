@@ -49,16 +49,18 @@ var activityCmd = &cobra.Command{
 }
 
 var activityListCmd = fetchCmd("list", api.GetAccountActivitiesOp, func(cmd *cobra.Command, args []string) (any, error) {
-	actType := cmdutil.Str(cmd, "activity-types")
-	if actType != "" {
-		return tradingClient.GetAccountActivitiesByActivityType(actType, getAccountActivitiesByActivityTypeParamsFromFlags(cmd))
-	}
 	return tradingClient.GetAccountActivities(getAccountActivitiesParamsFromFlags(cmd))
 }, func(c *cobra.Command) {
 	c.Example = `  alpaca account activity list
-  alpaca account activity list --activity-types FILL --page-size 20
-  alpaca account activity list --activity-types DIV --after 2025-01-01
-  alpaca account activity list --activity-types FILL,TRANS --direction desc`
+  alpaca account activity list --activity-types FILL,TRANS --page-size 20
+  alpaca account activity list --direction desc`
+})
+
+var activityListByTypeCmd = fetchCmd("list-by-type", api.GetAccountActivitiesByActivityTypeOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.GetAccountActivitiesByActivityType(cmdutil.Str(cmd, "activity-type"), getAccountActivitiesByActivityTypeParamsFromFlags(cmd))
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca account activity list-by-type --activity-type FILL --page-size 20
+  alpaca account activity list-by-type --activity-type DIV --after 2025-01-01`
 })
 
 // --- Portfolio ---
@@ -77,6 +79,7 @@ func init() {
 	accountConfigCmd.AddCommand(accountConfigSetCmd)
 
 	activityCmd.AddCommand(activityListCmd)
+	activityCmd.AddCommand(activityListByTypeCmd)
 
 	accountCmd.AddCommand(accountGetCmd)
 	accountCmd.AddCommand(accountConfigCmd)

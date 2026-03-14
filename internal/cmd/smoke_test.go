@@ -88,9 +88,33 @@ func TestCommandSmoke(t *testing.T) {
 			status:   200,
 		},
 		{
+			name:     "clock markets",
+			args:     []string{"clock", "markets", "--markets", "XNYS"},
+			response: `{"clocks":[{"market":{"mic":"XNYS","name":"NYSE","acronym":"NYSE","timezone":"America/New_York"},"is_market_day":true,"phase":"open","timestamp":"2025-01-15T14:30:00-05:00"}]}`,
+			status:   200,
+		},
+		{
 			name:     "calendar",
 			args:     []string{"calendar"},
 			response: `[{"date":"2025-01-15","open":"09:30","close":"16:00","session_open":"04:00","session_close":"20:00"}]`,
+			status:   200,
+		},
+		{
+			name:     "calendar market",
+			args:     []string{"calendar", "market", "--market", "XNYS"},
+			response: `{"calendar":[{"date":"2025-01-15","open":"09:30","close":"16:00"}]}`,
+			status:   200,
+		},
+		{
+			name:     "account activity list-by-type",
+			args:     []string{"account", "activity", "list-by-type", "--activity-type", "FILL"},
+			response: `[]`,
+			status:   200,
+		},
+		{
+			name:     "order get-by-client-id",
+			args:     []string{"order", "get-by-client-id", "--client-order-id", "test-123"},
+			response: `{"id":"abc","client_order_id":"test-123","status":"filled"}`,
 			status:   200,
 		},
 	}
