@@ -34,7 +34,7 @@ func TestOptionContracts(t *testing.T) {
 
 	t.Run("get", func(t *testing.T) {
 		sym := first["symbol"].(string)
-		out := alpaca(t, "option", "get", sym)
+		out := alpaca(t, "option", "get", "--symbol-or-id", sym)
 		contract := parseJSONMap(t, out)
 		requireFields(t, contract, "symbol", "underlying_symbol", "expiration_date", "strike_price")
 		if contract["symbol"] != sym {

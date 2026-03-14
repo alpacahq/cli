@@ -50,7 +50,7 @@ func TestOutput_OrderList(t *testing.T) {
 
 func TestOutput_AssetGet(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "asset", "get", "AAPL")
+	out := alpaca(t, "asset", "get", "--symbol-or-asset-id", "AAPL")
 	acct := parseJSONMap(t, out)
 	if acct["symbol"] != "AAPL" {
 		t.Error("JSON output for asset get should contain AAPL")

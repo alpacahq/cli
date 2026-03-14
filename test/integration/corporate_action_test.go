@@ -25,7 +25,7 @@ func TestCorporateAction(t *testing.T) {
 			t.Fatal("corporate action missing id")
 		}
 
-		out := alpaca(t, "corporate-action", "get", id)
+		out := alpaca(t, "corporate-action", "get", "--id", id)
 		action := parseJSONMap(t, out)
 		requireFields(t, action, "id")
 	})

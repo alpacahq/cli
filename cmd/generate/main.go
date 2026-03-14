@@ -1101,7 +1101,7 @@ type flagDesc struct {
 	defaultVal  string
 	description string
 	enumValues  []string
-	isPathParam bool
+	source      string // "path", "query", or "body"
 	required    bool
 }
 
@@ -1129,6 +1129,7 @@ func collectDescriptions(endpoints []*endpointInfo, schemas []*schemaInfo, spec 
 				defaultVal:  p.defaultVal,
 				description: normalizeDesc(desc),
 				enumValues:  p.enumValues,
+				source:      "query",
 				required:    p.required,
 			})
 		}
@@ -1144,7 +1145,8 @@ func collectDescriptions(endpoints []*endpointInfo, schemas []*schemaInfo, spec 
 				flagName:    strings.ReplaceAll(p.name, "_", "-"),
 				flagType:    goTypeToFlagType(p.goType),
 				description: normalizeDesc(desc),
-				isPathParam: true,
+				source:      "path",
+				required:    true,
 			})
 		}
 
@@ -1161,6 +1163,7 @@ func collectDescriptions(endpoints []*endpointInfo, schemas []*schemaInfo, spec 
 				flagType:    bodyPropFlagType(propSchema, compSchemas),
 				description: normalizeDesc(desc),
 				enumValues:  propertyEnums(propSchema, compSchemas),
+				source:      "body",
 			})
 		}
 
@@ -1491,6 +1494,7 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 	fmt.Fprintf(&buf, "\tCompletions []string // enum values for shell completion\n")
 	fmt.Fprintf(&buf, "\tOpName      string   // operation name for schema lookup\n")
 	fmt.Fprintf(&buf, "\tRequired    bool     // true if OAS marks this parameter as required\n")
+	fmt.Fprintf(&buf, "\tSource      string   // \"path\", \"query\", or \"body\"\n")
 	fmt.Fprintf(&buf, "}\n\n")
 
 	for _, op := range ops {
@@ -1511,7 +1515,7 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 		var reqFlags []string
 		reqSeen := map[string]bool{}
 		for _, p := range op.params {
-			if p.required && !p.isPathParam && !reqSeen[p.flagName] {
+			if p.required && !reqSeen[p.flagName] {
 				reqFlags = append(reqFlags, p.flagName)
 				reqSeen[p.flagName] = true
 			}
@@ -1532,19 +1536,12 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 		}
 		fmt.Fprintf(&buf, "}\n\n")
 
-		hasFlags := false
-		for _, p := range op.params {
-			if !p.isPathParam {
-				hasFlags = true
-				break
-			}
-		}
 		fmt.Fprintf(&buf, "func (o %s) Flags() []FlagDef {\n", typeName)
-		if hasFlags {
+		if len(op.params) > 0 {
 			seen := map[string]bool{}
 			fmt.Fprintf(&buf, "\treturn []FlagDef{\n")
 			for _, p := range op.params {
-				if p.isPathParam || seen[p.oasName] {
+				if seen[p.oasName] {
 					continue
 				}
 				seen[p.oasName] = true
@@ -1567,6 +1564,7 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 				if p.required {
 					fmt.Fprintf(&buf, ", Required: true")
 				}
+				fmt.Fprintf(&buf, ", Source: %q", p.source)
 				fmt.Fprintf(&buf, "},\n")
 			}
 			fmt.Fprintf(&buf, "\t}\n")

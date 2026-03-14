@@ -79,28 +79,6 @@ func TestRegisterFlags_TypeDispatch(t *testing.T) {
 	}
 }
 
-func TestRegisterFlags_Exclude(t *testing.T) {
-	cmd := &cobra.Command{Use: "test"}
-	defs := []api.FlagDef{
-		{Name: "keep", OASName: "keep", Type: "string", Description: "Keep me"},
-		{Name: "drop", OASName: "drop", Type: "string", Description: "Drop me"},
-		{Name: "also-keep", OASName: "also_keep", Type: "string", Description: "Also keep"},
-	}
-	RegisterFlags(cmd, defs, &FlagOpts{
-		Exclude: map[string]bool{"drop": true},
-	})
-
-	if cmd.Flags().Lookup("keep") == nil {
-		t.Error("expected 'keep' to be registered")
-	}
-	if cmd.Flags().Lookup("drop") != nil {
-		t.Error("expected 'drop' to be excluded")
-	}
-	if cmd.Flags().Lookup("also-keep") == nil {
-		t.Error("expected 'also-keep' to be registered")
-	}
-}
-
 func TestRegisterFlags_DefaultOverride(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
 	defs := []api.FlagDef{

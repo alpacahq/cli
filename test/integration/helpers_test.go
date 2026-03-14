@@ -245,12 +245,12 @@ func submitTestOrder(t *testing.T) string {
 		t.Fatal("order missing id")
 	}
 	t.Cleanup(func() {
-		cmd := exec.Command(cliBinary, "order", "cancel", id)
+		cmd := exec.Command(cliBinary, "order", "cancel", "--order-id", id)
 		cmd.Env = cliEnv()
 		_ = cmd.Run()
 	})
 	pollFor(t, 5*time.Second, "order to be retrievable", func() bool {
-		_, _, code := alpacaWithStderr(t, "order", "get", id)
+		_, _, code := alpacaWithStderr(t, "order", "get", "--order-id", id)
 		return code == 0
 	})
 	return id
@@ -271,12 +271,12 @@ func submitCryptoFill(t *testing.T) string {
 
 	symbol := "BTC/USD"
 	t.Cleanup(func() {
-		cmd := exec.Command(cliBinary, "position", "close", symbol)
+		cmd := exec.Command(cliBinary, "position", "close", "--symbol-or-asset-id", symbol)
 		cmd.Env = cliEnv()
 		_ = cmd.Run()
 	})
 	pollFor(t, 15*time.Second, "BTC/USD position to appear", func() bool {
-		_, _, code := alpacaWithStderr(t, "position", "get", symbol)
+		_, _, code := alpacaWithStderr(t, "position", "get", "--symbol-or-asset-id", symbol)
 		return code == 0
 	})
 	return symbol

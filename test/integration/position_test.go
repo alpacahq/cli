@@ -14,7 +14,7 @@ func TestPositionList(t *testing.T) {
 
 func TestPositionGetNotFound(t *testing.T) {
 	t.Parallel()
-	_, stderr, code := alpacaFail(t, "position", "get", "ZZZZZZ")
+	_, stderr, code := alpacaFail(t, "position", "get", "--symbol-or-asset-id", "ZZZZZZ")
 	if code == 0 {
 		t.Fatal("expected non-zero exit code for invalid symbol")
 	}

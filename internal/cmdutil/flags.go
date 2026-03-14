@@ -12,7 +12,6 @@ import (
 
 // FlagOpts configures RegisterFlags behavior. All map keys use OAS names.
 type FlagOpts struct {
-	Exclude  map[string]bool   // OAS param names to skip
 	Defaults map[string]string // OAS name → default value override
 }
 
@@ -38,10 +37,6 @@ func RegisterFlags(cmd *cobra.Command, defs []api.FlagDef, opts *FlagOpts) {
 	}
 
 	for _, d := range defs {
-		if opts != nil && opts.Exclude[d.OASName] {
-			continue
-		}
-
 		name := d.Name
 		defaultVal := d.Default
 		if opts != nil {

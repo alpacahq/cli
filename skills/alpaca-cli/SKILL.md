@@ -209,8 +209,8 @@ Use `--help-all` to find the right command. Use `<command> --help` for flag deta
 Data commands support auto-pagination:
 
 ```bash
-alpaca data bars AAPL --start 2025-01-01 --all
-alpaca data trades AAPL --start 2025-01-01 --all --max 5000
+alpaca data bars --symbol AAPL --start 2025-01-01 --all
+alpaca data trades --symbol AAPL --start 2025-01-01 --all --max 5000
 alpaca data news --symbols AAPL --all --max 100
 ```
 

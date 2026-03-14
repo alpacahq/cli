@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/alpacahq/cli/internal/api"
+	"github.com/alpacahq/cli/internal/cmdutil"
 	"github.com/spf13/cobra"
 )
 
@@ -26,21 +27,19 @@ var positionListCmd = fetchCmd("list", api.GetAllOpenPositionsOp, func(cmd *cobr
   alpaca position list --csv`
 })
 
-var positionGetCmd = fetchCmd("get <symbol>", api.GetOpenPositionOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return tradingClient.GetOpenPosition(normalizeSymbol(args[0]))
+var positionGetCmd = fetchCmd("get", api.GetOpenPositionOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.GetOpenPosition(normalizeSymbol(cmdutil.Str(cmd, "symbol-or-asset-id")))
 }, func(c *cobra.Command) {
-	c.Args = cobra.ExactArgs(1)
-	c.Example = `  alpaca position get AAPL
-  alpaca position get BTC/USD`
+	c.Example = `  alpaca position get --symbol-or-asset-id AAPL
+  alpaca position get --symbol-or-asset-id BTC/USD`
 })
 
-var positionCloseCmd = fetchCmd("close <symbol>", api.DeleteOpenPositionOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return tradingClient.DeleteOpenPosition(normalizeSymbol(args[0]), deleteOpenPositionParamsFromFlags(cmd))
+var positionCloseCmd = fetchCmd("close", api.DeleteOpenPositionOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.DeleteOpenPosition(normalizeSymbol(cmdutil.Str(cmd, "symbol-or-asset-id")), deleteOpenPositionParamsFromFlags(cmd))
 }, func(c *cobra.Command) {
-	c.Args = cobra.ExactArgs(1)
-	c.Example = `  alpaca position close AAPL
-  alpaca position close AAPL --qty 5
-  alpaca position close AAPL --percentage 50`
+	c.Example = `  alpaca position close --symbol-or-asset-id AAPL
+  alpaca position close --symbol-or-asset-id AAPL --qty 5
+  alpaca position close --symbol-or-asset-id AAPL --percentage 50`
 })
 
 var positionCloseAllCmd = fetchCmd("close-all", api.DeleteAllOpenPositionsOp, func(cmd *cobra.Command, args []string) (any, error) {

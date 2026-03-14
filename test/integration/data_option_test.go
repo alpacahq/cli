@@ -16,7 +16,7 @@ var (
 func discoverOptionSymbol(t *testing.T) string {
 	t.Helper()
 	optionSymbolOnce.Do(func() {
-		out, err := makeCmd("data", "option", "chain", "AAPL").Output()
+		out, err := makeCmd("data", "option", "chain", "--underlying-symbol", "AAPL").Output()
 		if err != nil {
 			return
 		}
@@ -39,7 +39,7 @@ func discoverOptionSymbol(t *testing.T) string {
 
 func TestDataOptionChain(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "option", "chain", "AAPL")
+	out := alpaca(t, "data", "option", "chain", "--underlying-symbol", "AAPL")
 	chain := parseJSONMap(t, out)
 	if len(chain) == 0 {
 		t.Fatal("expected non-empty option chain")
@@ -77,7 +77,7 @@ func TestDataOptionExchanges(t *testing.T) {
 
 func TestDataOptionConditions(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "option", "conditions", "trade")
+	out := alpaca(t, "data", "option", "conditions", "--ticktype", "trade")
 	data := parseJSONMap(t, out)
 	if len(data) == 0 {
 		t.Error("expected non-empty option conditions")

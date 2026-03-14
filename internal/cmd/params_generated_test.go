@@ -27,18 +27,6 @@ func TestFromFlagsReadsRegisteredFlags(t *testing.T) {
 	}
 }
 
-func TestFromFlagsSkipsExcludedFlags(t *testing.T) {
-	cmd := &cobra.Command{Use: "test"}
-	cmdutil.RegisterFlags(cmd, api.GetOptionsContractsOp.Flags(), &cmdutil.FlagOpts{
-		Exclude: map[string]bool{"underlying_symbols": true},
-	})
-
-	params := getOptionsContractsParamsFromFlags(cmd)
-	if params.UnderlyingSymbols != "" {
-		t.Errorf("UnderlyingSymbols should be empty when excluded, got %q", params.UnderlyingSymbols)
-	}
-}
-
 func TestFromFlagsOmitsUnchanged(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
 	cmdutil.RegisterFlags(cmd, api.OptionBarsOp.Flags(), &cmdutil.FlagOpts{

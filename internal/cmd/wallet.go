@@ -26,10 +26,8 @@ var walletTransferListCmd = fetchCmd("list", api.ListCryptoFundingTransfersOp, f
 	return tradingClient.ListCryptoFundingTransfers()
 })
 
-var walletTransferGetCmd = fetchCmd("get <id>", api.GetCryptoFundingTransferOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return tradingClient.GetCryptoFundingTransfer(args[0])
-}, func(c *cobra.Command) {
-	c.Args = cobra.ExactArgs(1)
+var walletTransferGetCmd = fetchCmd("get", api.GetCryptoFundingTransferOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.GetCryptoFundingTransfer(cmdutil.Str(cmd, "transfer-id"))
 })
 
 var walletTransferCreateCmd = fetchCmd("create", api.CreateCryptoTransferForAccountOp, func(cmd *cobra.Command, args []string) (any, error) {
@@ -78,10 +76,8 @@ var walletWhitelistAddCmd = fetchCmd("add", api.CreateWhitelistedAddressOp, func
 	return tradingClient.CreateWhitelistedAddress(body)
 })
 
-var walletWhitelistDeleteCmd = fetchCmd("delete <id>", api.DeleteWhitelistedAddressOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return voidResponse(tradingClient.DeleteWhitelistedAddress(args[0]))
-}, func(c *cobra.Command) {
-	c.Args = cobra.ExactArgs(1)
+var walletWhitelistDeleteCmd = fetchCmd("delete", api.DeleteWhitelistedAddressOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return voidResponse(tradingClient.DeleteWhitelistedAddress(cmdutil.Str(cmd, "whitelisted-address-id")))
 })
 
 func init() {

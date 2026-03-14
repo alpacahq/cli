@@ -44,7 +44,7 @@ func TestDataMetaExchanges(t *testing.T) {
 
 func TestDataMetaConditions(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "meta", "conditions", "trade", "--tape", "A")
+	out := alpaca(t, "data", "meta", "conditions", "--ticktype", "trade", "--tape", "A")
 	data := parseJSONMap(t, out)
 	if len(data) == 0 {
 		t.Error("expected non-empty conditions map")

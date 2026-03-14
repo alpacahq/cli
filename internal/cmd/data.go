@@ -39,49 +39,45 @@ func fetchPaginated(
 	return fetch(symbol, params)
 }
 
-var dataBarsCmd = fetchCmd("bars <symbol>", api.StockBarSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
+var dataBarsCmd = fetchCmd("bars", api.StockBarSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
 	p := stockBarSingleParamsFromFlags(cmd)
 	if p.Timeframe == "" {
 		p.Timeframe = "1Day"
 	}
-	return fetchPaginated(cmd, args[0], p.Values(), dataClient.Bars, "bars")
+	return fetchPaginated(cmd, cmdutil.Str(cmd, "symbol"), p.Values(), dataClient.Bars, "bars")
 }, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"timeframe": "1Day"}}),
 	func(c *cobra.Command) {
-		c.Args = cobra.ExactArgs(1)
-		c.Example = `  alpaca data bars AAPL --start 2025-01-01 --timeframe 1Day
-  alpaca data bars BTC/USD --start 2025-01-01 --timeframe 1Hour
-  alpaca data bars AAPL --start 2025-01-01 --end 2025-06-01 --limit 100
-  alpaca data bars AAPL --start 2025-01-01 --all`
+		c.Example = `  alpaca data bars --symbol AAPL --start 2025-01-01 --timeframe 1Day
+  alpaca data bars --symbol BTC/USD --start 2025-01-01 --timeframe 1Hour
+  alpaca data bars --symbol AAPL --start 2025-01-01 --end 2025-06-01 --limit 100
+  alpaca data bars --symbol AAPL --start 2025-01-01 --all`
 		addPaginationFlags(c)
 	})
 
-var dataQuotesCmd = fetchCmd("quotes <symbol>", api.StockQuoteSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return fetchPaginated(cmd, args[0], stockQuoteSingleParamsFromFlags(cmd).Values(), dataClient.Quotes, "quotes")
+var dataQuotesCmd = fetchCmd("quotes", api.StockQuoteSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return fetchPaginated(cmd, cmdutil.Str(cmd, "symbol"), stockQuoteSingleParamsFromFlags(cmd).Values(), dataClient.Quotes, "quotes")
 }, func(c *cobra.Command) {
-	c.Args = cobra.ExactArgs(1)
-	c.Example = `  alpaca data quotes AAPL --start 2025-01-01
-  alpaca data quotes AAPL --start 2025-01-01 --end 2025-01-31 --limit 50
-  alpaca data quotes AAPL --start 2025-01-01 --all --max 5000`
+	c.Example = `  alpaca data quotes --symbol AAPL --start 2025-01-01
+  alpaca data quotes --symbol AAPL --start 2025-01-01 --end 2025-01-31 --limit 50
+  alpaca data quotes --symbol AAPL --start 2025-01-01 --all --max 5000`
 	addPaginationFlags(c)
 })
 
-var dataTradesCmd = fetchCmd("trades <symbol>", api.StockTradeSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return fetchPaginated(cmd, args[0], stockTradeSingleParamsFromFlags(cmd).Values(), dataClient.Trades, "trades")
+var dataTradesCmd = fetchCmd("trades", api.StockTradeSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return fetchPaginated(cmd, cmdutil.Str(cmd, "symbol"), stockTradeSingleParamsFromFlags(cmd).Values(), dataClient.Trades, "trades")
 }, func(c *cobra.Command) {
-	c.Args = cobra.ExactArgs(1)
-	c.Example = `  alpaca data trades AAPL --start 2025-01-01
-  alpaca data trades AAPL --start 2025-01-01 --limit 100
-  alpaca data trades AAPL --start 2025-01-01 --all`
+	c.Example = `  alpaca data trades --symbol AAPL --start 2025-01-01
+  alpaca data trades --symbol AAPL --start 2025-01-01 --limit 100
+  alpaca data trades --symbol AAPL --start 2025-01-01 --all`
 	addPaginationFlags(c)
 })
 
-var dataSnapshotCmd = fetchCmd("snapshot <symbol>", api.StockSnapshotSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return dataClient.Snapshot(args[0], stockSnapshotSingleParamsFromFlags(cmd).Values())
+var dataSnapshotCmd = fetchCmd("snapshot", api.StockSnapshotSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return dataClient.Snapshot(cmdutil.Str(cmd, "symbol"), stockSnapshotSingleParamsFromFlags(cmd).Values())
 }, jsonOnly, func(c *cobra.Command) {
-	c.Args = cobra.ExactArgs(1)
 	c.Long = "Returns the latest snapshot for a symbol. Output is always JSON due to complex nested structure."
-	c.Example = `  alpaca data snapshot AAPL
-  alpaca data snapshot BTC/USD --feed sip`
+	c.Example = `  alpaca data snapshot --symbol AAPL
+  alpaca data snapshot --symbol BTC/USD --feed sip`
 })
 
 var dataLatestCmd = &cobra.Command{
@@ -89,27 +85,24 @@ var dataLatestCmd = &cobra.Command{
 	Short: "Get latest market data",
 }
 
-var dataLatestTradeCmd = fetchCmd("trade <symbol>", api.StockLatestTradeSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return dataClient.LatestTrade(args[0], stockLatestTradeSingleParamsFromFlags(cmd).Values())
+var dataLatestTradeCmd = fetchCmd("trade", api.StockLatestTradeSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return dataClient.LatestTrade(cmdutil.Str(cmd, "symbol"), stockLatestTradeSingleParamsFromFlags(cmd).Values())
 }, func(c *cobra.Command) {
-	c.Args = cobra.ExactArgs(1)
-	c.Example = `  alpaca data latest trade AAPL
-  alpaca data latest trade AAPL --feed sip`
+	c.Example = `  alpaca data latest trade --symbol AAPL
+  alpaca data latest trade --symbol AAPL --feed sip`
 })
 
-var dataLatestQuoteCmd = fetchCmd("quote <symbol>", api.StockLatestQuoteSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return dataClient.LatestQuote(args[0], stockLatestQuoteSingleParamsFromFlags(cmd).Values())
+var dataLatestQuoteCmd = fetchCmd("quote", api.StockLatestQuoteSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return dataClient.LatestQuote(cmdutil.Str(cmd, "symbol"), stockLatestQuoteSingleParamsFromFlags(cmd).Values())
 }, func(c *cobra.Command) {
-	c.Args = cobra.ExactArgs(1)
-	c.Example = `  alpaca data latest quote AAPL`
+	c.Example = `  alpaca data latest quote --symbol AAPL`
 })
 
-var dataLatestBarCmd = fetchCmd("bar <symbol>", api.StockLatestBarSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return dataClient.LatestBar(args[0], stockLatestBarSingleParamsFromFlags(cmd).Values())
+var dataLatestBarCmd = fetchCmd("bar", api.StockLatestBarSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return dataClient.LatestBar(cmdutil.Str(cmd, "symbol"), stockLatestBarSingleParamsFromFlags(cmd).Values())
 }, func(c *cobra.Command) {
-	c.Args = cobra.ExactArgs(1)
-	c.Example = `  alpaca data latest bar AAPL
-  alpaca data latest bar BTC/USD`
+	c.Example = `  alpaca data latest bar --symbol AAPL
+  alpaca data latest bar --symbol BTC/USD`
 })
 
 func addPaginationFlags(cmd *cobra.Command) {

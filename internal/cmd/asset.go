@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/alpacahq/cli/internal/api"
+	"github.com/alpacahq/cli/internal/cmdutil"
 	"github.com/spf13/cobra"
 )
 
@@ -18,12 +19,11 @@ var assetListCmd = fetchCmd("list", api.GetV2AssetsOp, func(cmd *cobra.Command, 
   alpaca asset list --exchange NYSE`
 })
 
-var assetGetCmd = fetchCmd("get <symbol>", api.GetV2AssetsSymbolOrAssetIDOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return tradingClient.GetV2AssetsSymbolOrAssetID(args[0])
+var assetGetCmd = fetchCmd("get", api.GetV2AssetsSymbolOrAssetIDOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.GetV2AssetsSymbolOrAssetID(cmdutil.Str(cmd, "symbol-or-asset-id"))
 }, func(c *cobra.Command) {
-	c.Args = cobra.ExactArgs(1)
-	c.Example = `  alpaca asset get AAPL
-  alpaca asset get BTC/USD`
+	c.Example = `  alpaca asset get --symbol-or-asset-id AAPL
+  alpaca asset get --symbol-or-asset-id BTC/USD`
 })
 
 var treasuryListCmd = fetchCmd("treasury", api.UsTreasuriesOp, func(cmd *cobra.Command, args []string) (any, error) {

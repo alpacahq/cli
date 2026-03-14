@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/alpacahq/cli/internal/api"
+	"github.com/alpacahq/cli/internal/cmdutil"
 	"github.com/spf13/cobra"
 )
 
@@ -22,13 +23,10 @@ var corporateActionListCmd = fetchCmd("list",
   alpaca corporate-action list --ca-types cash_dividend --symbol AAPL --since 2025-01-01 --until 2025-06-30`
 	})
 
-var corporateActionGetCmd = fetchCmd("get <id>",
+var corporateActionGetCmd = fetchCmd("get",
 	api.GetV2CorporateActionsAnnouncementsIDOp,
-	func(_ *cobra.Command, args []string) (any, error) {
-		return tradingClient.GetV2CorporateActionsAnnouncementsID(args[0])
-	},
-	func(c *cobra.Command) {
-		c.Args = cobra.ExactArgs(1)
+	func(cmd *cobra.Command, _ []string) (any, error) {
+		return tradingClient.GetV2CorporateActionsAnnouncementsID(cmdutil.Str(cmd, "id"))
 	})
 
 func init() {

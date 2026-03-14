@@ -28,7 +28,7 @@ func TestAPIError_InvalidOrderReturnsStructuredJSON(t *testing.T) {
 func TestAPIError_InvalidAuth(t *testing.T) {
 	t.Parallel()
 	_, stderr, code := alpacaFail(t,
-		"order", "get", "00000000-0000-0000-0000-000000000000",
+		"order", "get", "--order-id", "00000000-0000-0000-0000-000000000000",
 	)
 	if code == 0 {
 		t.Fatal("expected non-zero exit code for bogus order ID")
@@ -41,7 +41,7 @@ func TestAPIError_InvalidAuth(t *testing.T) {
 
 func TestAPIError_NonExistentPosition(t *testing.T) {
 	t.Parallel()
-	_, stderr, code := alpacaFail(t, "position", "get", "ZZZZZZZZZ")
+	_, stderr, code := alpacaFail(t, "position", "get", "--symbol-or-asset-id", "ZZZZZZZZZ")
 	if code == 0 {
 		t.Fatal("expected non-zero exit code for non-existent position")
 	}
@@ -54,7 +54,7 @@ func TestAPIError_NonExistentPosition(t *testing.T) {
 func TestAPIError_NonExistentOrderCancel(t *testing.T) {
 	t.Parallel()
 	_, stderr, code := alpacaFail(t,
-		"order", "cancel", "00000000-0000-0000-0000-000000000001",
+		"order", "cancel", "--order-id", "00000000-0000-0000-0000-000000000001",
 	)
 	if code == 0 {
 		t.Fatal("expected non-zero exit code for canceling non-existent order")
@@ -67,7 +67,7 @@ func TestAPIError_NonExistentOrderCancel(t *testing.T) {
 
 func TestAPIError_NonExistentAsset(t *testing.T) {
 	t.Parallel()
-	_, stderr, code := alpacaFail(t, "asset", "get", "ZZZZZZZZZ")
+	_, stderr, code := alpacaFail(t, "asset", "get", "--symbol-or-asset-id", "ZZZZZZZZZ")
 	if code == 0 {
 		t.Fatal("expected non-zero exit code for non-existent asset")
 	}
@@ -80,7 +80,7 @@ func TestAPIError_NonExistentAsset(t *testing.T) {
 func TestExitCode_APIErrorIs1(t *testing.T) {
 	t.Parallel()
 	_, _, code := alpacaFail(t,
-		"order", "get", "00000000-0000-0000-0000-000000000000",
+		"order", "get", "--order-id", "00000000-0000-0000-0000-000000000000",
 	)
 	if code != 1 {
 		t.Errorf("expected exit code 1 for 404 API error, got %d", code)
@@ -90,7 +90,7 @@ func TestExitCode_APIErrorIs1(t *testing.T) {
 func TestAPIError_JSONErrorStructure(t *testing.T) {
 	t.Parallel()
 	_, stderr, code := alpacaFail(t,
-		"order", "get", "00000000-0000-0000-0000-000000000000",
+		"order", "get", "--order-id", "00000000-0000-0000-0000-000000000000",
 	)
 	if code == 0 {
 		t.Fatal("expected non-zero exit code")

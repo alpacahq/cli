@@ -78,30 +78,20 @@ var orderListCmd = fetchCmd("list", api.GetAllOrdersOp, func(cmd *cobra.Command,
   alpaca order list --symbols AAPL,MSFT --after 2025-01-01`
 	})
 
-var orderGetCmd = fetchCmd("get [order-id]", api.GetOrderByOrderIDOp, func(cmd *cobra.Command, args []string) (any, error) {
-	clientID := cmdutil.Str(cmd, "client-id")
-	if len(args) == 0 && clientID == "" {
-		return nil, fmt.Errorf("either <order-id> argument or --client-id flag is required")
-	}
-	if clientID != "" {
-		return tradingClient.GetOrderByClientOrderID(&api.GetOrderByClientOrderIDParams{
-			ClientOrderID: clientID,
-		})
-	}
-	return tradingClient.GetOrderByOrderID(args[0], &api.GetOrderByOrderIDParams{
-		Nested: cmdutil.Bool(cmd, "nested"),
-	})
+var orderGetCmd = fetchCmd("get", api.GetOrderByOrderIDOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.GetOrderByOrderID(cmdutil.Str(cmd, "order-id"), getOrderByOrderIDParamsFromFlags(cmd))
 }, func(c *cobra.Command) {
-	c.Args = cobra.MaximumNArgs(1)
-	c.Example = `  alpaca order get 61e69015-8549-4baf-b96f-9c4f3e8d0c35
-  alpaca order get --client-id my-order-123`
-	c.Flags().String("client-id", "", "Look up order by client order ID")
+	c.Example = `  alpaca order get --order-id 61e69015-8549-4baf-b96f-9c4f3e8d0c35`
 })
 
-var orderCancelCmd = fetchCmd("cancel <order-id>", api.DeleteOrderByOrderIDOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return voidResponse(tradingClient.DeleteOrderByOrderID(args[0]))
+var orderGetByClientIDCmd = fetchCmd("get-by-client-id", api.GetOrderByClientOrderIDOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.GetOrderByClientOrderID(getOrderByClientOrderIDParamsFromFlags(cmd))
 }, func(c *cobra.Command) {
-	c.Args = cobra.ExactArgs(1)
+	c.Example = `  alpaca order get-by-client-id --client-order-id my-order-123`
+})
+
+var orderCancelCmd = fetchCmd("cancel", api.DeleteOrderByOrderIDOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return voidResponse(tradingClient.DeleteOrderByOrderID(cmdutil.Str(cmd, "order-id")))
 })
 
 var orderCancelAllCmd = fetchCmd("cancel-all", api.DeleteAllOrdersOp, func(cmd *cobra.Command, args []string) (any, error) {
@@ -110,17 +100,16 @@ var orderCancelAllCmd = fetchCmd("cancel-all", api.DeleteAllOrdersOp, func(cmd *
 	c.Example = `  alpaca order cancel-all`
 })
 
-var orderReplaceCmd = fetchCmd("replace <order-id>", api.PatchOrderByOrderIDOp, func(cmd *cobra.Command, args []string) (any, error) {
+var orderReplaceCmd = fetchCmd("replace", api.PatchOrderByOrderIDOp, func(cmd *cobra.Command, args []string) (any, error) {
 	body, _ := patchOrderRequestBodyFromFlags(cmd)
 	if cmdutil.Changed(cmd, "advanced-instructions") {
 		if err := json.Unmarshal([]byte(cmdutil.Str(cmd, "advanced-instructions")), &body.AdvancedInstructions); err != nil {
 			return nil, fmt.Errorf("--advanced-instructions: %w", err)
 		}
 	}
-	return tradingClient.PatchOrderByOrderID(args[0], body)
+	return tradingClient.PatchOrderByOrderID(cmdutil.Str(cmd, "order-id"), body)
 }, func(c *cobra.Command) {
-	c.Args = cobra.ExactArgs(1)
-	c.Example = `  alpaca order replace <order-id> --qty 20 --limit-price 190.00`
+	c.Example = `  alpaca order replace --order-id <id> --qty 20 --limit-price 190.00`
 })
 
 func init() {
@@ -132,6 +121,7 @@ func init() {
 	orderCmd.AddCommand(orderSubmitCmd)
 	orderCmd.AddCommand(orderListCmd)
 	orderCmd.AddCommand(orderGetCmd)
+	orderCmd.AddCommand(orderGetByClientIDCmd)
 	orderCmd.AddCommand(orderCancelCmd)
 	orderCmd.AddCommand(orderCancelAllCmd)
 	orderCmd.AddCommand(orderReplaceCmd)

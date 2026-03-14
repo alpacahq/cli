@@ -24,16 +24,16 @@ func TestOrderReplace(t *testing.T) {
 	order := parseJSONMap(t, out)
 	id := order["id"].(string)
 	t.Cleanup(func() {
-		_ = makeCmd("order", "cancel", id).Run()
+		_ = makeCmd("order", "cancel", "--order-id", id).Run()
 	})
 
 	pollFor(t, 10*time.Second, "order to leave accepted status", func() bool {
-		out = alpaca(t, "order", "get", id)
+		out = alpaca(t, "order", "get", "--order-id", id)
 		o := parseJSONMap(t, out)
 		return o["status"] != "accepted" && o["status"] != "pending_new"
 	})
 
-	out = alpaca(t, "order", "replace", id,
+	out = alpaca(t, "order", "replace", "--order-id", id,
 		"--qty", "11",
 		"--limit-price", "1.50",
 	)
@@ -45,7 +45,7 @@ func TestOrderReplace(t *testing.T) {
 	}
 
 	pollFor(t, 5*time.Second, "replaced order qty to update", func() bool {
-		out = alpaca(t, "order", "get", newID)
+		out = alpaca(t, "order", "get", "--order-id", newID)
 		return parseJSONMap(t, out)["qty"] == "11"
 	})
 }
@@ -63,7 +63,7 @@ func TestOrderSubmit_LimitOrder(t *testing.T) {
 	order := parseJSONMap(t, out)
 	id := order["id"].(string)
 	t.Cleanup(func() {
-		_ = makeCmd("order", "cancel", id).Run()
+		_ = makeCmd("order", "cancel", "--order-id", id).Run()
 	})
 
 	if order["type"] != "limit" {
@@ -85,7 +85,7 @@ func TestOrderSubmit_StopOrder(t *testing.T) {
 	order := parseJSONMap(t, out)
 	id := order["id"].(string)
 	t.Cleanup(func() {
-		_ = makeCmd("order", "cancel", id).Run()
+		_ = makeCmd("order", "cancel", "--order-id", id).Run()
 	})
 
 	if order["type"] != "stop" {
@@ -108,7 +108,7 @@ func TestOrderSubmit_StopLimitOrder(t *testing.T) {
 	order := parseJSONMap(t, out)
 	id := order["id"].(string)
 	t.Cleanup(func() {
-		_ = makeCmd("order", "cancel", id).Run()
+		_ = makeCmd("order", "cancel", "--order-id", id).Run()
 	})
 
 	if order["type"] != "stop_limit" {
@@ -130,7 +130,7 @@ func TestOrderSubmit_TrailingStopOrder(t *testing.T) {
 	order := parseJSONMap(t, out)
 	id := order["id"].(string)
 	t.Cleanup(func() {
-		_ = makeCmd("order", "cancel", id).Run()
+		_ = makeCmd("order", "cancel", "--order-id", id).Run()
 	})
 
 	if order["type"] != "trailing_stop" {
@@ -153,10 +153,10 @@ func TestOrderSubmit_Notional(t *testing.T) {
 
 	t.Cleanup(func() {
 		pollFor(t, 10*time.Second, "BTC/USD position to appear for cleanup", func() bool {
-			_, _, code := alpacaWithStderr(t, "position", "get", "BTC/USD")
+			_, _, code := alpacaWithStderr(t, "position", "get", "--symbol-or-asset-id", "BTC/USD")
 			return code == 0
 		})
-		_ = makeCmd("position", "close", "BTC/USD").Run()
+		_ = makeCmd("position", "close", "--symbol-or-asset-id", "BTC/USD").Run()
 	})
 }
 
@@ -175,7 +175,7 @@ func TestOrderSubmit_ClientOrderID(t *testing.T) {
 	order := parseJSONMap(t, out)
 	id := order["id"].(string)
 	t.Cleanup(func() {
-		_ = makeCmd("order", "cancel", id).Run()
+		_ = makeCmd("order", "cancel", "--order-id", id).Run()
 	})
 
 	if order["client_order_id"] != clientID {
@@ -184,7 +184,7 @@ func TestOrderSubmit_ClientOrderID(t *testing.T) {
 
 	var fetched map[string]any
 	pollFor(t, 5*time.Second, "order to be retrievable by client-id", func() bool {
-		stdout, _, code := alpacaWithStderr(t, "order", "get", "--client-id", clientID)
+		stdout, _, code := alpacaWithStderr(t, "order", "get-by-client-id", "--client-order-id", clientID)
 		if code != 0 {
 			return false
 		}

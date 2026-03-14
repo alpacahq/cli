@@ -24,7 +24,7 @@ func TestOrderLifecycle(t *testing.T) {
 		t.Fatal("order missing id")
 	}
 	t.Cleanup(func() {
-		_ = makeCmd("order", "cancel", orderID).Run()
+		_ = makeCmd("order", "cancel", "--order-id", orderID).Run()
 	})
 
 	t.Run("submit_fields", func(t *testing.T) {
@@ -37,7 +37,7 @@ func TestOrderLifecycle(t *testing.T) {
 	})
 
 	t.Run("get", func(t *testing.T) {
-		out := alpaca(t, "order", "get", orderID)
+		out := alpaca(t, "order", "get", "--order-id", orderID)
 		fetched := parseJSONMap(t, out)
 		if fetched["id"] != orderID {
 			t.Errorf("get returned wrong order: %v", fetched["id"])
@@ -52,9 +52,9 @@ func TestOrderLifecycle(t *testing.T) {
 	})
 
 	t.Run("cancel", func(t *testing.T) {
-		alpaca(t, "order", "cancel", orderID)
+		alpaca(t, "order", "cancel", "--order-id", orderID)
 		pollFor(t, 5*time.Second, "order to be canceled", func() bool {
-			out := alpaca(t, "order", "get", orderID)
+			out := alpaca(t, "order", "get", "--order-id", orderID)
 			status, _ := parseJSONMap(t, out)["status"].(string)
 			return status == "canceled" || status == "cancelled" || status == "pending_cancel"
 		})

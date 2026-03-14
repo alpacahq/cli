@@ -30,11 +30,9 @@ func flagOpts(opts *cmdutil.FlagOpts) func(*cobra.Command) {
 }
 
 // fetchCmd creates a command that fetches data and renders it.
-// RequiredFlags from the op are enforced for all registered flags.
-//
-// OAS flags are registered after configure closures run, using FlagOpts
-// from flagOpts (if any). Configure closures should NOT call RegisterFlags
-// for OAS flags — use flagOpts instead.
+// All OAS flags (path, query, body) are auto-registered. Path params become
+// required flags enforced via RequiredFlags(). Configure closures should NOT
+// call RegisterFlags for OAS flags — use flagOpts instead.
 func fetchCmd(use string, op api.Op, fetch func(cmd *cobra.Command, args []string) (any, error), configure ...func(*cobra.Command)) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   use,

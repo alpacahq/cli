@@ -45,7 +45,7 @@ func TestSmoke_AccountConfig(t *testing.T) {
 
 func TestSmoke_Assets(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "asset", "get", "AAPL")
+	out := alpaca(t, "asset", "get", "--symbol-or-asset-id", "AAPL")
 	asset := parseJSONMap(t, out)
 
 	if asset["symbol"] != "AAPL" {

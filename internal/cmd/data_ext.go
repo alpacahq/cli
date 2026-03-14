@@ -29,8 +29,8 @@ var dataForexLatestCmd = fetchCmd("latest", api.LatestRatesOp, func(cmd *cobra.C
 // --- Crypto Orderbook ---
 
 var dataCryptoOrderbookCmd = fetchCmd("crypto-orderbook", api.CryptoLatestOrderbooksOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return dataClient.CryptoLatestOrderbooks("us", cryptoLatestOrderbooksParamsFromFlags(cmd))
-}, jsonOnly, func(c *cobra.Command) {
+	return dataClient.CryptoLatestOrderbooks(cmdutil.Str(cmd, "loc"), cryptoLatestOrderbooksParamsFromFlags(cmd))
+}, jsonOnly, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
 	c.Example = `  alpaca data crypto-orderbook --symbols BTC/USD,ETH/USD`
 })
 
@@ -61,11 +61,10 @@ var dataFixedIncomeCmd = fetchCmd("fixed-income", api.FixedIncomeLatestPricesOp,
 
 // --- Logo ---
 
-var dataLogoCmd = fetchCmd("logo <symbol>", api.LogosOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return dataClient.Logos(args[0], logosParamsFromFlags(cmd))
+var dataLogoCmd = fetchCmd("logo", api.LogosOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return dataClient.Logos(cmdutil.Str(cmd, "symbol"), logosParamsFromFlags(cmd))
 }, jsonOnly, func(c *cobra.Command) {
-	c.Args = cobra.ExactArgs(1)
-	c.Example = `  alpaca data logo AAPL`
+	c.Example = `  alpaca data logo --symbol AAPL`
 })
 
 // --- Exchange & Condition Metadata ---
@@ -81,11 +80,10 @@ var dataMetaExchangesCmd = fetchCmd("exchanges", api.StockMetaExchangesOp, func(
 	c.Example = `  alpaca data meta exchanges`
 })
 
-var dataMetaConditionsCmd = fetchCmd("conditions <ticktype>", api.StockMetaConditionsOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return dataClient.StockMetaConditions(args[0], stockMetaConditionsParamsFromFlags(cmd))
+var dataMetaConditionsCmd = fetchCmd("conditions", api.StockMetaConditionsOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return dataClient.StockMetaConditions(cmdutil.Str(cmd, "ticktype"), stockMetaConditionsParamsFromFlags(cmd))
 }, jsonOnly, func(c *cobra.Command) {
-	c.Args = cobra.ExactArgs(1)
-	c.Example = `  alpaca data meta conditions trade`
+	c.Example = `  alpaca data meta conditions --ticktype trade`
 })
 
 // --- Screener ---
@@ -103,14 +101,10 @@ var screenerMostActivesCmd = fetchCmd("most-actives", api.MostActivesOp, func(cm
 })
 
 var screenerMoversCmd = fetchCmd("movers", api.MoversOp, func(cmd *cobra.Command, args []string) (any, error) {
-	market := cmdutil.Str(cmd, "market")
-	if market == "" {
-		market = "stocks"
-	}
-	return dataClient.Movers(market, moversParamsFromFlags(cmd))
-}, func(c *cobra.Command) {
+	return dataClient.Movers(cmdutil.Str(cmd, "market-type"), moversParamsFromFlags(cmd))
+}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"market_type": "stocks"}}), func(c *cobra.Command) {
 	c.Example = `  alpaca data screener movers
-  alpaca data screener movers --market crypto --top 5`
+  alpaca data screener movers --market-type crypto --top 5`
 })
 
 // --- News ---
@@ -157,8 +151,6 @@ func init() {
 	dataMetaCmd.AddCommand(dataMetaExchangesCmd)
 	dataMetaCmd.AddCommand(dataMetaConditionsCmd)
 
-	screenerMoversCmd.Flags().String("market", "", "Market: stocks or crypto (default: stocks)")
-	_ = screenerMoversCmd.RegisterFlagCompletionFunc("market", cobra.FixedCompletions(api.MarketTypeValues, cobra.ShellCompDirectiveNoFileComp))
 	screenerCmd.AddCommand(screenerMostActivesCmd)
 	screenerCmd.AddCommand(screenerMoversCmd)
 

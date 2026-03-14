@@ -81,7 +81,7 @@ alpaca position list
 alpaca order list --status open
 
 # Get market data
-alpaca data bars AAPL --start 2025-01-01 --timeframe 1Day
+alpaca data bars --symbol AAPL --start 2025-01-01 --timeframe 1Day
 
 # Check if market is open
 alpaca clock
@@ -124,18 +124,18 @@ Note: OAuth login is restricted to paper trading while the flow does not support
 |---------|-------------|
 | `alpaca order submit` | Submit any order type |
 | `alpaca order list` | List orders |
-| `alpaca order get <id>` | Get order details |
-| `alpaca order cancel <id>` | Cancel an order |
+| `alpaca order get` | Get order details |
+| `alpaca order cancel` | Cancel an order |
 | `alpaca order cancel-all` | Cancel all open orders |
-| `alpaca order replace <id>` | Replace an existing order |
+| `alpaca order replace` | Replace an existing order |
 | `alpaca position list` | List open positions |
-| `alpaca position get <symbol>` | Get position for a symbol |
-| `alpaca position close <symbol>` | Close a position |
+| `alpaca position get` | Get position for a symbol |
+| `alpaca position close` | Close a position |
 | `alpaca position close-all` | Close all positions |
 | `alpaca option contracts` | List option contracts |
-| `alpaca option get <id>` | Option contract details |
-| `alpaca option exercise <id>` | Exercise an option |
-| `alpaca option do-not-exercise <id>` | Mark option as do-not-exercise |
+| `alpaca option get` | Option contract details |
+| `alpaca option exercise` | Exercise an option |
+| `alpaca option do-not-exercise` | Mark option as do-not-exercise |
 | `alpaca clock` | Market clock (supports `--markets` for v3) |
 | `alpaca calendar` | Trading calendar (supports `--market` for v3) |
 
@@ -143,17 +143,17 @@ Note: OAuth login is restricted to paper trading while the flow does not support
 
 | Command | Description |
 |---------|-------------|
-| `alpaca data bars <symbol>` | Historical price bars (stock/crypto) |
-| `alpaca data quotes <symbol>` | Historical quotes |
-| `alpaca data trades <symbol>` | Historical trades |
-| `alpaca data snapshot <symbol>` | Full snapshot |
-| `alpaca data latest trade <symbol>` | Latest trade |
-| `alpaca data latest quote <symbol>` | Latest quote |
-| `alpaca data latest bar <symbol>` | Latest bar |
+| `alpaca data bars` | Historical price bars (stock/crypto) |
+| `alpaca data quotes` | Historical quotes |
+| `alpaca data trades` | Historical trades |
+| `alpaca data snapshot` | Full snapshot |
+| `alpaca data latest trade` | Latest trade |
+| `alpaca data latest quote` | Latest quote |
+| `alpaca data latest bar` | Latest bar |
 | `alpaca data option bars` | Option historical bars |
 | `alpaca data option trades` | Option historical trades |
 | `alpaca data option snapshot` | Option snapshots |
-| `alpaca data option chain <symbol>` | Option chain (greeks and pricing) |
+| `alpaca data option chain` | Option chain (greeks and pricing) |
 | `alpaca data option latest-quotes` | Latest option quotes |
 | `alpaca data option latest-trades` | Latest option trades |
 | `alpaca data option exchanges` | Option exchanges |
@@ -164,9 +164,9 @@ Note: OAuth login is restricted to paper trading while the flow does not support
 | `alpaca data auctions` | Stock auction data |
 | `alpaca data corporate-actions` | Corporate actions (market data) |
 | `alpaca data fixed-income` | Fixed income prices |
-| `alpaca data logo <symbol>` | Company logo URL |
+| `alpaca data logo` | Company logo URL |
 | `alpaca data meta exchanges` | Exchange code reference |
-| `alpaca data meta conditions <ticktype>` | Trade/quote condition codes |
+| `alpaca data meta conditions` | Trade/quote condition codes |
 | `alpaca data screener most-actives` | Most active stocks |
 | `alpaca data screener movers` | Top market movers |
 | `alpaca data news` | Market news |
@@ -181,30 +181,30 @@ Note: OAuth login is restricted to paper trading while the flow does not support
 | `alpaca account activity list` | Account activity (fills, dividends, etc.) |
 | `alpaca account portfolio` | Portfolio equity and P&L history |
 | `alpaca asset list` | Browse equities and crypto |
-| `alpaca asset get <symbol>` | Asset details |
+| `alpaca asset get` | Asset details |
 | `alpaca asset treasury` | US Treasury bonds |
 | `alpaca asset bond` | US Corporate bonds |
 | `alpaca corporate-action list` | Corporate action announcements |
-| `alpaca corporate-action get <id>` | Get a specific announcement |
+| `alpaca corporate-action get` | Get a specific announcement |
 | `alpaca watchlist list` | List all watchlists |
-| `alpaca watchlist get <id>` | Get watchlist details |
+| `alpaca watchlist get` | Get watchlist details |
 | `alpaca watchlist create` | Create a watchlist |
-| `alpaca watchlist update <id>` | Update a watchlist |
-| `alpaca watchlist delete <id>` | Delete a watchlist |
-| `alpaca watchlist add <id> <symbol>` | Add symbol to watchlist |
-| `alpaca watchlist remove <id> <symbol>` | Remove symbol from watchlist |
+| `alpaca watchlist update` | Update a watchlist |
+| `alpaca watchlist delete` | Delete a watchlist |
+| `alpaca watchlist add` | Add symbol to watchlist |
+| `alpaca watchlist remove` | Remove symbol from watchlist |
 | `alpaca watchlist get-by-name` | Get watchlist by name |
 | `alpaca watchlist update-by-name` | Update watchlist by name |
 | `alpaca watchlist delete-by-name` | Delete watchlist by name |
 | `alpaca watchlist add-by-name` | Add symbol to watchlist by name |
 | `alpaca wallet list` | List crypto wallets |
 | `alpaca wallet transfer list` | List crypto transfers |
-| `alpaca wallet transfer get <id>` | Get a crypto transfer |
+| `alpaca wallet transfer get` | Get a crypto transfer |
 | `alpaca wallet transfer create` | Create a crypto transfer |
 | `alpaca wallet transfer estimate` | Estimate transfer fees |
 | `alpaca wallet whitelist list` | List whitelisted addresses |
 | `alpaca wallet whitelist add` | Add a whitelisted address |
-| `alpaca wallet whitelist delete <id>` | Remove a whitelisted address |
+| `alpaca wallet whitelist delete` | Remove a whitelisted address |
 
 ### Utilities
 
@@ -345,7 +345,7 @@ JSON is the default output format. Use `--quiet` to suppress all non-data output
 
 ```bash
 alpaca position list --quiet
-alpaca data latest trade AAPL --quiet
+alpaca data latest trade --symbol AAPL --quiet
 ```
 
 ### Structured Errors
@@ -427,8 +427,8 @@ If both `--data` and stdin are provided, `--data` takes precedence.
 Data commands support auto-pagination with `--all`:
 
 ```bash
-alpaca data bars AAPL --start 2025-01-01 --all
-alpaca data trades AAPL --start 2025-01-01 --all --max 5000
+alpaca data bars --symbol AAPL --start 2025-01-01 --all
+alpaca data trades --symbol AAPL --start 2025-01-01 --all --max 5000
 alpaca data news --symbols AAPL --all --max 100
 ```
 
@@ -457,7 +457,7 @@ alpaca doctor
 Override the default 30-second HTTP timeout:
 
 ```bash
-alpaca data bars AAPL --start 2020-01-01 --end 2025-01-01 --timeout 120
+alpaca data bars --symbol AAPL --start 2020-01-01 --end 2025-01-01 --timeout 120
 ```
 
 ### Resilience
@@ -490,7 +490,7 @@ alpaca order submit --symbol AAPL --side buy --qty 10 --type limit --limit-price
 cat order.json | alpaca api post /v2/orders --quiet
 
 # Handle errors programmatically
-if ! result=$(alpaca order get abc123 --quiet 2>err.json); then
+if ! result=$(alpaca order get --order-id abc123 --quiet 2>err.json); then
   status=$(jq .status err.json)
   echo "Failed with HTTP $status"
 fi

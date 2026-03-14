@@ -20,7 +20,7 @@ func TestWatchlist(t *testing.T) {
 		t.Fatal("watchlist missing id")
 	}
 	t.Cleanup(func() {
-		_ = makeCmd("watchlist", "delete", wlID).Run()
+		_ = makeCmd("watchlist", "delete", "--watchlist-id", wlID).Run()
 	})
 
 	if wl["name"] != name {
@@ -30,7 +30,7 @@ func TestWatchlist(t *testing.T) {
 	time.Sleep(300 * time.Millisecond)
 
 	t.Run("get", func(t *testing.T) {
-		out := alpaca(t, "watchlist", "get", wlID)
+		out := alpaca(t, "watchlist", "get", "--watchlist-id", wlID)
 		fetched := parseJSONMap(t, out)
 		if fetched["id"] != wlID {
 			t.Errorf("get returned wrong watchlist: %v", fetched["id"])
@@ -46,13 +46,13 @@ func TestWatchlist(t *testing.T) {
 	})
 
 	t.Run("add_remove", func(t *testing.T) {
-		alpaca(t, "watchlist", "add", wlID, "GOOG")
+		alpaca(t, "watchlist", "add", "--watchlist-id", wlID, "--symbol", "GOOG")
 		time.Sleep(300 * time.Millisecond)
 
-		alpaca(t, "watchlist", "remove", wlID, "MSFT")
+		alpaca(t, "watchlist", "remove", "--watchlist-id", wlID, "--symbol", "MSFT")
 		time.Sleep(300 * time.Millisecond)
 
-		out := alpaca(t, "watchlist", "get", wlID)
+		out := alpaca(t, "watchlist", "get", "--watchlist-id", wlID)
 		updated := parseJSONMap(t, out)
 		assets, _ := updated["assets"].([]any)
 		symbols := extractSymbols(assets)
