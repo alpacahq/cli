@@ -129,7 +129,7 @@ Errors are always JSON on stderr:
 Preview an order without submitting:
 
 ```bash
-alpaca order submit AAPL --side buy --qty 10 --type limit --limit-price 185.00 --dry-run
+alpaca order submit --symbol AAPL --side buy --qty 10 --type limit --limit-price 185.00 --dry-run
 ```
 
 ### Pipe JSON payloads

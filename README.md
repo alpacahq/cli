@@ -72,7 +72,7 @@ alpaca profile login
 alpaca account get
 
 # Submit an order
-alpaca order submit AAPL --side buy --qty 10 --type market
+alpaca order submit --symbol AAPL --side buy --qty 10 --type market
 
 # List your positions
 alpaca position list
@@ -122,7 +122,7 @@ Note: OAuth login is restricted to paper trading while the flow does not support
 
 | Command | Description |
 |---------|-------------|
-| `alpaca order submit <symbol>` | Submit any order type |
+| `alpaca order submit` | Submit any order type |
 | `alpaca order list` | List orders |
 | `alpaca order get <id>` | Get order details |
 | `alpaca order cancel <id>` | Cancel an order |
@@ -132,7 +132,7 @@ Note: OAuth login is restricted to paper trading while the flow does not support
 | `alpaca position get <symbol>` | Get position for a symbol |
 | `alpaca position close <symbol>` | Close a position |
 | `alpaca position close-all` | Close all positions |
-| `alpaca option contracts <symbol>` | List option contracts |
+| `alpaca option contracts` | List option contracts |
 | `alpaca option get <id>` | Option contract details |
 | `alpaca option exercise <id>` | Exercise an option |
 | `alpaca option do-not-exercise <id>` | Mark option as do-not-exercise |
@@ -188,15 +188,15 @@ Note: OAuth login is restricted to paper trading while the flow does not support
 | `alpaca corporate-action get <id>` | Get a specific announcement |
 | `alpaca watchlist list` | List all watchlists |
 | `alpaca watchlist get <id>` | Get watchlist details |
-| `alpaca watchlist create <name>` | Create a watchlist |
+| `alpaca watchlist create` | Create a watchlist |
 | `alpaca watchlist update <id>` | Update a watchlist |
 | `alpaca watchlist delete <id>` | Delete a watchlist |
 | `alpaca watchlist add <id> <symbol>` | Add symbol to watchlist |
 | `alpaca watchlist remove <id> <symbol>` | Remove symbol from watchlist |
-| `alpaca watchlist get-by-name <name>` | Get watchlist by name |
-| `alpaca watchlist update-by-name <name>` | Update watchlist by name |
-| `alpaca watchlist delete-by-name <name>` | Delete watchlist by name |
-| `alpaca watchlist add-by-name <name> <symbol>` | Add symbol to watchlist by name |
+| `alpaca watchlist get-by-name` | Get watchlist by name |
+| `alpaca watchlist update-by-name` | Update watchlist by name |
+| `alpaca watchlist delete-by-name` | Delete watchlist by name |
+| `alpaca watchlist add-by-name` | Add symbol to watchlist by name |
 | `alpaca wallet list` | List crypto wallets |
 | `alpaca wallet transfer list` | List crypto transfers |
 | `alpaca wallet transfer get <id>` | Get a crypto transfer |
@@ -321,7 +321,7 @@ After installing, open a new shell and type:
 
 ```bash
 alpaca <TAB>            # Should show subcommands
-alpaca order submit AAPL --side <TAB>  # Should show buy/sell
+alpaca order submit --symbol AAPL --side <TAB>  # Should show buy/sell
 ```
 
 If completions don't appear, check that your shell is sourcing the file and that `compinit` (zsh) or `complete` (bash) is loaded.
@@ -408,7 +408,7 @@ Credentials are always scrubbed from stderr output.
 Preview an order without submitting:
 
 ```bash
-alpaca order submit AAPL --side buy --qty 10 --type limit --limit-price 185.00 --dry-run
+alpaca order submit --symbol AAPL --side buy --qty 10 --type limit --limit-price 185.00 --dry-run
 ```
 
 ### Stdin Pipe Support
@@ -480,11 +480,11 @@ is_open=$(echo "$clock" | jq -r '.is_open')
 
 # Place order if open
 if [ "$is_open" = "true" ]; then
-  alpaca order submit AAPL --side buy --qty 10 --type market --quiet
+  alpaca order submit --symbol AAPL --side buy --qty 10 --type market --quiet
 fi
 
 # Preview before submitting
-alpaca order submit AAPL --side buy --qty 10 --type limit --limit-price 185.00 --dry-run
+alpaca order submit --symbol AAPL --side buy --qty 10 --type limit --limit-price 185.00 --dry-run
 
 # Pipe complex payloads
 cat order.json | alpaca api post /v2/orders --quiet

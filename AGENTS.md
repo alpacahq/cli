@@ -44,13 +44,28 @@ Request body construction stays hand-written (enum casts, complex types, `Change
 ## What stays hand-written
 
 Cobra commands (`internal/cmd/`) are hand-written — they're UX decisions:
-- `FlagOpts.Exclude` decisions (positional args, deprecated params)
 - `FlagOpts.Defaults` overrides
 - `RequireStr` / `RequireAll` validation
-- Request body construction (enum casts, complex types, positional arg overrides)
+- Request body construction (enum casts, complex types, JSON unmarshal for complex flags)
 - `Changed()` checks for PATCH semantics (`order replace`, `watchlist update`)
 - Output format overrides (`jsonOnly` for complex nested responses)
 - Custom flags not from OAS (`--dry-run`, `--client-id`, `--market`)
+
+## No flag exclusions
+
+Do **not** use `FlagOpts.Exclude` to hide OAS-supported parameters. Every parameter the API supports should be exposed as a flag. The primary consumer is an agent, not a human — agents prefer explicit flags over positional args.
+
+For complex/nested OAS fields (e.g. `advanced_instructions`, `legs`), register the flag and accept JSON input:
+
+```go
+if cmdutil.Changed(cmd, "advanced-instructions") {
+    if err := json.Unmarshal([]byte(cmdutil.Str(cmd, "advanced-instructions")), &body.AdvancedInstructions); err != nil {
+        return fmt.Errorf("--advanced-instructions: %w", err)
+    }
+}
+```
+
+Path parameters (like `order-id` in `order replace <order-id>`) remain positional — they identify the resource, not a query/body parameter.
 
 ## No backward compatibility
 

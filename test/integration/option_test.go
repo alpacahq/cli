@@ -8,7 +8,7 @@ import (
 
 func TestOptionContracts(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "option", "contracts", "AAPL")
+	out := alpaca(t, "option", "contracts", "--underlying-symbols", "AAPL")
 	wrapper := parseJSONMap(t, out)
 	contracts, ok := wrapper["option_contracts"].([]any)
 	if !ok || len(contracts) == 0 {
@@ -18,7 +18,7 @@ func TestOptionContracts(t *testing.T) {
 	requireFields(t, first, "symbol", "underlying_symbol", "expiration_date")
 
 	t.Run("filter", func(t *testing.T) {
-		out := alpaca(t, "option", "contracts", "AAPL", "--type", "call")
+		out := alpaca(t, "option", "contracts", "--underlying-symbols", "AAPL", "--type", "call")
 		wrapper := parseJSONMap(t, out)
 		filtered, ok := wrapper["option_contracts"].([]any)
 		if !ok || len(filtered) == 0 {

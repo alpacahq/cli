@@ -9,7 +9,8 @@ import (
 func TestAPIError_InvalidOrderReturnsStructuredJSON(t *testing.T) {
 	t.Parallel()
 	_, stderr, code := alpacaFail(t,
-		"order", "submit", "AAPL",
+		"order", "submit",
+		"--symbol", "AAPL",
 		"--qty", "-1",
 		"--side", "buy",
 		"--type", "market",

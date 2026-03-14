@@ -9,7 +9,8 @@ import (
 
 func TestOrderLifecycle(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "order", "submit", "AAPL",
+	out := alpaca(t, "order", "submit",
+		"--symbol", "AAPL",
 		"--qty", "1",
 		"--side", "buy",
 		"--type", "limit",
@@ -63,7 +64,8 @@ func TestOrderLifecycle(t *testing.T) {
 func TestOrderCancelAll(t *testing.T) {
 	// Submit two orders
 	for range 2 {
-		alpaca(t, "order", "submit", "AAPL",
+		alpaca(t, "order", "submit",
+			"--symbol", "AAPL",
 			"--qty", "1",
 			"--side", "buy",
 			"--type", "limit",

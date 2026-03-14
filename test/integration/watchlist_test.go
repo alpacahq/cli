@@ -10,7 +10,8 @@ import (
 func TestWatchlist(t *testing.T) {
 	name := "cli-integration-test"
 
-	out := alpaca(t, "watchlist", "create", name,
+	out := alpaca(t, "watchlist", "create",
+		"--name", name,
 		"--symbols", "AAPL,MSFT",
 	)
 	wl := parseJSONMap(t, out)
@@ -61,13 +62,13 @@ func TestWatchlist(t *testing.T) {
 	})
 
 	t.Run("by_name", func(t *testing.T) {
-		out := alpaca(t, "watchlist", "get-by-name", name)
+		out := alpaca(t, "watchlist", "get-by-name", "--name", name)
 		fetched := parseJSONMap(t, out)
 		if fetched["name"] != name {
 			t.Errorf("get-by-name returned wrong name: %v", fetched["name"])
 		}
 
-		out = alpaca(t, "watchlist", "add-by-name", name, "TSLA")
+		out = alpaca(t, "watchlist", "add-by-name", "--name", name, "--symbol", "TSLA")
 		added := parseJSONMap(t, out)
 		if added["name"] != name {
 			t.Errorf("add-by-name returned wrong name: %v", added["name"])
@@ -75,7 +76,7 @@ func TestWatchlist(t *testing.T) {
 
 		time.Sleep(300 * time.Millisecond)
 
-		out = alpaca(t, "watchlist", "update-by-name", name,
+		out = alpaca(t, "watchlist", "update-by-name", "--name", name,
 			"--symbols", "AAPL",
 		)
 		updated := parseJSONMap(t, out)

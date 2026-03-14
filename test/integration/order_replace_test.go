@@ -13,7 +13,8 @@ func TestOrderReplace(t *testing.T) {
 	// Use crypto limit order — crypto is 24/7, so the order transitions
 	// out of "accepted" immediately unlike equity orders outside market hours.
 	// ETH/USD avoids wash-trade conflicts with other tests that trade BTC/USD.
-	out := alpaca(t, "order", "submit", "ETH/USD",
+	out := alpaca(t, "order", "submit",
+		"--symbol", "ETH/USD",
 		"--qty", "10",
 		"--side", "buy",
 		"--type", "limit",
@@ -51,7 +52,8 @@ func TestOrderReplace(t *testing.T) {
 
 func TestOrderSubmit_LimitOrder(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "order", "submit", "AAPL",
+	out := alpaca(t, "order", "submit",
+		"--symbol", "AAPL",
 		"--qty", "1",
 		"--side", "buy",
 		"--type", "limit",
@@ -72,7 +74,8 @@ func TestOrderSubmit_LimitOrder(t *testing.T) {
 
 func TestOrderSubmit_StopOrder(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "order", "submit", "MSFT",
+	out := alpaca(t, "order", "submit",
+		"--symbol", "MSFT",
 		"--qty", "1",
 		"--side", "sell",
 		"--type", "stop",
@@ -93,7 +96,8 @@ func TestOrderSubmit_StopOrder(t *testing.T) {
 
 func TestOrderSubmit_StopLimitOrder(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "order", "submit", "GOOG",
+	out := alpaca(t, "order", "submit",
+		"--symbol", "GOOG",
 		"--qty", "1",
 		"--side", "sell",
 		"--type", "stop_limit",
@@ -115,7 +119,8 @@ func TestOrderSubmit_StopLimitOrder(t *testing.T) {
 
 func TestOrderSubmit_TrailingStopOrder(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "order", "submit", "AMZN",
+	out := alpaca(t, "order", "submit",
+		"--symbol", "AMZN",
 		"--qty", "1",
 		"--side", "sell",
 		"--type", "trailing_stop",
@@ -136,7 +141,8 @@ func TestOrderSubmit_TrailingStopOrder(t *testing.T) {
 
 func TestOrderSubmit_Notional(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "order", "submit", "BTC/USD",
+	out := alpaca(t, "order", "submit",
+		"--symbol", "BTC/USD",
 		"--notional", "10",
 		"--side", "buy",
 		"--type", "market",
@@ -157,7 +163,8 @@ func TestOrderSubmit_Notional(t *testing.T) {
 func TestOrderSubmit_ClientOrderID(t *testing.T) {
 	t.Parallel()
 	clientID := "integ-test-" + time.Now().Format("20060102150405.000")
-	out := alpaca(t, "order", "submit", "AAPL",
+	out := alpaca(t, "order", "submit",
+		"--symbol", "AAPL",
 		"--qty", "1",
 		"--side", "buy",
 		"--type", "limit",
@@ -191,7 +198,8 @@ func TestOrderSubmit_ClientOrderID(t *testing.T) {
 
 func TestOrderSubmit_DryRun(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "order", "submit", "AAPL",
+	out := alpaca(t, "order", "submit",
+		"--symbol", "AAPL",
 		"--qty", "1",
 		"--side", "buy",
 		"--type", "market",

@@ -231,7 +231,8 @@ func pollFor(t *testing.T, timeout time.Duration, desc string, fn func() bool) {
 // Returns the order ID. Registers t.Cleanup to cancel.
 func submitTestOrder(t *testing.T) string {
 	t.Helper()
-	out := alpaca(t, "order", "submit", "AAPL",
+	out := alpaca(t, "order", "submit",
+		"--symbol", "AAPL",
 		"--qty", "1",
 		"--side", "buy",
 		"--type", "limit",
@@ -260,7 +261,8 @@ func submitTestOrder(t *testing.T) string {
 // equity market hours. Registers t.Cleanup to close the position.
 func submitCryptoFill(t *testing.T) string {
 	t.Helper()
-	alpaca(t, "order", "submit", "BTC/USD",
+	alpaca(t, "order", "submit",
+		"--symbol", "BTC/USD",
 		"--notional", "10",
 		"--side", "buy",
 		"--type", "market",

@@ -21,8 +21,8 @@ func jsonOnly(c *cobra.Command) {
 	cmdJSON[c] = true
 }
 
-// flagOpts sets custom FlagOpts for OAS flag registration. Use to exclude
-// params that are positional args, or to override defaults shown in --help.
+// flagOpts sets custom FlagOpts for OAS flag registration. Use to override
+// defaults shown in --help.
 func flagOpts(opts *cmdutil.FlagOpts) func(*cobra.Command) {
 	return func(c *cobra.Command) {
 		cmdFlagOpts[c] = opts
@@ -30,8 +30,7 @@ func flagOpts(opts *cmdutil.FlagOpts) func(*cobra.Command) {
 }
 
 // fetchCmd creates a command that fetches data and renders it.
-// RequiredFlags from the op are enforced for flags actually registered
-// on the command (excluded positional-arg params are skipped).
+// RequiredFlags from the op are enforced for all registered flags.
 //
 // OAS flags are registered after configure closures run, using FlagOpts
 // from flagOpts (if any). Configure closures should NOT call RegisterFlags
@@ -76,8 +75,7 @@ func voidResponse(data json.RawMessage, err error) (any, error) {
 }
 
 // registeredRequired returns only those RequiredFlags from the op that are
-// actually registered on the command. Params promoted to positional args
-// (excluded via flagOpts) are silently skipped.
+// actually registered on the command.
 func registeredRequired(cmd *cobra.Command, op api.Op) []string {
 	all := op.RequiredFlags()
 	if len(all) == 0 {
