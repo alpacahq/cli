@@ -27,22 +27,14 @@ var assetGetCmd = fetchCmd("get <symbol>", api.GetV2AssetsSymbolOrAssetIDOp, fun
 })
 
 var treasuryListCmd = fetchCmd("treasury", api.UsTreasuriesOp, func(cmd *cobra.Command, args []string) (any, error) {
-	resp, err := tradingClient.UsTreasuries(usTreasuriesParamsFromFlags(cmd))
-	if err != nil {
-		return nil, err
-	}
-	return resp.UsTreasuries, nil
+	return tradingClient.UsTreasuries(usTreasuriesParamsFromFlags(cmd))
 }, func(c *cobra.Command) {
 	c.Example = `  alpaca asset treasury
   alpaca asset treasury --bond-status active`
 })
 
 var bondListCmd = fetchCmd("bond", api.UsCorporatesOp, func(cmd *cobra.Command, args []string) (any, error) {
-	resp, err := tradingClient.UsCorporates(usCorporatesParamsFromFlags(cmd))
-	if err != nil {
-		return nil, err
-	}
-	return resp.UsCorporates, nil
+	return tradingClient.UsCorporates(usCorporatesParamsFromFlags(cmd))
 }, func(c *cobra.Command) {
 	c.Example = `  alpaca asset bond
   alpaca asset bond --bond-status active`

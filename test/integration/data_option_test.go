@@ -20,11 +20,13 @@ func discoverOptionSymbol(t *testing.T) string {
 		if err != nil {
 			return
 		}
-		var chain map[string]any
-		if err := json.Unmarshal(out, &chain); err != nil {
+		var resp struct {
+			Snapshots map[string]any `json:"snapshots"`
+		}
+		if err := json.Unmarshal(out, &resp); err != nil {
 			return
 		}
-		for sym := range chain {
+		for sym := range resp.Snapshots {
 			resolvedOptionSymbol = sym
 			return
 		}

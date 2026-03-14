@@ -15,22 +15,14 @@ var dataForexCmd = &cobra.Command{
 }
 
 var dataForexRatesCmd = fetchCmd("rates", api.RatesOp, func(cmd *cobra.Command, args []string) (any, error) {
-	resp, err := dataClient.Rates(ratesParamsFromFlags(cmd))
-	if err != nil {
-		return nil, err
-	}
-	return resp.Rates, nil
+	return dataClient.Rates(ratesParamsFromFlags(cmd))
 }, jsonOnly, func(c *cobra.Command) {
 	c.Example = `  alpaca data forex rates --currency-pairs EUR/USD,GBP/USD --start 2025-01-01
   alpaca data forex rates --currency-pairs USD/JPY --timeframe 1Hour`
 })
 
 var dataForexLatestCmd = fetchCmd("latest", api.LatestRatesOp, func(cmd *cobra.Command, args []string) (any, error) {
-	resp, err := dataClient.LatestRates(latestRatesParamsFromFlags(cmd))
-	if err != nil {
-		return nil, err
-	}
-	return resp.Rates, nil
+	return dataClient.LatestRates(latestRatesParamsFromFlags(cmd))
 }, jsonOnly, func(c *cobra.Command) {
 	c.Example = `  alpaca data forex latest --currency-pairs EUR/USD,GBP/USD`
 })
@@ -38,11 +30,7 @@ var dataForexLatestCmd = fetchCmd("latest", api.LatestRatesOp, func(cmd *cobra.C
 // --- Crypto Orderbook ---
 
 var dataCryptoOrderbookCmd = fetchCmd("crypto-orderbook", api.CryptoLatestOrderbooksOp, func(cmd *cobra.Command, args []string) (any, error) {
-	resp, err := dataClient.CryptoLatestOrderbooks("us", cryptoLatestOrderbooksParamsFromFlags(cmd))
-	if err != nil {
-		return nil, err
-	}
-	return resp.Orderbooks, nil
+	return dataClient.CryptoLatestOrderbooks("us", cryptoLatestOrderbooksParamsFromFlags(cmd))
 }, jsonOnly, func(c *cobra.Command) {
 	c.Example = `  alpaca data crypto-orderbook --symbols BTC/USD,ETH/USD`
 })
@@ -50,11 +38,7 @@ var dataCryptoOrderbookCmd = fetchCmd("crypto-orderbook", api.CryptoLatestOrderb
 // --- Auctions ---
 
 var dataAuctionsCmd = fetchCmd("auctions", api.StockAuctionsOp, func(cmd *cobra.Command, args []string) (any, error) {
-	resp, err := dataClient.StockAuctions(stockAuctionsParamsFromFlags(cmd))
-	if err != nil {
-		return nil, err
-	}
-	return resp.Auctions, nil
+	return dataClient.StockAuctions(stockAuctionsParamsFromFlags(cmd))
 }, jsonOnly, func(c *cobra.Command) {
 	c.Example = `  alpaca data auctions --symbols AAPL --start 2025-01-01
   alpaca data auctions --symbols AAPL,MSFT --limit 10`
@@ -71,11 +55,7 @@ var dataCorporateActionsCmd = fetchCmd("corporate-actions", api.CorporateActions
 // --- Fixed Income Data ---
 
 var dataFixedIncomeCmd = fetchCmd("fixed-income", api.FixedIncomeLatestPricesOp, func(cmd *cobra.Command, args []string) (any, error) {
-	resp, err := dataClient.FixedIncomeLatestPrices(fixedIncomeLatestPricesParamsFromFlags(cmd))
-	if err != nil {
-		return nil, err
-	}
-	return resp.Prices, nil
+	return dataClient.FixedIncomeLatestPrices(fixedIncomeLatestPricesParamsFromFlags(cmd))
 }, jsonOnly, func(c *cobra.Command) {
 	c.Example = `  alpaca data fixed-income --isins 912797KR1,912797LB5`
 })
@@ -117,11 +97,7 @@ var screenerCmd = &cobra.Command{
 }
 
 var screenerMostActivesCmd = fetchCmd("most-actives", api.MostActivesOp, func(cmd *cobra.Command, args []string) (any, error) {
-	resp, err := dataClient.MostActives(mostActivesParamsFromFlags(cmd))
-	if err != nil {
-		return nil, err
-	}
-	return resp.MostActives, nil
+	return dataClient.MostActives(mostActivesParamsFromFlags(cmd))
 }, func(c *cobra.Command) {
 	c.Example = `  alpaca data screener most-actives
   alpaca data screener most-actives --by trades --top 10`
@@ -176,11 +152,7 @@ var newsCmd = fetchCmd("news", api.NewsOp, func(cmd *cobra.Command, args []strin
 		return allNews, nil
 	}
 
-	resp, err := dataClient.News(params)
-	if err != nil {
-		return nil, err
-	}
-	return resp.News, nil
+	return dataClient.News(params)
 }, func(c *cobra.Command) {
 	addPaginationFlags(c)
 	c.Example = `  alpaca data news

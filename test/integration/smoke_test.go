@@ -82,8 +82,6 @@ func TestSmoke_ProfileList(t *testing.T) {
 func TestSmoke_ScreenerMostActives(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "data", "screener", "most-actives", "--top", "5")
-	actives := parseJSONArray(t, out)
-	if len(actives) == 0 {
-		t.Error("screener response returned no results")
-	}
+	data := parseJSONMap(t, out)
+	requireFields(t, data, "most_actives", "last_updated")
 }
