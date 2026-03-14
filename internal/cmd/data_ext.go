@@ -111,10 +111,6 @@ var screenerMoversCmd = fetchCmd("movers", api.MoversOp, func(cmd *cobra.Command
 
 var newsCmd = fetchCmd("news", api.NewsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	params := newsParamsFromFlags(cmd)
-	if params.Limit == 0 {
-		params.Limit = 10
-	}
-
 	if cmdutil.Bool(cmd, "all") {
 		max := cmdutil.Int(cmd, "max")
 		var allNews []api.News

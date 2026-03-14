@@ -41,18 +41,14 @@ func fetchPaginated(
 
 var dataBarsCmd = fetchCmd("bars", api.StockBarSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
 	p := stockBarSingleParamsFromFlags(cmd)
-	if p.Timeframe == "" {
-		p.Timeframe = "1Day"
-	}
 	return fetchPaginated(cmd, cmdutil.Str(cmd, "symbol"), p.Values(), dataClient.Bars, "bars")
-}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"timeframe": "1Day"}}),
-	func(c *cobra.Command) {
-		c.Example = `  alpaca data bars --symbol AAPL --start 2025-01-01 --timeframe 1Day
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca data bars --symbol AAPL --start 2025-01-01 --timeframe 1Day
   alpaca data bars --symbol BTC/USD --start 2025-01-01 --timeframe 1Hour
   alpaca data bars --symbol AAPL --start 2025-01-01 --end 2025-06-01 --limit 100
   alpaca data bars --symbol AAPL --start 2025-01-01 --all`
-		addPaginationFlags(c)
-	})
+	addPaginationFlags(c)
+})
 
 var dataQuotesCmd = fetchCmd("quotes", api.StockQuoteSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return fetchPaginated(cmd, cmdutil.Str(cmd, "symbol"), stockQuoteSingleParamsFromFlags(cmd).Values(), dataClient.Quotes, "quotes")
@@ -111,9 +107,6 @@ func addPaginationFlags(cmd *cobra.Command) {
 }
 
 func init() {
-	_ = dataBarsCmd.RegisterFlagCompletionFunc("timeframe", cobra.FixedCompletions([]string{"1Min", "5Min", "15Min", "1Hour", "1Day", "1Week", "1Month"}, cobra.ShellCompDirectiveNoFileComp))
-	_ = dataBarsCmd.RegisterFlagCompletionFunc("adjustment", cobra.FixedCompletions([]string{"raw", "split", "dividend", "all"}, cobra.ShellCompDirectiveNoFileComp))
-
 	dataLatestCmd.AddCommand(dataLatestTradeCmd)
 	dataLatestCmd.AddCommand(dataLatestQuoteCmd)
 	dataLatestCmd.AddCommand(dataLatestBarCmd)

@@ -12,16 +12,11 @@ var dataOptionCmd = &cobra.Command{
 }
 
 var dataOptionBarsCmd = fetchCmd("bars", api.OptionBarsOp, func(cmd *cobra.Command, args []string) (any, error) {
-	params := optionBarsParamsFromFlags(cmd)
-	if params.Timeframe == "" {
-		params.Timeframe = "1Day"
-	}
-	return dataClient.OptionBars(params)
-}, jsonOnly, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"timeframe": "1Day"}}),
-	func(c *cobra.Command) {
-		c.Example = `  alpaca data option bars --symbols AAPL250620C00200000 --start 2025-01-01
+	return dataClient.OptionBars(optionBarsParamsFromFlags(cmd))
+}, jsonOnly, func(c *cobra.Command) {
+	c.Example = `  alpaca data option bars --symbols AAPL250620C00200000 --start 2025-01-01
   alpaca data option bars --symbols AAPL250620C00200000,AAPL250620P00200000 --timeframe 1Day`
-	})
+})
 
 var dataOptionTradesCmd = fetchCmd("trades", api.OptionTradesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.OptionTrades(optionTradesParamsFromFlags(cmd))
