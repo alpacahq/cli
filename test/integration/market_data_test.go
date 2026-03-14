@@ -32,6 +32,27 @@ func TestDataLatestQuote(t *testing.T) {
 	requireFields(t, data, "bp", "ap", "bs", "as")
 }
 
+func TestDataLatestTrade_Crypto(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "data", "latest", "trade", "BTC/USD")
+	data := parseJSONMap(t, out)
+	requireFields(t, data, "t", "p", "s")
+}
+
+func TestDataLatestQuote_Crypto(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "data", "latest", "quote", "BTC/USD")
+	data := parseJSONMap(t, out)
+	requireFields(t, data, "bp", "ap", "bs", "as")
+}
+
+func TestDataLatestBar_Crypto(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "data", "latest", "bar", "BTC/USD")
+	data := parseJSONMap(t, out)
+	requireFields(t, data, "o", "h", "l", "c", "v")
+}
+
 func TestDataSnapshot(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "data", "snapshot", "AAPL")

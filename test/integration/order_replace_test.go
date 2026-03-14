@@ -12,8 +12,8 @@ func TestOrderReplace(t *testing.T) {
 	t.Parallel()
 	// Use crypto limit order — crypto is 24/7, so the order transitions
 	// out of "accepted" immediately unlike equity orders outside market hours.
-	// Crypto min cost basis is $10; qty 10 * $1.00 = $10
-	out := alpaca(t, "order", "submit", "BTC/USD",
+	// ETH/USD avoids wash-trade conflicts with other tests that trade BTC/USD.
+	out := alpaca(t, "order", "submit", "ETH/USD",
 		"--qty", "10",
 		"--side", "buy",
 		"--type", "limit",

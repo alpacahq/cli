@@ -10,9 +10,8 @@ import (
 func TestSmoke_Version(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "version")
-	if !strings.Contains(string(out), "alpaca version") {
-		t.Fatalf("unexpected version output: %s", out)
-	}
+	v := parseJSONMap(t, out)
+	requireFields(t, v, "version")
 }
 
 func TestSmoke_Account(t *testing.T) {

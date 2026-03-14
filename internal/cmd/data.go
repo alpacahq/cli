@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"net/url"
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
@@ -111,16 +112,7 @@ var dataLatestCmd = &cobra.Command{
 }
 
 var dataLatestTradeCmd = fetchCmd("trade <symbol>", api.StockLatestTradeSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
-	symbol := args[0]
-	data, err := dataClient.LatestTrade(symbol, stockLatestTradeSingleParamsFromFlags(cmd).Values())
-	if err != nil {
-		return nil, err
-	}
-	var m map[string]any
-	if err := json.Unmarshal(data, &m); err != nil {
-		return nil, err
-	}
-	return extractSingle(m, symbol, "trade", "trades"), nil
+	return fetchLatestSingle(args[0], dataClient.LatestTrade, stockLatestTradeSingleParamsFromFlags(cmd).Values(), "trade", "trades")
 }, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
 	c.Example = `  alpaca data latest trade AAPL
@@ -128,32 +120,14 @@ var dataLatestTradeCmd = fetchCmd("trade <symbol>", api.StockLatestTradeSingleOp
 })
 
 var dataLatestQuoteCmd = fetchCmd("quote <symbol>", api.StockLatestQuoteSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
-	symbol := args[0]
-	data, err := dataClient.LatestQuote(symbol, stockLatestQuoteSingleParamsFromFlags(cmd).Values())
-	if err != nil {
-		return nil, err
-	}
-	var m map[string]any
-	if err := json.Unmarshal(data, &m); err != nil {
-		return nil, err
-	}
-	return extractSingle(m, symbol, "quote", "quotes"), nil
+	return fetchLatestSingle(args[0], dataClient.LatestQuote, stockLatestQuoteSingleParamsFromFlags(cmd).Values(), "quote", "quotes")
 }, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
 	c.Example = `  alpaca data latest quote AAPL`
 })
 
 var dataLatestBarCmd = fetchCmd("bar <symbol>", api.StockLatestBarSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
-	symbol := args[0]
-	data, err := dataClient.LatestBar(symbol, stockLatestBarSingleParamsFromFlags(cmd).Values())
-	if err != nil {
-		return nil, err
-	}
-	var m map[string]any
-	if err := json.Unmarshal(data, &m); err != nil {
-		return nil, err
-	}
-	return extractSingle(m, symbol, "bar", "bars"), nil
+	return fetchLatestSingle(args[0], dataClient.LatestBar, stockLatestBarSingleParamsFromFlags(cmd).Values(), "bar", "bars")
 }, func(c *cobra.Command) {
 	c.Args = cobra.ExactArgs(1)
 	c.Example = `  alpaca data latest bar AAPL
@@ -198,6 +172,23 @@ func extractArray(data json.RawMessage, symbol, key string) json.RawMessage {
 		return arr
 	}
 	return data
+}
+
+func fetchLatestSingle(
+	symbol string,
+	fetch func(string, url.Values) (json.RawMessage, error),
+	params url.Values,
+	singular, plural string,
+) (any, error) {
+	data, err := fetch(symbol, params)
+	if err != nil {
+		return nil, err
+	}
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, err
+	}
+	return extractSingle(m, symbol, singular, plural), nil
 }
 
 func extractSingle(m map[string]any, symbol, singular, plural string) map[string]any {
