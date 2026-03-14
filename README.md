@@ -2,7 +2,19 @@
 
 CLI for [Alpaca](https://alpaca.markets) Trading API. Trade stocks & crypto, access market data, and manage your account from the command line.
 
-> **Alpha Preview** — This CLI is under active development and available as an early alpha release for testing and feedback. Commands, flags, and output formats are subject to change. Use in production workflows at your own risk.
+> [!WARNING]
+> **Alpha Preview** — This CLI is under active development. Commands, flags, and output formats may change or be removed without notice between releases. Do not depend on current behavior in production workflows.
+
+### Built for agents
+
+This CLI is designed primarily as a tool for AI agents and automation pipelines, not as a general-purpose interactive terminal tool. It has no confirmation prompts, no "are you sure?" dialogs, and no interactive mode. Every command executes immediately and returns structured output.
+
+**This means destructive commands are truly destructive.** For example:
+
+- `alpaca position close-all` will liquidate your entire portfolio instantly
+- `alpaca order cancel-all` will cancel every open order without listing them first
+
+There are no guardrails — the CLI trusts that the caller (human or agent) knows what it's asking for. If you're using this with live trading credentials, understand that a single mistyped command can have real financial consequences.
 
 ## Design Philosophy
 
