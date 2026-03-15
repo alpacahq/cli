@@ -410,16 +410,20 @@ func TestOrderList_Direction(t *testing.T) {
 
 func TestOrderList_AfterOrderID(t *testing.T) {
 	t.Parallel()
-	id := submitTestOrder(t)
-	_ = submitTestOrder(t)
+	first := submitTestOrder(t)
+	second := submitTestOrder(t)
 
-	all := parseJSONArray(t, alpaca(t, "order", "list", "--status", "open"))
 	filtered := parseJSONArray(t, alpaca(t, "order", "list",
 		"--status", "open",
-		"--after-order-id", id,
+		"--after-order-id", first,
 	))
 
-	if len(filtered) >= len(all) {
-		t.Errorf("--after-order-id should return fewer results: got %d, all had %d", len(filtered), len(all))
+	for _, o := range filtered {
+		if o["id"] == first {
+			t.Error("--after-order-id should exclude the pivot order itself")
+		}
+	}
+	if !containsID(filtered, second) {
+		t.Error("--after-order-id should include orders created after the pivot")
 	}
 }
