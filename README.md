@@ -40,7 +40,7 @@ Or download a prebuilt binary from [Releases](https://github.com/alpacahq/cli/re
 
 ## Post-Install Setup
 
-After installing, run `setup` to install shell completions and man pages:
+After installing, run `setup` to install shell completions:
 
 ```bash
 alpaca setup
@@ -261,7 +261,7 @@ Note: OAuth login is restricted to paper trading while the flow does not support
 | `alpaca api patch <path>` | PATCH request to any endpoint |
 | `alpaca api delete <path>` | DELETE request to any endpoint |
 | `alpaca doctor` | Check config and API connectivity |
-| `alpaca setup` | Install completions and man pages |
+| `alpaca setup` | Install shell completions |
 | `alpaca update` | Self-update |
 | `alpaca version` | Print version |
 

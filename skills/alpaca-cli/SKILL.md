@@ -40,7 +40,7 @@ brew install alpacahq/tap/alpaca
 
 ## Post-install setup
 
-Install shell completions and man pages:
+Install shell completions:
 
 ```bash
 alpaca setup

@@ -2,7 +2,7 @@ VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev
 LDFLAGS := -ldflags "-s -w -X main.version=$(VERSION)"
 BINARY := alpaca
 
-.PHONY: build install test test-integration lint check clean generate spec-update man
+.PHONY: build install test test-integration lint check clean generate spec-update
 
 build:
 	go build $(LDFLAGS) -o bin/$(BINARY) ./cmd/alpaca
@@ -26,9 +26,6 @@ clean:
 
 generate:
 	go run ./cmd/generate
-
-man:
-	go run ./cmd/doc
 
 spec-update:
 	@echo "Fetching latest OpenAPI specs..."
