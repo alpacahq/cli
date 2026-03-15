@@ -4,6 +4,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
@@ -140,6 +141,22 @@ var watchlistCmd = &cobra.Command{
 	Use:   "watchlist",
 	Short: "Manage watchlists",
 }
+
+var addAssetToWatchlistCmd = fetchCmd("add", api.AddAssetToWatchlistOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.AddAssetToWatchlist(cmdutil.Str(cmd, "watchlist-id"), &api.AddAssetToWatchlistRequest{
+		Symbol: cmdutil.Str(cmd, "symbol"),
+	})
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca watchlist add --watchlist-id <id> --symbol AAPL`
+})
+
+var addAssetToWatchlistByNameCmd = fetchCmd("add-by-name", api.AddAssetToWatchlistByNameOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.AddAssetToWatchlistByName(addAssetToWatchlistByNameParamsFromFlags(cmd), &api.AddAssetToWatchlistByNameRequest{
+		Symbol: cmdutil.Str(cmd, "symbol"),
+	})
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca watchlist add-by-name --name "Tech Stocks" --symbol NVDA`
+})
 
 var calendarMarketCmd = fetchCmd("market", api.CalendarOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return tradingClient.Calendar(cmdutil.Str(cmd, "market"), calendarParamsFromFlags(cmd))
@@ -651,6 +668,18 @@ var patchAccountConfigCmd = fetchCmd("set", api.PatchAccountConfigOp, func(cmd *
   alpaca account config set --dtbp-check entry`
 })
 
+var postWatchlistCmd = fetchCmd("create", api.PostWatchlistOp, func(cmd *cobra.Command, args []string) (any, error) {
+	body := &api.UpdateWatchlistRequest{
+		Name: cmdutil.Str(cmd, "name"),
+	}
+	if s := cmdutil.Str(cmd, "symbols"); s != "" {
+		body.Symbols = strings.Split(s, ",")
+	}
+	return tradingClient.PostWatchlist(body)
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca watchlist create --name "Tech Stocks" --symbols AAPL,MSFT,GOOG`
+})
+
 var ratesCmd = fetchCmd("rates", api.RatesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.Rates(ratesParamsFromFlags(cmd))
 }, jsonOnly, func(c *cobra.Command) {
@@ -737,6 +766,39 @@ var stockTradesCmd = fetchCmd("multi-trades", api.StockTradesOp, func(cmd *cobra
 	c.Example = `  alpaca data multi-trades --symbols AAPL,MSFT --start 2025-01-01`
 })
 
+var updateWatchlistByIDCmd = fetchCmd("update", api.UpdateWatchlistByIDOp, func(cmd *cobra.Command, args []string) (any, error) {
+	body, changed := updateWatchlistRequestBodyFromFlags(cmd)
+	if !changed {
+		return nil, fmt.Errorf("specify at least one flag to change (see '%s --help')", cmd.CommandPath())
+	}
+	return tradingClient.UpdateWatchlistByID(cmdutil.Str(cmd, "watchlist-id"), body)
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca watchlist update --watchlist-id <id> --name "Updated" --symbols AAPL,MSFT`
+})
+
+var updateWatchlistByNameCmd = fetchCmd("update-by-name", api.UpdateWatchlistByNameOp, func(cmd *cobra.Command, args []string) (any, error) {
+	body := &api.UpdateWatchlistRequest{}
+	var changed bool
+	if cmdutil.Changed(cmd, "new-name") {
+		body.Name = cmdutil.Str(cmd, "new-name")
+		changed = true
+	}
+	if cmdutil.Changed(cmd, "symbols") {
+		if s := cmdutil.Str(cmd, "symbols"); s != "" {
+			body.Symbols = strings.Split(s, ",")
+		}
+		changed = true
+	}
+	if !changed {
+		return nil, fmt.Errorf("specify at least one flag to change (see '%s --help')", cmd.CommandPath())
+	}
+	return tradingClient.UpdateWatchlistByName(updateWatchlistByNameParamsFromFlags(cmd), body)
+}, func(c *cobra.Command) {
+	c.Flags().String("new-name", "", "The watchlist name.")
+}, func(c *cobra.Command) {
+	c.Example = `  alpaca watchlist update-by-name --name "Tech Stocks" --new-name "Technology" --symbols AAPL,MSFT`
+})
+
 var usCorporatesCmd = fetchCmd("bond", api.UsCorporatesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return tradingClient.UsCorporates(usCorporatesParamsFromFlags(cmd))
 }, func(c *cobra.Command) {
@@ -767,6 +829,8 @@ func init() {
 	walletCmd.AddCommand(walletTransferCmd)
 	walletCmd.AddCommand(walletWhitelistCmd)
 
+	watchlistCmd.AddCommand(addAssetToWatchlistCmd)
+	watchlistCmd.AddCommand(addAssetToWatchlistByNameCmd)
 	calendarCmd.AddCommand(calendarMarketCmd)
 	clockCmd.AddCommand(clockMarketsCmd)
 	dataCmd.AddCommand(corporateActionsCmd)
@@ -842,6 +906,7 @@ func init() {
 	dataOptionCmd.AddCommand(optionSnapshotsCmd)
 	dataOptionCmd.AddCommand(optionTradesCmd)
 	accountConfigCmd.AddCommand(patchAccountConfigCmd)
+	watchlistCmd.AddCommand(postWatchlistCmd)
 	dataForexCmd.AddCommand(ratesCmd)
 	watchlistCmd.AddCommand(removeAssetFromWatchlistCmd)
 	cryptoPerpCmd.AddCommand(setCryptoPerpAccountLeverageCmd)
@@ -856,6 +921,8 @@ func init() {
 	dataCmd.AddCommand(stockQuotesCmd)
 	dataCmd.AddCommand(stockSnapshotsCmd)
 	dataCmd.AddCommand(stockTradesCmd)
+	watchlistCmd.AddCommand(updateWatchlistByIDCmd)
+	watchlistCmd.AddCommand(updateWatchlistByNameCmd)
 	assetCmd.AddCommand(usCorporatesCmd)
 	assetCmd.AddCommand(usTreasuriesCmd)
 }

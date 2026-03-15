@@ -1305,5 +1305,6 @@ func updateWatchlistRequestBodyFromFlags(cmd *cobra.Command) (*api.UpdateWatchli
 	body := &api.UpdateWatchlistRequest{}
 	p := cmdutil.NewPatchHelper(cmd)
 	p.Str("name", &body.Name)
+	p.Strs("symbols", &body.Symbols)
 	return body, p.AnyChanged()
 }

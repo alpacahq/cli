@@ -140,6 +140,15 @@ func (p *PatchHelper) Int(flag string, target *int) {
 	}
 }
 
+func (p *PatchHelper) Strs(flag string, target *[]string) {
+	if p.cmd.Flags().Changed(flag) {
+		if s := Str(p.cmd, flag); s != "" {
+			*target = strings.Split(s, ",")
+		}
+		p.changed = true
+	}
+}
+
 func (p *PatchHelper) AnyChanged() bool {
 	return p.changed
 }

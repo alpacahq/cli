@@ -1770,6 +1770,12 @@ func genBodyFromFlags(buf *bytes.Buffer, bodyRef string, schemas []*schemaInfo) 
 			simpleFields = append(simpleFields, fieldInfo{flagName: flagName, goFieldName: goField, kind: "Bool"})
 		case "integer":
 			simpleFields = append(simpleFields, fieldInfo{flagName: flagName, goFieldName: goField, kind: "Int"})
+		case "array":
+			if items, ok := propSchema["items"].(map[string]any); ok {
+				if itemType, _ := items["type"].(string); itemType == "string" {
+					simpleFields = append(simpleFields, fieldInfo{flagName: flagName, goFieldName: goField, kind: "Strs"})
+				}
+			}
 		}
 	}
 
