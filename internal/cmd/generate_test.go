@@ -29,8 +29,8 @@ func TestGeneratedCodeIsUpToDate(t *testing.T) {
 		{apiDir, "marketdata_types.go"},
 		{apiDir, "marketdata_client.go"},
 		{apiDir, "descriptions.go"},
-		{cmdDir, "params_generated.go"},
-		{cmdDir, "commands_generated.go"},
+		{cmdDir, "params.gen.go"},
+		{cmdDir, "commands.gen.go"},
 	}
 
 	snapshots := make(map[string][]byte, len(generatedFiles))

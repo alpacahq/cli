@@ -28,7 +28,7 @@ jobs:
       - name: Generated code freshness
         run: |
           make generate
-          git diff --exit-code internal/api/ internal/cmd/params_generated.go || {
+          git diff --exit-code internal/api/ internal/cmd/params.gen.go internal/cmd/commands.gen.go || {
             echo "::error::Generated code is out of date. Run 'make generate' and commit the result."
             exit 1
           }
