@@ -35,6 +35,16 @@ func TestDataLatestBar(t *testing.T) {
 	requireFields(t, data, "bar")
 }
 
+func TestDataAuction(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "data", "auction", "--symbol", "AAPL",
+		"--start", daysAgo(100),
+		"--end", daysAgo(93),
+	)
+	data := parseJSONMap(t, out)
+	requireFields(t, data, "auctions")
+}
+
 func TestDataBars_Timeframe(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "data", "bars", "--symbol", "AAPL",

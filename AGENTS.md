@@ -26,6 +26,18 @@ When a refactor changes command names, flags, or output shape, review `test/inte
 
 - **`FlagDef.OASName` must stay**: Flag names are kebab-case (`page-token`), OAS names are snake_case (`page_token`). The mapping `_ → -` is lossy — if an upstream OAS param ever uses a hyphen, runtime reversal (`- → _`) would silently send the wrong query key. Keep both fields.
 
+## Integration tests (`test/integration/`)
+
+Gated by `//go:build integration` and require `ALPACA_TEST_API_KEY`+`ALPACA_TEST_SECRET_KEY` or `ALPACA_TEST_ACCESS_TOKEN`. Default target is `paper-api.alpaca.markets`.
+
+Rules:
+- **Read-only tests must call `t.Parallel()`** — every test that only fetches data should run concurrently.
+- **Write tests must clean up** — use `t.Cleanup()` to cancel orders, delete watchlists, close positions. Never leave side-effects.
+- **Flat tests for independent calls, sub-tests for sequential chains** — don't use `t.Run` unless steps depend on prior state (e.g., create → get → delete).
+- **Use the helpers** — `alpaca()`, `alpacaFail()`, `parseJSONMap()`, `requireFields()`, `daysAgo()`, `pollFor()`. Don't reinvent them.
+- **Some endpoints are unavailable on paper** — wallet, crypto-perp trading, forex, fixed-income, logo, treasury, and bonds return 403/404. Don't write tests that require these unless you have a compatible test account.
+- **One file per feature area** — `order_test.go`, `data_option_test.go`, `crypto_perp_data_test.go`, etc. Keep files focused.
+
 ## Keep docs in sync
 
 When a change affects CLI behavior, update any stale docs:
