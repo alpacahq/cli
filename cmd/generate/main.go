@@ -65,19 +65,8 @@ func main() {
 	checkExhaustive(allEndpoints, allSchemas)
 	writeGo(filepath.Join(cmdDir, "commands.gen.go"), genCommands(allEndpoints, allSchemas))
 
-	fmt.Printf("Generated %d trading types, %d market data types\n", len(tSchemas), len(mSchemas))
-	fmt.Printf("Generated %d trading endpoints, %d market data endpoints\n", len(tEndpoints), len(mEndpoints))
-	nParams := 0
-	for _, op := range ops {
-		nParams += len(op.params)
-	}
-	nFromFlags := 0
-	for _, ep := range allEndpoints {
-		if len(ep.queryParams) > 0 {
-			nFromFlags++
-		}
-	}
-	fmt.Printf("Generated %d operations, %d param descriptions, %d FromFlags functions\n", len(ops), nParams, nFromFlags)
+	fmt.Printf("Generated %d types, %d endpoints, %d operations\n",
+		len(tSchemas)+len(mSchemas), len(allEndpoints), len(ops))
 }
 
 // --- Spec loading ---
@@ -301,7 +290,7 @@ func extractEndpoints(spec map[string]any) []*endpointInfo {
 						goType = "bool"
 					}
 				}
-				pi := paramInfo{name: name, goName: toGoFieldName(name), goType: goType, required: req}
+				pi := paramInfo{name: name, goName: toGoName(name), goType: goType, required: req}
 				pi.description, _ = p["description"].(string)
 				if pi.description == "" && pSchema != nil {
 					pi.description = schemaDesc(pSchema, compSchemas)
@@ -473,7 +462,7 @@ func genInlineEnumValues(buf *bytes.Buffer, s *schemaInfo) {
 		}
 		sort.Strings(vals)
 
-		varName := s.goName + toGoFieldName(fieldName)
+		varName := s.goName + toGoName(fieldName)
 		genValuesSlice(buf, varName, vals)
 	}
 }
@@ -522,7 +511,7 @@ func genStruct(buf *bytes.Buffer, s *schemaInfo, allSchemas []*schemaInfo) {
 
 	for _, fieldName := range fields {
 		fieldSchema := s.props[fieldName]
-		goField := toGoFieldName(fieldName)
+		goField := toGoName(fieldName)
 		goType := resolveGoType(fieldSchema, allSchemas)
 		tag := fieldName
 		if !s.required[fieldName] {
@@ -615,26 +604,24 @@ func genClient(clientName, specFile string, schemas []*schemaInfo, endpoints []*
 		if ep.bodyRef == "" || validated[ep.bodyRef] {
 			continue
 		}
-		for _, s := range schemas {
-			if s.goName == ep.bodyRef && s.kind == "struct" && len(s.required) > 0 {
-				var reqFields []string
-				for fn, isReq := range s.required {
-					if !isReq {
-						continue
-					}
-					fs, ok := s.props[fn]
-					if !ok {
-						continue
-					}
-					if resolveGoType(fs, schemas) == "string" {
-						reqFields = append(reqFields, fn)
-					}
+		s := findSchema(schemas, ep.bodyRef)
+		if s != nil && s.kind == "struct" && len(s.required) > 0 {
+			var reqFields []string
+			for fn, isReq := range s.required {
+				if !isReq {
+					continue
 				}
-				sort.Strings(reqFields)
-				genValidateMethod(&buf, s.goName, reqFields)
-				validated[ep.bodyRef] = true
-				break
+				fs, ok := s.props[fn]
+				if !ok {
+					continue
+				}
+				if resolveGoType(fs, schemas) == "string" {
+					reqFields = append(reqFields, fn)
+				}
 			}
+			sort.Strings(reqFields)
+			genValidateMethod(&buf, s.goName, reqFields)
+			validated[ep.bodyRef] = true
 		}
 	}
 
@@ -651,7 +638,7 @@ func genEndpointMethod(buf *bytes.Buffer, ep *endpointInfo, clientName, getMetho
 	bodyType := ep.bodyRef
 	if bodyType == "" && ep.bodyInline != nil {
 		bodyType = ep.goName + "Request"
-		if !schemaExists(schemas, bodyType) {
+		if findSchema(schemas, bodyType) == nil {
 			genInlineRequestStruct(buf, bodyType, ep.bodyInline, schemas)
 		}
 	}
@@ -756,7 +743,7 @@ func genInlineRequestStruct(buf *bytes.Buffer, name string, schema map[string]an
 		if !ok {
 			continue
 		}
-		goField := toGoFieldName(fn)
+		goField := toGoName(fn)
 		goType := resolveGoType(fs, allSchemas)
 		tag := fn
 		if !reqMap[fn] {
@@ -791,7 +778,7 @@ func genValidateMethod(buf *bytes.Buffer, typeName string, reqFields []string) {
 	fmt.Fprintf(buf, "func (r *%s) Validate() error {\n", typeName)
 	fmt.Fprintf(buf, "\tvar missing []string\n")
 	for _, fn := range reqFields {
-		fmt.Fprintf(buf, "\tif r.%s == \"\" { missing = append(missing, %q) }\n", toGoFieldName(fn), fn)
+		fmt.Fprintf(buf, "\tif r.%s == \"\" { missing = append(missing, %q) }\n", toGoName(fn), fn)
 	}
 	fmt.Fprintf(buf, "\tif len(missing) > 0 {\n")
 	fmt.Fprintf(buf, "\t\treturn fmt.Errorf(\"missing required fields: %%s\", strings.Join(missing, \", \"))\n")
@@ -800,22 +787,9 @@ func genValidateMethod(buf *bytes.Buffer, typeName string, reqFields []string) {
 	fmt.Fprintf(buf, "}\n\n")
 }
 
-func schemaExists(schemas []*schemaInfo, goName string) bool {
-	for _, s := range schemas {
-		if s.goName == goName {
-			return true
-		}
-	}
-	return false
-}
-
 func schemaHasType(schemas []*schemaInfo, goName string) bool {
-	for _, s := range schemas {
-		if s.goName == goName && (s.kind == "struct" || s.kind == "enum") {
-			return true
-		}
-	}
-	return false
+	s := findSchema(schemas, goName)
+	return s != nil && (s.kind == "struct" || s.kind == "enum")
 }
 
 func buildPathExpr(path string, pathParams []paramInfo) string {
@@ -864,10 +838,6 @@ func toGoName(s string) string {
 		}
 	}
 	return result.String()
-}
-
-func toGoFieldName(s string) string {
-	return toGoName(s)
 }
 
 func splitIdent(s string) []string {
@@ -962,7 +932,7 @@ func collectDescriptions(endpoints []*endpointInfo, schemas []*schemaInfo, spec 
 			}
 			op.params = append(op.params, &flagDesc{
 				oasName:     p.name,
-				goFieldName: toGoFieldName(p.name),
+				goFieldName: toGoName(p.name),
 				flagName:    strings.ReplaceAll(p.name, "_", "-"),
 				flagType:    goTypeToFlagType(p.goType),
 				defaultVal:  p.defaultVal,
@@ -980,7 +950,7 @@ func collectDescriptions(endpoints []*endpointInfo, schemas []*schemaInfo, spec 
 			}
 			op.params = append(op.params, &flagDesc{
 				oasName:     p.name,
-				goFieldName: toGoFieldName(p.name),
+				goFieldName: toGoName(p.name),
 				flagName:    strings.ReplaceAll(p.name, "_", "-"),
 				flagType:    goTypeToFlagType(p.goType),
 				description: normalizeDesc(desc),
@@ -991,13 +961,13 @@ func collectDescriptions(endpoints []*endpointInfo, schemas []*schemaInfo, spec 
 
 		bodyProps := getBodyProps(ep, schemas)
 		for propName, propSchema := range bodyProps {
-			desc := propertyDesc(propSchema, compSchemas)
+			desc := schemaDesc(propSchema, compSchemas)
 			if desc == "" {
 				desc = humanize(propName, propertyEnums(propSchema, compSchemas))
 			}
 			op.params = append(op.params, &flagDesc{
 				oasName:     propName,
-				goFieldName: toGoFieldName(propName),
+				goFieldName: toGoName(propName),
 				flagName:    strings.ReplaceAll(propName, "_", "-"),
 				flagType:    bodyPropFlagType(propSchema, compSchemas),
 				description: normalizeDesc(desc),
@@ -1011,33 +981,30 @@ func collectDescriptions(endpoints []*endpointInfo, schemas []*schemaInfo, spec 
 		})
 
 		if ep.responseRef != "" {
-			for _, s := range schemas {
-				if s.goName == ep.responseRef && s.kind == "struct" {
-					var fieldNames []string
-					for name := range s.props {
-						fieldNames = append(fieldNames, name)
+			if s := findSchema(schemas, ep.responseRef); s != nil && s.kind == "struct" {
+				var fieldNames []string
+				for name := range s.props {
+					fieldNames = append(fieldNames, name)
+				}
+				sort.Strings(fieldNames)
+				for _, name := range fieldNames {
+					propSchema := s.props[name]
+					desc := schemaDesc(propSchema, compSchemas)
+					if desc == "" {
+						desc = humanize(name, nil)
 					}
-					sort.Strings(fieldNames)
-					for _, name := range fieldNames {
-						propSchema := s.props[name]
-						desc := propertyDesc(propSchema, compSchemas)
-						if desc == "" {
-							desc = humanize(name, nil)
+					enums := propertyEnums(propSchema, compSchemas)
+					if len(enums) == 0 {
+						if items, ok := propSchema["items"].(map[string]any); ok {
+							enums = propertyEnums(items, compSchemas)
 						}
-						enums := propertyEnums(propSchema, compSchemas)
-						if len(enums) == 0 {
-							if items, ok := propSchema["items"].(map[string]any); ok {
-								enums = propertyEnums(items, compSchemas)
-							}
-						}
-						op.responseFields = append(op.responseFields, &responseFieldDesc{
-							name:       name,
-							jsonType:   oasFieldType(propSchema, compSchemas),
-							desc:       normalizeDesc(desc),
-							enumValues: enums,
-						})
 					}
-					break
+					op.responseFields = append(op.responseFields, &responseFieldDesc{
+						name:       name,
+						jsonType:   oasFieldType(propSchema, compSchemas),
+						desc:       normalizeDesc(desc),
+						enumValues: enums,
+					})
 				}
 			}
 		}
@@ -1096,10 +1063,8 @@ func getBodyProps(ep *endpointInfo, schemas []*schemaInfo) map[string]map[string
 		return result
 	}
 	if ep.bodyRef != "" {
-		for _, s := range schemas {
-			if s.goName == ep.bodyRef {
-				return s.props
-			}
+		if s := findSchema(schemas, ep.bodyRef); s != nil {
+			return s.props
 		}
 	}
 	return nil
@@ -1110,21 +1075,6 @@ func schemaDesc(schema map[string]any, compSchemas map[string]any) string {
 		return desc
 	}
 	if ref, ok := schema["$ref"].(string); ok && compSchemas != nil {
-		name := refBaseName(ref)
-		if target, ok := compSchemas[name].(map[string]any); ok {
-			if desc, ok := target["description"].(string); ok {
-				return desc
-			}
-		}
-	}
-	return ""
-}
-
-func propertyDesc(prop map[string]any, compSchemas map[string]any) string {
-	if desc, ok := prop["description"].(string); ok {
-		return desc
-	}
-	if ref, ok := prop["$ref"].(string); ok && compSchemas != nil {
 		name := refBaseName(ref)
 		if target, ok := compSchemas[name].(map[string]any); ok {
 			if desc, ok := target["description"].(string); ok {
@@ -1320,10 +1270,12 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 	fmt.Fprintf(&buf, "type Op struct {\n")
 	fmt.Fprintf(&buf, "\tName          string\n")
 	fmt.Fprintf(&buf, "\tsummary       string\n")
+	fmt.Fprintf(&buf, "\treturnsArray  bool\n")
 	fmt.Fprintf(&buf, "\tflags         []FlagDef\n")
 	fmt.Fprintf(&buf, "\trequiredFlags []string\n")
 	fmt.Fprintf(&buf, "}\n\n")
 	fmt.Fprintf(&buf, "func (o Op) Summary() string         { return o.summary }\n")
+	fmt.Fprintf(&buf, "func (o Op) ReturnsArray() bool      { return o.returnsArray }\n")
 	fmt.Fprintf(&buf, "func (o Op) Flags() []FlagDef        { return o.flags }\n")
 	fmt.Fprintf(&buf, "func (o Op) RequiredFlags() []string { return o.requiredFlags }\n\n")
 
@@ -1336,7 +1288,6 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 	fmt.Fprintf(&buf, "\tDefault     string\n")
 	fmt.Fprintf(&buf, "\tDescription string\n")
 	fmt.Fprintf(&buf, "\tCompletions []string // enum values for shell completion\n")
-	fmt.Fprintf(&buf, "\tOpName      string   // operation name for schema lookup\n")
 	fmt.Fprintf(&buf, "\tRequired    bool     // true if OAS marks this parameter as required\n")
 	fmt.Fprintf(&buf, "\tSource      string   // \"path\", \"query\", or \"body\"\n")
 	fmt.Fprintf(&buf, "}\n\n")
@@ -1354,7 +1305,11 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 		sort.Strings(reqFlags)
 
 		fmt.Fprintf(&buf, "var %sOp = Op{\n", op.goName)
-		fmt.Fprintf(&buf, "\tName: %q, summary: %q,\n", op.goName, op.summary)
+		fmt.Fprintf(&buf, "\tName: %q, summary: %q", op.goName, op.summary)
+		if op.returnsArray {
+			fmt.Fprintf(&buf, ", returnsArray: true")
+		}
+		fmt.Fprintf(&buf, ",\n")
 
 		if len(reqFlags) > 0 {
 			fmt.Fprintf(&buf, "\trequiredFlags: []string{")
@@ -1390,7 +1345,6 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 					}
 					buf.WriteString("}")
 				}
-				fmt.Fprintf(&buf, ", OpName: %q", op.goName)
 				if p.required {
 					fmt.Fprintf(&buf, ", Required: true")
 				}
@@ -1437,33 +1391,24 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 	}
 	fmt.Fprintf(&buf, "}\n\n")
 
-	fmt.Fprintf(&buf, "// OperationSummaries maps operation names to their summaries.\n")
-	fmt.Fprintf(&buf, "var OperationSummaries = map[string]string{\n")
-	for _, op := range ops {
-		if len(op.responseFields) == 0 {
-			continue
-		}
-		fmt.Fprintf(&buf, "\t%q: %q,\n", op.goName, op.summary)
-	}
-	fmt.Fprintf(&buf, "}\n\n")
-
-	fmt.Fprintf(&buf, "// ArrayResponses tracks which operations return arrays vs single objects.\n")
-	fmt.Fprintf(&buf, "var ArrayResponses = map[string]bool{\n")
-	for _, op := range ops {
-		if len(op.responseFields) == 0 {
-			continue
-		}
-		if op.returnsArray {
-			fmt.Fprintf(&buf, "\t%q: true,\n", op.goName)
-		}
-	}
-	fmt.Fprintf(&buf, "}\n\n")
-
 	fmt.Fprintf(&buf, "// AllOps lists every generated Op for iteration in tests and tooling.\n")
 	fmt.Fprintf(&buf, "var AllOps = []Op{\n")
 	for _, op := range ops {
 		fmt.Fprintf(&buf, "\t%sOp,\n", op.goName)
 	}
+	fmt.Fprintf(&buf, "}\n\n")
+
+	fmt.Fprintf(&buf, "var opByName map[string]Op\n\n")
+	fmt.Fprintf(&buf, "func init() {\n")
+	fmt.Fprintf(&buf, "\topByName = make(map[string]Op, len(AllOps))\n")
+	fmt.Fprintf(&buf, "\tfor _, op := range AllOps {\n")
+	fmt.Fprintf(&buf, "\t\topByName[op.Name] = op\n")
+	fmt.Fprintf(&buf, "\t}\n")
+	fmt.Fprintf(&buf, "}\n\n")
+	fmt.Fprintf(&buf, "// OpByName returns the Op with the given name, if any.\n")
+	fmt.Fprintf(&buf, "func OpByName(name string) (Op, bool) {\n")
+	fmt.Fprintf(&buf, "\top, ok := opByName[name]\n")
+	fmt.Fprintf(&buf, "\treturn op, ok\n")
 	fmt.Fprintf(&buf, "}\n")
 
 	return buf.String()
@@ -1481,14 +1426,8 @@ func genFromFlags(endpoints []*endpointInfo, schemas []*schemaInfo) string {
 	fmt.Fprintf(&buf, "\t\"github.com/spf13/cobra\"\n")
 	fmt.Fprintf(&buf, ")\n\n")
 
-	sorted := make([]*endpointInfo, len(endpoints))
-	copy(sorted, endpoints)
-	sort.Slice(sorted, func(i, j int) bool {
-		return sorted[i].goName < sorted[j].goName
-	})
-
 	generated := map[string]bool{}
-	for _, ep := range sorted {
+	for _, ep := range endpoints {
 		if (ep.method == "PATCH" || ep.method == "PUT") && ep.bodyRef != "" && !generated[ep.bodyRef] {
 			genBodyFromFlags(&buf, ep.bodyRef, schemas)
 			generated[ep.bodyRef] = true
@@ -1499,14 +1438,8 @@ func genFromFlags(endpoints []*endpointInfo, schemas []*schemaInfo) string {
 }
 
 func genBodyFromFlags(buf *bytes.Buffer, bodyRef string, schemas []*schemaInfo) {
-	var bodySchema *schemaInfo
-	for _, s := range schemas {
-		if s.goName == bodyRef && s.kind == "struct" {
-			bodySchema = s
-			break
-		}
-	}
-	if bodySchema == nil {
+	bodySchema := findSchema(schemas, bodyRef)
+	if bodySchema == nil || bodySchema.kind != "struct" {
 		return
 	}
 
@@ -1527,17 +1460,14 @@ func genBodyFromFlags(buf *bytes.Buffer, bodyRef string, schemas []*schemaInfo) 
 	for _, propName := range propNames {
 		propSchema := bodySchema.props[propName]
 		flagName := strings.ReplaceAll(propName, "_", "-")
-		goField := toGoFieldName(propName)
+		goField := toGoName(propName)
 
 		if ref, ok := propSchema["$ref"].(string); ok {
-			refName := refBaseName(ref)
-			for _, s := range schemas {
-				if s.name == refName && s.kind == "enum" {
-					enumFields = append(enumFields, fieldInfo{
-						flagName: flagName, goFieldName: goField,
-						kind: "enum", enumGoType: s.goName,
-					})
-				}
+			if s := findSchemaByOASName(schemas, refBaseName(ref)); s != nil && s.kind == "enum" {
+				enumFields = append(enumFields, fieldInfo{
+					flagName: flagName, goFieldName: goField,
+					kind: "enum", enumGoType: s.goName,
+				})
 			}
 			continue
 		}

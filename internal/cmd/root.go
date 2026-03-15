@@ -277,11 +277,12 @@ func printCommandSchema(cmd *cobra.Command) error {
 
 	w := cmd.OutOrStdout()
 
-	summary := api.OperationSummaries[opName]
-	if api.ArrayResponses[opName] {
-		schemaComment.Fprintf(w, "// %s — returns an array of:\n", summary)
-	} else if summary != "" {
-		schemaComment.Fprintf(w, "// %s\n", summary)
+	if op, ok := api.OpByName(opName); ok {
+		if op.ReturnsArray() {
+			schemaComment.Fprintf(w, "// %s — returns an array of:\n", op.Summary())
+		} else if s := op.Summary(); s != "" {
+			schemaComment.Fprintf(w, "// %s\n", s)
+		}
 	}
 	fmt.Fprintln(w, "{")
 

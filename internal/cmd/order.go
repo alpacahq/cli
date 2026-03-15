@@ -65,7 +65,7 @@ var orderSubmitCmd = &cobra.Command{
 }
 
 func init() {
-	cmdutil.RegisterFlags(orderSubmitCmd, api.PostOrderOp.Flags(), &cmdutil.FlagOpts{
+	cmdutil.RegisterFlags(orderSubmitCmd, api.PostOrderOp.Flags(), api.PostOrderOp.Name, &cmdutil.FlagOpts{
 		Defaults: map[string]string{"type": "market"},
 	})
 	orderSubmitCmd.Flags().Bool("dry-run", false, "Print the request body without submitting")

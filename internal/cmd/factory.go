@@ -46,7 +46,7 @@ func fetchCmd(use string, op api.Op, fetch func(cmd *cobra.Command, args []strin
 	for _, fn := range configure {
 		fn(cmd)
 	}
-	cmdutil.RegisterFlags(cmd, op.Flags(), cmdFlagOpts[cmd])
+	cmdutil.RegisterFlags(cmd, op.Flags(), op.Name, cmdFlagOpts[cmd])
 	return cmd
 }
 
@@ -68,7 +68,7 @@ func attachCmd(cmd *cobra.Command, op api.Op, fetch func(cmd *cobra.Command, arg
 	for _, fn := range configure {
 		fn(cmd)
 	}
-	cmdutil.RegisterFlags(cmd, op.Flags(), cmdFlagOpts[cmd])
+	cmdutil.RegisterFlags(cmd, op.Flags(), op.Name, cmdFlagOpts[cmd])
 }
 
 // queryFromFlags builds url.Values from cobra flags using FlagDef metadata,

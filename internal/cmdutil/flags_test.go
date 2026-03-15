@@ -52,7 +52,7 @@ func TestRegisterFlags_TypeDispatch(t *testing.T) {
 		{Name: "active", OASName: "active", Type: "bool", Default: "true", Description: "Active flag"},
 		{Name: "price", OASName: "price", Type: "string", Default: "9.99", Description: "A price"},
 	}
-	RegisterFlags(cmd, defs, nil)
+	RegisterFlags(cmd, defs, "", nil)
 
 	tests := []struct {
 		flag     string
@@ -84,7 +84,7 @@ func TestRegisterFlags_DefaultOverride(t *testing.T) {
 	defs := []api.FlagDef{
 		{Name: "timeframe", OASName: "timeframe", Type: "string", Default: "1Min", Description: "Timeframe"},
 	}
-	RegisterFlags(cmd, defs, &FlagOpts{
+	RegisterFlags(cmd, defs, "", &FlagOpts{
 		Defaults: map[string]string{"timeframe": "1Day"},
 	})
 
@@ -114,7 +114,7 @@ func TestRegisterFlags_Completions(t *testing.T) {
 			Description: "A name (no completions)",
 		},
 	}
-	RegisterFlags(cmd, defs, nil)
+	RegisterFlags(cmd, defs, "", nil)
 
 	if cmd.Flags().Lookup("status") == nil {
 		t.Error("status flag not registered")
@@ -132,7 +132,7 @@ func TestRegisterFlags_NilOpts(t *testing.T) {
 	defs := []api.FlagDef{
 		{Name: "symbol", OASName: "symbol", Type: "string", Description: "Symbol"},
 	}
-	RegisterFlags(cmd, defs, nil)
+	RegisterFlags(cmd, defs, "", nil)
 
 	if cmd.Flags().Lookup("symbol") == nil {
 		t.Error("flag not registered with nil opts")
@@ -141,8 +141,8 @@ func TestRegisterFlags_NilOpts(t *testing.T) {
 
 func TestRegisterFlags_EmptyDefs(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
-	RegisterFlags(cmd, nil, nil)
-	RegisterFlags(cmd, []api.FlagDef{}, nil)
+	RegisterFlags(cmd, nil, "", nil)
+	RegisterFlags(cmd, []api.FlagDef{}, "", nil)
 
 	if cmd.Flags().HasFlags() {
 		t.Error("expected no flags with empty defs")

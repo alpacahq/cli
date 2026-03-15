@@ -782,14 +782,8 @@ func checkExhaustive(allEndpoints []*endpointInfo, allSchemas []*schemaInfo) {
 		if ep == nil || ep.bodyRef == "" {
 			continue
 		}
-		var bodySchema *schemaInfo
-		for _, s := range allSchemas {
-			if s.goName == ep.bodyRef && s.kind == "struct" {
-				bodySchema = s
-				break
-			}
-		}
-		if bodySchema == nil {
+		bodySchema := findSchema(allSchemas, ep.bodyRef)
+		if bodySchema == nil || bodySchema.kind != "struct" {
 			continue
 		}
 		nonBodyNames := map[string]bool{}
@@ -810,6 +804,24 @@ func checkExhaustive(allEndpoints []*endpointInfo, allSchemas []*schemaInfo) {
 			log.Fatalf("cmdRegistry[%q]: body field %q collides with a query/path param — add bodyAliases entry to resolve", opID, flagName)
 		}
 	}
+}
+
+func findSchema(schemas []*schemaInfo, goName string) *schemaInfo {
+	for _, s := range schemas {
+		if s.goName == goName {
+			return s
+		}
+	}
+	return nil
+}
+
+func findSchemaByOASName(schemas []*schemaInfo, name string) *schemaInfo {
+	for _, s := range schemas {
+		if s.name == name {
+			return s
+		}
+	}
+	return nil
 }
 
 func genCommands(allEndpoints []*endpointInfo, allSchemas []*schemaInfo) string {
@@ -915,13 +927,7 @@ func emitCommand(buf *bytes.Buffer, opID string, def cmdDef, ep *endpointInfo, s
 
 	// Register aliased body flags via configure closure
 	if len(def.bodyAliases) > 0 {
-		var bodySchema *schemaInfo
-		for _, s := range schemas {
-			if s.goName == ep.bodyRef && s.kind == "struct" {
-				bodySchema = s
-				break
-			}
-		}
+		bodySchema := findSchema(schemas, ep.bodyRef)
 		var aliasKeys []string
 		for k := range def.bodyAliases {
 			aliasKeys = append(aliasKeys, k)
@@ -1107,7 +1113,7 @@ func buildInlinePostBody(ep *endpointInfo) string {
 	lines = append(lines, fmt.Sprintf("&api.%s{", typeName))
 	for _, name := range propNames {
 		flagName := strings.ReplaceAll(name, "_", "-")
-		goField := toGoFieldName(name)
+		goField := toGoName(name)
 		lines = append(lines, fmt.Sprintf("\t\t%s: cmdutil.Str(cmd, %q),", goField, flagName))
 	}
 	lines = append(lines, "\t}")
@@ -1115,14 +1121,8 @@ func buildInlinePostBody(ep *endpointInfo) string {
 }
 
 func buildPostBody(ep *endpointInfo, def cmdDef, schemas []*schemaInfo) string {
-	var bodySchema *schemaInfo
-	for _, s := range schemas {
-		if s.goName == ep.bodyRef && s.kind == "struct" {
-			bodySchema = s
-			break
-		}
-	}
-	if bodySchema == nil {
+	bodySchema := findSchema(schemas, ep.bodyRef)
+	if bodySchema == nil || bodySchema.kind != "struct" {
 		return ""
 	}
 
@@ -1152,7 +1152,7 @@ func buildPostBody(ep *endpointInfo, def cmdDef, schemas []*schemaInfo) string {
 	lines = append(lines, fmt.Sprintf("&api.%s{", ep.bodyRef))
 	for _, name := range propNames {
 		flagName := strings.ReplaceAll(name, "_", "-")
-		goField := toGoFieldName(name)
+		goField := toGoName(name)
 		lines = append(lines, fmt.Sprintf("\t\t%s: cmdutil.Str(cmd, %q),", goField, flagName))
 	}
 	lines = append(lines, "\t}")
@@ -1160,14 +1160,8 @@ func buildPostBody(ep *endpointInfo, def cmdDef, schemas []*schemaInfo) string {
 }
 
 func buildPatchBodyWithAliases(ep *endpointInfo, def cmdDef, clientVar string, schemas []*schemaInfo) string {
-	var bodySchema *schemaInfo
-	for _, s := range schemas {
-		if s.goName == ep.bodyRef && s.kind == "struct" {
-			bodySchema = s
-			break
-		}
-	}
-	if bodySchema == nil {
+	bodySchema := findSchema(schemas, ep.bodyRef)
+	if bodySchema == nil || bodySchema.kind != "struct" {
 		return ""
 	}
 
@@ -1187,7 +1181,7 @@ func buildPatchBodyWithAliases(ep *endpointInfo, def cmdDef, clientVar string, s
 		if alias, ok := def.bodyAliases[flagName]; ok {
 			flagName = alias
 		}
-		goField := toGoFieldName(name)
+		goField := toGoName(name)
 
 		if _, ok := ps["$ref"]; ok {
 			continue
@@ -1230,14 +1224,8 @@ func buildPatchBodyWithAliases(ep *endpointInfo, def cmdDef, clientVar string, s
 }
 
 func buildPostBodyBlock(ep *endpointInfo, def cmdDef, clientVar string, schemas []*schemaInfo) string {
-	var bodySchema *schemaInfo
-	for _, s := range schemas {
-		if s.goName == ep.bodyRef && s.kind == "struct" {
-			bodySchema = s
-			break
-		}
-	}
-	if bodySchema == nil {
+	bodySchema := findSchema(schemas, ep.bodyRef)
+	if bodySchema == nil || bodySchema.kind != "struct" {
 		return ""
 	}
 
@@ -1260,7 +1248,7 @@ func buildPostBodyBlock(ep *endpointInfo, def cmdDef, clientVar string, schemas 
 			return ""
 		}
 		flagName := strings.ReplaceAll(name, "_", "-")
-		goField := toGoFieldName(name)
+		goField := toGoName(name)
 		switch t, _ := ps["type"].(string); t {
 		case "string":
 			fields = append(fields, fieldCat{goField, flagName, "string"})
@@ -1326,20 +1314,9 @@ type jsonField struct {
 }
 
 func structRefBodyFields(bodyRef string, schemas []*schemaInfo) []jsonField {
-	var bodySchema *schemaInfo
-	for _, s := range schemas {
-		if s.goName == bodyRef && s.kind == "struct" {
-			bodySchema = s
-			break
-		}
-	}
-	if bodySchema == nil {
+	bodySchema := findSchema(schemas, bodyRef)
+	if bodySchema == nil || bodySchema.kind != "struct" {
 		return nil
-	}
-
-	schemaByName := map[string]*schemaInfo{}
-	for _, s := range schemas {
-		schemaByName[s.name] = s
 	}
 
 	var propNames []string
@@ -1356,10 +1333,10 @@ func structRefBodyFields(bodyRef string, schemas []*schemaInfo) []jsonField {
 			continue
 		}
 		rn := refBaseName(ref)
-		if s, ok := schemaByName[rn]; ok && s.kind == "struct" {
+		if s := findSchemaByOASName(schemas, rn); s != nil && s.kind == "struct" {
 			fields = append(fields, jsonField{
 				flagName: strings.ReplaceAll(name, "_", "-"),
-				goField:  toGoFieldName(name),
+				goField:  toGoName(name),
 			})
 		}
 	}
