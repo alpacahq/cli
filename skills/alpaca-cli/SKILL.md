@@ -135,10 +135,20 @@ The CLI retries on 429 and 5xx with exponential backoff (max 3 attempts). `Retry
 
 ```bash
 alpaca account get --verbose   # one-line request/response summary on stderr
+alpaca account get --trace     # timing breakdown (DNS, TLS, TTFB) on stderr
 alpaca account get --debug     # full headers and bodies on stderr
 ```
 
 Credentials are always scrubbed from debug output.
+
+### Filter JSON output
+
+```bash
+alpaca position list --jq '.[0].symbol'
+alpaca order list --jq '[.[] | {id, symbol, side, qty}]'
+```
+
+`--jq` applies a jq expression to the JSON output without requiring an external `jq` install.
 
 ## Environment variables
 
@@ -151,8 +161,9 @@ Credentials are always scrubbed from debug output.
 | `ALPACA_PROFILE` | Profile name to use |
 | `ALPACA_OUTPUT` | Default output format (`json`, `csv`) |
 | `ALPACA_CONFIG_DIR` | Config directory (default: `~/.config/alpaca`) |
-| `ALPACA_VERBOSE` | Enable verbose HTTP tracing |
-| `ALPACA_DEBUG` | Full HTTP request/response bodies on stderr |
+| `ALPACA_VERBOSE` | Show HTTP request summaries on stderr |
+| `ALPACA_DEBUG` | Show HTTP request/response headers and bodies on stderr |
+| `ALPACA_TRACE` | Show HTTP timing breakdown on stderr (DNS, TLS, TTFB) |
 | `ALPACA_NO_UPDATE_NOTIFY` | Suppress background update notices |
 
 Precedence: flags > env vars > profile config > defaults.
@@ -168,7 +179,7 @@ alpaca update --check --quiet
 This returns structured output:
 
 ```json
-{"current":"0.1.0","latest":"0.2.0","update_available":true,"install_method":"goinstall","update_command":"go install github.com/alpacahq/cli/cmd/alpaca@latest"}
+{"current":"0.0.1","latest":"0.0.2","update_available":true,"install_method":"goinstall","update_command":"go install github.com/alpacahq/cli/cmd/alpaca@latest"}
 ```
 
 If `update_available` is `true`, run the `update_command` value to upgrade.
@@ -194,15 +205,14 @@ Use `--help-all` to find the right command. Use `<command> --help` for flag deta
 
 ## Pagination
 
-Data commands support auto-pagination:
+Data commands return one page by default. Use `--limit` to control page size and `--page-token` to fetch subsequent pages:
 
 ```bash
-alpaca data bars --symbol AAPL --start 2025-01-01 --all
-alpaca data trades --symbol AAPL --start 2025-01-01 --all --max 5000
-alpaca data news --symbols AAPL --all --max 100
+alpaca data bars --symbol AAPL --start 2025-01-01 --limit 500
+alpaca data bars --symbol AAPL --start 2025-01-01 --limit 500 --page-token <token>
 ```
 
-`--all` fetches all available pages. `--max` caps the number of items (default: 10,000).
+The response includes a `next_page_token` field when more data is available.
 
 ## Troubleshooting
 

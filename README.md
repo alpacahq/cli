@@ -81,12 +81,7 @@ alpaca position list
 
 - Passing `--secret` via flags is discouraged (shell history exposure). Use interactive login or env vars.
 
-**OAuth security model:** The CLI is a first-party public OAuth client — the embedded `client_id` and `client_secret` serve only as app identifiers, not security credentials. This is standard for native CLI apps (GitHub CLI, Google Cloud CLI, Stripe CLI all do the same). The user always controls access through the browser consent screen; the client credentials alone grant no access to any account. For details, see:
-
-- [RFC 8252 Section 8.5](https://datatracker.ietf.org/doc/html/rfc8252#section-8.5) — *"Secrets that are statically included as part of an app distributed to multiple users should not be treated as confidential secrets."*
-- [GitHub CLI approach](https://github.com/cli/oauth/issues/1#issuecomment-749151295) — GitHub's `cli/oauth` maintainer on why embedding client secrets in open-source CLIs is acceptable.
-
-Note: OAuth login is restricted to paper trading while the flow does not support PKCE (pending Alpaca OAuth server support). Live trading requires API keys. The authorization code grant with state parameter and localhost redirect URI validation provides adequate security for paper trading.
+**OAuth security model:** The CLI is a first-party public OAuth client — the embedded `client_id` and `client_secret` are app identifiers, not security credentials. This is standard for native CLI apps ([RFC 8252 §8.5](https://datatracker.ietf.org/doc/html/rfc8252#section-8.5)). The user controls access through the browser consent screen. OAuth is restricted to paper trading while PKCE support is pending; live trading requires API keys.
 
 ## Commands
 
@@ -110,9 +105,9 @@ Note: OAuth login is restricted to paper trading while the flow does not support
 | `alpaca option exercise` | Exercise an option |
 | `alpaca option do-not-exercise` | Mark option as do-not-exercise |
 | `alpaca clock` | US market clock |
-| `alpaca clock markets` | Multi-market clock (v3) |
+| `alpaca clock markets` | Multi-market clock |
 | `alpaca calendar` | US trading calendar |
-| `alpaca calendar market` | Market-specific calendar (v3) |
+| `alpaca calendar market` | Market-specific calendar |
 
 ### Market Data
 
@@ -236,8 +231,9 @@ Every command supports `--help` for full flag documentation.
 ## Output Formats
 
 ```bash
-alpaca position list              # JSON (default)
-alpaca position list --csv        # CSV for spreadsheets
+alpaca position list                          # JSON (default)
+alpaca position list --csv                    # CSV for spreadsheets
+alpaca position list --jq '.[0].symbol'       # Filter JSON with jq expressions
 ```
 
 ## Configuration
@@ -271,7 +267,7 @@ Credentials are stored in `~/.config/alpaca/profiles/`.
 | `ALPACA_TRACE` | Show HTTP timing breakdown on stderr — DNS, TLS, TTFB (any non-empty value) |
 | `ALPACA_NO_UPDATE_NOTIFY` | Suppress background update notices (any non-empty value) |
 
-Global flags: `--csv`, `--profile`, `--verbose`, `--debug`, `--quiet`, `--timeout`.
+Global flags: `--csv`, `--jq`, `--profile`, `--verbose`, `--debug`, `--trace`, `--quiet`, `--schema`, `--timeout`.
 
 Precedence: flags > env vars > profile config > defaults.
 
@@ -347,11 +343,12 @@ export ALPACA_SECRET_KEY=...
 
 ### Clean Output
 
-JSON is the default output format. Use `--quiet` to suppress all non-data output (warnings, hints):
+JSON is the default output format. Use `--quiet` to suppress all non-data output (warnings, hints). Use `--jq` to filter JSON inline without piping to `jq`:
 
 ```bash
 alpaca position list --quiet
 alpaca data latest-trade --symbol AAPL --quiet
+alpaca order list --jq '[.[] | {id, symbol, side, qty}]' --quiet
 ```
 
 ### Structured Errors
@@ -402,7 +399,7 @@ alpaca account get --trace
 ```bash
 alpaca account get --debug
 # stderr: → GET https://paper-api.alpaca.markets/v2/account
-# stderr: → User-Agent: alpaca-cli/0.1.0
+# stderr: → User-Agent: alpaca-cli/0.0.1
 # stderr: ← Content-Type: application/json
 # stderr: ← {"id":"...","equity":"10000.00",...}
 ```
@@ -428,18 +425,6 @@ echo '{"symbol":"AAPL","qty":"1","side":"buy","type":"market","time_in_force":"d
 
 If both `--body` and stdin are provided, `--body` takes precedence.
 
-### Pagination
-
-Data commands support auto-pagination with `--all`:
-
-```bash
-alpaca data bars --symbol AAPL --start 2025-01-01 --all
-alpaca data trades --symbol AAPL --start 2025-01-01 --all --max 5000
-alpaca data news --symbols AAPL --all --max 100
-```
-
-`--max` limits the total number of items returned (default: 10,000).
-
 ### Response Schemas
 
 Any command with OAS-generated flags supports `--schema` to show the response fields without making an API call:
@@ -448,14 +433,6 @@ Any command with OAS-generated flags supports `--schema` to show the response fi
 alpaca order list --schema       # Show Order response fields
 alpaca asset list --schema       # Show Asset response fields
 alpaca data bars --schema        # Show bars response fields
-```
-
-### Diagnostics
-
-Check your CLI setup:
-
-```bash
-alpaca doctor
 ```
 
 ### Timeout
