@@ -413,12 +413,14 @@ func TestOrderList_AfterOrderID(t *testing.T) {
 	first := submitTestOrder(t)
 	second := submitTestOrder(t)
 
+	// Default direction is desc (newest first): [second, first, ...older].
+	// after_order_id=second returns orders after the pivot in desc order,
+	// i.e. older orders — which should include first but exclude second.
 	var filtered []map[string]any
 	pollFor(t, 5*time.Second, "order list with after-order-id to find pivot", func() bool {
 		out, _, code := alpacaWithStderr(t, "order", "list",
 			"--status", "open",
-			"--direction", "asc",
-			"--after-order-id", first,
+			"--after-order-id", second,
 		)
 		if code != 0 {
 			return false
@@ -428,11 +430,11 @@ func TestOrderList_AfterOrderID(t *testing.T) {
 	})
 
 	for _, o := range filtered {
-		if o["id"] == first {
+		if o["id"] == second {
 			t.Error("--after-order-id should exclude the pivot order itself")
 		}
 	}
-	if !containsID(filtered, second) {
-		t.Error("--after-order-id should include orders created after the pivot")
+	if !containsID(filtered, first) {
+		t.Error("--after-order-id with desc should include orders older than the pivot")
 	}
 }
