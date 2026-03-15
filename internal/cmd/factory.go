@@ -22,10 +22,8 @@ func fetchCmd(use string, op api.Op, fetch func(cmd *cobra.Command, args []strin
 		Example: op.Example,
 	}
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		if req := registeredRequired(cmd, op); len(req) > 0 {
-			if err := cmdutil.RequireAll(cmd, req...); err != nil {
-				return err
-			}
+		if err := requireFlags(cmd, op); err != nil {
+			return err
 		}
 		data, err := fetch(cmd, args)
 		if err != nil {
@@ -50,10 +48,8 @@ func attachCmd(cmd *cobra.Command, op api.Op, fetch func(cmd *cobra.Command, arg
 		cmd.Example = op.Example
 	}
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		if req := registeredRequired(cmd, op); len(req) > 0 {
-			if err := cmdutil.RequireAll(cmd, req...); err != nil {
-				return err
-			}
+		if err := requireFlags(cmd, op); err != nil {
+			return err
 		}
 		data, err := fetch(cmd, args)
 		if err != nil {
@@ -106,18 +102,16 @@ func voidResponse(data json.RawMessage, err error) (any, error) {
 	return data, nil
 }
 
-// registeredRequired returns only those RequiredFlags from the op that are
-// actually registered on the command.
-func registeredRequired(cmd *cobra.Command, op api.Op) []string {
-	all := op.RequiredFlags
-	if len(all) == 0 {
-		return nil
-	}
-	var present []string
-	for _, name := range all {
-		if cmd.Flags().Lookup(name) != nil {
-			present = append(present, name)
+// requireFlags validates that all OAS-required flags have been provided.
+func requireFlags(cmd *cobra.Command, op api.Op) error {
+	var req []string
+	for _, f := range op.Flags {
+		if f.Required {
+			req = append(req, f.Name)
 		}
 	}
-	return present
+	if len(req) == 0 {
+		return nil
+	}
+	return cmdutil.RequireAll(cmd, req...)
 }

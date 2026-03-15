@@ -767,10 +767,6 @@ func checkExhaustive(allEndpoints []*endpointInfo) {
 		if def.examples == "" {
 			log.Fatalf("cmdRegistry[%q] has empty examples — every generated command must have examples", opID)
 		}
-	}
-
-	// Detect body field collisions with query/path params.
-	for opID, def := range cmdRegistry {
 		ep := epByOp[opID]
 		if ep == nil || ep.bodyRef == "" {
 			continue
@@ -957,51 +953,31 @@ func buildFetchBody(opID string, def cmdDef, ep *endpointInfo, clientVar string)
 		return lines
 	}
 
-	// For POST with body ref (flat scalar)
-	if isPost && hasBodyRef {
-		if s := findSchema(ep.bodyRef); s != nil && s.kind == "struct" {
-			bodyExpr := buildFlatPostBody(ep.bodyRef, s.props)
-			if bodyExpr != "" {
-				var args []string
-				for _, pp := range ep.pathParams {
-					args = append(args, pathParamExpr(pp, def))
-				}
-				if hasQueryParams {
-					args = append(args, queryFromFlagsExpr(ep))
-				}
-				args = append(args, bodyExpr)
-				call := fmt.Sprintf("%s.%s(%s)", clientVar, methodName, strings.Join(args, ", "))
-				if isVoid {
-					return "return voidResponse(" + call + ")"
-				}
-				return "return " + call
+	// For POST with body ref or inline body schema
+	if isPost && (hasBodyRef || hasBodyInline) {
+		var typeName string
+		var props map[string]map[string]any
+		if hasBodyRef {
+			if s := findSchema(ep.bodyRef); s != nil && s.kind == "struct" {
+				typeName, props = ep.bodyRef, s.props
 			}
+		} else if p := flattenInlineProps(ep.bodyInline); p != nil {
+			typeName, props = ep.goName+"Request", p
 		}
-		// Try multi-statement block for mixed types (e.g. string + []string fields)
-		if block := buildPostBodyBlock(ep, def, clientVar); block != "" {
-			return block
-		}
-	}
-
-	// For POST with inline body schema
-	if isPost && hasBodyInline {
-		if props := flattenInlineProps(ep.bodyInline); props != nil {
-			bodyExpr := buildFlatPostBody(ep.goName+"Request", props)
-			if bodyExpr != "" {
-				var args []string
-				for _, pp := range ep.pathParams {
-					args = append(args, pathParamExpr(pp, def))
-				}
-				if hasQueryParams {
-					args = append(args, queryFromFlagsExpr(ep))
-				}
-				args = append(args, bodyExpr)
-				call := fmt.Sprintf("%s.%s(%s)", clientVar, methodName, strings.Join(args, ", "))
-				if isVoid {
-					return "return voidResponse(" + call + ")"
-				}
-				return "return " + call
+		if bodyCode, ok := buildPostBody(typeName, props); ok {
+			var args []string
+			for _, pp := range ep.pathParams {
+				args = append(args, pathParamExpr(pp, def))
 			}
+			if hasQueryParams {
+				args = append(args, queryFromFlagsExpr(ep))
+			}
+			args = append(args, "body")
+			call := fmt.Sprintf("%s.%s(%s)", clientVar, methodName, strings.Join(args, ", "))
+			if isVoid {
+				return bodyCode + "\n\treturn voidResponse(" + call + ")"
+			}
+			return bodyCode + "\n\treturn " + call
 		}
 	}
 
@@ -1035,29 +1011,70 @@ func flattenInlineProps(schema map[string]any) map[string]map[string]any {
 	return result
 }
 
-func buildFlatPostBody(typeName string, props map[string]map[string]any) string {
+// buildPostBody generates the body-construction code for POST commands.
+// Returns the code string and true if successful, or ("", false) if the
+// body schema contains unsupported field types ($ref, non-string, non-[]string).
+func buildPostBody(typeName string, props map[string]map[string]any) (string, bool) {
+	if typeName == "" || len(props) == 0 {
+		return "", false
+	}
 	propNames := sortedKeys(props)
+
+	type field struct {
+		goField, flagName, kind string // kind: "string" or "arrayString"
+	}
+	var fields []field
+	var hasArray bool
 	for _, name := range propNames {
 		ps := props[name]
 		if _, ok := ps["$ref"].(string); ok {
-			return ""
+			return "", false
 		}
-		if t, _ := ps["type"].(string); t != "string" {
-			return ""
-		}
-	}
-	if len(propNames) == 0 {
-		return ""
-	}
-	var lines []string
-	lines = append(lines, fmt.Sprintf("&api.%s{", typeName))
-	for _, name := range propNames {
 		flagName := strings.ReplaceAll(name, "_", "-")
 		goField := toGoName(name)
-		lines = append(lines, fmt.Sprintf("\t\t%s: cmdutil.Str(cmd, %q),", goField, flagName))
+		switch t, _ := ps["type"].(string); t {
+		case "string":
+			fields = append(fields, field{goField, flagName, "string"})
+		case "array":
+			if items, ok := ps["items"].(map[string]any); ok {
+				if itemType, _ := items["type"].(string); itemType == "string" {
+					fields = append(fields, field{goField, flagName, "arrayString"})
+					hasArray = true
+					continue
+				}
+			}
+			return "", false
+		default:
+			return "", false
+		}
 	}
-	lines = append(lines, "\t}")
-	return strings.Join(lines, "\n")
+
+	if !hasArray {
+		var lines []string
+		lines = append(lines, fmt.Sprintf("body := &api.%s{", typeName))
+		for _, f := range fields {
+			lines = append(lines, fmt.Sprintf("\t\t%s: cmdutil.Str(cmd, %q),", f.goField, f.flagName))
+		}
+		lines = append(lines, "\t}")
+		return strings.Join(lines, "\n"), true
+	}
+
+	var b strings.Builder
+	fmt.Fprintf(&b, "body := &api.%s{\n", typeName)
+	for _, f := range fields {
+		if f.kind == "string" {
+			fmt.Fprintf(&b, "\t\t%s: cmdutil.Str(cmd, %q),\n", f.goField, f.flagName)
+		}
+	}
+	b.WriteString("\t}\n")
+	for _, f := range fields {
+		if f.kind == "arrayString" {
+			fmt.Fprintf(&b, "\tif s := cmdutil.Str(cmd, %q); s != \"\" {\n", f.flagName)
+			fmt.Fprintf(&b, "\t\tbody.%s = strings.Split(s, \",\")\n", f.goField)
+			b.WriteString("\t}")
+		}
+	}
+	return b.String(), true
 }
 
 func buildPatchBodyWithAliases(ep *endpointInfo, def cmdDef, clientVar string) string {
@@ -1117,83 +1134,6 @@ func buildPatchBodyWithAliases(ep *endpointInfo, def cmdDef, clientVar string) s
 	args = append(args, "body")
 
 	fmt.Fprintf(&b, "\treturn %s.%s(%s)", clientVar, ep.goName, strings.Join(args, ", "))
-	return b.String()
-}
-
-func buildPostBodyBlock(ep *endpointInfo, def cmdDef, clientVar string) string {
-	bodySchema := findSchema(ep.bodyRef)
-	if bodySchema == nil || bodySchema.kind != "struct" {
-		return ""
-	}
-
-	propNames := sortedKeys(bodySchema.props)
-
-	type fieldCat struct {
-		goField  string
-		flagName string
-		kind     string // "string", "arrayString"
-	}
-	var fields []fieldCat
-	var hasArray bool
-	for _, name := range propNames {
-		ps := bodySchema.props[name]
-		if _, ok := ps["$ref"]; ok {
-			return ""
-		}
-		flagName := strings.ReplaceAll(name, "_", "-")
-		goField := toGoName(name)
-		switch t, _ := ps["type"].(string); t {
-		case "string":
-			fields = append(fields, fieldCat{goField, flagName, "string"})
-		case "array":
-			if items, ok := ps["items"].(map[string]any); ok {
-				if itemType, _ := items["type"].(string); itemType == "string" {
-					fields = append(fields, fieldCat{goField, flagName, "arrayString"})
-					hasArray = true
-					continue
-				}
-			}
-			return ""
-		default:
-			return ""
-		}
-	}
-	if !hasArray {
-		return ""
-	}
-
-	var b strings.Builder
-	fmt.Fprintf(&b, "body := &api.%s{\n", ep.bodyRef)
-	for _, f := range fields {
-		if f.kind == "string" {
-			fmt.Fprintf(&b, "\t\t%s: cmdutil.Str(cmd, %q),\n", f.goField, f.flagName)
-		}
-	}
-	b.WriteString("\t}\n")
-	for _, f := range fields {
-		if f.kind == "arrayString" {
-			fmt.Fprintf(&b, "\tif s := cmdutil.Str(cmd, %q); s != \"\" {\n", f.flagName)
-			fmt.Fprintf(&b, "\t\tbody.%s = strings.Split(s, \",\")\n", f.goField)
-			b.WriteString("\t}\n")
-		}
-	}
-
-	var args []string
-	for _, pp := range ep.pathParams {
-		args = append(args, pathParamExpr(pp, def))
-	}
-	if len(ep.queryParams) > 0 {
-		args = append(args, queryFromFlagsExpr(ep))
-	}
-	args = append(args, "body")
-
-	isVoid := ep.responseEmpty || ep.responseRef == ""
-	call := fmt.Sprintf("%s.%s(%s)", clientVar, ep.goName, strings.Join(args, ", "))
-	if isVoid {
-		fmt.Fprintf(&b, "\treturn voidResponse(%s)", call)
-	} else {
-		fmt.Fprintf(&b, "\treturn %s", call)
-	}
 	return b.String()
 }
 

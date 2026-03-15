@@ -138,15 +138,17 @@ var watchlistCmd = &cobra.Command{
 }
 
 var addAssetToWatchlistCmd = fetchCmd("add", api.AddAssetToWatchlistOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return tradingClient.AddAssetToWatchlist(cmdutil.Str(cmd, "watchlist-id"), &api.AddAssetToWatchlistRequest{
+	body := &api.AddAssetToWatchlistRequest{
 		Symbol: cmdutil.Str(cmd, "symbol"),
-	})
+	}
+	return tradingClient.AddAssetToWatchlist(cmdutil.Str(cmd, "watchlist-id"), body)
 })
 
 var addAssetToWatchlistByNameCmd = fetchCmd("add-by-name", api.AddAssetToWatchlistByNameOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return tradingClient.AddAssetToWatchlistByName(queryFromFlags(cmd, api.AddAssetToWatchlistByNameOp), &api.AddAssetToWatchlistByNameRequest{
+	body := &api.AddAssetToWatchlistByNameRequest{
 		Symbol: cmdutil.Str(cmd, "symbol"),
-	})
+	}
+	return tradingClient.AddAssetToWatchlistByName(queryFromFlags(cmd, api.AddAssetToWatchlistByNameOp), body)
 })
 
 var calendarMarketCmd = fetchCmd("market", api.CalendarOp, func(cmd *cobra.Command, args []string) (any, error) {
@@ -162,33 +164,37 @@ var corporateActionsCmd = fetchCmd("corporate-actions", api.CorporateActionsOp, 
 })
 
 var createCryptoPerpTransferForAccountCmd = fetchCmd("create", api.CreateCryptoPerpTransferForAccountOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return tradingClient.CreateCryptoPerpTransferForAccount(&api.CreateCryptoTransferRequest{
+	body := &api.CreateCryptoTransferRequest{
 		Address: cmdutil.Str(cmd, "address"),
 		Amount:  cmdutil.Str(cmd, "amount"),
 		Asset:   cmdutil.Str(cmd, "asset"),
-	})
+	}
+	return tradingClient.CreateCryptoPerpTransferForAccount(body)
 })
 
 var createCryptoTransferForAccountCmd = fetchCmd("create", api.CreateCryptoTransferForAccountOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return tradingClient.CreateCryptoTransferForAccount(&api.CreateCryptoTransferRequest{
+	body := &api.CreateCryptoTransferRequest{
 		Address: cmdutil.Str(cmd, "address"),
 		Amount:  cmdutil.Str(cmd, "amount"),
 		Asset:   cmdutil.Str(cmd, "asset"),
-	})
+	}
+	return tradingClient.CreateCryptoTransferForAccount(body)
 })
 
 var createWhitelistedAddressCmd = fetchCmd("add", api.CreateWhitelistedAddressOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return tradingClient.CreateWhitelistedAddress(&api.CreateWhitelistedAddressRequest{
+	body := &api.CreateWhitelistedAddressRequest{
 		Address: cmdutil.Str(cmd, "address"),
 		Asset:   cmdutil.Str(cmd, "asset"),
-	})
+	}
+	return tradingClient.CreateWhitelistedAddress(body)
 })
 
 var createWhitelistedPerpAddressCmd = fetchCmd("add", api.CreateWhitelistedPerpAddressOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return tradingClient.CreateWhitelistedPerpAddress(&api.CreateWhitelistedPerpAddressRequest{
+	body := &api.CreateWhitelistedPerpAddressRequest{
 		Address: cmdutil.Str(cmd, "address"),
 		Asset:   cmdutil.Str(cmd, "asset"),
-	})
+	}
+	return tradingClient.CreateWhitelistedPerpAddress(body)
 })
 
 var cryptoBarsCmd = fetchCmd("bars", api.CryptoBarsOp, func(cmd *cobra.Command, args []string) (any, error) {

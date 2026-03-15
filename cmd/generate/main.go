@@ -1184,7 +1184,6 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 	fmt.Fprintf(&buf, "\tExample       string\n")
 	fmt.Fprintf(&buf, "\tReturnsArray  bool\n")
 	fmt.Fprintf(&buf, "\tFlags         []FlagDef\n")
-	fmt.Fprintf(&buf, "\tRequiredFlags []string\n")
 	fmt.Fprintf(&buf, "}\n\n")
 
 	// FlagDef struct
@@ -1202,16 +1201,6 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 
 	// Per-op vars
 	for _, op := range ops {
-		var reqFlags []string
-		reqSeen := map[string]bool{}
-		for _, p := range op.params {
-			if p.required && !reqSeen[p.flagName] {
-				reqFlags = append(reqFlags, p.flagName)
-				reqSeen[p.flagName] = true
-			}
-		}
-		sort.Strings(reqFlags)
-
 		fmt.Fprintf(&buf, "var %sOp = Op{\n", op.goName)
 		fmt.Fprintf(&buf, "\tName: %q, Summary: %q", op.goName, op.summary)
 		if op.returnsArray {
@@ -1226,17 +1215,6 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 			if def.examples != "" {
 				fmt.Fprintf(&buf, "\tExample: %s,\n", backtickQuote(def.examples))
 			}
-		}
-
-		if len(reqFlags) > 0 {
-			fmt.Fprintf(&buf, "\tRequiredFlags: []string{")
-			for i, name := range reqFlags {
-				if i > 0 {
-					buf.WriteString(", ")
-				}
-				fmt.Fprintf(&buf, "%q", name)
-			}
-			fmt.Fprintf(&buf, "},\n")
 		}
 
 		if len(op.params) > 0 {
