@@ -18,7 +18,6 @@ type cmdDef struct {
 	defaults    map[string]string
 	normalize   []string
 	bodyAliases map[string]string // body field kebab name → CLI alias (resolves flag collisions)
-	jsonFields  []string          // body field flag names accepting JSON string input (emits json.Unmarshal)
 	rawMethod   string            // overrides client method; signals (string, url.Values) call signature
 }
 
@@ -178,10 +177,9 @@ var cmdRegistry = map[string]cmdDef{
 		examples: "  alpaca order cancel --order-id <id>",
 	},
 	"PatchOrderByOrderID": {
-		parent:     "order",
-		use:        "replace",
-		jsonFields: []string{"advanced-instructions"},
-		examples:   "  alpaca order replace --order-id <id> --qty 20 --limit-price 190.00",
+		parent:   "order",
+		use:      "replace",
+		examples: "  alpaca order replace --order-id <id> --qty 20 --limit-price 190.00",
 	},
 	"DeleteAllOrders": {
 		parent:   "order",
@@ -1038,11 +1036,10 @@ func buildFetchBody(opID string, def cmdDef, ep *endpointInfo, clientVar string,
 		args = append(args, "body")
 
 		lines := fmt.Sprintf("body, changed := %s(cmd)\n", bodyFuncName)
-		for _, jf := range def.jsonFields {
-			goField := toGoFieldName(strings.ReplaceAll(jf, "-", "_"))
-			lines += fmt.Sprintf("\tif cmdutil.Changed(cmd, %q) {\n", jf)
-			lines += fmt.Sprintf("\t\tif err := json.Unmarshal([]byte(cmdutil.Str(cmd, %q)), &body.%s); err != nil {\n", jf, goField)
-			lines += fmt.Sprintf("\t\t\treturn nil, fmt.Errorf(\"--%s: %%w\", err)\n", jf)
+		for _, jf := range structRefBodyFields(ep.bodyRef, schemas) {
+			lines += fmt.Sprintf("\tif cmdutil.Changed(cmd, %q) {\n", jf.flagName)
+			lines += fmt.Sprintf("\t\tif err := json.Unmarshal([]byte(cmdutil.Str(cmd, %q)), &body.%s); err != nil {\n", jf.flagName, jf.goField)
+			lines += fmt.Sprintf("\t\t\treturn nil, fmt.Errorf(\"--%s: %%w\", err)\n", jf.flagName)
 			lines += "\t\t}\n"
 			lines += "\t\tchanged = true\n"
 			lines += "\t}\n"
@@ -1350,6 +1347,52 @@ func buildPostBodyBlock(ep *endpointInfo, def cmdDef, clientVar string, schemas 
 		fmt.Fprintf(&b, "\treturn %s", call)
 	}
 	return b.String()
+}
+
+type jsonField struct {
+	flagName string
+	goField  string
+}
+
+func structRefBodyFields(bodyRef string, schemas []*schemaInfo) []jsonField {
+	var bodySchema *schemaInfo
+	for _, s := range schemas {
+		if s.goName == bodyRef && s.kind == "struct" {
+			bodySchema = s
+			break
+		}
+	}
+	if bodySchema == nil {
+		return nil
+	}
+
+	schemaByName := map[string]*schemaInfo{}
+	for _, s := range schemas {
+		schemaByName[s.name] = s
+	}
+
+	var propNames []string
+	for name := range bodySchema.props {
+		propNames = append(propNames, name)
+	}
+	sort.Strings(propNames)
+
+	var fields []jsonField
+	for _, name := range propNames {
+		ps := bodySchema.props[name]
+		ref, ok := ps["$ref"].(string)
+		if !ok {
+			continue
+		}
+		rn := refBaseName(ref)
+		if s, ok := schemaByName[rn]; ok && s.kind == "struct" {
+			fields = append(fields, jsonField{
+				flagName: strings.ReplaceAll(name, "_", "-"),
+				goField:  toGoFieldName(name),
+			})
+		}
+	}
+	return fields
 }
 
 func pathParamExpr(pp paramInfo, def cmdDef) string {
