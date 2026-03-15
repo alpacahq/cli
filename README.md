@@ -146,13 +146,30 @@ Note: OAuth login is restricted to paper trading while the flow does not support
 
 | Command | Description |
 |---------|-------------|
-| `alpaca data bars` | Historical price bars (stock/crypto) |
-| `alpaca data quotes` | Historical quotes |
-| `alpaca data trades` | Historical trades |
-| `alpaca data snapshot` | Full snapshot |
-| `alpaca data latest trade` | Latest trade |
-| `alpaca data latest quote` | Latest quote |
-| `alpaca data latest bar` | Latest bar |
+| `alpaca data bars` | Historical bars (single symbol) |
+| `alpaca data quotes` | Historical quotes (single symbol) |
+| `alpaca data trades` | Historical trades (single symbol) |
+| `alpaca data snapshot` | Stock snapshot (single symbol) |
+| `alpaca data latest-bar` | Latest bar (single symbol) |
+| `alpaca data latest-quote` | Latest quote (single symbol) |
+| `alpaca data latest-trade` | Latest trade (single symbol) |
+| `alpaca data multi-bars` | Historical bars (multi-symbol) |
+| `alpaca data multi-quotes` | Historical quotes (multi-symbol) |
+| `alpaca data multi-trades` | Historical trades (multi-symbol) |
+| `alpaca data multi-snapshots` | Snapshots (multi-symbol) |
+| `alpaca data latest-bars` | Latest bars (multi-symbol) |
+| `alpaca data latest-quotes` | Latest quotes (multi-symbol) |
+| `alpaca data latest-trades` | Latest trades (multi-symbol) |
+| `alpaca data auction` | Stock auction (single symbol) |
+| `alpaca data auctions` | Stock auctions (multi-symbol) |
+| `alpaca data crypto bars` | Crypto historical bars |
+| `alpaca data crypto quotes` | Crypto historical quotes |
+| `alpaca data crypto trades` | Crypto historical trades |
+| `alpaca data crypto snapshots` | Crypto snapshots |
+| `alpaca data crypto latest-bars` | Latest crypto bars |
+| `alpaca data crypto latest-quotes` | Latest crypto quotes |
+| `alpaca data crypto latest-trades` | Latest crypto trades |
+| `alpaca data crypto-orderbook` | Latest crypto orderbooks |
 | `alpaca data option bars` | Option historical bars |
 | `alpaca data option trades` | Option historical trades |
 | `alpaca data option snapshot` | Option snapshots |
@@ -163,8 +180,6 @@ Note: OAuth login is restricted to paper trading while the flow does not support
 | `alpaca data option conditions` | Option trade conditions |
 | `alpaca data forex rates` | Historical forex rates |
 | `alpaca data forex latest` | Latest forex rates |
-| `alpaca data crypto-orderbook` | Latest crypto orderbooks |
-| `alpaca data auctions` | Stock auction data |
 | `alpaca data corporate-actions` | Corporate actions (market data) |
 | `alpaca data fixed-income` | Fixed income prices |
 | `alpaca data logo` | Company logo URL |
@@ -209,6 +224,27 @@ Note: OAuth login is restricted to paper trading while the flow does not support
 | `alpaca wallet whitelist list` | List whitelisted addresses |
 | `alpaca wallet whitelist add` | Add a whitelisted address |
 | `alpaca wallet whitelist delete` | Remove a whitelisted address |
+
+### Crypto Perpetuals
+
+| Command | Description |
+|---------|-------------|
+| `alpaca crypto-perp vitals` | Account vitals |
+| `alpaca crypto-perp leverage` | Get leverage settings |
+| `alpaca crypto-perp set-leverage` | Set leverage for an asset |
+| `alpaca crypto-perp wallet list` | List perp funding wallets |
+| `alpaca crypto-perp wallet transfer list` | List perp transfers |
+| `alpaca crypto-perp wallet transfer get` | Get a perp transfer |
+| `alpaca crypto-perp wallet transfer create` | Create a perp transfer |
+| `alpaca crypto-perp wallet transfer estimate` | Estimate perp transfer fees |
+| `alpaca crypto-perp wallet whitelist list` | List whitelisted perp addresses |
+| `alpaca crypto-perp wallet whitelist add` | Add a whitelisted perp address |
+| `alpaca crypto-perp wallet whitelist delete` | Remove a whitelisted perp address |
+| `alpaca crypto-perp data latest-bars` | Latest perp bars |
+| `alpaca crypto-perp data latest-futures-pricing` | Latest futures pricing |
+| `alpaca crypto-perp data latest-orderbooks` | Latest perp orderbooks |
+| `alpaca crypto-perp data latest-quotes` | Latest perp quotes |
+| `alpaca crypto-perp data latest-trades` | Latest perp trades |
 
 ### Utilities
 
@@ -349,7 +385,7 @@ JSON is the default output format. Use `--quiet` to suppress all non-data output
 
 ```bash
 alpaca position list --quiet
-alpaca data latest trade --symbol AAPL --quiet
+alpaca data latest-trade --symbol AAPL --quiet
 ```
 
 ### Structured Errors

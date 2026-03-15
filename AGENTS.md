@@ -20,6 +20,8 @@ make check     # lint + test + build
 
 Fix any failures you introduce before moving on.
 
+When a refactor changes command names, flags, or output shape, review `test/integration/` and update any affected tests so they stay in sync.
+
 ## Keep docs in sync
 
 When a change affects CLI behavior, update any stale docs:

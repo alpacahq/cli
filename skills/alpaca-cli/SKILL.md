@@ -105,7 +105,7 @@ JSON is the default output format. `--quiet` suppresses all non-data output (war
 
 ```bash
 alpaca position list --quiet
-alpaca data latest trade --symbol AAPL --quiet
+alpaca data latest-trade --symbol AAPL --quiet
 ```
 
 ### Structured errors on stderr

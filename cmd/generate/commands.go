@@ -17,7 +17,6 @@ type cmdDef struct {
 	defaults    map[string]string
 	normalize   []string
 	bodyAliases map[string]string // body field kebab name → CLI alias (resolves flag collisions)
-	rawMethod   string            // overrides client method; signals (string, url.Values) call signature
 }
 
 type parentDef struct {
@@ -47,7 +46,6 @@ var cmdParents = map[string]parentDef{
 	"data":            {use: "data", short: "Access market data"},
 	"dataOption":      {use: "option", short: "Options market data", parent: "data"},
 	"dataForex":       {use: "forex", short: "Foreign exchange rate data", parent: "data"},
-	"dataLatest":      {use: "latest", short: "Get latest market data", parent: "data"},
 	"dataMeta":        {use: "meta", short: "Stock exchange and condition reference data", parent: "data"},
 	"screener":        {use: "screener", short: "Stock and crypto screener and market movers", parent: "data"},
 	"watchlist":       {use: "watchlist", short: "Manage watchlists"},
@@ -425,57 +423,48 @@ var cmdRegistry = map[string]cmdDef{
 		examples: `  alpaca watchlist add-by-name --name "Tech Stocks" --symbol NVDA`,
 	},
 
-	// --- data: single-symbol (unified routing) ---
+	// --- data: single-symbol stock ---
 	"StockBarSingle": {
-		parent:    "data",
-		use:       "bars",
-		rawMethod: "Bars",
+		parent: "data",
+		use:    "bars",
 		examples: `  alpaca data bars --symbol AAPL --start 2025-01-01 --timeframe 1Day
-  alpaca data bars --symbol BTC/USD --start 2025-01-01 --timeframe 1Hour
   alpaca data bars --symbol AAPL --start 2025-01-01 --end 2025-06-01 --limit 100`,
 	},
 	"StockQuoteSingle": {
-		parent:    "data",
-		use:       "quotes",
-		rawMethod: "Quotes",
+		parent: "data",
+		use:    "quotes",
 		examples: `  alpaca data quotes --symbol AAPL --start 2025-01-01
   alpaca data quotes --symbol AAPL --start 2025-01-01 --end 2025-01-31 --limit 50`,
 	},
 	"StockTradeSingle": {
-		parent:    "data",
-		use:       "trades",
-		rawMethod: "Trades",
+		parent: "data",
+		use:    "trades",
 		examples: `  alpaca data trades --symbol AAPL --start 2025-01-01
   alpaca data trades --symbol AAPL --start 2025-01-01 --limit 100`,
 	},
 	"StockSnapshotSingle": {
-		parent:    "data",
-		use:       "snapshot",
-		rawMethod: "Snapshot",
+		parent: "data",
+		use:    "snapshot",
 
-		long: "Returns the latest snapshot for a symbol. Use --jq to flatten for CSV.",
+		long: "Returns the latest snapshot for a stock symbol. Use --jq to flatten for CSV.",
 		examples: `  alpaca data snapshot --symbol AAPL
-  alpaca data snapshot --symbol BTC/USD --feed sip`,
+  alpaca data snapshot --symbol AAPL --feed sip`,
 	},
 	"StockLatestTradeSingle": {
-		parent:    "dataLatest",
-		use:       "trade",
-		rawMethod: "LatestTrade",
-		examples: `  alpaca data latest trade --symbol AAPL
-  alpaca data latest trade --symbol AAPL --feed sip`,
+		parent: "data",
+		use:    "latest-trade",
+		examples: `  alpaca data latest-trade --symbol AAPL
+  alpaca data latest-trade --symbol AAPL --feed sip`,
 	},
 	"StockLatestQuoteSingle": {
-		parent:    "dataLatest",
-		use:       "quote",
-		rawMethod: "LatestQuote",
-		examples:  "  alpaca data latest quote --symbol AAPL",
+		parent:   "data",
+		use:      "latest-quote",
+		examples: "  alpaca data latest-quote --symbol AAPL",
 	},
 	"StockLatestBarSingle": {
-		parent:    "dataLatest",
-		use:       "bar",
-		rawMethod: "LatestBar",
-		examples: `  alpaca data latest bar --symbol AAPL
-  alpaca data latest bar --symbol BTC/USD`,
+		parent:   "data",
+		use:      "latest-bar",
+		examples: "  alpaca data latest-bar --symbol AAPL",
 	},
 
 	// --- data: news ---
@@ -657,22 +646,22 @@ var cmdRegistry = map[string]cmdDef{
 		examples: `  alpaca data multi-snapshots --symbols AAPL,MSFT`,
 	},
 	"StockLatestBars": {
-		parent: "dataLatest",
-		use:    "bars",
+		parent: "data",
+		use:    "latest-bars",
 
-		examples: `  alpaca data latest bars --symbols AAPL,MSFT`,
+		examples: "  alpaca data latest-bars --symbols AAPL,MSFT",
 	},
 	"StockLatestQuotes": {
-		parent: "dataLatest",
-		use:    "quotes",
+		parent: "data",
+		use:    "latest-quotes",
 
-		examples: `  alpaca data latest quotes --symbols AAPL,MSFT`,
+		examples: "  alpaca data latest-quotes --symbols AAPL,MSFT",
 	},
 	"StockLatestTrades": {
-		parent: "dataLatest",
-		use:    "trades",
+		parent: "data",
+		use:    "latest-trades",
 
-		examples: `  alpaca data latest trades --symbols AAPL,MSFT`,
+		examples: "  alpaca data latest-trades --symbols AAPL,MSFT",
 	},
 
 	// --- data: crypto ---
@@ -998,23 +987,6 @@ func buildFetchBody(opID string, def cmdDef, ep *endpointInfo, clientVar string,
 	hasBodyRef := ep.bodyRef != ""
 	hasBodyInline := len(ep.bodyInline) > 0
 	hasQueryParams := len(ep.queryParams) > 0
-
-	// rawMethod: override client method with (string, url.Values) signature
-	if def.rawMethod != "" {
-		symbolParam := ""
-		for _, pp := range ep.pathParams {
-			if strings.Contains(pp.name, "symbol") {
-				symbolParam = pp.name
-				break
-			}
-		}
-		if symbolParam == "" && len(ep.pathParams) > 0 {
-			symbolParam = ep.pathParams[0].name
-		}
-		symbolFlag := strings.ReplaceAll(symbolParam, "_", "-")
-		paramsExpr := lcFirst(ep.goName) + "ParamsFromFlags(cmd).Values()"
-		return fmt.Sprintf("return %s.%s(cmdutil.Str(cmd, %q), %s)", clientVar, def.rawMethod, symbolFlag, paramsExpr)
-	}
 
 	// For PATCH/PUT with body and bodyAliases → inline body with aliases
 	if isPatch && hasBodyRef && len(def.bodyAliases) > 0 {

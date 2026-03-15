@@ -88,11 +88,6 @@ var dataForexCmd = &cobra.Command{
 	Short: "Foreign exchange rate data",
 }
 
-var dataLatestCmd = &cobra.Command{
-	Use:   "latest",
-	Short: "Get latest market data",
-}
-
 var dataMetaCmd = &cobra.Command{
 	Use:   "meta",
 	Short: "Stock exchange and condition reference data",
@@ -737,10 +732,9 @@ var stockAuctionsCmd = fetchCmd("auctions", api.StockAuctionsOp, func(cmd *cobra
 })
 
 var stockBarSingleCmd = fetchCmd("bars", api.StockBarSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return dataClient.Bars(cmdutil.Str(cmd, "symbol"), stockBarSingleParamsFromFlags(cmd).Values())
+	return dataClient.StockBarSingle(cmdutil.Str(cmd, "symbol"), stockBarSingleParamsFromFlags(cmd))
 }, func(c *cobra.Command) {
 	c.Example = `  alpaca data bars --symbol AAPL --start 2025-01-01 --timeframe 1Day
-  alpaca data bars --symbol BTC/USD --start 2025-01-01 --timeframe 1Hour
   alpaca data bars --symbol AAPL --start 2025-01-01 --end 2025-06-01 --limit 100`
 })
 
@@ -750,42 +744,41 @@ var stockBarsCmd = fetchCmd("multi-bars", api.StockBarsOp, func(cmd *cobra.Comma
 	c.Example = `  alpaca data multi-bars --symbols AAPL,MSFT --start 2025-01-01 --timeframe 1Day`
 })
 
-var stockLatestBarSingleCmd = fetchCmd("bar", api.StockLatestBarSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return dataClient.LatestBar(cmdutil.Str(cmd, "symbol"), stockLatestBarSingleParamsFromFlags(cmd).Values())
+var stockLatestBarSingleCmd = fetchCmd("latest-bar", api.StockLatestBarSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return dataClient.StockLatestBarSingle(cmdutil.Str(cmd, "symbol"), stockLatestBarSingleParamsFromFlags(cmd))
 }, func(c *cobra.Command) {
-	c.Example = `  alpaca data latest bar --symbol AAPL
-  alpaca data latest bar --symbol BTC/USD`
+	c.Example = `  alpaca data latest-bar --symbol AAPL`
 })
 
-var stockLatestBarsCmd = fetchCmd("bars", api.StockLatestBarsOp, func(cmd *cobra.Command, args []string) (any, error) {
+var stockLatestBarsCmd = fetchCmd("latest-bars", api.StockLatestBarsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.StockLatestBars(stockLatestBarsParamsFromFlags(cmd))
 }, func(c *cobra.Command) {
-	c.Example = `  alpaca data latest bars --symbols AAPL,MSFT`
+	c.Example = `  alpaca data latest-bars --symbols AAPL,MSFT`
 })
 
-var stockLatestQuoteSingleCmd = fetchCmd("quote", api.StockLatestQuoteSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return dataClient.LatestQuote(cmdutil.Str(cmd, "symbol"), stockLatestQuoteSingleParamsFromFlags(cmd).Values())
+var stockLatestQuoteSingleCmd = fetchCmd("latest-quote", api.StockLatestQuoteSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return dataClient.StockLatestQuoteSingle(cmdutil.Str(cmd, "symbol"), stockLatestQuoteSingleParamsFromFlags(cmd))
 }, func(c *cobra.Command) {
-	c.Example = `  alpaca data latest quote --symbol AAPL`
+	c.Example = `  alpaca data latest-quote --symbol AAPL`
 })
 
-var stockLatestQuotesCmd = fetchCmd("quotes", api.StockLatestQuotesOp, func(cmd *cobra.Command, args []string) (any, error) {
+var stockLatestQuotesCmd = fetchCmd("latest-quotes", api.StockLatestQuotesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.StockLatestQuotes(stockLatestQuotesParamsFromFlags(cmd))
 }, func(c *cobra.Command) {
-	c.Example = `  alpaca data latest quotes --symbols AAPL,MSFT`
+	c.Example = `  alpaca data latest-quotes --symbols AAPL,MSFT`
 })
 
-var stockLatestTradeSingleCmd = fetchCmd("trade", api.StockLatestTradeSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return dataClient.LatestTrade(cmdutil.Str(cmd, "symbol"), stockLatestTradeSingleParamsFromFlags(cmd).Values())
+var stockLatestTradeSingleCmd = fetchCmd("latest-trade", api.StockLatestTradeSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return dataClient.StockLatestTradeSingle(cmdutil.Str(cmd, "symbol"), stockLatestTradeSingleParamsFromFlags(cmd))
 }, func(c *cobra.Command) {
-	c.Example = `  alpaca data latest trade --symbol AAPL
-  alpaca data latest trade --symbol AAPL --feed sip`
+	c.Example = `  alpaca data latest-trade --symbol AAPL
+  alpaca data latest-trade --symbol AAPL --feed sip`
 })
 
-var stockLatestTradesCmd = fetchCmd("trades", api.StockLatestTradesOp, func(cmd *cobra.Command, args []string) (any, error) {
+var stockLatestTradesCmd = fetchCmd("latest-trades", api.StockLatestTradesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.StockLatestTrades(stockLatestTradesParamsFromFlags(cmd))
 }, func(c *cobra.Command) {
-	c.Example = `  alpaca data latest trades --symbols AAPL,MSFT`
+	c.Example = `  alpaca data latest-trades --symbols AAPL,MSFT`
 })
 
 var stockMetaConditionsCmd = fetchCmd("conditions", api.StockMetaConditionsOp, func(cmd *cobra.Command, args []string) (any, error) {
@@ -801,7 +794,7 @@ var stockMetaExchangesCmd = fetchCmd("exchanges", api.StockMetaExchangesOp, func
 })
 
 var stockQuoteSingleCmd = fetchCmd("quotes", api.StockQuoteSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return dataClient.Quotes(cmdutil.Str(cmd, "symbol"), stockQuoteSingleParamsFromFlags(cmd).Values())
+	return dataClient.StockQuoteSingle(cmdutil.Str(cmd, "symbol"), stockQuoteSingleParamsFromFlags(cmd))
 }, func(c *cobra.Command) {
 	c.Example = `  alpaca data quotes --symbol AAPL --start 2025-01-01
   alpaca data quotes --symbol AAPL --start 2025-01-01 --end 2025-01-31 --limit 50`
@@ -814,11 +807,11 @@ var stockQuotesCmd = fetchCmd("multi-quotes", api.StockQuotesOp, func(cmd *cobra
 })
 
 var stockSnapshotSingleCmd = fetchCmd("snapshot", api.StockSnapshotSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return dataClient.Snapshot(cmdutil.Str(cmd, "symbol"), stockSnapshotSingleParamsFromFlags(cmd).Values())
+	return voidResponse(dataClient.StockSnapshotSingle(cmdutil.Str(cmd, "symbol"), stockSnapshotSingleParamsFromFlags(cmd)))
 }, func(c *cobra.Command) {
-	c.Long = "Returns the latest snapshot for a symbol. Use --jq to flatten for CSV."
+	c.Long = "Returns the latest snapshot for a stock symbol. Use --jq to flatten for CSV."
 	c.Example = `  alpaca data snapshot --symbol AAPL
-  alpaca data snapshot --symbol BTC/USD --feed sip`
+  alpaca data snapshot --symbol AAPL --feed sip`
 })
 
 var stockSnapshotsCmd = fetchCmd("multi-snapshots", api.StockSnapshotsOp, func(cmd *cobra.Command, args []string) (any, error) {
@@ -828,7 +821,7 @@ var stockSnapshotsCmd = fetchCmd("multi-snapshots", api.StockSnapshotsOp, func(c
 })
 
 var stockTradeSingleCmd = fetchCmd("trades", api.StockTradeSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return dataClient.Trades(cmdutil.Str(cmd, "symbol"), stockTradeSingleParamsFromFlags(cmd).Values())
+	return dataClient.StockTradeSingle(cmdutil.Str(cmd, "symbol"), stockTradeSingleParamsFromFlags(cmd))
 }, func(c *cobra.Command) {
 	c.Example = `  alpaca data trades --symbol AAPL --start 2025-01-01
   alpaca data trades --symbol AAPL --start 2025-01-01 --limit 100`
@@ -896,7 +889,6 @@ func init() {
 	cryptoPerpWalletCmd.AddCommand(cryptoPerpWhitelistCmd)
 	dataCmd.AddCommand(dataCryptoCmd)
 	dataCmd.AddCommand(dataForexCmd)
-	dataCmd.AddCommand(dataLatestCmd)
 	dataCmd.AddCommand(dataMetaCmd)
 	dataCmd.AddCommand(dataOptionCmd)
 	dataCmd.AddCommand(screenerCmd)
@@ -990,12 +982,12 @@ func init() {
 	dataCmd.AddCommand(stockAuctionsCmd)
 	dataCmd.AddCommand(stockBarSingleCmd)
 	dataCmd.AddCommand(stockBarsCmd)
-	dataLatestCmd.AddCommand(stockLatestBarSingleCmd)
-	dataLatestCmd.AddCommand(stockLatestBarsCmd)
-	dataLatestCmd.AddCommand(stockLatestQuoteSingleCmd)
-	dataLatestCmd.AddCommand(stockLatestQuotesCmd)
-	dataLatestCmd.AddCommand(stockLatestTradeSingleCmd)
-	dataLatestCmd.AddCommand(stockLatestTradesCmd)
+	dataCmd.AddCommand(stockLatestBarSingleCmd)
+	dataCmd.AddCommand(stockLatestBarsCmd)
+	dataCmd.AddCommand(stockLatestQuoteSingleCmd)
+	dataCmd.AddCommand(stockLatestQuotesCmd)
+	dataCmd.AddCommand(stockLatestTradeSingleCmd)
+	dataCmd.AddCommand(stockLatestTradesCmd)
 	dataMetaCmd.AddCommand(stockMetaConditionsCmd)
 	dataMetaCmd.AddCommand(stockMetaExchangesCmd)
 	dataCmd.AddCommand(stockQuoteSingleCmd)

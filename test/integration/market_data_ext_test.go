@@ -30,7 +30,7 @@ func TestDataTrades(t *testing.T) {
 
 func TestDataLatestBar(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "latest", "bar", "--symbol", "AAPL")
+	out := alpaca(t, "data", "latest-bar", "--symbol", "AAPL")
 	data := parseJSONMap(t, out)
 	requireFields(t, data, "bar")
 }
