@@ -61,6 +61,22 @@ func TestWatchlist(t *testing.T) {
 		assertContains(t, symbols, "MSFT", false, "should not contain MSFT after remove")
 	})
 
+	t.Run("update", func(t *testing.T) {
+		out := alpaca(t, "watchlist", "update", "--watchlist-id", wlID,
+			"--name", name,
+			"--symbols", "AAPL,MSFT,GOOG",
+		)
+		updated := parseJSONMap(t, out)
+		if updated["id"] != wlID {
+			t.Errorf("update returned wrong watchlist: %v", updated["id"])
+		}
+		assets, _ := updated["assets"].([]any)
+		symbols := extractSymbols(assets)
+		assertContains(t, symbols, "AAPL", true, "should contain AAPL after update")
+		assertContains(t, symbols, "MSFT", true, "should contain MSFT after update")
+		assertContains(t, symbols, "GOOG", true, "should contain GOOG after update")
+	})
+
 	t.Run("by_name", func(t *testing.T) {
 		out := alpaca(t, "watchlist", "get-by-name", "--name", name)
 		fetched := parseJSONMap(t, out)
@@ -82,6 +98,15 @@ func TestWatchlist(t *testing.T) {
 		updated := parseJSONMap(t, out)
 		if updated["name"] != name {
 			t.Errorf("update-by-name returned wrong name: %v", updated["name"])
+		}
+	})
+
+	t.Run("delete_by_name", func(t *testing.T) {
+		alpaca(t, "watchlist", "delete-by-name", "--name", name)
+
+		_, _, code := alpacaWithStderr(t, "watchlist", "get", "--watchlist-id", wlID)
+		if code == 0 {
+			t.Error("watchlist should not exist after delete-by-name")
 		}
 	})
 }
