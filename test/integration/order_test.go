@@ -413,11 +413,19 @@ func TestOrderList_AfterOrderID(t *testing.T) {
 	first := submitTestOrder(t)
 	second := submitTestOrder(t)
 
-	filtered := parseJSONArray(t, alpaca(t, "order", "list",
-		"--status", "open",
-		"--direction", "asc",
-		"--after-order-id", first,
-	))
+	var filtered []map[string]any
+	pollFor(t, 5*time.Second, "order list with after-order-id to find pivot", func() bool {
+		out, _, code := alpacaWithStderr(t, "order", "list",
+			"--status", "open",
+			"--direction", "asc",
+			"--after-order-id", first,
+		)
+		if code != 0 {
+			return false
+		}
+		filtered = parseJSONArray(t, out)
+		return true
+	})
 
 	for _, o := range filtered {
 		if o["id"] == first {
