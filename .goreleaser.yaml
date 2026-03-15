@@ -3,7 +3,6 @@ version: 2
 before:
   hooks:
     - go mod tidy
-    - go run ./cmd/doc
 
 builds:
   - main: ./cmd/alpaca
@@ -28,7 +27,6 @@ archives:
     files:
       - README.md
       - LICENSE*
-      - man/*.1
 
 checksum:
   name_template: "checksums.txt"
@@ -41,7 +39,8 @@ changelog:
       - "^test:"
 
 brews:
-  - repository:
+  - skip_upload: '{{ if not .Env.HOMEBREW_TAP_TOKEN }}true{{ else }}false{{ end }}'
+    repository:
       owner: alpacahq
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
@@ -51,7 +50,6 @@ brews:
     install: |
       bin.install "alpaca"
       generate_completions_from_executable(bin/"alpaca", "completion")
-      man1.install Dir["man/*.1"]
     test: |
       system bin/"alpaca", "version"
 
