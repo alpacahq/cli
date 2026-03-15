@@ -2,7 +2,7 @@
 name: alpaca-cli
 description: >
   Install, configure, and use the Alpaca CLI — a command-line tool for the
-  Alpaca Trading API. Covers installation (Go, Homebrew, binary), API key
+  Alpaca Trading API. Covers installation (Go, Homebrew), API key
   authentication, profile management, and agent/automation integration.
   Use when the user asks to install the Alpaca CLI, set up Alpaca API
   credentials, trade stocks or crypto from the command line, get market data
@@ -36,18 +36,6 @@ go install github.com/alpacahq/cli/cmd/alpaca@latest
 brew install alpacahq/tap/alpaca
 ```
 
-**Binary download**: Get a prebuilt binary from [GitHub Releases](https://github.com/alpacahq/cli/releases).
-
-## Post-install setup
-
-Install shell completions:
-
-```bash
-alpaca setup
-```
-
-This auto-detects the shell and installs to user-level directories (no `sudo`). Override with `--shell fish` or `--shell zsh` if needed.
-
 ## Authentication
 
 **Paper trading is the default.** `alpaca profile login` uses OAuth and is paper-only. For live trading, use API keys: `alpaca profile login --api-key --live`.
@@ -77,7 +65,7 @@ Env vars override profile credentials.
 alpaca profile login --name paper              # OAuth, paper (default)
 alpaca profile login --api-key --name live --live  # API keys, live trading
 alpaca profile switch live                      # switch active profile
-alpaca profile status                           # show active profile
+alpaca doctor                                   # show active profile + connectivity
 ```
 
 ## Verify installation
@@ -136,7 +124,7 @@ alpaca order submit --symbol AAPL --side buy --qty 10 --type limit --limit-price
 
 ```bash
 echo '{"symbol":"AAPL","qty":"1","side":"buy","type":"market","time_in_force":"day"}' \
-  | alpaca api post /v2/orders
+  | alpaca api POST /v2/orders
 ```
 
 ### Resilience
@@ -188,8 +176,8 @@ If `update_available` is `true`, run the `update_command` value to upgrade.
 Manual commands:
 
 ```bash
-alpaca update              # download and install latest version (binary installs)
-alpaca update --check      # check without installing
+alpaca update              # check for updates and show upgrade command
+alpaca update --check      # machine-readable update check (JSON)
 ```
 
 ## Discovering commands
@@ -224,7 +212,7 @@ alpaca data news --symbols AAPL --all --max 100
 
 **Rate limited (429)** — The CLI retries automatically, but if it persists, add delays between calls. Check `Retry-After` in `--verbose` output.
 
-**Completions not working** — Run `alpaca setup` again, then open a new shell. For zsh, ensure `compinit` is loaded in `.zshrc`.
+**Completions not working** — Run `alpaca completion <shell>` to generate completions, then open a new shell. For zsh, ensure `compinit` is loaded in `.zshrc`.
 
 ## Anti-patterns
 

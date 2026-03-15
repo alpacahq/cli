@@ -66,14 +66,6 @@ func TestSmoke_Doctor(t *testing.T) {
 	}
 }
 
-func TestSmoke_ProfileStatus(t *testing.T) {
-	t.Parallel()
-	out := alpaca(t, "profile", "status")
-	if string(out) == "" {
-		t.Error("profile status should produce output")
-	}
-}
-
 func TestSmoke_ProfileList(t *testing.T) {
 	t.Parallel()
 	_ = string(alpaca(t, "profile", "list"))

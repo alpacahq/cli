@@ -24,8 +24,6 @@ The CLI is driven by OpenAPI specs — types, clients, param structs, flag defin
 
 **Homebrew** (macOS / Linux):
 
-> Homebrew tap (`alpacahq/homebrew-tap`) is being set up. Until it's published, use `go install` or download a binary from Releases.
-
 ```bash
 brew install alpacahq/tap/alpaca
 ```
@@ -34,32 +32,6 @@ brew install alpacahq/tap/alpaca
 
 ```bash
 go install github.com/alpacahq/cli/cmd/alpaca@latest
-```
-
-Or download a prebuilt binary from [Releases](https://github.com/alpacahq/cli/releases).
-
-## Post-Install Setup
-
-After installing, run `setup` to install shell completions:
-
-```bash
-alpaca setup
-```
-
-This auto-detects your shell and installs to user-level directories (no `sudo` needed). It also runs automatically after `alpaca update`.
-
-**Supported platforms:**
-
-| OS | Shells | Man pages |
-|----|--------|-----------|
-| macOS | bash, zsh, fish, PowerShell | Yes |
-| Linux | bash, zsh, fish, PowerShell | Yes |
-| Windows | PowerShell | No |
-
-Override auto-detection with `--shell`:
-
-```bash
-alpaca setup --shell fish
 ```
 
 ## Quick Start
@@ -252,17 +224,11 @@ Note: OAuth login is restricted to paper trading while the flow does not support
 |---------|-------------|
 | `alpaca profile login` | Authenticate via browser OAuth (or `--api-key`) |
 | `alpaca profile logout [name]` | Remove a profile |
-| `alpaca profile status` | Show the active profile |
 | `alpaca profile list` | List all profiles |
 | `alpaca profile switch <name>` | Switch between profiles |
-| `alpaca profile set <key> <value>` | Update a profile setting |
-| `alpaca api get <path>` | GET request to any endpoint |
-| `alpaca api post <path>` | POST request to any endpoint |
-| `alpaca api patch <path>` | PATCH request to any endpoint |
-| `alpaca api delete <path>` | DELETE request to any endpoint |
+| `alpaca api [METHOD] <path>` | Raw API request (GET, POST, PATCH, DELETE) |
 | `alpaca doctor` | Check config and API connectivity |
-| `alpaca setup` | Install shell completions |
-| `alpaca update` | Self-update |
+| `alpaca update` | Check for updates and show upgrade instructions |
 | `alpaca version` | Print version |
 
 Every command supports `--help` for full flag documentation.
@@ -453,14 +419,14 @@ alpaca order submit --symbol AAPL --side buy --qty 10 --type limit --limit-price
 
 ### Stdin Pipe Support
 
-Pipe JSON payloads into `alpaca api post/patch`:
+Pipe JSON payloads into `alpaca api POST/PATCH`:
 
 ```bash
 echo '{"symbol":"AAPL","qty":"1","side":"buy","type":"market","time_in_force":"day"}' \
-  | alpaca api post /v2/orders
+  | alpaca api POST /v2/orders
 ```
 
-If both `--data` and stdin are provided, `--data` takes precedence.
+If both `--body` and stdin are provided, `--body` takes precedence.
 
 ### Pagination
 
@@ -527,7 +493,7 @@ fi
 alpaca order submit --symbol AAPL --side buy --qty 10 --type limit --limit-price 185.00 --dry-run
 
 # Pipe complex payloads
-cat order.json | alpaca api post /v2/orders --quiet
+cat order.json | alpaca api POST /v2/orders --quiet
 
 # Handle errors programmatically
 if ! result=$(alpaca order get --order-id abc123 --quiet 2>err.json); then
@@ -565,11 +531,10 @@ The CLI checks for updates in the background (once every 24 hours) and shows a n
 |---|---|
 | Homebrew | `brew upgrade alpaca` |
 | go install | `go install github.com/alpacahq/cli/cmd/alpaca@latest` |
-| Binary download | `alpaca update` |
 
 ```bash
-alpaca update          # Download and install latest version (binary installs)
-alpaca update --check  # Check without installing
+alpaca update          # Check for updates and show upgrade command
+alpaca update --check  # Machine-readable update check (JSON)
 ```
 
 Suppress update notices with `ALPACA_NO_UPDATE_NOTIFY=1` or `--quiet`.

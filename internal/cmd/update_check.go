@@ -16,7 +16,6 @@ const (
 	updateCheckTTL   = 24 * time.Hour
 	installHomebrew  = "homebrew"
 	installGoInstall = "goinstall"
-	installBinary    = "binary"
 )
 
 type updateState struct {
@@ -32,7 +31,7 @@ var suppressUpdateNotice bool
 func detectInstallMethod() string {
 	exe, err := os.Executable()
 	if err != nil {
-		return "binary"
+		return installGoInstall
 	}
 	resolved, err := filepath.EvalSymlinks(exe)
 	if err != nil {
@@ -57,17 +56,15 @@ func detectInstallMethod() string {
 		return installGoInstall
 	}
 
-	return installBinary
+	return installGoInstall
 }
 
 func upgradeCommand(method string) string {
 	switch method {
 	case installHomebrew:
 		return "brew upgrade alpaca"
-	case installGoInstall:
-		return "go install github.com/alpacahq/cli/cmd/alpaca@latest"
 	default:
-		return "alpaca update"
+		return "go install github.com/alpacahq/cli/cmd/alpaca@latest"
 	}
 }
 
@@ -125,7 +122,7 @@ func checkForUpdateAsync() <-chan *updateState {
 			return
 		}
 
-		latest, _, _, err := getLatestRelease()
+		latest, err := getLatestVersion()
 		if err != nil {
 			return
 		}

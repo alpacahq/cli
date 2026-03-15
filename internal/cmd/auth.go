@@ -247,38 +247,6 @@ var profileLogoutCmd = &cobra.Command{
 	},
 }
 
-var profileStatusCmd = &cobra.Command{
-	Use:     "status",
-	Short:   "Show the active profile",
-	Example: `  alpaca profile status`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		resolved, err := config.Load(profileFlag, "")
-		if err != nil {
-			return err
-		}
-
-		fmt.Printf("Profile:   %s\n", resolved.ProfileName)
-		fmt.Printf("Base URL:  %s\n", resolved.BaseURL)
-		fmt.Printf("Data URL:  %s\n", resolved.DataURL)
-
-		if resolved.HasCredentials() {
-			if resolved.IsOAuth() {
-				fmt.Printf("Auth:      OAuth (bearer token: %s)\n", maskCredential(resolved.AccessToken, 8))
-				if resolved.Scopes != "" {
-					fmt.Printf("Scopes:    %s\n", strings.ReplaceAll(resolved.Scopes, " ", ", "))
-				}
-			} else {
-				fmt.Printf("Auth:      API key (%s)\n", maskCredential(resolved.APIKey, 6))
-			}
-			color.Green("✓ Authenticated")
-		} else {
-			color.Yellow("✗ Not authenticated")
-			fmt.Println("Hint: run `alpaca profile login` to authenticate")
-		}
-		return nil
-	},
-}
-
 var profileListCmd = &cobra.Command{
 	Use:     "list",
 	Short:   "List all profiles",
@@ -338,44 +306,6 @@ var profileSwitchCmd = &cobra.Command{
 	},
 }
 
-var profileSetCmd = &cobra.Command{
-	Use:   "set <key> <value>",
-	Short: "Update a profile setting",
-	Long: `Update a setting on the active profile.
-
-Available keys:
-  base_url    API base URL for trading
-  data_url    API base URL for market data`,
-	Example: `  alpaca profile set data_url https://data.example.com
-  alpaca profile set base_url https://api.example.com`,
-	Args: cobra.ExactArgs(2),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		key, value := args[0], args[1]
-
-		resolved, err := config.Load(profileFlag, "")
-		if err != nil {
-			return err
-		}
-
-		profile := config.LoadProfileByName(resolved.ProfileName)
-
-		switch key {
-		case "base_url":
-			profile.BaseURL = value
-		case "data_url":
-			profile.DataURL = value
-		default:
-			return fmt.Errorf("unknown key: %s\nAvailable keys: base_url, data_url", key)
-		}
-
-		if err := config.SaveProfile(resolved.ProfileName, profile); err != nil {
-			return err
-		}
-		fmt.Printf("Set %s = %s (profile: %s)\n", key, value, resolved.ProfileName)
-		return nil
-	},
-}
-
 func init() {
 	profileLoginCmd.Flags().Bool("api-key", false, "Use API key/secret authentication instead of OAuth")
 	profileLoginCmd.Flags().String("key", "", "API key (requires --api-key)")
@@ -391,10 +321,8 @@ func init() {
 
 	profileCmd.AddCommand(profileLoginCmd)
 	profileCmd.AddCommand(profileLogoutCmd)
-	profileCmd.AddCommand(profileStatusCmd)
 	profileCmd.AddCommand(profileListCmd)
 	profileCmd.AddCommand(profileSwitchCmd)
-	profileCmd.AddCommand(profileSetCmd)
 }
 
 func validateCredentials(baseURL string, headers map[string]string) error {
@@ -426,22 +354,6 @@ func resolveBaseURLFlags(cmd *cobra.Command) (string, error) {
 		return config.ResolveBaseURL(u), nil
 	}
 	return config.ResolveBaseURL(defaultProfileName), nil
-}
-
-// maskCredential returns a string showing the first prefixLen characters
-// followed by asterisks. The prefix is copied to a new string to break
-// static-analysis taint tracking from the original credential.
-func maskCredential(secret string, prefixLen int) string {
-	n := len(secret)
-	if n == 0 {
-		return ""
-	}
-	if n <= prefixLen {
-		return strings.Repeat("*", n)
-	}
-	prefix := make([]byte, prefixLen)
-	copy(prefix, secret[:prefixLen])
-	return string(prefix) + strings.Repeat("*", n-prefixLen)
 }
 
 func loadOrCreateGlobal() *config.Config {

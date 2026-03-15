@@ -209,7 +209,7 @@ func init() {
 
 	addGroup(rootCmd, tradingGroup.ID, orderCmd, positionCmd, optionCmd, clockCmd, calendarCmd, dataCmd, cryptoPerpCmd)
 	addGroup(rootCmd, accountGroup.ID, accountCmd, assetCmd, corporateActionCmd, watchlistCmd, walletCmd)
-	addGroup(rootCmd, utilGroup.ID, profileCmd, apiCmd, setupCmd, updateCmd, versionCmd, doctorCmd)
+	addGroup(rootCmd, utilGroup.ID, profileCmd, apiCmd, updateCmd, versionCmd, doctorCmd)
 }
 
 func addGroup(parent *cobra.Command, groupID string, cmds ...*cobra.Command) {
@@ -223,7 +223,7 @@ func needsAuth(cmd *cobra.Command) bool {
 	for c := cmd; c != nil; c = c.Parent() {
 		if c.Parent() != nil && c.Parent().Parent() == nil {
 			switch c.Name() {
-			case "version", "help", "completion", "update", "setup", "doctor":
+			case "version", "help", "completion", "update", "doctor":
 				return false
 			}
 		}
@@ -251,12 +251,6 @@ func renderData(w io.Writer, data any) error {
 		}
 	}
 	return output.Render(w, getOutput(), data)
-}
-
-func verboseLog(format string, args ...any) {
-	if verboseFlag {
-		fmt.Fprintf(os.Stderr, format+"\n", args...)
-	}
 }
 
 var (

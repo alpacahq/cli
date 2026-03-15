@@ -19,22 +19,18 @@ type cmdDef struct {
 }
 
 type parentDef struct {
-	use     string
-	short   string
-	parent  string
-	aliases []string
+	use    string
+	short  string
+	parent string
 }
 
 var cmdParents = map[string]parentDef{
-	"account":       {use: "account", short: "Manage your trading account"},
-	"accountConfig": {use: "config", short: "Manage account configuration", parent: "account"},
-	"activity":      {use: "activity", short: "Account activities (fills, dividends, transfers, etc.)", parent: "account"},
-	"asset":         {use: "asset", short: "Browse assets"},
-	"position":      {use: "position", short: "Manage positions"},
-	"corporateAction": {
-		use: "corporate-action", short: "Corporate actions announcements",
-		aliases: []string{"ca"},
-	},
+	"account":         {use: "account", short: "Manage your trading account"},
+	"accountConfig":   {use: "config", short: "Manage account configuration", parent: "account"},
+	"activity":        {use: "activity", short: "Account activities (fills, dividends, transfers, etc.)", parent: "account"},
+	"asset":           {use: "asset", short: "Browse assets"},
+	"position":        {use: "position", short: "Manage positions"},
+	"corporateAction": {use: "corporate-action", short: "Corporate actions announcements"},
 	"option":          {use: "option", short: "Options trading"},
 	"order":           {use: "order", short: "Manage orders"},
 	"wallet":          {use: "wallet", short: "Crypto funding wallets and transfers"},
@@ -828,16 +824,6 @@ func genCommands(allEndpoints []*endpointInfo) string {
 		fmt.Fprintf(&body, "var %s = &cobra.Command{\n", varName)
 		fmt.Fprintf(&body, "\tUse:   %q,\n", pdef.use)
 		fmt.Fprintf(&body, "\tShort: %q,\n", pdef.short)
-		if len(pdef.aliases) > 0 {
-			fmt.Fprintf(&body, "\tAliases: []string{")
-			for i, a := range pdef.aliases {
-				if i > 0 {
-					fmt.Fprintf(&body, ", ")
-				}
-				fmt.Fprintf(&body, "%q", a)
-			}
-			fmt.Fprintf(&body, "},\n")
-		}
 		fmt.Fprintf(&body, "}\n\n")
 	}
 

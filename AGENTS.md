@@ -8,7 +8,7 @@ The CLI is driven by OpenAPI specs. Maximize what's generated, minimize what's h
 
 ## Design Philosophy
 
-- **Agent-first**: the primary consumer is an AI agent. All parameters are explicit `--flag value` — no positional arguments.
+- **Agent-first**: the primary consumer is an AI agent. All parameters are explicit `--flag value` — no positional arguments. Exception: `alpaca api [METHOD] <path>` uses positional args because it's a raw escape hatch, not a generated command.
 - **OAS specs are read-only inputs**: never edit the specs in this repo. Fix bugs upstream and re-import.
 - **No backward compatibility**: pre-1.0. No aliases, shims, or deprecation wrappers. Just make the change.
 

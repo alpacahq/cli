@@ -43,9 +43,8 @@ var clockCmd = &cobra.Command{
 }
 
 var corporateActionCmd = &cobra.Command{
-	Use:     "corporate-action",
-	Short:   "Corporate actions announcements",
-	Aliases: []string{"ca"},
+	Use:   "corporate-action",
+	Short: "Corporate actions announcements",
 }
 
 var cryptoPerpCmd = &cobra.Command{
