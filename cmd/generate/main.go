@@ -814,6 +814,7 @@ type opDesc struct {
 	summary        string
 	params         []*flagDesc
 	responseFields []*responseFieldDesc
+	responseRef    string
 	returnsArray   bool
 }
 
@@ -927,6 +928,7 @@ func collectDescriptions(endpoints []*endpointInfo, spec map[string]any) []*opDe
 				}
 			}
 		}
+		op.responseRef = ep.responseRef
 		op.returnsArray = ep.returnsArray
 
 		ops = append(ops, op)
@@ -1246,8 +1248,14 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 				}
 				seen[p.oasName] = true
 				fmt.Fprintf(&buf, "\t\t{Name: %q, OASName: %q, Type: %q", p.flagName, p.oasName, p.flagType)
-				if p.defaultVal != "" {
-					fmt.Fprintf(&buf, ", Default: %q", p.defaultVal)
+				defaultVal := p.defaultVal
+				if def, ok := cmdRegistry[op.goName]; ok {
+					if override, ok := def.defaults[p.oasName]; ok {
+						defaultVal = override
+					}
+				}
+				if defaultVal != "" {
+					fmt.Fprintf(&buf, ", Default: %q", defaultVal)
 				}
 				fmt.Fprintf(&buf, ", Description: %q", p.description)
 				if len(p.enumValues) > 0 {
@@ -1281,6 +1289,25 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 	fmt.Fprintf(&buf, "\tEnumValues  []string\n")
 	fmt.Fprintf(&buf, "}\n\n")
 
+	// Deduplicate response schemas: group by responseRef
+	refToOps := map[string][]*opDesc{}
+	for _, op := range ops {
+		if op.responseRef != "" && len(op.responseFields) > 0 {
+			refToOps[op.responseRef] = append(refToOps[op.responseRef], op)
+		}
+	}
+	sharedRefs := map[string]string{}
+	for _, ref := range sortedKeys(refToOps) {
+		if len(refToOps[ref]) < 2 {
+			continue
+		}
+		varName := lcFirst(ref) + "ResponseFields"
+		sharedRefs[ref] = varName
+		fmt.Fprintf(&buf, "var %s = []ResponseField{\n", varName)
+		writeResponseFields(&buf, refToOps[ref][0].responseFields, "\t")
+		fmt.Fprintf(&buf, "}\n\n")
+	}
+
 	// Lazy-loaded ResponseSchemas
 	fmt.Fprintf(&buf, "var (\n")
 	fmt.Fprintf(&buf, "\tresponseSchemas     map[string][]ResponseField\n")
@@ -1295,22 +1322,13 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 		if len(op.responseFields) == 0 {
 			continue
 		}
-		fmt.Fprintf(&buf, "\t\t\t%q: {\n", op.goName)
-		for _, f := range op.responseFields {
-			fmt.Fprintf(&buf, "\t\t\t\t{Name: %q, Type: %q, Description: %q", f.name, f.jsonType, f.desc)
-			if len(f.enumValues) > 0 {
-				fmt.Fprintf(&buf, ", EnumValues: []string{")
-				for i, v := range f.enumValues {
-					if i > 0 {
-						buf.WriteString(", ")
-					}
-					fmt.Fprintf(&buf, "%q", v)
-				}
-				buf.WriteString("}")
-			}
-			fmt.Fprintf(&buf, "},\n")
+		if varName, ok := sharedRefs[op.responseRef]; ok {
+			fmt.Fprintf(&buf, "\t\t\t%q: %s,\n", op.goName, varName)
+		} else {
+			fmt.Fprintf(&buf, "\t\t\t%q: {\n", op.goName)
+			writeResponseFields(&buf, op.responseFields, "\t\t\t\t")
+			fmt.Fprintf(&buf, "\t\t\t},\n")
 		}
-		fmt.Fprintf(&buf, "\t\t\t},\n")
 	}
 	fmt.Fprintf(&buf, "\t\t}\n")
 	fmt.Fprintf(&buf, "\t})\n")
@@ -1443,6 +1461,23 @@ func genBodyFromFlags(buf *bytes.Buffer, bodyRef string) {
 		fmt.Fprintf(buf, "cmdutil.Changed(cmd, %q)", f.flagName)
 	}
 	fmt.Fprintf(buf, "\n}\n\n")
+}
+
+func writeResponseFields(buf *bytes.Buffer, fields []*responseFieldDesc, indent string) {
+	for _, f := range fields {
+		fmt.Fprintf(buf, "%s{Name: %q, Type: %q, Description: %q", indent, f.name, f.jsonType, f.desc)
+		if len(f.enumValues) > 0 {
+			fmt.Fprintf(buf, ", EnumValues: []string{")
+			for i, v := range f.enumValues {
+				if i > 0 {
+					buf.WriteString(", ")
+				}
+				fmt.Fprintf(buf, "%q", v)
+			}
+			buf.WriteString("}")
+		}
+		fmt.Fprintf(buf, "},\n")
+	}
 }
 
 func lcFirst(s string) string {

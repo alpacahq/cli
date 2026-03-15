@@ -11,21 +11,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Per-command overrides set via configure closures.
-var cmdFlagOpts = map[*cobra.Command]*cmdutil.FlagOpts{}
-
-// flagOpts sets custom FlagOpts for OAS flag registration. Use to override
-// defaults shown in --help.
-func flagOpts(opts *cmdutil.FlagOpts) func(*cobra.Command) {
-	return func(c *cobra.Command) {
-		cmdFlagOpts[c] = opts
-	}
-}
-
 // fetchCmd creates a command that fetches data and renders it.
-// All OAS flags (path, query, body) are auto-registered. Path params become
-// required flags enforced via RequiredFlags(). Configure closures should NOT
-// call RegisterFlags for OAS flags — use flagOpts instead.
+// All OAS flags (path, query, body) are auto-registered from the Op.
+// Defaults are baked into FlagDef.Default at generation time.
 func fetchCmd(use string, op api.Op, fetch func(cmd *cobra.Command, args []string) (any, error), configure ...func(*cobra.Command)) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     use,
@@ -48,7 +36,7 @@ func fetchCmd(use string, op api.Op, fetch func(cmd *cobra.Command, args []strin
 	for _, fn := range configure {
 		fn(cmd)
 	}
-	cmdutil.RegisterFlags(cmd, op.Flags, op.Name, cmdFlagOpts[cmd])
+	cmdutil.RegisterFlags(cmd, op.Flags, op.Name, nil)
 	return cmd
 }
 
@@ -76,7 +64,7 @@ func attachCmd(cmd *cobra.Command, op api.Op, fetch func(cmd *cobra.Command, arg
 	for _, fn := range configure {
 		fn(cmd)
 	}
-	cmdutil.RegisterFlags(cmd, op.Flags, op.Name, cmdFlagOpts[cmd])
+	cmdutil.RegisterFlags(cmd, op.Flags, op.Name, nil)
 }
 
 // queryFromFlags builds url.Values from cobra flags using FlagDef metadata,

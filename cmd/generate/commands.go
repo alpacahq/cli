@@ -843,17 +843,18 @@ func genCommands(allEndpoints []*endpointInfo) string {
 
 	opIDs := sortedKeys(cmdRegistry)
 
+	var attachBuf bytes.Buffer
 	for _, opID := range opIDs {
 		def := cmdRegistry[opID]
 		ep := epByOp[opID]
 		if ep == nil {
 			log.Fatalf("cmdRegistry references unknown operation %q", opID)
 		}
-		emitCommand(&body, opID, def, ep)
+		emitCommand(&body, &attachBuf, opID, def, ep)
 	}
 
-	// Emit init() for subcommand wiring within groups
-	emitInit(&body, opIDs, allEndpoints)
+	// Emit single init() for all wiring
+	emitInit(&body, &attachBuf, opIDs, allEndpoints)
 
 	// Assemble final output with header
 	var buf bytes.Buffer
@@ -878,7 +879,7 @@ func genCommands(allEndpoints []*endpointInfo) string {
 	return buf.String()
 }
 
-func emitCommand(buf *bytes.Buffer, opID string, def cmdDef, ep *endpointInfo) {
+func emitCommand(buf, attachBuf *bytes.Buffer, opID string, def cmdDef, ep *endpointInfo) {
 	opVar := opID + "Op"
 	parentVar := def.parent + "Cmd"
 	clientVar := "tradingClient"
@@ -886,18 +887,9 @@ func emitCommand(buf *bytes.Buffer, opID string, def cmdDef, ep *endpointInfo) {
 		clientVar = "dataClient"
 	}
 
-	// Build configure closures (only for defaults and bodyAliases now;
-	// Long/Example are embedded in the Op struct).
+	// Build configure closures for bodyAliases (Long/Example/Defaults are
+	// embedded in the Op struct).
 	var configures []string
-
-	if len(def.defaults) > 0 {
-		var pairs []string
-		defKeys := sortedKeys(def.defaults)
-		for _, k := range defKeys {
-			pairs = append(pairs, fmt.Sprintf("%q: %q", k, def.defaults[k]))
-		}
-		configures = append(configures, fmt.Sprintf("flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{%s}})", strings.Join(pairs, ", ")))
-	}
 
 	if len(def.bodyAliases) > 0 {
 		bodySchema := findSchema(ep.bodyRef)
@@ -921,16 +913,13 @@ func emitCommand(buf *bytes.Buffer, opID string, def cmdDef, ep *endpointInfo) {
 	fetchBody := buildFetchBody(opID, def, ep, clientVar)
 
 	if def.self {
-		// attachCmd on existing parent
-		fmt.Fprintf(buf, "func init() {\n")
-		fmt.Fprintf(buf, "\tattachCmd(%s, api.%s, func(cmd *cobra.Command, args []string) (any, error) {\n", parentVar, opVar)
-		fmt.Fprintf(buf, "\t\t%s\n", fetchBody)
-		fmt.Fprintf(buf, "\t}")
+		fmt.Fprintf(attachBuf, "\tattachCmd(%s, api.%s, func(cmd *cobra.Command, args []string) (any, error) {\n", parentVar, opVar)
+		fmt.Fprintf(attachBuf, "\t\t%s\n", fetchBody)
+		fmt.Fprintf(attachBuf, "\t}")
 		for _, c := range configures {
-			fmt.Fprintf(buf, ", %s", c)
+			fmt.Fprintf(attachBuf, ", %s", c)
 		}
-		fmt.Fprintf(buf, ")\n")
-		fmt.Fprintf(buf, "}\n\n")
+		fmt.Fprintf(attachBuf, ")\n")
 	} else {
 		varName := cmdVarName(opID, def)
 		fmt.Fprintf(buf, "var %s = fetchCmd(%q, api.%s, func(cmd *cobra.Command, args []string) (any, error) {\n", varName, def.use, opVar)
@@ -1286,7 +1275,7 @@ func ucFirst(s string) string {
 	return strings.ToUpper(s[:1]) + s[1:]
 }
 
-func emitInit(buf *bytes.Buffer, opIDs []string, allEndpoints []*endpointInfo) {
+func emitInit(buf, attachBuf *bytes.Buffer, opIDs []string, allEndpoints []*endpointInfo) {
 	// Collect child→parent relationships for non-self commands
 	type childEntry struct {
 		varName string
@@ -1324,7 +1313,13 @@ func emitInit(buf *bytes.Buffer, opIDs []string, allEndpoints []*endpointInfo) {
 
 	fmt.Fprintf(buf, "func init() {\n")
 
-	// Wire parent→parent first
+	// Attach runnable parents (self: true commands)
+	if attachBuf.Len() > 0 {
+		buf.Write(attachBuf.Bytes())
+		fmt.Fprintf(buf, "\n")
+	}
+
+	// Wire parent→parent
 	for _, pw := range parentWires {
 		fmt.Fprintf(buf, "\t%s.AddCommand(%s)\n", pw.parentVar, pw.childVar)
 	}

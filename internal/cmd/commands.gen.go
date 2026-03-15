@@ -194,55 +194,55 @@ var createWhitelistedPerpAddressCmd = fetchCmd("add", api.CreateWhitelistedPerpA
 
 var cryptoBarsCmd = fetchCmd("bars", api.CryptoBarsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoBars(cmdutil.Str(cmd, "loc"), queryFromFlags(cmd, api.CryptoBarsOp))
-}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}))
+})
 
 var cryptoLatestBarsCmd = fetchCmd("latest-bars", api.CryptoLatestBarsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoLatestBars(cmdutil.Str(cmd, "loc"), queryFromFlags(cmd, api.CryptoLatestBarsOp))
-}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}))
+})
 
 var cryptoLatestOrderbooksCmd = fetchCmd("crypto-orderbook", api.CryptoLatestOrderbooksOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoLatestOrderbooks(cmdutil.Str(cmd, "loc"), queryFromFlags(cmd, api.CryptoLatestOrderbooksOp))
-}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}))
+})
 
 var cryptoLatestQuotesCmd = fetchCmd("latest-quotes", api.CryptoLatestQuotesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoLatestQuotes(cmdutil.Str(cmd, "loc"), queryFromFlags(cmd, api.CryptoLatestQuotesOp))
-}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}))
+})
 
 var cryptoLatestTradesCmd = fetchCmd("latest-trades", api.CryptoLatestTradesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoLatestTrades(cmdutil.Str(cmd, "loc"), queryFromFlags(cmd, api.CryptoLatestTradesOp))
-}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}))
+})
 
 var cryptoPerpLatestBarsCmd = fetchCmd("latest-bars", api.CryptoPerpLatestBarsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoPerpLatestBars(cmdutil.Str(cmd, "loc"), queryFromFlags(cmd, api.CryptoPerpLatestBarsOp))
-}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}))
+})
 
 var cryptoPerpLatestFuturesPricingCmd = fetchCmd("latest-futures-pricing", api.CryptoPerpLatestFuturesPricingOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoPerpLatestFuturesPricing(cmdutil.Str(cmd, "loc"), queryFromFlags(cmd, api.CryptoPerpLatestFuturesPricingOp))
-}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}))
+})
 
 var cryptoPerpLatestOrderbooksCmd = fetchCmd("latest-orderbooks", api.CryptoPerpLatestOrderbooksOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoPerpLatestOrderbooks(cmdutil.Str(cmd, "loc"), queryFromFlags(cmd, api.CryptoPerpLatestOrderbooksOp))
-}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}))
+})
 
 var cryptoPerpLatestQuotesCmd = fetchCmd("latest-quotes", api.CryptoPerpLatestQuotesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoPerpLatestQuotes(cmdutil.Str(cmd, "loc"), queryFromFlags(cmd, api.CryptoPerpLatestQuotesOp))
-}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}))
+})
 
 var cryptoPerpLatestTradesCmd = fetchCmd("latest-trades", api.CryptoPerpLatestTradesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoPerpLatestTrades(cmdutil.Str(cmd, "loc"), queryFromFlags(cmd, api.CryptoPerpLatestTradesOp))
-}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}))
+})
 
 var cryptoQuotesCmd = fetchCmd("quotes", api.CryptoQuotesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoQuotes(cmdutil.Str(cmd, "loc"), queryFromFlags(cmd, api.CryptoQuotesOp))
-}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}))
+})
 
 var cryptoSnapshotsCmd = fetchCmd("snapshots", api.CryptoSnapshotsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoSnapshots(cmdutil.Str(cmd, "loc"), queryFromFlags(cmd, api.CryptoSnapshotsOp))
-}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}))
+})
 
 var cryptoTradesCmd = fetchCmd("trades", api.CryptoTradesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoTrades(cmdutil.Str(cmd, "loc"), queryFromFlags(cmd, api.CryptoTradesOp))
-}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}))
+})
 
 var deleteAllOpenPositionsCmd = fetchCmd("close-all", api.DeleteAllOpenPositionsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return tradingClient.DeleteAllOpenPositions(queryFromFlags(cmd, api.DeleteAllOpenPositionsOp))
@@ -306,7 +306,7 @@ var getAllOpenPositionsCmd = fetchCmd("list", api.GetAllOpenPositionsOp, func(cm
 
 var getAllOrdersCmd = fetchCmd("list", api.GetAllOrdersOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return tradingClient.GetAllOrders(queryFromFlags(cmd, api.GetAllOrdersOp))
-}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"status": "open"}}))
+})
 
 var getCryptoFundingTransferCmd = fetchCmd("get", api.GetCryptoFundingTransferOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return tradingClient.GetCryptoFundingTransfer(cmdutil.Str(cmd, "transfer-id"))
@@ -384,18 +384,6 @@ var latestRatesCmd = fetchCmd("latest", api.LatestRatesOp, func(cmd *cobra.Comma
 	return dataClient.LatestRates(queryFromFlags(cmd, api.LatestRatesOp))
 })
 
-func init() {
-	attachCmd(calendarCmd, api.LegacyCalendarOp, func(cmd *cobra.Command, args []string) (any, error) {
-		return voidResponse(tradingClient.LegacyCalendar(queryFromFlags(cmd, api.LegacyCalendarOp)))
-	})
-}
-
-func init() {
-	attachCmd(clockCmd, api.LegacyClockOp, func(cmd *cobra.Command, args []string) (any, error) {
-		return tradingClient.LegacyClock()
-	})
-}
-
 var listCryptoFundingTransfersCmd = fetchCmd("list", api.ListCryptoFundingTransfersOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return tradingClient.ListCryptoFundingTransfers()
 })
@@ -430,7 +418,7 @@ var mostActivesCmd = fetchCmd("most-actives", api.MostActivesOp, func(cmd *cobra
 
 var moversCmd = fetchCmd("movers", api.MoversOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.Movers(cmdutil.Str(cmd, "market-type"), queryFromFlags(cmd, api.MoversOp))
-}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"market_type": "stocks"}}))
+})
 
 var newsCmd = fetchCmd("news", api.NewsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.News(queryFromFlags(cmd, api.NewsOp))
@@ -630,6 +618,13 @@ var usTreasuriesCmd = fetchCmd("treasury", api.UsTreasuriesOp, func(cmd *cobra.C
 })
 
 func init() {
+	attachCmd(calendarCmd, api.LegacyCalendarOp, func(cmd *cobra.Command, args []string) (any, error) {
+		return voidResponse(tradingClient.LegacyCalendar(queryFromFlags(cmd, api.LegacyCalendarOp)))
+	})
+	attachCmd(clockCmd, api.LegacyClockOp, func(cmd *cobra.Command, args []string) (any, error) {
+		return tradingClient.LegacyClock()
+	})
+
 	accountCmd.AddCommand(accountConfigCmd)
 	accountCmd.AddCommand(activityCmd)
 	cryptoPerpCmd.AddCommand(cryptoPerpDataCmd)
