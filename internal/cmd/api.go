@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/alpacahq/cli/internal/cmdutil"
-	"github.com/alpacahq/cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -103,7 +102,7 @@ func rawAPI(cmd *cobra.Command, method, path string) error {
 		return err
 	}
 
-	return output.JSON(cmd.OutOrStdout(), data)
+	return renderData(cmd.OutOrStdout(), data, false)
 }
 
 func stdinHasData() bool {

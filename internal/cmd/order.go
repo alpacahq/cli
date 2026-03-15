@@ -60,7 +60,7 @@ var orderSubmitCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), order)
+		return renderData(cmd.OutOrStdout(), order, false)
 	},
 }
 

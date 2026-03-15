@@ -6,7 +6,6 @@ import (
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
-	"github.com/alpacahq/cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -49,10 +48,7 @@ func fetchCmd(use string, op api.Op, fetch func(cmd *cobra.Command, args []strin
 		if err != nil {
 			return err
 		}
-		if cmdJSON[cmd] {
-			return output.JSON(cmd.OutOrStdout(), data)
-		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), data)
+		return renderData(cmd.OutOrStdout(), data, cmdJSON[cmd])
 	}
 	for _, fn := range configure {
 		fn(cmd)
@@ -74,10 +70,7 @@ func attachCmd(cmd *cobra.Command, op api.Op, fetch func(cmd *cobra.Command, arg
 		if err != nil {
 			return err
 		}
-		if cmdJSON[cmd] {
-			return output.JSON(cmd.OutOrStdout(), data)
-		}
-		return output.Render(cmd.OutOrStdout(), getOutput(), data)
+		return renderData(cmd.OutOrStdout(), data, cmdJSON[cmd])
 	}
 	for _, fn := range configure {
 		fn(cmd)

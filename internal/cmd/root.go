@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"time"
@@ -26,6 +27,7 @@ var (
 	tradingClient *api.TradingClient
 	dataClient    *api.MarketDataClient
 	csvFlag       bool
+	jqFlag        string
 	quietFlag     bool
 	verboseFlag   bool
 	debugFlag     bool
@@ -188,6 +190,7 @@ To check for updates:  alpaca update --check`,
 
 func init() {
 	rootCmd.PersistentFlags().BoolVar(&csvFlag, "csv", false, "Output as CSV")
+	rootCmd.PersistentFlags().StringVar(&jqFlag, "jq", "", "Filter output with a jq expression")
 	rootCmd.PersistentFlags().StringVarP(&profileFlag, "profile", "p", "", "Config profile to use")
 	rootCmd.PersistentFlags().BoolVarP(&verboseFlag, "verbose", "v", false, "Show HTTP request details on stderr")
 	rootCmd.PersistentFlags().BoolVar(&debugFlag, "debug", false, "Show HTTP request/response headers and bodies on stderr")
@@ -236,6 +239,24 @@ func getOutput() output.Format {
 		return output.Format(cfg.Output)
 	}
 	return output.FormatJSON
+}
+
+// renderData is the unified output pipeline: jq filter → format render.
+// When forceJSON is true (jsonOnly commands), CSV is skipped unless --jq
+// was used to reshape the data first.
+func renderData(w io.Writer, data any, forceJSON bool) error {
+	if jqFlag != "" {
+		var err error
+		data, err = output.ApplyJQ(data, jqFlag)
+		if err != nil {
+			return err
+		}
+		forceJSON = false
+	}
+	if forceJSON {
+		return output.JSON(w, data)
+	}
+	return output.Render(w, getOutput(), data)
 }
 
 func verboseLog(format string, args ...any) {
