@@ -102,7 +102,7 @@ func rawAPI(cmd *cobra.Command, method, path string) error {
 		return err
 	}
 
-	return renderData(cmd.OutOrStdout(), data, false)
+	return renderData(cmd.OutOrStdout(), data)
 }
 
 func stdinHasData() bool {

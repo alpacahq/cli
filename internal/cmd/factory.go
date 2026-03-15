@@ -10,16 +10,7 @@ import (
 )
 
 // Per-command overrides set via configure closures.
-var (
-	cmdJSON     = map[*cobra.Command]bool{}
-	cmdFlagOpts = map[*cobra.Command]*cmdutil.FlagOpts{}
-)
-
-// jsonOnly marks a command as JSON-only output. Use for responses with complex
-// nested or map-of-symbols structures where CSV rendering doesn't make sense.
-func jsonOnly(c *cobra.Command) {
-	cmdJSON[c] = true
-}
+var cmdFlagOpts = map[*cobra.Command]*cmdutil.FlagOpts{}
 
 // flagOpts sets custom FlagOpts for OAS flag registration. Use to override
 // defaults shown in --help.
@@ -48,7 +39,7 @@ func fetchCmd(use string, op api.Op, fetch func(cmd *cobra.Command, args []strin
 		if err != nil {
 			return err
 		}
-		return renderData(cmd.OutOrStdout(), data, cmdJSON[cmd])
+		return renderData(cmd.OutOrStdout(), data)
 	}
 	for _, fn := range configure {
 		fn(cmd)
@@ -70,7 +61,7 @@ func attachCmd(cmd *cobra.Command, op api.Op, fetch func(cmd *cobra.Command, arg
 		if err != nil {
 			return err
 		}
-		return renderData(cmd.OutOrStdout(), data, cmdJSON[cmd])
+		return renderData(cmd.OutOrStdout(), data)
 	}
 	for _, fn := range configure {
 		fn(cmd)

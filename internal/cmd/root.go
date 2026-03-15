@@ -242,19 +242,13 @@ func getOutput() output.Format {
 }
 
 // renderData is the unified output pipeline: jq filter → format render.
-// When forceJSON is true (jsonOnly commands), CSV is skipped unless --jq
-// was used to reshape the data first.
-func renderData(w io.Writer, data any, forceJSON bool) error {
+func renderData(w io.Writer, data any) error {
 	if jqFlag != "" {
 		var err error
 		data, err = output.ApplyJQ(data, jqFlag)
 		if err != nil {
 			return err
 		}
-		forceJSON = false
-	}
-	if forceJSON {
-		return output.JSON(w, data)
 	}
 	return output.Render(w, getOutput(), data)
 }

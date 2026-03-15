@@ -14,7 +14,6 @@ type cmdDef struct {
 	self        bool
 	examples    string
 	long        string
-	jsonOnly    bool
 	defaults    map[string]string
 	normalize   []string
 	bodyAliases map[string]string // body field kebab name → CLI alias (resolves flag collisions)
@@ -104,10 +103,10 @@ var cmdRegistry = map[string]cmdDef{
   alpaca account activity list-by-type --activity-type DIV --after 2025-01-01`,
 	},
 	"GetAccountPortfolioHistory": {
-		parent:   "account",
-		use:      "portfolio",
-		jsonOnly: true,
-		long:     "Returns portfolio equity and P&L history. Output is always JSON due to complex time-series structure.",
+		parent: "account",
+		use:    "portfolio",
+
+		long: "Returns portfolio equity and P&L history. Use --jq to flatten for CSV.",
 		examples: `  alpaca account portfolio
   alpaca account portfolio --period 1M --timeframe 1D`,
 	},
@@ -194,9 +193,9 @@ var cmdRegistry = map[string]cmdDef{
 		examples: "  alpaca clock",
 	},
 	"Clock": {
-		parent:   "clock",
-		use:      "markets",
-		jsonOnly: true,
+		parent: "clock",
+		use:    "markets",
+
 		examples: "  alpaca clock markets --markets XNYS,XNAS",
 	},
 	"LegacyCalendar": {
@@ -309,21 +308,21 @@ var cmdRegistry = map[string]cmdDef{
 
 	// --- crypto perp ---
 	"GetCryptoPerpAccountVitals": {
-		parent:   "cryptoPerp",
-		use:      "vitals",
-		jsonOnly: true,
+		parent: "cryptoPerp",
+		use:    "vitals",
+
 		examples: "  alpaca crypto-perp vitals",
 	},
 	"GetCryptoPerpAccountLeverage": {
-		parent:   "cryptoPerp",
-		use:      "leverage",
-		jsonOnly: true,
+		parent: "cryptoPerp",
+		use:    "leverage",
+
 		examples: "  alpaca crypto-perp leverage",
 	},
 	"SetCryptoPerpAccountLeverage": {
-		parent:   "cryptoPerp",
-		use:      "set-leverage",
-		jsonOnly: true,
+		parent: "cryptoPerp",
+		use:    "set-leverage",
+
 		examples: "  alpaca crypto-perp set-leverage --asset BTC --leverage 5",
 	},
 	"ListCryptoPerpFundingWallets": {
@@ -332,9 +331,9 @@ var cmdRegistry = map[string]cmdDef{
 		examples: "  alpaca crypto-perp wallet list",
 	},
 	"GetCryptoPerpTransferEstimate": {
-		parent:   "cryptoPerpTransfer",
-		use:      "estimate",
-		jsonOnly: true,
+		parent: "cryptoPerpTransfer",
+		use:    "estimate",
+
 		examples: "  alpaca crypto-perp wallet transfer estimate --asset BTC --amount 0.5",
 	},
 	"ListCryptoPerpFundingTransfers": {
@@ -453,8 +452,8 @@ var cmdRegistry = map[string]cmdDef{
 		parent:    "data",
 		use:       "snapshot",
 		rawMethod: "Snapshot",
-		jsonOnly:  true,
-		long:      "Returns the latest snapshot for a symbol. Output is always JSON due to complex nested structure.",
+
+		long: "Returns the latest snapshot for a symbol. Use --jq to flatten for CSV.",
 		examples: `  alpaca data snapshot --symbol AAPL
   alpaca data snapshot --symbol BTC/USD --feed sip`,
 	},
@@ -489,131 +488,131 @@ var cmdRegistry = map[string]cmdDef{
 
 	// --- data: option ---
 	"OptionBars": {
-		parent:   "dataOption",
-		use:      "bars",
-		jsonOnly: true,
+		parent: "dataOption",
+		use:    "bars",
+
 		examples: `  alpaca data option bars --symbols AAPL250620C00200000 --start 2025-01-01
   alpaca data option bars --symbols AAPL250620C00200000,AAPL250620P00200000 --timeframe 1Day`,
 	},
 	"OptionTrades": {
-		parent:   "dataOption",
-		use:      "trades",
-		jsonOnly: true,
+		parent: "dataOption",
+		use:    "trades",
+
 		examples: "  alpaca data option trades --symbols AAPL250620C00200000 --start 2025-01-01",
 	},
 	"OptionSnapshots": {
-		parent:   "dataOption",
-		use:      "snapshot",
-		jsonOnly: true,
+		parent: "dataOption",
+		use:    "snapshot",
+
 		examples: `  alpaca data option snapshot --symbols AAPL250620C00200000
   alpaca data option snapshot --symbols AAPL250620C00200000,AAPL250620P00200000`,
 	},
 	"OptionChain": {
-		parent:   "dataOption",
-		use:      "chain",
-		jsonOnly: true,
+		parent: "dataOption",
+		use:    "chain",
+
 		examples: `  alpaca data option chain --underlying-symbol AAPL
   alpaca data option chain --underlying-symbol SPY --expiration-date 2025-06-20 --type call`,
 	},
 	"OptionLatestQuotes": {
-		parent:   "dataOption",
-		use:      "latest-quotes",
-		jsonOnly: true,
+		parent: "dataOption",
+		use:    "latest-quotes",
+
 		examples: "  alpaca data option latest-quotes --symbols AAPL250620C00200000",
 	},
 	"OptionLatestTrades": {
-		parent:   "dataOption",
-		use:      "latest-trades",
-		jsonOnly: true,
+		parent: "dataOption",
+		use:    "latest-trades",
+
 		examples: "  alpaca data option latest-trades --symbols AAPL250620C00200000",
 	},
 	"OptionMetaExchanges": {
-		parent:   "dataOption",
-		use:      "exchanges",
-		jsonOnly: true,
+		parent: "dataOption",
+		use:    "exchanges",
+
 		examples: "  alpaca data option exchanges",
 	},
 	"OptionMetaConditions": {
-		parent:   "dataOption",
-		use:      "conditions",
-		jsonOnly: true,
+		parent: "dataOption",
+		use:    "conditions",
+
 		examples: "  alpaca data option conditions --ticktype trade",
 	},
 
 	// --- data: forex ---
 	"Rates": {
-		parent:   "dataForex",
-		use:      "rates",
-		jsonOnly: true,
+		parent: "dataForex",
+		use:    "rates",
+
 		examples: `  alpaca data forex rates --currency-pairs EUR/USD,GBP/USD --start 2025-01-01
   alpaca data forex rates --currency-pairs USD/JPY --timeframe 1Hour`,
 	},
 	"LatestRates": {
-		parent:   "dataForex",
-		use:      "latest",
-		jsonOnly: true,
+		parent: "dataForex",
+		use:    "latest",
+
 		examples: "  alpaca data forex latest --currency-pairs EUR/USD,GBP/USD",
 	},
 
 	// --- data: crypto orderbook ---
 	"CryptoLatestOrderbooks": {
-		parent:   "data",
-		use:      "crypto-orderbook",
-		jsonOnly: true,
+		parent: "data",
+		use:    "crypto-orderbook",
+
 		defaults: map[string]string{"loc": "us"},
 		examples: "  alpaca data crypto-orderbook --symbols BTC/USD,ETH/USD",
 	},
 
 	// --- data: auctions ---
 	"StockAuctions": {
-		parent:   "data",
-		use:      "auctions",
-		jsonOnly: true,
+		parent: "data",
+		use:    "auctions",
+
 		examples: `  alpaca data auctions --symbols AAPL --start 2025-01-01
   alpaca data auctions --symbols AAPL,MSFT --limit 10`,
 	},
 	"StockAuctionSingle": {
-		parent:   "data",
-		use:      "auction",
-		jsonOnly: true,
+		parent: "data",
+		use:    "auction",
+
 		examples: "  alpaca data auction --symbol AAPL --start 2025-01-01",
 	},
 
 	// --- data: corporate actions (market data) ---
 	"CorporateActions": {
-		parent:   "data",
-		use:      "corporate-actions",
-		jsonOnly: true,
+		parent: "data",
+		use:    "corporate-actions",
+
 		examples: "  alpaca data corporate-actions --symbols AAPL --types forward_split --start 2025-01-01",
 	},
 
 	// --- data: fixed income ---
 	"FixedIncomeLatestPrices": {
-		parent:   "data",
-		use:      "fixed-income",
-		jsonOnly: true,
+		parent: "data",
+		use:    "fixed-income",
+
 		examples: "  alpaca data fixed-income --isins 912797KR1,912797LB5",
 	},
 
 	// --- data: logo ---
 	"Logos": {
-		parent:   "data",
-		use:      "logo",
-		jsonOnly: true,
+		parent: "data",
+		use:    "logo",
+
 		examples: "  alpaca data logo --symbol AAPL",
 	},
 
 	// --- data: meta ---
 	"StockMetaExchanges": {
-		parent:   "dataMeta",
-		use:      "exchanges",
-		jsonOnly: true,
+		parent: "dataMeta",
+		use:    "exchanges",
+
 		examples: "  alpaca data meta exchanges",
 	},
 	"StockMetaConditions": {
-		parent:   "dataMeta",
-		use:      "conditions",
-		jsonOnly: true,
+		parent: "dataMeta",
+		use:    "conditions",
+
 		examples: "  alpaca data meta conditions --ticktype trade",
 	},
 
@@ -634,132 +633,132 @@ var cmdRegistry = map[string]cmdDef{
 
 	// --- data: multi-symbol stock ---
 	"StockBars": {
-		parent:   "data",
-		use:      "multi-bars",
-		jsonOnly: true,
+		parent: "data",
+		use:    "multi-bars",
+
 		examples: `  alpaca data multi-bars --symbols AAPL,MSFT --start 2025-01-01 --timeframe 1Day`,
 	},
 	"StockQuotes": {
-		parent:   "data",
-		use:      "multi-quotes",
-		jsonOnly: true,
+		parent: "data",
+		use:    "multi-quotes",
+
 		examples: `  alpaca data multi-quotes --symbols AAPL,MSFT --start 2025-01-01`,
 	},
 	"StockTrades": {
-		parent:   "data",
-		use:      "multi-trades",
-		jsonOnly: true,
+		parent: "data",
+		use:    "multi-trades",
+
 		examples: `  alpaca data multi-trades --symbols AAPL,MSFT --start 2025-01-01`,
 	},
 	"StockSnapshots": {
-		parent:   "data",
-		use:      "multi-snapshots",
-		jsonOnly: true,
+		parent: "data",
+		use:    "multi-snapshots",
+
 		examples: `  alpaca data multi-snapshots --symbols AAPL,MSFT`,
 	},
 	"StockLatestBars": {
-		parent:   "dataLatest",
-		use:      "bars",
-		jsonOnly: true,
+		parent: "dataLatest",
+		use:    "bars",
+
 		examples: `  alpaca data latest bars --symbols AAPL,MSFT`,
 	},
 	"StockLatestQuotes": {
-		parent:   "dataLatest",
-		use:      "quotes",
-		jsonOnly: true,
+		parent: "dataLatest",
+		use:    "quotes",
+
 		examples: `  alpaca data latest quotes --symbols AAPL,MSFT`,
 	},
 	"StockLatestTrades": {
-		parent:   "dataLatest",
-		use:      "trades",
-		jsonOnly: true,
+		parent: "dataLatest",
+		use:    "trades",
+
 		examples: `  alpaca data latest trades --symbols AAPL,MSFT`,
 	},
 
 	// --- data: crypto ---
 	"CryptoBars": {
-		parent:   "dataCrypto",
-		use:      "bars",
-		jsonOnly: true,
+		parent: "dataCrypto",
+		use:    "bars",
+
 		defaults: map[string]string{"loc": "us"},
 		examples: `  alpaca data crypto bars --symbols BTC/USD --start 2025-01-01 --timeframe 1Day`,
 	},
 	"CryptoQuotes": {
-		parent:   "dataCrypto",
-		use:      "quotes",
-		jsonOnly: true,
+		parent: "dataCrypto",
+		use:    "quotes",
+
 		defaults: map[string]string{"loc": "us"},
 		examples: `  alpaca data crypto quotes --symbols BTC/USD --start 2025-01-01`,
 	},
 	"CryptoTrades": {
-		parent:   "dataCrypto",
-		use:      "trades",
-		jsonOnly: true,
+		parent: "dataCrypto",
+		use:    "trades",
+
 		defaults: map[string]string{"loc": "us"},
 		examples: `  alpaca data crypto trades --symbols BTC/USD --start 2025-01-01`,
 	},
 	"CryptoSnapshots": {
-		parent:   "dataCrypto",
-		use:      "snapshots",
-		jsonOnly: true,
+		parent: "dataCrypto",
+		use:    "snapshots",
+
 		defaults: map[string]string{"loc": "us"},
 		examples: `  alpaca data crypto snapshots --symbols BTC/USD`,
 	},
 	"CryptoLatestBars": {
-		parent:   "dataCrypto",
-		use:      "latest-bars",
-		jsonOnly: true,
+		parent: "dataCrypto",
+		use:    "latest-bars",
+
 		defaults: map[string]string{"loc": "us"},
 		examples: `  alpaca data crypto latest-bars --symbols BTC/USD`,
 	},
 	"CryptoLatestQuotes": {
-		parent:   "dataCrypto",
-		use:      "latest-quotes",
-		jsonOnly: true,
+		parent: "dataCrypto",
+		use:    "latest-quotes",
+
 		defaults: map[string]string{"loc": "us"},
 		examples: `  alpaca data crypto latest-quotes --symbols BTC/USD`,
 	},
 	"CryptoLatestTrades": {
-		parent:   "dataCrypto",
-		use:      "latest-trades",
-		jsonOnly: true,
+		parent: "dataCrypto",
+		use:    "latest-trades",
+
 		defaults: map[string]string{"loc": "us"},
 		examples: `  alpaca data crypto latest-trades --symbols BTC/USD`,
 	},
 
 	// --- data: crypto perp data ---
 	"CryptoPerpLatestBars": {
-		parent:   "cryptoPerpData",
-		use:      "latest-bars",
-		jsonOnly: true,
+		parent: "cryptoPerpData",
+		use:    "latest-bars",
+
 		defaults: map[string]string{"loc": "us"},
 		examples: `  alpaca crypto-perp data latest-bars --symbols BTC/USD`,
 	},
 	"CryptoPerpLatestFuturesPricing": {
-		parent:   "cryptoPerpData",
-		use:      "latest-futures-pricing",
-		jsonOnly: true,
+		parent: "cryptoPerpData",
+		use:    "latest-futures-pricing",
+
 		defaults: map[string]string{"loc": "us"},
 		examples: `  alpaca crypto-perp data latest-futures-pricing --symbols BTC/USD`,
 	},
 	"CryptoPerpLatestOrderbooks": {
-		parent:   "cryptoPerpData",
-		use:      "latest-orderbooks",
-		jsonOnly: true,
+		parent: "cryptoPerpData",
+		use:    "latest-orderbooks",
+
 		defaults: map[string]string{"loc": "us"},
 		examples: `  alpaca crypto-perp data latest-orderbooks --symbols BTC/USD`,
 	},
 	"CryptoPerpLatestQuotes": {
-		parent:   "cryptoPerpData",
-		use:      "latest-quotes",
-		jsonOnly: true,
+		parent: "cryptoPerpData",
+		use:    "latest-quotes",
+
 		defaults: map[string]string{"loc": "us"},
 		examples: `  alpaca crypto-perp data latest-quotes --symbols BTC/USD`,
 	},
 	"CryptoPerpLatestTrades": {
-		parent:   "cryptoPerpData",
-		use:      "latest-trades",
-		jsonOnly: true,
+		parent: "cryptoPerpData",
+		use:    "latest-trades",
+
 		defaults: map[string]string{"loc": "us"},
 		examples: `  alpaca crypto-perp data latest-trades --symbols BTC/USD`,
 	},
@@ -911,10 +910,6 @@ func emitCommand(buf *bytes.Buffer, opID string, def cmdDef, ep *endpointInfo, s
 
 	// Build configure closures
 	var configures []string
-
-	if def.jsonOnly {
-		configures = append(configures, "jsonOnly")
-	}
 
 	if len(def.defaults) > 0 {
 		var pairs []string

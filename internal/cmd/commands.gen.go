@@ -167,13 +167,13 @@ var calendarMarketCmd = fetchCmd("market", api.CalendarOp, func(cmd *cobra.Comma
 
 var clockMarketsCmd = fetchCmd("markets", api.ClockOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return tradingClient.Clock(clockParamsFromFlags(cmd))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca clock markets --markets XNYS,XNAS`
 })
 
 var corporateActionsCmd = fetchCmd("corporate-actions", api.CorporateActionsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CorporateActions(corporateActionsParamsFromFlags(cmd))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca data corporate-actions --symbols AAPL --types forward_split --start 2025-01-01`
 })
 
@@ -217,79 +217,79 @@ var createWhitelistedPerpAddressCmd = fetchCmd("add", api.CreateWhitelistedPerpA
 
 var cryptoBarsCmd = fetchCmd("bars", api.CryptoBarsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoBars(cmdutil.Str(cmd, "loc"), cryptoBarsParamsFromFlags(cmd))
-}, jsonOnly, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
+}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
 	c.Example = `  alpaca data crypto bars --symbols BTC/USD --start 2025-01-01 --timeframe 1Day`
 })
 
 var cryptoLatestBarsCmd = fetchCmd("latest-bars", api.CryptoLatestBarsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoLatestBars(cmdutil.Str(cmd, "loc"), cryptoLatestBarsParamsFromFlags(cmd))
-}, jsonOnly, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
+}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
 	c.Example = `  alpaca data crypto latest-bars --symbols BTC/USD`
 })
 
 var cryptoLatestOrderbooksCmd = fetchCmd("crypto-orderbook", api.CryptoLatestOrderbooksOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoLatestOrderbooks(cmdutil.Str(cmd, "loc"), cryptoLatestOrderbooksParamsFromFlags(cmd))
-}, jsonOnly, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
+}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
 	c.Example = `  alpaca data crypto-orderbook --symbols BTC/USD,ETH/USD`
 })
 
 var cryptoLatestQuotesCmd = fetchCmd("latest-quotes", api.CryptoLatestQuotesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoLatestQuotes(cmdutil.Str(cmd, "loc"), cryptoLatestQuotesParamsFromFlags(cmd))
-}, jsonOnly, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
+}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
 	c.Example = `  alpaca data crypto latest-quotes --symbols BTC/USD`
 })
 
 var cryptoLatestTradesCmd = fetchCmd("latest-trades", api.CryptoLatestTradesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoLatestTrades(cmdutil.Str(cmd, "loc"), cryptoLatestTradesParamsFromFlags(cmd))
-}, jsonOnly, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
+}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
 	c.Example = `  alpaca data crypto latest-trades --symbols BTC/USD`
 })
 
 var cryptoPerpLatestBarsCmd = fetchCmd("latest-bars", api.CryptoPerpLatestBarsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoPerpLatestBars(cmdutil.Str(cmd, "loc"), cryptoPerpLatestBarsParamsFromFlags(cmd))
-}, jsonOnly, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
+}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
 	c.Example = `  alpaca crypto-perp data latest-bars --symbols BTC/USD`
 })
 
 var cryptoPerpLatestFuturesPricingCmd = fetchCmd("latest-futures-pricing", api.CryptoPerpLatestFuturesPricingOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoPerpLatestFuturesPricing(cmdutil.Str(cmd, "loc"), cryptoPerpLatestFuturesPricingParamsFromFlags(cmd))
-}, jsonOnly, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
+}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
 	c.Example = `  alpaca crypto-perp data latest-futures-pricing --symbols BTC/USD`
 })
 
 var cryptoPerpLatestOrderbooksCmd = fetchCmd("latest-orderbooks", api.CryptoPerpLatestOrderbooksOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoPerpLatestOrderbooks(cmdutil.Str(cmd, "loc"), cryptoPerpLatestOrderbooksParamsFromFlags(cmd))
-}, jsonOnly, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
+}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
 	c.Example = `  alpaca crypto-perp data latest-orderbooks --symbols BTC/USD`
 })
 
 var cryptoPerpLatestQuotesCmd = fetchCmd("latest-quotes", api.CryptoPerpLatestQuotesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoPerpLatestQuotes(cmdutil.Str(cmd, "loc"), cryptoPerpLatestQuotesParamsFromFlags(cmd))
-}, jsonOnly, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
+}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
 	c.Example = `  alpaca crypto-perp data latest-quotes --symbols BTC/USD`
 })
 
 var cryptoPerpLatestTradesCmd = fetchCmd("latest-trades", api.CryptoPerpLatestTradesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoPerpLatestTrades(cmdutil.Str(cmd, "loc"), cryptoPerpLatestTradesParamsFromFlags(cmd))
-}, jsonOnly, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
+}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
 	c.Example = `  alpaca crypto-perp data latest-trades --symbols BTC/USD`
 })
 
 var cryptoQuotesCmd = fetchCmd("quotes", api.CryptoQuotesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoQuotes(cmdutil.Str(cmd, "loc"), cryptoQuotesParamsFromFlags(cmd))
-}, jsonOnly, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
+}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
 	c.Example = `  alpaca data crypto quotes --symbols BTC/USD --start 2025-01-01`
 })
 
 var cryptoSnapshotsCmd = fetchCmd("snapshots", api.CryptoSnapshotsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoSnapshots(cmdutil.Str(cmd, "loc"), cryptoSnapshotsParamsFromFlags(cmd))
-}, jsonOnly, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
+}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
 	c.Example = `  alpaca data crypto snapshots --symbols BTC/USD`
 })
 
 var cryptoTradesCmd = fetchCmd("trades", api.CryptoTradesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CryptoTrades(cmdutil.Str(cmd, "loc"), cryptoTradesParamsFromFlags(cmd))
-}, jsonOnly, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
+}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"loc": "us"}}), func(c *cobra.Command) {
 	c.Example = `  alpaca data crypto trades --symbols BTC/USD --start 2025-01-01`
 })
 
@@ -345,7 +345,7 @@ var deleteWhitelistedPerpAddressCmd = fetchCmd("delete", api.DeleteWhitelistedPe
 
 var fixedIncomeLatestPricesCmd = fetchCmd("fixed-income", api.FixedIncomeLatestPricesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.FixedIncomeLatestPrices(fixedIncomeLatestPricesParamsFromFlags(cmd))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca data fixed-income --isins 912797KR1,912797LB5`
 })
 
@@ -378,8 +378,8 @@ var getAccountConfigCmd = fetchCmd("get", api.GetAccountConfigOp, func(cmd *cobr
 
 var getAccountPortfolioHistoryCmd = fetchCmd("portfolio", api.GetAccountPortfolioHistoryOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return tradingClient.GetAccountPortfolioHistory(getAccountPortfolioHistoryParamsFromFlags(cmd))
-}, jsonOnly, func(c *cobra.Command) {
-	c.Long = "Returns portfolio equity and P&L history. Output is always JSON due to complex time-series structure."
+}, func(c *cobra.Command) {
+	c.Long = "Returns portfolio equity and P&L history. Use --jq to flatten for CSV."
 	c.Example = `  alpaca account portfolio
   alpaca account portfolio --period 1M --timeframe 1D`
 })
@@ -407,13 +407,13 @@ var getCryptoFundingTransferCmd = fetchCmd("get", api.GetCryptoFundingTransferOp
 
 var getCryptoPerpAccountLeverageCmd = fetchCmd("leverage", api.GetCryptoPerpAccountLeverageOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return voidResponse(tradingClient.GetCryptoPerpAccountLeverage(getCryptoPerpAccountLeverageParamsFromFlags(cmd)))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca crypto-perp leverage`
 })
 
 var getCryptoPerpAccountVitalsCmd = fetchCmd("vitals", api.GetCryptoPerpAccountVitalsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return voidResponse(tradingClient.GetCryptoPerpAccountVitals())
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca crypto-perp vitals`
 })
 
@@ -425,7 +425,7 @@ var getCryptoPerpFundingTransferCmd = fetchCmd("get", api.GetCryptoPerpFundingTr
 
 var getCryptoPerpTransferEstimateCmd = fetchCmd("estimate", api.GetCryptoPerpTransferEstimateOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return voidResponse(tradingClient.GetCryptoPerpTransferEstimate(getCryptoPerpTransferEstimateParamsFromFlags(cmd)))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca crypto-perp wallet transfer estimate --asset BTC --amount 0.5`
 })
 
@@ -518,7 +518,7 @@ var getWatchlistsCmd = fetchCmd("list", api.GetWatchlistsOp, func(cmd *cobra.Com
 
 var latestRatesCmd = fetchCmd("latest", api.LatestRatesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.LatestRates(latestRatesParamsFromFlags(cmd))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca data forex latest --currency-pairs EUR/USD,GBP/USD`
 })
 
@@ -577,7 +577,7 @@ var listWhitelistedPerpAddressCmd = fetchCmd("list", api.ListWhitelistedPerpAddr
 
 var logosCmd = fetchCmd("logo", api.LogosOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return voidResponse(dataClient.Logos(cmdutil.Str(cmd, "symbol"), logosParamsFromFlags(cmd)))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca data logo --symbol AAPL`
 })
 
@@ -604,14 +604,14 @@ var newsCmd = fetchCmd("news", api.NewsOp, func(cmd *cobra.Command, args []strin
 
 var optionBarsCmd = fetchCmd("bars", api.OptionBarsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.OptionBars(optionBarsParamsFromFlags(cmd))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca data option bars --symbols AAPL250620C00200000 --start 2025-01-01
   alpaca data option bars --symbols AAPL250620C00200000,AAPL250620P00200000 --timeframe 1Day`
 })
 
 var optionChainCmd = fetchCmd("chain", api.OptionChainOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.OptionChain(cmdutil.Str(cmd, "underlying-symbol"), optionChainParamsFromFlags(cmd))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca data option chain --underlying-symbol AAPL
   alpaca data option chain --underlying-symbol SPY --expiration-date 2025-06-20 --type call`
 })
@@ -630,38 +630,38 @@ var optionExerciseCmd = fetchCmd("exercise", api.OptionExerciseOp, func(cmd *cob
 
 var optionLatestQuotesCmd = fetchCmd("latest-quotes", api.OptionLatestQuotesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.OptionLatestQuotes(optionLatestQuotesParamsFromFlags(cmd))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca data option latest-quotes --symbols AAPL250620C00200000`
 })
 
 var optionLatestTradesCmd = fetchCmd("latest-trades", api.OptionLatestTradesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.OptionLatestTrades(optionLatestTradesParamsFromFlags(cmd))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca data option latest-trades --symbols AAPL250620C00200000`
 })
 
 var optionMetaConditionsCmd = fetchCmd("conditions", api.OptionMetaConditionsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return voidResponse(dataClient.OptionMetaConditions(cmdutil.Str(cmd, "ticktype")))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca data option conditions --ticktype trade`
 })
 
 var optionMetaExchangesCmd = fetchCmd("exchanges", api.OptionMetaExchangesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return voidResponse(dataClient.OptionMetaExchanges())
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca data option exchanges`
 })
 
 var optionSnapshotsCmd = fetchCmd("snapshot", api.OptionSnapshotsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.OptionSnapshots(optionSnapshotsParamsFromFlags(cmd))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca data option snapshot --symbols AAPL250620C00200000
   alpaca data option snapshot --symbols AAPL250620C00200000,AAPL250620P00200000`
 })
 
 var optionTradesCmd = fetchCmd("trades", api.OptionTradesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.OptionTrades(optionTradesParamsFromFlags(cmd))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca data option trades --symbols AAPL250620C00200000 --start 2025-01-01`
 })
 
@@ -706,7 +706,7 @@ var postWatchlistCmd = fetchCmd("create", api.PostWatchlistOp, func(cmd *cobra.C
 
 var ratesCmd = fetchCmd("rates", api.RatesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.Rates(ratesParamsFromFlags(cmd))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca data forex rates --currency-pairs EUR/USD,GBP/USD --start 2025-01-01
   alpaca data forex rates --currency-pairs USD/JPY --timeframe 1Hour`
 })
@@ -719,19 +719,19 @@ var removeAssetFromWatchlistCmd = fetchCmd("remove", api.RemoveAssetFromWatchlis
 
 var setCryptoPerpAccountLeverageCmd = fetchCmd("set-leverage", api.SetCryptoPerpAccountLeverageOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return voidResponse(tradingClient.SetCryptoPerpAccountLeverage(setCryptoPerpAccountLeverageParamsFromFlags(cmd)))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca crypto-perp set-leverage --asset BTC --leverage 5`
 })
 
 var stockAuctionSingleCmd = fetchCmd("auction", api.StockAuctionSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.StockAuctionSingle(cmdutil.Str(cmd, "symbol"), stockAuctionSingleParamsFromFlags(cmd))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca data auction --symbol AAPL --start 2025-01-01`
 })
 
 var stockAuctionsCmd = fetchCmd("auctions", api.StockAuctionsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.StockAuctions(stockAuctionsParamsFromFlags(cmd))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca data auctions --symbols AAPL --start 2025-01-01
   alpaca data auctions --symbols AAPL,MSFT --limit 10`
 })
@@ -746,7 +746,7 @@ var stockBarSingleCmd = fetchCmd("bars", api.StockBarSingleOp, func(cmd *cobra.C
 
 var stockBarsCmd = fetchCmd("multi-bars", api.StockBarsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.StockBars(stockBarsParamsFromFlags(cmd))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca data multi-bars --symbols AAPL,MSFT --start 2025-01-01 --timeframe 1Day`
 })
 
@@ -759,7 +759,7 @@ var stockLatestBarSingleCmd = fetchCmd("bar", api.StockLatestBarSingleOp, func(c
 
 var stockLatestBarsCmd = fetchCmd("bars", api.StockLatestBarsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.StockLatestBars(stockLatestBarsParamsFromFlags(cmd))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca data latest bars --symbols AAPL,MSFT`
 })
 
@@ -771,7 +771,7 @@ var stockLatestQuoteSingleCmd = fetchCmd("quote", api.StockLatestQuoteSingleOp, 
 
 var stockLatestQuotesCmd = fetchCmd("quotes", api.StockLatestQuotesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.StockLatestQuotes(stockLatestQuotesParamsFromFlags(cmd))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca data latest quotes --symbols AAPL,MSFT`
 })
 
@@ -784,19 +784,19 @@ var stockLatestTradeSingleCmd = fetchCmd("trade", api.StockLatestTradeSingleOp, 
 
 var stockLatestTradesCmd = fetchCmd("trades", api.StockLatestTradesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.StockLatestTrades(stockLatestTradesParamsFromFlags(cmd))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca data latest trades --symbols AAPL,MSFT`
 })
 
 var stockMetaConditionsCmd = fetchCmd("conditions", api.StockMetaConditionsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return voidResponse(dataClient.StockMetaConditions(cmdutil.Str(cmd, "ticktype"), stockMetaConditionsParamsFromFlags(cmd)))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca data meta conditions --ticktype trade`
 })
 
 var stockMetaExchangesCmd = fetchCmd("exchanges", api.StockMetaExchangesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return voidResponse(dataClient.StockMetaExchanges())
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca data meta exchanges`
 })
 
@@ -809,21 +809,21 @@ var stockQuoteSingleCmd = fetchCmd("quotes", api.StockQuoteSingleOp, func(cmd *c
 
 var stockQuotesCmd = fetchCmd("multi-quotes", api.StockQuotesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.StockQuotes(stockQuotesParamsFromFlags(cmd))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca data multi-quotes --symbols AAPL,MSFT --start 2025-01-01`
 })
 
 var stockSnapshotSingleCmd = fetchCmd("snapshot", api.StockSnapshotSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.Snapshot(cmdutil.Str(cmd, "symbol"), stockSnapshotSingleParamsFromFlags(cmd).Values())
-}, jsonOnly, func(c *cobra.Command) {
-	c.Long = "Returns the latest snapshot for a symbol. Output is always JSON due to complex nested structure."
+}, func(c *cobra.Command) {
+	c.Long = "Returns the latest snapshot for a symbol. Use --jq to flatten for CSV."
 	c.Example = `  alpaca data snapshot --symbol AAPL
   alpaca data snapshot --symbol BTC/USD --feed sip`
 })
 
 var stockSnapshotsCmd = fetchCmd("multi-snapshots", api.StockSnapshotsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return voidResponse(dataClient.StockSnapshots(stockSnapshotsParamsFromFlags(cmd)))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca data multi-snapshots --symbols AAPL,MSFT`
 })
 
@@ -836,7 +836,7 @@ var stockTradeSingleCmd = fetchCmd("trades", api.StockTradeSingleOp, func(cmd *c
 
 var stockTradesCmd = fetchCmd("multi-trades", api.StockTradesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.StockTrades(stockTradesParamsFromFlags(cmd))
-}, jsonOnly, func(c *cobra.Command) {
+}, func(c *cobra.Command) {
 	c.Example = `  alpaca data multi-trades --symbols AAPL,MSFT --start 2025-01-01`
 })
 
