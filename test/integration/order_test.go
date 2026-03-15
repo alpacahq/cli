@@ -408,33 +408,6 @@ func TestOrderList_Direction(t *testing.T) {
 	}
 }
 
-func TestOrderList_AfterOrderID(t *testing.T) {
-	t.Parallel()
-	first := submitTestOrder(t)
-	second := submitTestOrder(t)
-
-	// Default direction is desc (newest first): [second, first, ...older].
-	// after_order_id=second returns orders after the pivot in desc order,
-	// i.e. older orders — which should include first but exclude second.
-	var filtered []map[string]any
-	pollFor(t, 5*time.Second, "order list with after-order-id to find pivot", func() bool {
-		out, _, code := alpacaWithStderr(t, "order", "list",
-			"--status", "open",
-			"--after-order-id", second,
-		)
-		if code != 0 {
-			return false
-		}
-		filtered = parseJSONArray(t, out)
-		return true
-	})
-
-	for _, o := range filtered {
-		if o["id"] == second {
-			t.Error("--after-order-id should exclude the pivot order itself")
-		}
-	}
-	if !containsID(filtered, first) {
-		t.Error("--after-order-id with desc should include orders older than the pivot")
-	}
-}
+// TODO: after_order_id is in the OAS but not functional on the public trading API.
+// Re-enable when the server supports it.
+// func TestOrderList_AfterOrderID(t *testing.T) { ... }
