@@ -28,8 +28,10 @@ func flagOpts(opts *cmdutil.FlagOpts) func(*cobra.Command) {
 // call RegisterFlags for OAS flags — use flagOpts instead.
 func fetchCmd(use string, op api.Op, fetch func(cmd *cobra.Command, args []string) (any, error), configure ...func(*cobra.Command)) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   use,
-		Short: op.Summary,
+		Use:     use,
+		Short:   op.Summary,
+		Long:    op.Long,
+		Example: op.Example,
 	}
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		if req := registeredRequired(cmd, op); len(req) > 0 {
@@ -53,6 +55,12 @@ func fetchCmd(use string, op api.Op, fetch func(cmd *cobra.Command, args []strin
 // attachCmd mirrors fetchCmd but operates on an existing command. Used for
 // self: true commands where a parent group is also directly runnable.
 func attachCmd(cmd *cobra.Command, op api.Op, fetch func(cmd *cobra.Command, args []string) (any, error), configure ...func(*cobra.Command)) {
+	if op.Long != "" {
+		cmd.Long = op.Long
+	}
+	if op.Example != "" {
+		cmd.Example = op.Example
+	}
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		if req := registeredRequired(cmd, op); len(req) > 0 {
 			if err := cmdutil.RequireAll(cmd, req...); err != nil {

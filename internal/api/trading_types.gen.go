@@ -4,334 +4,47 @@ package api
 
 type AccountStatus string
 
-const (
-	AccountStatusACCOUNTUPDATED   AccountStatus = "ACCOUNT_UPDATED"
-	AccountStatusACTIVE           AccountStatus = "ACTIVE"
-	AccountStatusAPPROVALPENDING  AccountStatus = "APPROVAL_PENDING"
-	AccountStatusONBOARDING       AccountStatus = "ONBOARDING"
-	AccountStatusREJECTED         AccountStatus = "REJECTED"
-	AccountStatusSUBMISSIONFAILED AccountStatus = "SUBMISSION_FAILED"
-	AccountStatusSUBMITTED        AccountStatus = "SUBMITTED"
-)
-
-var AccountStatusValues = []string{"ACCOUNT_UPDATED", "ACTIVE", "APPROVAL_PENDING", "ONBOARDING", "REJECTED", "SUBMISSION_FAILED", "SUBMITTED"}
-
 type ActivityType string
-
-const (
-	ActivityTypeACATC   ActivityType = "ACATC"
-	ActivityTypeACATS   ActivityType = "ACATS"
-	ActivityTypeCFEE    ActivityType = "CFEE"
-	ActivityTypeCSD     ActivityType = "CSD"
-	ActivityTypeCSW     ActivityType = "CSW"
-	ActivityTypeDIV     ActivityType = "DIV"
-	ActivityTypeDIVCGL  ActivityType = "DIVCGL"
-	ActivityTypeDIVCGS  ActivityType = "DIVCGS"
-	ActivityTypeDIVFEE  ActivityType = "DIVFEE"
-	ActivityTypeDIVFT   ActivityType = "DIVFT"
-	ActivityTypeDIVNRA  ActivityType = "DIVNRA"
-	ActivityTypeDIVROC  ActivityType = "DIVROC"
-	ActivityTypeDIVTW   ActivityType = "DIVTW"
-	ActivityTypeDIVTXEX ActivityType = "DIVTXEX"
-	ActivityTypeFEE     ActivityType = "FEE"
-	ActivityTypeFILL    ActivityType = "FILL"
-	ActivityTypeFOPT    ActivityType = "FOPT"
-	ActivityTypeINT     ActivityType = "INT"
-	ActivityTypeINTNRA  ActivityType = "INTNRA"
-	ActivityTypeINTTW   ActivityType = "INTTW"
-	ActivityTypeJNL     ActivityType = "JNL"
-	ActivityTypeJNLC    ActivityType = "JNLC"
-	ActivityTypeJNLS    ActivityType = "JNLS"
-	ActivityTypeMA      ActivityType = "MA"
-	ActivityTypeMISC    ActivityType = "MISC"
-	ActivityTypeNC      ActivityType = "NC"
-	ActivityTypeOPASN   ActivityType = "OPASN"
-	ActivityTypeOPCA    ActivityType = "OPCA"
-	ActivityTypeOPCSH   ActivityType = "OPCSH"
-	ActivityTypeOPEXC   ActivityType = "OPEXC"
-	ActivityTypeOPEXP   ActivityType = "OPEXP"
-	ActivityTypeOPTRD   ActivityType = "OPTRD"
-	ActivityTypePTC     ActivityType = "PTC"
-	ActivityTypePTR     ActivityType = "PTR"
-	ActivityTypeREORG   ActivityType = "REORG"
-	ActivityTypeSPIN    ActivityType = "SPIN"
-	ActivityTypeSPLIT   ActivityType = "SPLIT"
-	ActivityTypeTRANS   ActivityType = "TRANS"
-)
-
-var ActivityTypeValues = []string{"ACATC", "ACATS", "CFEE", "CSD", "CSW", "DIV", "DIVCGL", "DIVCGS", "DIVFEE", "DIVFT", "DIVNRA", "DIVROC", "DIVTW", "DIVTXEX", "FEE", "FILL", "FOPT", "INT", "INTNRA", "INTTW", "JNL", "JNLC", "JNLS", "MA", "MISC", "NC", "OPASN", "OPCA", "OPCSH", "OPEXC", "OPEXP", "OPTRD", "PTC", "PTR", "REORG", "SPIN", "SPLIT", "TRANS"}
 
 type AssetClass string
 
-const (
-	AssetClassCrypto   AssetClass = "crypto"
-	AssetClassUsEquity AssetClass = "us_equity"
-	AssetClassUsOption AssetClass = "us_option"
-)
-
-var AssetClassValues = []string{"crypto", "us_equity", "us_option"}
-
 type CryptoTransferStatus string
-
-const (
-	CryptoTransferStatusCOMPLETE   CryptoTransferStatus = "COMPLETE"
-	CryptoTransferStatusFAILED     CryptoTransferStatus = "FAILED"
-	CryptoTransferStatusPROCESSING CryptoTransferStatus = "PROCESSING"
-)
-
-var CryptoTransferStatusValues = []string{"COMPLETE", "FAILED", "PROCESSING"}
 
 type Exchange string
 
-const (
-	ExchangeAMEX     Exchange = "AMEX"
-	ExchangeARCA     Exchange = "ARCA"
-	ExchangeBATS     Exchange = "BATS"
-	ExchangeNASDAQ   Exchange = "NASDAQ"
-	ExchangeNYSE     Exchange = "NYSE"
-	ExchangeNYSEARCA Exchange = "NYSEARCA"
-	ExchangeOTC      Exchange = "OTC"
-)
-
-var ExchangeValues = []string{"AMEX", "ARCA", "BATS", "NASDAQ", "NYSE", "NYSEARCA", "OTC"}
-
 type ExchangeForPosition string
-
-const (
-	ExchangeForPositionAMEX     ExchangeForPosition = "AMEX"
-	ExchangeForPositionARCA     ExchangeForPosition = "ARCA"
-	ExchangeForPositionBATS     ExchangeForPosition = "BATS"
-	ExchangeForPositionNASDAQ   ExchangeForPosition = "NASDAQ"
-	ExchangeForPositionNYSE     ExchangeForPosition = "NYSE"
-	ExchangeForPositionNYSEARCA ExchangeForPosition = "NYSEARCA"
-	ExchangeForPositionOTC      ExchangeForPosition = "OTC"
-)
-
-var ExchangeForPositionValues = []string{"AMEX", "ARCA", "BATS", "NASDAQ", "NYSE", "NYSEARCA", "OTC"}
 
 type OrderClass string
 
-const (
-	OrderClassBracket OrderClass = "bracket"
-	OrderClassMleg    OrderClass = "mleg"
-	OrderClassOco     OrderClass = "oco"
-	OrderClassOto     OrderClass = "oto"
-	OrderClassSimple  OrderClass = "simple"
-)
-
-var OrderClassValues = []string{"bracket", "mleg", "oco", "oto", "simple"}
-
 type OrderSide string
-
-const (
-	OrderSideBuy  OrderSide = "buy"
-	OrderSideSell OrderSide = "sell"
-)
-
-var OrderSideValues = []string{"buy", "sell"}
 
 type OrderStatus string
 
-const (
-	OrderStatusAccepted           OrderStatus = "accepted"
-	OrderStatusAcceptedForBidding OrderStatus = "accepted_for_bidding"
-	OrderStatusCalculated         OrderStatus = "calculated"
-	OrderStatusCanceled           OrderStatus = "canceled"
-	OrderStatusDoneForDay         OrderStatus = "done_for_day"
-	OrderStatusExpired            OrderStatus = "expired"
-	OrderStatusFilled             OrderStatus = "filled"
-	OrderStatusNew                OrderStatus = "new"
-	OrderStatusPartiallyFilled    OrderStatus = "partially_filled"
-	OrderStatusPendingCancel      OrderStatus = "pending_cancel"
-	OrderStatusPendingNew         OrderStatus = "pending_new"
-	OrderStatusPendingReplace     OrderStatus = "pending_replace"
-	OrderStatusRejected           OrderStatus = "rejected"
-	OrderStatusReplaced           OrderStatus = "replaced"
-	OrderStatusStopped            OrderStatus = "stopped"
-	OrderStatusSuspended          OrderStatus = "suspended"
-)
-
-var OrderStatusValues = []string{"accepted", "accepted_for_bidding", "calculated", "canceled", "done_for_day", "expired", "filled", "new", "partially_filled", "pending_cancel", "pending_new", "pending_replace", "rejected", "replaced", "stopped", "suspended"}
-
 type OrderType string
-
-const (
-	OrderTypeLimit        OrderType = "limit"
-	OrderTypeMarket       OrderType = "market"
-	OrderTypeStop         OrderType = "stop"
-	OrderTypeStopLimit    OrderType = "stop_limit"
-	OrderTypeTrailingStop OrderType = "trailing_stop"
-)
-
-var OrderTypeValues = []string{"limit", "market", "stop", "stop_limit", "trailing_stop"}
 
 type PositionIntent string
 
-const (
-	PositionIntentBuyToClose  PositionIntent = "buy_to_close"
-	PositionIntentBuyToOpen   PositionIntent = "buy_to_open"
-	PositionIntentSellToClose PositionIntent = "sell_to_close"
-	PositionIntentSellToOpen  PositionIntent = "sell_to_open"
-)
-
-var PositionIntentValues = []string{"buy_to_close", "buy_to_open", "sell_to_close", "sell_to_open"}
-
 type TimeInForce string
-
-const (
-	TimeInForceCls TimeInForce = "cls"
-	TimeInForceDay TimeInForce = "day"
-	TimeInForceFok TimeInForce = "fok"
-	TimeInForceGtc TimeInForce = "gtc"
-	TimeInForceIoc TimeInForce = "ioc"
-	TimeInForceOpg TimeInForce = "opg"
-)
-
-var TimeInForceValues = []string{"cls", "day", "fok", "gtc", "ioc", "opg"}
 
 type TransferDirection string
 
-const (
-	TransferDirectionINCOMING TransferDirection = "INCOMING"
-	TransferDirectionOUTGOING TransferDirection = "OUTGOING"
-)
-
-var TransferDirectionValues = []string{"INCOMING", "OUTGOING"}
-
 type BondStatus string
-
-const (
-	BondStatusMatured     BondStatus = "matured"
-	BondStatusOutstanding BondStatus = "outstanding"
-	BondStatusPreIssuance BondStatus = "pre_issuance"
-)
-
-var BondStatusValues = []string{"matured", "outstanding", "pre_issuance"}
 
 type CallType string
 
-const (
-	CallTypeMakeWhole  CallType = "make_whole"
-	CallTypeOrdinary   CallType = "ordinary"
-	CallTypeRegulatory CallType = "regulatory"
-	CallTypeSpecial    CallType = "special"
-)
-
-var CallTypeValues = []string{"make_whole", "ordinary", "regulatory", "special"}
-
 type CouponFrequency string
-
-const (
-	CouponFrequencyAnnual     CouponFrequency = "annual"
-	CouponFrequencyMonthly    CouponFrequency = "monthly"
-	CouponFrequencyQuarterly  CouponFrequency = "quarterly"
-	CouponFrequencySemiAnnual CouponFrequency = "semi_annual"
-	CouponFrequencyZero       CouponFrequency = "zero"
-)
-
-var CouponFrequencyValues = []string{"annual", "monthly", "quarterly", "semi_annual", "zero"}
 
 type CouponType string
 
-const (
-	CouponTypeFixed    CouponType = "fixed"
-	CouponTypeFloating CouponType = "floating"
-	CouponTypeZero     CouponType = "zero"
-)
-
-var CouponTypeValues = []string{"fixed", "floating", "zero"}
-
 type DayCount string
-
-const (
-	DayCountV30x360  DayCount = "30/360"
-	DayCountV30x365  DayCount = "30/365"
-	DayCountV30Ex360 DayCount = "30E/360"
-	DayCountAx360    DayCount = "A/360"
-	DayCountAx364    DayCount = "A/364"
-	DayCountAx365    DayCount = "A/365"
-	DayCountAxA      DayCount = "A/A"
-	DayCountBx252    DayCount = "B/252"
-)
-
-var DayCountValues = []string{"30/360", "30/365", "30E/360", "A/360", "A/364", "A/365", "A/A", "B/252"}
 
 type Market string
 
-const (
-	MarketBMO     Market = "BMO"
-	MarketBNYM    Market = "BNYM"
-	MarketBOATS   Market = "BOATS"
-	MarketCEUX    Market = "CEUX"
-	MarketCHIX    Market = "CHIX"
-	MarketHKEX    Market = "HKEX"
-	MarketIEX     Market = "IEX"
-	MarketIEXG    Market = "IEXG"
-	MarketISE     Market = "ISE"
-	MarketLSE     Market = "LSE"
-	MarketMTA     Market = "MTA"
-	MarketMTAA    Market = "MTAA"
-	MarketNASDAQ  Market = "NASDAQ"
-	MarketNYSE    Market = "NYSE"
-	MarketOCEA    Market = "OCEA"
-	MarketOPRA    Market = "OPRA"
-	MarketOTC     Market = "OTC"
-	MarketOTCM    Market = "OTCM"
-	MarketSIFMA   Market = "SIFMA"
-	MarketTADAWUL Market = "TADAWUL"
-	MarketXAMS    Market = "XAMS"
-	MarketXBRU    Market = "XBRU"
-	MarketXDUB    Market = "XDUB"
-	MarketXETR    Market = "XETR"
-	MarketXETRA   Market = "XETRA"
-	MarketXHKG    Market = "XHKG"
-	MarketXLIS    Market = "XLIS"
-	MarketXLON    Market = "XLON"
-	MarketXNAS    Market = "XNAS"
-	MarketXNYS    Market = "XNYS"
-	MarketXPAR    Market = "XPAR"
-	MarketXSAU    Market = "XSAU"
-)
-
-var MarketValues = []string{"BMO", "BNYM", "BOATS", "CEUX", "CHIX", "HKEX", "IEX", "IEXG", "ISE", "LSE", "MTA", "MTAA", "NASDAQ", "NYSE", "OCEA", "OPRA", "OTC", "OTCM", "SIFMA", "TADAWUL", "XAMS", "XBRU", "XDUB", "XETR", "XETRA", "XHKG", "XLIS", "XLON", "XNAS", "XNYS", "XPAR", "XSAU"}
-
 type Phase string
-
-const (
-	PhaseClosed Phase = "closed"
-	PhaseCore   Phase = "core"
-	PhaseLunch  Phase = "lunch"
-	PhasePost   Phase = "post"
-	PhasePre    Phase = "pre"
-)
-
-var PhaseValues = []string{"closed", "core", "lunch", "post", "pre"}
 
 type SpOutlook string
 
-const (
-	SpOutlookDeveloping    SpOutlook = "developing"
-	SpOutlookNegative      SpOutlook = "negative"
-	SpOutlookNotMeaningful SpOutlook = "not_meaningful"
-	SpOutlookNotRated      SpOutlook = "not_rated"
-	SpOutlookPositive      SpOutlook = "positive"
-	SpOutlookStable        SpOutlook = "stable"
-)
-
-var SpOutlookValues = []string{"developing", "negative", "not_meaningful", "not_rated", "positive", "stable"}
-
 type TreasurySubtype string
-
-const (
-	TreasurySubtypeBill     TreasurySubtype = "bill"
-	TreasurySubtypeBond     TreasurySubtype = "bond"
-	TreasurySubtypeFloating TreasurySubtype = "floating"
-	TreasurySubtypeNote     TreasurySubtype = "note"
-	TreasurySubtypeStrips   TreasurySubtype = "strips"
-	TreasurySubtypeTips     TreasurySubtype = "tips"
-)
-
-var TreasurySubtypeValues = []string{"bill", "bond", "floating", "note", "strips", "tips"}
 
 type Account struct {
 	AccountBlocked           bool          `json:"account_blocked,omitempty"`
@@ -372,10 +85,6 @@ type Account struct {
 	TransfersBlocked         bool          `json:"transfers_blocked,omitempty"`
 }
 
-var AccountOptionsApprovedLevelValues = []string{"0", "1", "2", "3"}
-
-var AccountOptionsTradingLevelValues = []string{"0", "1", "2", "3"}
-
 type AccountConfigurations struct {
 	DisableOvernightTrading bool   `json:"disable_overnight_trading,omitempty"`
 	DTBPCheck               string `json:"dtbp_check,omitempty"`
@@ -389,10 +98,6 @@ type AccountConfigurations struct {
 	TradeConfirmEmail       string `json:"trade_confirm_email,omitempty"`
 }
 
-var AccountConfigurationsDTBPCheckValues = []string{"both", "entry", "exit"}
-
-var AccountConfigurationsMaxOptionsTradingLevelValues = []string{"0", "1", "2", "3"}
-
 type AddAssetToWatchlistRequest struct {
 	Symbol string `json:"symbol,omitempty"`
 }
@@ -405,10 +110,6 @@ type AdvancedInstructions struct {
 	MaxPercentage string `json:"max_percentage,omitempty"`
 	StartTime     string `json:"start_time,omitempty"`
 }
-
-var AdvancedInstructionsAlgorithmValues = []string{"DMA", "TWAP", "VWAP"}
-
-var AdvancedInstructionsDestinationValues = []string{"ARCA", "NASDAQ", "NYSE"}
 
 type Assets struct {
 	Attributes                   []string   `json:"attributes,omitempty"`
@@ -428,8 +129,6 @@ type Assets struct {
 	Symbol                       string     `json:"symbol"`
 	Tradable                     bool       `json:"tradable"`
 }
-
-var AssetsStatusValues = []string{"active", "inactive"}
 
 type Calendar struct {
 	Close          string `json:"close"`
@@ -505,8 +204,6 @@ type NonTradeActivities struct {
 	Symbol          string       `json:"symbol,omitempty"`
 }
 
-var NonTradeActivitiesStatusValues = []string{"canceled", "correct", "executed"}
-
 type OptionContract struct {
 	ClosePrice        string              `json:"close_price,omitempty"`
 	ClosePriceDate    string              `json:"close_price_date,omitempty"`
@@ -529,12 +226,6 @@ type OptionContract struct {
 	UnderlyingSymbol  string              `json:"underlying_symbol"`
 }
 
-var OptionContractStatusValues = []string{"active", "inactive"}
-
-var OptionContractStyleValues = []string{"american", "european"}
-
-var OptionContractTypeValues = []string{"call", "put"}
-
 type OptionDeliverable struct {
 	AllocationPercentage string `json:"allocation_percentage"`
 	Amount               string `json:"amount"`
@@ -545,12 +236,6 @@ type OptionDeliverable struct {
 	Symbol               string `json:"symbol"`
 	Type                 string `json:"type"`
 }
-
-var OptionDeliverableSettlementMethodValues = []string{"BTOB", "CADF", "CAFX", "CCC"}
-
-var OptionDeliverableSettlementTypeValues = []string{"T+0", "T+1", "T+2", "T+3", "T+4", "T+5"}
-
-var OptionDeliverableTypeValues = []string{"cash", "equity"}
 
 type Order struct {
 	AssetClass     AssetClass     `json:"asset_class,omitempty"`
@@ -687,8 +372,6 @@ type TradingActivities struct {
 	Type            string       `json:"type,omitempty"`
 }
 
-var TradingActivitiesTypeValues = []string{"fill", "partial_fill"}
-
 type UpdateWatchlistRequest struct {
 	Name    string   `json:"name"`
 	Symbols []string `json:"symbols,omitempty"`
@@ -719,8 +402,6 @@ type WhitelistedAddress struct {
 	ID        string `json:"id,omitempty"`
 	Status    string `json:"status,omitempty"`
 }
-
-var WhitelistedAddressStatusValues = []string{"APPROVED", "PENDING"}
 
 type CalendarDay struct {
 	CoreEnd        string `json:"core_end"`

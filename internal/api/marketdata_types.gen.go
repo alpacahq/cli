@@ -4,98 +4,21 @@ package api
 
 type CryptoHistoricalLoc string
 
-const (
-	CryptoHistoricalLocBs1 CryptoHistoricalLoc = "bs-1"
-	CryptoHistoricalLocEu1 CryptoHistoricalLoc = "eu-1"
-	CryptoHistoricalLocUs  CryptoHistoricalLoc = "us"
-	CryptoHistoricalLocUs1 CryptoHistoricalLoc = "us-1"
-	CryptoHistoricalLocUs2 CryptoHistoricalLoc = "us-2"
-)
-
-var CryptoHistoricalLocValues = []string{"bs-1", "eu-1", "us", "us-1", "us-2"}
-
 type CryptoLatestLoc string
-
-const (
-	CryptoLatestLocBs1 CryptoLatestLoc = "bs-1"
-	CryptoLatestLocEu1 CryptoLatestLoc = "eu-1"
-	CryptoLatestLocUs  CryptoLatestLoc = "us"
-	CryptoLatestLocUs1 CryptoLatestLoc = "us-1"
-	CryptoLatestLocUs2 CryptoLatestLoc = "us-2"
-)
-
-var CryptoLatestLocValues = []string{"bs-1", "eu-1", "us", "us-1", "us-2"}
 
 type CryptoPerpLoc string
 
-const (
-	CryptoPerpLocGlobal CryptoPerpLoc = "global"
-)
-
-var CryptoPerpLocValues = []string{"global"}
-
 type MarketType string
-
-const (
-	MarketTypeCrypto MarketType = "crypto"
-	MarketTypeStocks MarketType = "stocks"
-)
-
-var MarketTypeValues = []string{"crypto", "stocks"}
 
 type OptionFeed string
 
-const (
-	OptionFeedIndicative OptionFeed = "indicative"
-	OptionFeedOpra       OptionFeed = "opra"
-)
-
-var OptionFeedValues = []string{"indicative", "opra"}
-
 type Sort string
-
-const (
-	SortAsc  Sort = "asc"
-	SortDesc Sort = "desc"
-)
-
-var SortValues = []string{"asc", "desc"}
 
 type StockHistoricalFeed string
 
-const (
-	StockHistoricalFeedBoats StockHistoricalFeed = "boats"
-	StockHistoricalFeedIex   StockHistoricalFeed = "iex"
-	StockHistoricalFeedOtc   StockHistoricalFeed = "otc"
-	StockHistoricalFeedSip   StockHistoricalFeed = "sip"
-)
-
-var StockHistoricalFeedValues = []string{"boats", "iex", "otc", "sip"}
-
 type StockLatestFeed string
 
-const (
-	StockLatestFeedBoats      StockLatestFeed = "boats"
-	StockLatestFeedDelayedSip StockLatestFeed = "delayed_sip"
-	StockLatestFeedIex        StockLatestFeed = "iex"
-	StockLatestFeedOtc        StockLatestFeed = "otc"
-	StockLatestFeedOvernight  StockLatestFeed = "overnight"
-	StockLatestFeedSip        StockLatestFeed = "sip"
-)
-
-var StockLatestFeedValues = []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}
-
 type StockTape string
-
-const (
-	StockTapeA StockTape = "A"
-	StockTapeB StockTape = "B"
-	StockTapeC StockTape = "C"
-	StockTapeN StockTape = "N"
-	StockTapeO StockTape = "O"
-)
-
-var StockTapeValues = []string{"A", "B", "C", "N", "O"}
 
 type CashDividend struct {
 	Cusip          string  `json:"cusip"`
@@ -331,8 +254,6 @@ type NewsImage struct {
 	Size string `json:"size"`
 	URL  string `json:"url"`
 }
-
-var NewsImageSizeValues = []string{"large", "small", "thumb"}
 
 type NewsResp struct {
 	News          []News `json:"news"`

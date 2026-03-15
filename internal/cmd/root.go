@@ -270,7 +270,7 @@ func printCommandSchema(cmd *cobra.Command) error {
 	if opName == "" {
 		return fmt.Errorf("no response schema available for %q", cmd.CommandPath())
 	}
-	fields, ok := api.ResponseSchemas[opName]
+	fields, ok := api.ResponseSchema(opName)
 	if !ok {
 		return fmt.Errorf("no response schema available for %q", cmd.CommandPath())
 	}

@@ -756,7 +756,7 @@ var cmdSkip = map[string]string{
 	"PostOrder": "hand-written: bracket orders, enums, dry-run, JSON parsing",
 }
 
-func checkExhaustive(allEndpoints []*endpointInfo, allSchemas []*schemaInfo) {
+func checkExhaustive(allEndpoints []*endpointInfo) {
 	epByOp := map[string]*endpointInfo{}
 	for _, ep := range allEndpoints {
 		epByOp[ep.goName] = ep
@@ -774,14 +774,12 @@ func checkExhaustive(allEndpoints []*endpointInfo, allSchemas []*schemaInfo) {
 	}
 
 	// Detect body field collisions with query/path params.
-	// A collision means a body field is silently dropped by FlagDef dedup.
-	// bodyAliases must resolve every collision explicitly.
 	for opID, def := range cmdRegistry {
 		ep := epByOp[opID]
 		if ep == nil || ep.bodyRef == "" {
 			continue
 		}
-		bodySchema := findSchema(allSchemas, ep.bodyRef)
+		bodySchema := findSchema(ep.bodyRef)
 		if bodySchema == nil || bodySchema.kind != "struct" {
 			continue
 		}
@@ -805,25 +803,15 @@ func checkExhaustive(allEndpoints []*endpointInfo, allSchemas []*schemaInfo) {
 	}
 }
 
-func findSchema(schemas []*schemaInfo, goName string) *schemaInfo {
-	for _, s := range schemas {
-		if s.goName == goName {
-			return s
-		}
-	}
-	return nil
+func findSchema(goName string) *schemaInfo {
+	return schemaByGoName[goName]
 }
 
-func findSchemaByOASName(schemas []*schemaInfo, name string) *schemaInfo {
-	for _, s := range schemas {
-		if s.name == name {
-			return s
-		}
-	}
-	return nil
+func findSchemaByOASName(name string) *schemaInfo {
+	return schemaByOASName[name]
 }
 
-func genCommands(allEndpoints []*endpointInfo, allSchemas []*schemaInfo) string {
+func genCommands(allEndpoints []*endpointInfo) string {
 	epByOp := map[string]*endpointInfo{}
 	for _, ep := range allEndpoints {
 		epByOp[ep.goName] = ep
@@ -861,7 +849,7 @@ func genCommands(allEndpoints []*endpointInfo, allSchemas []*schemaInfo) string 
 		if ep == nil {
 			log.Fatalf("cmdRegistry references unknown operation %q", opID)
 		}
-		emitCommand(&body, opID, def, ep, allSchemas)
+		emitCommand(&body, opID, def, ep)
 	}
 
 	// Emit init() for subcommand wiring within groups
@@ -890,7 +878,7 @@ func genCommands(allEndpoints []*endpointInfo, allSchemas []*schemaInfo) string 
 	return buf.String()
 }
 
-func emitCommand(buf *bytes.Buffer, opID string, def cmdDef, ep *endpointInfo, schemas []*schemaInfo) {
+func emitCommand(buf *bytes.Buffer, opID string, def cmdDef, ep *endpointInfo) {
 	opVar := opID + "Op"
 	parentVar := def.parent + "Cmd"
 	clientVar := "tradingClient"
@@ -898,7 +886,8 @@ func emitCommand(buf *bytes.Buffer, opID string, def cmdDef, ep *endpointInfo, s
 		clientVar = "dataClient"
 	}
 
-	// Build configure closures
+	// Build configure closures (only for defaults and bodyAliases now;
+	// Long/Example are embedded in the Op struct).
 	var configures []string
 
 	if len(def.defaults) > 0 {
@@ -910,9 +899,8 @@ func emitCommand(buf *bytes.Buffer, opID string, def cmdDef, ep *endpointInfo, s
 		configures = append(configures, fmt.Sprintf("flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{%s}})", strings.Join(pairs, ", ")))
 	}
 
-	// Register aliased body flags via configure closure
 	if len(def.bodyAliases) > 0 {
-		bodySchema := findSchema(schemas, ep.bodyRef)
+		bodySchema := findSchema(ep.bodyRef)
 		aliasKeys := sortedKeys(def.bodyAliases)
 		var aliasLines []string
 		for _, oasKebab := range aliasKeys {
@@ -929,19 +917,8 @@ func emitCommand(buf *bytes.Buffer, opID string, def cmdDef, ep *endpointInfo, s
 		configures = append(configures, fmt.Sprintf("func(c *cobra.Command) {\n%s\n\t}", strings.Join(aliasLines, "\n")))
 	}
 
-	// Build configure func for long + examples
-	hasConfigFunc := def.long != "" || def.examples != ""
-	if hasConfigFunc {
-		var lines []string
-		if def.long != "" {
-			lines = append(lines, fmt.Sprintf("\t\tc.Long = %q", def.long))
-		}
-		lines = append(lines, fmt.Sprintf("\t\tc.Example = %s", backtickQuote(def.examples)))
-		configures = append(configures, fmt.Sprintf("func(c *cobra.Command) {\n%s\n\t}", strings.Join(lines, "\n")))
-	}
-
 	// Build the fetch callback
-	fetchBody := buildFetchBody(opID, def, ep, clientVar, schemas)
+	fetchBody := buildFetchBody(opID, def, ep, clientVar)
 
 	if def.self {
 		// attachCmd on existing parent
@@ -966,7 +943,7 @@ func emitCommand(buf *bytes.Buffer, opID string, def cmdDef, ep *endpointInfo, s
 	}
 }
 
-func buildFetchBody(opID string, def cmdDef, ep *endpointInfo, clientVar string, schemas []*schemaInfo) string {
+func buildFetchBody(opID string, def cmdDef, ep *endpointInfo, clientVar string) string {
 	methodName := ep.goName
 	isVoid := ep.responseEmpty || ep.responseRef == ""
 	isPatch := ep.method == "PATCH" || ep.method == "PUT"
@@ -977,7 +954,7 @@ func buildFetchBody(opID string, def cmdDef, ep *endpointInfo, clientVar string,
 
 	// For PATCH/PUT with body and bodyAliases → inline body with aliases
 	if isPatch && hasBodyRef && len(def.bodyAliases) > 0 {
-		return buildPatchBodyWithAliases(ep, def, clientVar, schemas)
+		return buildPatchBodyWithAliases(ep, def, clientVar)
 	}
 
 	// For PATCH with body
@@ -990,7 +967,7 @@ func buildFetchBody(opID string, def cmdDef, ep *endpointInfo, clientVar string,
 		args = append(args, "body")
 
 		lines := fmt.Sprintf("body, changed := %s(cmd)\n", bodyFuncName)
-		for _, jf := range structRefBodyFields(ep.bodyRef, schemas) {
+		for _, jf := range structRefBodyFields(ep.bodyRef) {
 			lines += fmt.Sprintf("\tif cmdutil.Changed(cmd, %q) {\n", jf.flagName)
 			lines += fmt.Sprintf("\t\tif err := json.Unmarshal([]byte(cmdutil.Str(cmd, %q)), &body.%s); err != nil {\n", jf.flagName, jf.goField)
 			lines += fmt.Sprintf("\t\t\treturn nil, fmt.Errorf(\"--%s: %%w\", err)\n", jf.flagName)
@@ -1007,45 +984,49 @@ func buildFetchBody(opID string, def cmdDef, ep *endpointInfo, clientVar string,
 
 	// For POST with body ref (flat scalar)
 	if isPost && hasBodyRef {
-		bodyExpr := buildPostBody(ep, def, schemas)
-		if bodyExpr != "" {
-			var args []string
-			for _, pp := range ep.pathParams {
-				args = append(args, pathParamExpr(pp, def))
+		if s := findSchema(ep.bodyRef); s != nil && s.kind == "struct" {
+			bodyExpr := buildFlatPostBody(ep.bodyRef, s.props)
+			if bodyExpr != "" {
+				var args []string
+				for _, pp := range ep.pathParams {
+					args = append(args, pathParamExpr(pp, def))
+				}
+				if hasQueryParams {
+					args = append(args, queryFromFlagsExpr(ep))
+				}
+				args = append(args, bodyExpr)
+				call := fmt.Sprintf("%s.%s(%s)", clientVar, methodName, strings.Join(args, ", "))
+				if isVoid {
+					return "return voidResponse(" + call + ")"
+				}
+				return "return " + call
 			}
-			if hasQueryParams {
-				args = append(args, queryFromFlagsExpr(ep))
-			}
-			args = append(args, bodyExpr)
-			call := fmt.Sprintf("%s.%s(%s)", clientVar, methodName, strings.Join(args, ", "))
-			if isVoid {
-				return "return voidResponse(" + call + ")"
-			}
-			return "return " + call
 		}
 		// Try multi-statement block for mixed types (e.g. string + []string fields)
-		if block := buildPostBodyBlock(ep, def, clientVar, schemas); block != "" {
+		if block := buildPostBodyBlock(ep, def, clientVar); block != "" {
 			return block
 		}
 	}
 
 	// For POST with inline body schema
 	if isPost && hasBodyInline {
-		bodyExpr := buildInlinePostBody(ep)
-		if bodyExpr != "" {
-			var args []string
-			for _, pp := range ep.pathParams {
-				args = append(args, pathParamExpr(pp, def))
+		if props := flattenInlineProps(ep.bodyInline); props != nil {
+			bodyExpr := buildFlatPostBody(ep.goName+"Request", props)
+			if bodyExpr != "" {
+				var args []string
+				for _, pp := range ep.pathParams {
+					args = append(args, pathParamExpr(pp, def))
+				}
+				if hasQueryParams {
+					args = append(args, queryFromFlagsExpr(ep))
+				}
+				args = append(args, bodyExpr)
+				call := fmt.Sprintf("%s.%s(%s)", clientVar, methodName, strings.Join(args, ", "))
+				if isVoid {
+					return "return voidResponse(" + call + ")"
+				}
+				return "return " + call
 			}
-			if hasQueryParams {
-				args = append(args, queryFromFlagsExpr(ep))
-			}
-			args = append(args, bodyExpr)
-			call := fmt.Sprintf("%s.%s(%s)", clientVar, methodName, strings.Join(args, ", "))
-			if isVoid {
-				return "return voidResponse(" + call + ")"
-			}
-			return "return " + call
 		}
 	}
 
@@ -1065,27 +1046,34 @@ func buildFetchBody(opID string, def cmdDef, ep *endpointInfo, clientVar string,
 	return "return " + call
 }
 
-func buildInlinePostBody(ep *endpointInfo) string {
-	props, ok := ep.bodyInline["properties"].(map[string]any)
+func flattenInlineProps(schema map[string]any) map[string]map[string]any {
+	props, ok := schema["properties"].(map[string]any)
 	if !ok || len(props) == 0 {
+		return nil
+	}
+	result := make(map[string]map[string]any, len(props))
+	for k, v := range props {
+		if m, ok := v.(map[string]any); ok {
+			result[k] = m
+		}
+	}
+	return result
+}
+
+func buildFlatPostBody(typeName string, props map[string]map[string]any) string {
+	propNames := sortedKeys(props)
+	for _, name := range propNames {
+		ps := props[name]
+		if _, ok := ps["$ref"].(string); ok {
+			return ""
+		}
+		if t, _ := ps["type"].(string); t != "string" {
+			return ""
+		}
+	}
+	if len(propNames) == 0 {
 		return ""
 	}
-
-	propNames := sortedKeys(props)
-
-	// Only handle flat scalar (all string fields)
-	for _, name := range propNames {
-		ps, ok := props[name].(map[string]any)
-		if !ok {
-			return ""
-		}
-		t, _ := ps["type"].(string)
-		if t != "string" {
-			return ""
-		}
-	}
-
-	typeName := ep.goName + "Request"
 	var lines []string
 	lines = append(lines, fmt.Sprintf("&api.%s{", typeName))
 	for _, name := range propNames {
@@ -1097,42 +1085,8 @@ func buildInlinePostBody(ep *endpointInfo) string {
 	return strings.Join(lines, "\n")
 }
 
-func buildPostBody(ep *endpointInfo, def cmdDef, schemas []*schemaInfo) string {
-	bodySchema := findSchema(schemas, ep.bodyRef)
-	if bodySchema == nil || bodySchema.kind != "struct" {
-		return ""
-	}
-
-	propNames := sortedKeys(bodySchema.props)
-
-	for _, name := range propNames {
-		ps := bodySchema.props[name]
-		if _, ok := ps["$ref"].(string); ok {
-			return "" // has enum/ref — not flat scalar
-		}
-		t, _ := ps["type"].(string)
-		if t != "string" {
-			return "" // not flat scalar
-		}
-	}
-
-	if len(propNames) == 0 {
-		return ""
-	}
-
-	var lines []string
-	lines = append(lines, fmt.Sprintf("&api.%s{", ep.bodyRef))
-	for _, name := range propNames {
-		flagName := strings.ReplaceAll(name, "_", "-")
-		goField := toGoName(name)
-		lines = append(lines, fmt.Sprintf("\t\t%s: cmdutil.Str(cmd, %q),", goField, flagName))
-	}
-	lines = append(lines, "\t}")
-	return strings.Join(lines, "\n")
-}
-
-func buildPatchBodyWithAliases(ep *endpointInfo, def cmdDef, clientVar string, schemas []*schemaInfo) string {
-	bodySchema := findSchema(schemas, ep.bodyRef)
+func buildPatchBodyWithAliases(ep *endpointInfo, def cmdDef, clientVar string) string {
+	bodySchema := findSchema(ep.bodyRef)
 	if bodySchema == nil || bodySchema.kind != "struct" {
 		return ""
 	}
@@ -1191,8 +1145,8 @@ func buildPatchBodyWithAliases(ep *endpointInfo, def cmdDef, clientVar string, s
 	return b.String()
 }
 
-func buildPostBodyBlock(ep *endpointInfo, def cmdDef, clientVar string, schemas []*schemaInfo) string {
-	bodySchema := findSchema(schemas, ep.bodyRef)
+func buildPostBodyBlock(ep *endpointInfo, def cmdDef, clientVar string) string {
+	bodySchema := findSchema(ep.bodyRef)
 	if bodySchema == nil || bodySchema.kind != "struct" {
 		return ""
 	}
@@ -1277,8 +1231,8 @@ type jsonField struct {
 	goField  string
 }
 
-func structRefBodyFields(bodyRef string, schemas []*schemaInfo) []jsonField {
-	bodySchema := findSchema(schemas, bodyRef)
+func structRefBodyFields(bodyRef string) []jsonField {
+	bodySchema := findSchema(bodyRef)
 	if bodySchema == nil || bodySchema.kind != "struct" {
 		return nil
 	}
@@ -1293,7 +1247,7 @@ func structRefBodyFields(bodyRef string, schemas []*schemaInfo) []jsonField {
 			continue
 		}
 		rn := refBaseName(ref)
-		if s := findSchemaByOASName(schemas, rn); s != nil && s.kind == "struct" {
+		if s := findSchemaByOASName(rn); s != nil && s.kind == "struct" {
 			fields = append(fields, jsonField{
 				flagName: strings.ReplaceAll(name, "_", "-"),
 				goField:  toGoName(name),
