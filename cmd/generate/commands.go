@@ -712,8 +712,10 @@ var cmdSkip = map[string]string{
 	"News":                   "hand-written: --all pagination loop",
 }
 
-func checkExhaustive(allEndpoints []*endpointInfo) {
+func checkExhaustive(allEndpoints []*endpointInfo, allSchemas []*schemaInfo) {
+	epByOp := map[string]*endpointInfo{}
 	for _, ep := range allEndpoints {
+		epByOp[ep.goName] = ep
 		_, inRegistry := cmdRegistry[ep.goName]
 		_, inSkip := cmdSkip[ep.goName]
 		if !inRegistry && !inSkip {
@@ -724,6 +726,43 @@ func checkExhaustive(allEndpoints []*endpointInfo) {
 	for opID, def := range cmdRegistry {
 		if def.examples == "" {
 			log.Fatalf("cmdRegistry[%q] has empty examples — every generated command must have examples", opID)
+		}
+	}
+
+	// Detect body field collisions with query/path params.
+	// A collision means a body field is silently dropped by FlagDef dedup.
+	// bodyAliases must resolve every collision explicitly.
+	for opID, def := range cmdRegistry {
+		ep := epByOp[opID]
+		if ep == nil || ep.bodyRef == "" {
+			continue
+		}
+		var bodySchema *schemaInfo
+		for _, s := range allSchemas {
+			if s.goName == ep.bodyRef && s.kind == "struct" {
+				bodySchema = s
+				break
+			}
+		}
+		if bodySchema == nil {
+			continue
+		}
+		nonBodyNames := map[string]bool{}
+		for _, p := range ep.pathParams {
+			nonBodyNames[strings.ReplaceAll(p.name, "_", "-")] = true
+		}
+		for _, p := range ep.queryParams {
+			nonBodyNames[strings.ReplaceAll(p.name, "_", "-")] = true
+		}
+		for fieldName := range bodySchema.props {
+			flagName := strings.ReplaceAll(fieldName, "_", "-")
+			if !nonBodyNames[flagName] {
+				continue
+			}
+			if _, aliased := def.bodyAliases[flagName]; aliased {
+				continue
+			}
+			log.Fatalf("cmdRegistry[%q]: body field %q collides with a query/path param — add bodyAliases entry to resolve", opID, flagName)
 		}
 	}
 }

@@ -62,7 +62,7 @@ func main() {
 	cmdDir := filepath.Join(root, "internal", "cmd")
 	writeGo(filepath.Join(cmdDir, "params_generated.go"), genFromFlags(allEndpoints, allSchemas))
 
-	checkExhaustive(allEndpoints)
+	checkExhaustive(allEndpoints, allSchemas)
 	writeGo(filepath.Join(cmdDir, "commands_generated.go"), genCommands(allEndpoints, allSchemas))
 
 	fmt.Printf("Generated %d trading types, %d market data types\n", len(tSchemas), len(mSchemas))
