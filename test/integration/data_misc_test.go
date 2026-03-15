@@ -6,22 +6,11 @@ import (
 	"testing"
 )
 
-func TestDataCryptoOrderbook(t *testing.T) {
+func TestDataNews(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "crypto-orderbook", "--symbols", "BTC/USD")
+	out := alpaca(t, "data", "news", "--symbols", "AAPL", "--limit", "5")
 	data := parseJSONMap(t, out)
-	if len(data) == 0 {
-		t.Error("expected non-empty crypto orderbook response")
-	}
-}
-
-func TestDataAuctions(t *testing.T) {
-	t.Parallel()
-	out := alpaca(t, "data", "auctions", "--symbols", "AAPL", "--start", daysAgo(100), "--end", daysAgo(93))
-	data := parseJSONMap(t, out)
-	if len(data) == 0 {
-		t.Error("expected non-empty auctions response")
-	}
+	requireFields(t, data, "news")
 }
 
 func TestDataCorporateActions(t *testing.T) {

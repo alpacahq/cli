@@ -6,6 +6,113 @@ import (
 	"testing"
 )
 
+// --- Single-symbol ---
+
+func TestDataBars(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "data", "bars", "--symbol", "AAPL",
+		"--start", daysAgo(100),
+		"--end", daysAgo(93),
+		"--timeframe", "1Day",
+	)
+	data := parseJSONMap(t, out)
+	requireFields(t, data, "bars")
+}
+
+func TestDataBars_Timeframe(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "data", "bars", "--symbol", "AAPL",
+		"--start", daysAgo(95),
+		"--end", daysAgo(94),
+		"--timeframe", "1Hour",
+	)
+	data := parseJSONMap(t, out)
+	requireFields(t, data, "bars")
+}
+
+func TestDataBars_Adjustment(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "data", "bars", "--symbol", "AAPL",
+		"--start", daysAgo(100),
+		"--end", daysAgo(93),
+		"--timeframe", "1Day",
+		"--adjustment", "split",
+	)
+	data := parseJSONMap(t, out)
+	requireFields(t, data, "bars")
+}
+
+func TestDataQuotes(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "data", "quotes", "--symbol", "AAPL",
+		"--start", daysAgo(95),
+		"--end", daysAgo(94),
+		"--limit", "5",
+	)
+	data := parseJSONMap(t, out)
+	requireFields(t, data, "quotes")
+}
+
+func TestDataTrades(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "data", "trades", "--symbol", "AAPL",
+		"--start", daysAgo(95),
+		"--end", daysAgo(94),
+		"--limit", "5",
+	)
+	data := parseJSONMap(t, out)
+	requireFields(t, data, "trades")
+}
+
+func TestDataLatestTrade(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "data", "latest-trade", "--symbol", "AAPL")
+	data := parseJSONMap(t, out)
+	requireFields(t, data, "trade")
+}
+
+func TestDataLatestQuote(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "data", "latest-quote", "--symbol", "AAPL")
+	data := parseJSONMap(t, out)
+	requireFields(t, data, "quote")
+}
+
+func TestDataLatestBar(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "data", "latest-bar", "--symbol", "AAPL")
+	data := parseJSONMap(t, out)
+	requireFields(t, data, "bar")
+}
+
+func TestDataSnapshot(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "data", "snapshot", "--symbol", "AAPL")
+	data := parseJSONMap(t, out)
+	requireFields(t, data, "latestTrade", "latestQuote", "minuteBar", "dailyBar")
+}
+
+func TestDataAuction(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "data", "auction", "--symbol", "AAPL",
+		"--start", daysAgo(100),
+		"--end", daysAgo(93),
+	)
+	data := parseJSONMap(t, out)
+	requireFields(t, data, "auctions")
+}
+
+func TestDataAuctions(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "data", "auctions", "--symbols", "AAPL", "--start", daysAgo(100), "--end", daysAgo(93))
+	data := parseJSONMap(t, out)
+	if len(data) == 0 {
+		t.Error("expected non-empty auctions response")
+	}
+}
+
+// --- Multi-symbol ---
+
 func TestDataMultiBars(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "data", "multi-bars",
@@ -93,6 +200,8 @@ func TestDataLatestTradesMulti(t *testing.T) {
 		t.Error("expected latest trades to contain AAPL")
 	}
 }
+
+// --- Pagination ---
 
 func TestDataMultiQuotes_PageToken(t *testing.T) {
 	t.Parallel()
