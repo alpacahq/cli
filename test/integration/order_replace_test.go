@@ -262,3 +262,86 @@ func TestOrderList_Direction(t *testing.T) {
 		}
 	}
 }
+
+func TestOrderSubmit_BracketOrder(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "order", "submit",
+		"--symbol", "AAPL",
+		"--qty", "1",
+		"--side", "buy",
+		"--type", "limit",
+		"--limit-price", "1.00",
+		"--time-in-force", "gtc",
+		"--order-class", "bracket",
+		"--take-profit", "200",
+		"--stop-loss", "0.50",
+	)
+	order := parseJSONMap(t, out)
+	id := order["id"].(string)
+	t.Cleanup(func() {
+		_ = makeCmd("order", "cancel", "--order-id", id).Run()
+	})
+
+	if order["order_class"] != "bracket" {
+		t.Errorf("expected order_class bracket, got %v", order["order_class"])
+	}
+	legs, ok := order["legs"].([]any)
+	if !ok || len(legs) < 2 {
+		t.Fatalf("expected at least 2 legs, got %d", len(legs))
+	}
+
+	hasTP, hasSL := false, false
+	for _, l := range legs {
+		leg, _ := l.(map[string]any)
+		if leg["type"] == "limit" {
+			hasTP = true
+		}
+		if leg["type"] == "stop" {
+			hasSL = true
+		}
+	}
+	if !hasTP {
+		t.Error("bracket order missing take-profit leg")
+	}
+	if !hasSL {
+		t.Error("bracket order missing stop-loss leg")
+	}
+}
+
+func TestOrderSubmit_ExtendedHours(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "order", "submit",
+		"--symbol", "AAPL",
+		"--qty", "1",
+		"--side", "buy",
+		"--type", "limit",
+		"--limit-price", "1.00",
+		"--time-in-force", "day",
+		"--extended-hours",
+	)
+	order := parseJSONMap(t, out)
+	id := order["id"].(string)
+	t.Cleanup(func() {
+		_ = makeCmd("order", "cancel", "--order-id", id).Run()
+	})
+
+	if order["extended_hours"] != true {
+		t.Errorf("expected extended_hours true, got %v", order["extended_hours"])
+	}
+}
+
+func TestOrderList_AfterOrderID(t *testing.T) {
+	t.Parallel()
+	id := submitTestOrder(t)
+	_ = submitTestOrder(t)
+
+	all := parseJSONArray(t, alpaca(t, "order", "list", "--status", "open"))
+	filtered := parseJSONArray(t, alpaca(t, "order", "list",
+		"--status", "open",
+		"--after-order-id", id,
+	))
+
+	if len(filtered) >= len(all) {
+		t.Errorf("--after-order-id should return fewer results: got %d, all had %d", len(filtered), len(all))
+	}
+}

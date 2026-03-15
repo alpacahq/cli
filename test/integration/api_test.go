@@ -76,3 +76,12 @@ func TestAPI_UseDataAPI(t *testing.T) {
 	trade := parseJSONMap(t, out)
 	requireFields(t, trade, "trade")
 }
+
+func TestAPI_QueryFlag(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "api", "GET", "/v2/orders", "--query", "status=all&limit=1")
+	orders := parseJSONArray(t, out)
+	if len(orders) > 1 {
+		t.Errorf("--query limit=1 returned %d orders", len(orders))
+	}
+}

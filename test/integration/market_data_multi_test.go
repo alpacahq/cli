@@ -93,3 +93,28 @@ func TestDataLatestTradesMulti(t *testing.T) {
 		t.Error("expected latest trades to contain AAPL")
 	}
 }
+
+func TestDataMultiQuotes_PageToken(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "data", "multi-quotes",
+		"--symbols", "AAPL",
+		"--start", daysAgo(95),
+		"--end", daysAgo(94),
+		"--limit", "2",
+	)
+	page1 := parseJSONMap(t, out)
+	token, ok := page1["next_page_token"].(string)
+	if !ok || token == "" {
+		t.Skip("no next_page_token — not enough data to test pagination")
+	}
+
+	out = alpaca(t, "data", "multi-quotes",
+		"--symbols", "AAPL",
+		"--start", daysAgo(95),
+		"--end", daysAgo(94),
+		"--limit", "2",
+		"--page-token", token,
+	)
+	page2 := parseJSONMap(t, out)
+	requireFields(t, page2, "quotes")
+}
