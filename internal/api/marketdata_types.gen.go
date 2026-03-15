@@ -332,6 +332,8 @@ type NewsImage struct {
 	URL  string `json:"url"`
 }
 
+var NewsImageSizeValues = []string{"large", "small", "thumb"}
+
 type NewsResp struct {
 	News          []News `json:"news"`
 	NextPageToken string `json:"next_page_token"`
@@ -662,5 +664,3 @@ type WorthlessRemoval struct {
 	ProcessDate string `json:"process_date"`
 	Symbol      string `json:"symbol"`
 }
-
-var NewsImageSizeValues = []string{"large", "small", "thumb"}

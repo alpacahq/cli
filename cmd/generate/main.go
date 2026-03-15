@@ -121,21 +121,11 @@ func extractSchemas(spec map[string]any) []*schemaInfo {
 		}
 		info := &schemaInfo{name: name, goName: toGoName(name), raw: s}
 		props, hasProps := s["properties"].(map[string]any)
-		enumVals, hasEnum := s["enum"].([]any)
+		_, hasEnum := s["enum"].([]any)
 
 		if hasEnum {
 			info.kind = "enum"
-			for _, v := range enumVals {
-				if v == nil {
-					continue
-				}
-				sv := fmt.Sprint(v)
-				if sv == "" {
-					continue
-				}
-				info.enumValues = append(info.enumValues, sv)
-			}
-			sort.Strings(info.enumValues)
+			info.enumValues = extractEnumValues(s)
 		} else if hasProps {
 			info.kind = "struct"
 			info.props = make(map[string]map[string]any)
@@ -422,10 +412,6 @@ func genTypes(specFile string, schemas []*schemaInfo) string {
 	for _, s := range schemas {
 		if s.kind == "struct" {
 			genStruct(&buf, s, schemas)
-		}
-	}
-	for _, s := range schemas {
-		if s.kind == "struct" {
 			genInlineEnumValues(&buf, s)
 		}
 	}
@@ -433,11 +419,7 @@ func genTypes(specFile string, schemas []*schemaInfo) string {
 }
 
 func genInlineEnumValues(buf *bytes.Buffer, s *schemaInfo) {
-	var fields []string
-	for f := range s.props {
-		fields = append(fields, f)
-	}
-	sort.Strings(fields)
+	fields := sortedKeys(s.props)
 
 	for _, fieldName := range fields {
 		fieldSchema := s.props[fieldName]
@@ -503,11 +485,7 @@ func sanitizeConstName(val string) string {
 
 func genStruct(buf *bytes.Buffer, s *schemaInfo, allSchemas []*schemaInfo) {
 	fmt.Fprintf(buf, "type %s struct {\n", s.goName)
-	var fields []string
-	for f := range s.props {
-		fields = append(fields, f)
-	}
-	sort.Strings(fields)
+	fields := sortedKeys(s.props)
 
 	for _, fieldName := range fields {
 		fieldSchema := s.props[fieldName]
@@ -564,31 +542,12 @@ func resolveGoType(schema map[string]any, allSchemas []*schemaInfo) string {
 // --- Client generation ---
 
 func genClient(clientName, specFile string, schemas []*schemaInfo, endpoints []*endpointInfo, isData bool) string {
-	var buf bytes.Buffer
-	fmt.Fprintf(&buf, "// Code generated from api/specs/%s; DO NOT EDIT.\n\n", specFile)
-	fmt.Fprintf(&buf, "package api\n\n")
-	needsStrings := false
-	for _, ep := range endpoints {
-		if ep.bodyRef != "" || ep.bodyInline != nil {
-			needsStrings = true
-			break
-		}
-	}
+	var body bytes.Buffer
 
-	fmt.Fprintf(&buf, "import (\n")
-	fmt.Fprintf(&buf, "\t\"encoding/json\"\n")
-	fmt.Fprintf(&buf, "\t\"fmt\"\n")
-	fmt.Fprintf(&buf, "\t\"net/url\"\n")
-	if needsStrings {
-		fmt.Fprintf(&buf, "\t\"strings\"\n")
-	}
-	fmt.Fprintf(&buf, "\n\t\"github.com/alpacahq/cli/internal/client\"\n")
-	fmt.Fprintf(&buf, ")\n\n")
-
-	fmt.Fprintf(&buf, "// %sClient provides typed methods for the %s API.\n", clientName, clientName)
-	fmt.Fprintf(&buf, "type %sClient struct {\n\tRaw *client.Client\n}\n\n", clientName)
-	fmt.Fprintf(&buf, "func New%sClient(raw *client.Client) *%sClient {\n", clientName, clientName)
-	fmt.Fprintf(&buf, "\treturn &%sClient{Raw: raw}\n}\n\n", clientName)
+	fmt.Fprintf(&body, "// %sClient provides typed methods for the %s API.\n", clientName, clientName)
+	fmt.Fprintf(&body, "type %sClient struct {\n\tRaw *client.Client\n}\n\n", clientName)
+	fmt.Fprintf(&body, "func New%sClient(raw *client.Client) *%sClient {\n", clientName, clientName)
+	fmt.Fprintf(&body, "\treturn &%sClient{Raw: raw}\n}\n\n", clientName)
 
 	getMethod := "Raw.Get"
 	if isData {
@@ -596,7 +555,7 @@ func genClient(clientName, specFile string, schemas []*schemaInfo, endpoints []*
 	}
 
 	for _, ep := range endpoints {
-		genEndpointMethod(&buf, ep, clientName, getMethod, schemas, isData)
+		genEndpointMethod(&body, ep, clientName, getMethod, schemas, isData)
 	}
 
 	validated := map[string]bool{}
@@ -620,10 +579,33 @@ func genClient(clientName, specFile string, schemas []*schemaInfo, endpoints []*
 				}
 			}
 			sort.Strings(reqFields)
-			genValidateMethod(&buf, s.goName, reqFields)
+			genValidateMethod(&body, s.goName, reqFields)
 			validated[ep.bodyRef] = true
 		}
 	}
+
+	// Assemble with header — detect imports from generated body
+	var buf bytes.Buffer
+	fmt.Fprintf(&buf, "// Code generated from api/specs/%s; DO NOT EDIT.\n\n", specFile)
+	fmt.Fprintf(&buf, "package api\n\n")
+
+	bodyStr := body.String()
+	fmt.Fprintf(&buf, "import (\n")
+	if strings.Contains(bodyStr, "json.RawMessage") {
+		fmt.Fprintf(&buf, "\t\"encoding/json\"\n")
+	}
+	if strings.Contains(bodyStr, "fmt.") {
+		fmt.Fprintf(&buf, "\t\"fmt\"\n")
+	}
+	if strings.Contains(bodyStr, "url.") {
+		fmt.Fprintf(&buf, "\t\"net/url\"\n")
+	}
+	if strings.Contains(bodyStr, "strings.") {
+		fmt.Fprintf(&buf, "\t\"strings\"\n")
+	}
+	fmt.Fprintf(&buf, "\n\t\"github.com/alpacahq/cli/internal/client\"\n")
+	fmt.Fprintf(&buf, ")\n\n")
+	buf.Write(body.Bytes())
 
 	return buf.String()
 }
@@ -677,42 +659,34 @@ func genEndpointMethod(buf *bytes.Buffer, ep *endpointInfo, clientName, getMetho
 	fmt.Fprintf(buf, "%s {\n", sig.String())
 
 	pathExpr := buildPathExpr(ep.path, ep.pathParams)
-	fmt.Fprintf(buf, "\tpath := %s\n", pathExpr)
-
 	paramsExpr := "nil"
 	if hasParams {
 		paramsExpr = "params"
 	}
 
+	var callExpr string
 	switch ep.method {
 	case "GET":
-		fmt.Fprintf(buf, "\tdata, err := c.%s(path, %s)\n", getMethod, paramsExpr)
+		callExpr = fmt.Sprintf("c.%s(%s, %s)", getMethod, pathExpr, paramsExpr)
 	case "DELETE":
-		fmt.Fprintf(buf, "\tdata, err := c.Raw.Delete(path, %s)\n", paramsExpr)
+		callExpr = fmt.Sprintf("c.Raw.Delete(%s, %s)", pathExpr, paramsExpr)
 	default:
 		bodyExpr := "nil"
 		if bodyType != "" {
 			bodyExpr = "body"
 		}
 		methodFunc := strings.ToUpper(ep.method[:1]) + strings.ToLower(ep.method[1:])
-		fmt.Fprintf(buf, "\tdata, err := c.Raw.%s(path, %s, %s)\n", methodFunc, paramsExpr, bodyExpr)
+		callExpr = fmt.Sprintf("c.Raw.%s(%s, %s, %s)", methodFunc, pathExpr, paramsExpr, bodyExpr)
 	}
-
-	fmt.Fprintf(buf, "\tif err != nil { return nil, err }\n")
 
 	if respType != "" {
 		if ep.returnsArray {
-			fmt.Fprintf(buf, "\tvar result []%s\n", respType)
+			fmt.Fprintf(buf, "\treturn unmarshalSlice[%s](%s)\n", respType, callExpr)
 		} else {
-			fmt.Fprintf(buf, "\tvar result %s\n", respType)
+			fmt.Fprintf(buf, "\treturn unmarshal[%s](%s)\n", respType, callExpr)
 		}
-		fmt.Fprintf(buf, "\treturn ")
-		if !ep.returnsArray {
-			fmt.Fprintf(buf, "&")
-		}
-		fmt.Fprintf(buf, "result, json.Unmarshal(data, &result)\n")
 	} else {
-		fmt.Fprintf(buf, "\treturn data, nil\n")
+		fmt.Fprintf(buf, "\treturn %s\n", callExpr)
 	}
 
 	fmt.Fprintf(buf, "}\n\n")
@@ -733,11 +707,7 @@ func genInlineRequestStruct(buf *bytes.Buffer, name string, schema map[string]an
 	}
 
 	fmt.Fprintf(buf, "type %s struct {\n", name)
-	var fields []string
-	for f := range props {
-		fields = append(fields, f)
-	}
-	sort.Strings(fields)
+	fields := sortedKeys(props)
 	for _, fn := range fields {
 		fs, ok := props[fn].(map[string]any)
 		if !ok {
@@ -884,6 +854,15 @@ func mapGet(m map[string]any, key string) map[string]any {
 	return v
 }
 
+func sortedKeys[M ~map[string]V, V any](m M) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
 // --- Description generation ---
 
 type opDesc struct {
@@ -934,7 +913,7 @@ func collectDescriptions(endpoints []*endpointInfo, schemas []*schemaInfo, spec 
 				oasName:     p.name,
 				goFieldName: toGoName(p.name),
 				flagName:    strings.ReplaceAll(p.name, "_", "-"),
-				flagType:    goTypeToFlagType(p.goType),
+				flagType:    p.goType,
 				defaultVal:  p.defaultVal,
 				description: normalizeDesc(desc),
 				enumValues:  p.enumValues,
@@ -952,7 +931,7 @@ func collectDescriptions(endpoints []*endpointInfo, schemas []*schemaInfo, spec 
 				oasName:     p.name,
 				goFieldName: toGoName(p.name),
 				flagName:    strings.ReplaceAll(p.name, "_", "-"),
-				flagType:    goTypeToFlagType(p.goType),
+				flagType:    p.goType,
 				description: normalizeDesc(desc),
 				source:      "path",
 				required:    true,
@@ -961,9 +940,10 @@ func collectDescriptions(endpoints []*endpointInfo, schemas []*schemaInfo, spec 
 
 		bodyProps := getBodyProps(ep, schemas)
 		for propName, propSchema := range bodyProps {
+			enums := propertyEnums(propSchema, compSchemas)
 			desc := schemaDesc(propSchema, compSchemas)
 			if desc == "" {
-				desc = humanize(propName, propertyEnums(propSchema, compSchemas))
+				desc = humanize(propName, enums)
 			}
 			op.params = append(op.params, &flagDesc{
 				oasName:     propName,
@@ -971,7 +951,7 @@ func collectDescriptions(endpoints []*endpointInfo, schemas []*schemaInfo, spec 
 				flagName:    strings.ReplaceAll(propName, "_", "-"),
 				flagType:    bodyPropFlagType(propSchema, compSchemas),
 				description: normalizeDesc(desc),
-				enumValues:  propertyEnums(propSchema, compSchemas),
+				enumValues:  enums,
 				source:      "body",
 			})
 		}
@@ -982,11 +962,7 @@ func collectDescriptions(endpoints []*endpointInfo, schemas []*schemaInfo, spec 
 
 		if ep.responseRef != "" {
 			if s := findSchema(schemas, ep.responseRef); s != nil && s.kind == "struct" {
-				var fieldNames []string
-				for name := range s.props {
-					fieldNames = append(fieldNames, name)
-				}
-				sort.Strings(fieldNames)
+				fieldNames := sortedKeys(s.props)
 				for _, name := range fieldNames {
 					propSchema := s.props[name]
 					desc := schemaDesc(propSchema, compSchemas)
@@ -1016,17 +992,6 @@ func collectDescriptions(endpoints []*endpointInfo, schemas []*schemaInfo, spec 
 	return ops
 }
 
-func goTypeToFlagType(goType string) string {
-	switch goType {
-	case "int":
-		return "int"
-	case "bool":
-		return "bool"
-	default:
-		return "string"
-	}
-}
-
 func bodyPropFlagType(prop map[string]any, compSchemas map[string]any) string {
 	if ref, ok := prop["$ref"].(string); ok && compSchemas != nil {
 		name := refBaseName(ref)
@@ -1034,10 +999,10 @@ func bodyPropFlagType(prop map[string]any, compSchemas map[string]any) string {
 			if _, hasEnum := target["enum"].([]any); hasEnum {
 				return "string"
 			}
-			return goTypeToFlagType(schemaToFlagType(target))
+			return schemaToFlagType(target)
 		}
 	}
-	return goTypeToFlagType(schemaToFlagType(prop))
+	return schemaToFlagType(prop)
 }
 
 func schemaToFlagType(s map[string]any) string {
@@ -1264,20 +1229,15 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 	fmt.Fprintf(&buf, "// Code generated from api/specs; DO NOT EDIT.\n\n")
 	fmt.Fprintf(&buf, "package api\n\n")
 
-	// Op struct + methods
 	fmt.Fprintf(&buf, "// Op describes a generated API operation. Passed to fetchCmd/attachCmd\n")
 	fmt.Fprintf(&buf, "// for automatic flag registration, help text, and required-flag validation.\n")
 	fmt.Fprintf(&buf, "type Op struct {\n")
 	fmt.Fprintf(&buf, "\tName          string\n")
-	fmt.Fprintf(&buf, "\tsummary       string\n")
-	fmt.Fprintf(&buf, "\treturnsArray  bool\n")
-	fmt.Fprintf(&buf, "\tflags         []FlagDef\n")
-	fmt.Fprintf(&buf, "\trequiredFlags []string\n")
+	fmt.Fprintf(&buf, "\tSummary       string\n")
+	fmt.Fprintf(&buf, "\tReturnsArray  bool\n")
+	fmt.Fprintf(&buf, "\tFlags         []FlagDef\n")
+	fmt.Fprintf(&buf, "\tRequiredFlags []string\n")
 	fmt.Fprintf(&buf, "}\n\n")
-	fmt.Fprintf(&buf, "func (o Op) Summary() string         { return o.summary }\n")
-	fmt.Fprintf(&buf, "func (o Op) ReturnsArray() bool      { return o.returnsArray }\n")
-	fmt.Fprintf(&buf, "func (o Op) Flags() []FlagDef        { return o.flags }\n")
-	fmt.Fprintf(&buf, "func (o Op) RequiredFlags() []string { return o.requiredFlags }\n\n")
 
 	// FlagDef struct
 	fmt.Fprintf(&buf, "// FlagDef describes a CLI flag derived from the OpenAPI spec.\n")
@@ -1305,14 +1265,14 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 		sort.Strings(reqFlags)
 
 		fmt.Fprintf(&buf, "var %sOp = Op{\n", op.goName)
-		fmt.Fprintf(&buf, "\tName: %q, summary: %q", op.goName, op.summary)
+		fmt.Fprintf(&buf, "\tName: %q, Summary: %q", op.goName, op.summary)
 		if op.returnsArray {
-			fmt.Fprintf(&buf, ", returnsArray: true")
+			fmt.Fprintf(&buf, ", ReturnsArray: true")
 		}
 		fmt.Fprintf(&buf, ",\n")
 
 		if len(reqFlags) > 0 {
-			fmt.Fprintf(&buf, "\trequiredFlags: []string{")
+			fmt.Fprintf(&buf, "\tRequiredFlags: []string{")
 			for i, name := range reqFlags {
 				if i > 0 {
 					buf.WriteString(", ")
@@ -1324,7 +1284,7 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 
 		if len(op.params) > 0 {
 			seen := map[string]bool{}
-			fmt.Fprintf(&buf, "\tflags: []FlagDef{\n")
+			fmt.Fprintf(&buf, "\tFlags: []FlagDef{\n")
 			for _, p := range op.params {
 				if seen[p.oasName] {
 					continue
@@ -1450,11 +1410,7 @@ func genBodyFromFlags(buf *bytes.Buffer, bodyRef string, schemas []*schemaInfo) 
 		enumGoType  string
 	}
 
-	var propNames []string
-	for name := range bodySchema.props {
-		propNames = append(propNames, name)
-	}
-	sort.Strings(propNames)
+	propNames := sortedKeys(bodySchema.props)
 
 	var simpleFields, enumFields []fieldInfo
 	for _, propName := range propNames {

@@ -10,7 +10,7 @@ import (
 
 func TestQueryFromFlagsReadsRegisteredFlags(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
-	cmdutil.RegisterFlags(cmd, api.GetAllOrdersOp.Flags(), "", nil)
+	cmdutil.RegisterFlags(cmd, api.GetAllOrdersOp.Flags, "", nil)
 	_ = cmd.Flags().Set("status", "closed")
 	_ = cmd.Flags().Set("limit", "10")
 	_ = cmd.Flags().Set("symbols", "AAPL,MSFT")
@@ -29,7 +29,7 @@ func TestQueryFromFlagsReadsRegisteredFlags(t *testing.T) {
 
 func TestQueryFromFlagsOmitsUnchanged(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
-	cmdutil.RegisterFlags(cmd, api.OptionBarsOp.Flags(), "", &cmdutil.FlagOpts{
+	cmdutil.RegisterFlags(cmd, api.OptionBarsOp.Flags, "", &cmdutil.FlagOpts{
 		Defaults: map[string]string{"timeframe": "1Day"},
 	})
 
@@ -47,7 +47,7 @@ func TestQueryFromFlagsOmitsUnchanged(t *testing.T) {
 
 func TestQueryFromFlagsIgnoresNonQueryFlags(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
-	cmdutil.RegisterFlags(cmd, api.GetOrderByOrderIDOp.Flags(), "", nil)
+	cmdutil.RegisterFlags(cmd, api.GetOrderByOrderIDOp.Flags, "", nil)
 	_ = cmd.Flags().Set("order-id", "abc-123")
 
 	v := queryFromFlags(cmd, api.GetOrderByOrderIDOp)
@@ -58,7 +58,7 @@ func TestQueryFromFlagsIgnoresNonQueryFlags(t *testing.T) {
 
 func TestQueryFromFlagsIntValue(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
-	cmdutil.RegisterFlags(cmd, api.GetAllOrdersOp.Flags(), "", nil)
+	cmdutil.RegisterFlags(cmd, api.GetAllOrdersOp.Flags, "", nil)
 	_ = cmd.Flags().Set("limit", "0")
 
 	v := queryFromFlags(cmd, api.GetAllOrdersOp)
@@ -69,7 +69,7 @@ func TestQueryFromFlagsIntValue(t *testing.T) {
 
 func TestQueryFromFlagsBoolValue(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
-	cmdutil.RegisterFlags(cmd, api.GetAllOrdersOp.Flags(), "", nil)
+	cmdutil.RegisterFlags(cmd, api.GetAllOrdersOp.Flags, "", nil)
 	_ = cmd.Flags().Set("nested", "true")
 
 	v := queryFromFlags(cmd, api.GetAllOrdersOp)
@@ -80,7 +80,7 @@ func TestQueryFromFlagsBoolValue(t *testing.T) {
 
 func TestQueryFromFlagsFieldCoverage(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
-	cmdutil.RegisterFlags(cmd, api.GetAllOrdersOp.Flags(), "", nil)
+	cmdutil.RegisterFlags(cmd, api.GetAllOrdersOp.Flags, "", nil)
 	_ = cmd.Flags().Set("status", "open")
 	_ = cmd.Flags().Set("symbols", "AAPL")
 	_ = cmd.Flags().Set("after", "2025-01-01")

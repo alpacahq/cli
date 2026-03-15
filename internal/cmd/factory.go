@@ -29,7 +29,7 @@ func flagOpts(opts *cmdutil.FlagOpts) func(*cobra.Command) {
 func fetchCmd(use string, op api.Op, fetch func(cmd *cobra.Command, args []string) (any, error), configure ...func(*cobra.Command)) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   use,
-		Short: op.Summary(),
+		Short: op.Summary,
 	}
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		if req := registeredRequired(cmd, op); len(req) > 0 {
@@ -46,7 +46,7 @@ func fetchCmd(use string, op api.Op, fetch func(cmd *cobra.Command, args []strin
 	for _, fn := range configure {
 		fn(cmd)
 	}
-	cmdutil.RegisterFlags(cmd, op.Flags(), op.Name, cmdFlagOpts[cmd])
+	cmdutil.RegisterFlags(cmd, op.Flags, op.Name, cmdFlagOpts[cmd])
 	return cmd
 }
 
@@ -68,14 +68,14 @@ func attachCmd(cmd *cobra.Command, op api.Op, fetch func(cmd *cobra.Command, arg
 	for _, fn := range configure {
 		fn(cmd)
 	}
-	cmdutil.RegisterFlags(cmd, op.Flags(), op.Name, cmdFlagOpts[cmd])
+	cmdutil.RegisterFlags(cmd, op.Flags, op.Name, cmdFlagOpts[cmd])
 }
 
 // queryFromFlags builds url.Values from cobra flags using FlagDef metadata,
 // replacing per-endpoint *ParamsFromFlags boilerplate with a single runtime helper.
 func queryFromFlags(cmd *cobra.Command, op api.Op) url.Values {
 	v := url.Values{}
-	for _, f := range op.Flags() {
+	for _, f := range op.Flags {
 		if f.Source != "query" || !cmd.Flags().Changed(f.Name) {
 			continue
 		}
@@ -113,7 +113,7 @@ func voidResponse(data json.RawMessage, err error) (any, error) {
 // registeredRequired returns only those RequiredFlags from the op that are
 // actually registered on the command.
 func registeredRequired(cmd *cobra.Command, op api.Op) []string {
-	all := op.RequiredFlags()
+	all := op.RequiredFlags
 	if len(all) == 0 {
 		return nil
 	}

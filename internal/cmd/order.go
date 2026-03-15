@@ -12,7 +12,7 @@ import (
 
 var orderSubmitCmd = &cobra.Command{
 	Use:   "submit",
-	Short: api.PostOrderOp.Summary(),
+	Short: api.PostOrderOp.Summary,
 	Example: `  alpaca order submit --symbol AAPL --qty 10 --side buy --type market
   alpaca order submit --symbol AAPL --qty 5 --side buy --type limit --limit-price 185.00
   alpaca order submit --symbol AAPL --qty 10 --side sell --type stop --stop-price 175.00
@@ -65,7 +65,7 @@ var orderSubmitCmd = &cobra.Command{
 }
 
 func init() {
-	cmdutil.RegisterFlags(orderSubmitCmd, api.PostOrderOp.Flags(), api.PostOrderOp.Name, &cmdutil.FlagOpts{
+	cmdutil.RegisterFlags(orderSubmitCmd, api.PostOrderOp.Flags, api.PostOrderOp.Name, &cmdutil.FlagOpts{
 		Defaults: map[string]string{"type": "market"},
 	})
 	orderSubmitCmd.Flags().Bool("dry-run", false, "Print the request body without submitting")

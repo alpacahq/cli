@@ -6,16 +6,11 @@ package api
 // for automatic flag registration, help text, and required-flag validation.
 type Op struct {
 	Name          string
-	summary       string
-	returnsArray  bool
-	flags         []FlagDef
-	requiredFlags []string
+	Summary       string
+	ReturnsArray  bool
+	Flags         []FlagDef
+	RequiredFlags []string
 }
-
-func (o Op) Summary() string         { return o.summary }
-func (o Op) ReturnsArray() bool      { return o.returnsArray }
-func (o Op) Flags() []FlagDef        { return o.flags }
-func (o Op) RequiredFlags() []string { return o.requiredFlags }
 
 // FlagDef describes a CLI flag derived from the OpenAPI spec.
 type FlagDef struct {
@@ -30,9 +25,9 @@ type FlagDef struct {
 }
 
 var CalendarOp = Op{
-	Name: "Calendar", summary: "Get market calendar",
-	requiredFlags: []string{"market"},
-	flags: []FlagDef{
+	Name: "Calendar", Summary: "Get market calendar",
+	RequiredFlags: []string{"market"},
+	Flags: []FlagDef{
 		{Name: "end", OASName: "end", Type: "string", Description: "last date to retrieve data for (inclusive). Default: one week from the start date", Source: "query"},
 		{Name: "market", OASName: "market", Type: "string", Description: "market identifier (MIC, BIC, or acronym)", Required: true, Source: "path"},
 		{Name: "start", OASName: "start", Type: "string", Description: "first date to retrieve data for (inclusive). Default: today", Source: "query"},
@@ -41,16 +36,16 @@ var CalendarOp = Op{
 }
 
 var ClockOp = Op{
-	Name: "Clock", summary: "Get market clock",
-	flags: []FlagDef{
+	Name: "Clock", Summary: "Get market clock",
+	Flags: []FlagDef{
 		{Name: "markets", OASName: "markets", Type: "string", Description: "comma-separated list of markets", Source: "query"},
 		{Name: "time", OASName: "time", Type: "string", Description: "instead of the current time, use this time for the clock", Source: "query"},
 	},
 }
 
 var CorporateActionsOp = Op{
-	Name: "CorporateActions", summary: "Get corporate actions",
-	flags: []FlagDef{
+	Name: "CorporateActions", Summary: "Get corporate actions",
+	Flags: []FlagDef{
 		{Name: "cusips", OASName: "cusips", Type: "string", Description: "A comma-separated list of CUSIPs", Source: "query"},
 		{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", Source: "query"},
 		{Name: "ids", OASName: "ids", Type: "string", Description: "A comma-separated list of corporate action IDs", Source: "query"},
@@ -64,9 +59,9 @@ var CorporateActionsOp = Op{
 }
 
 var CryptoBarsOp = Op{
-	Name: "CryptoBars", summary: "Get historical bars",
-	requiredFlags: []string{"loc", "symbols", "timeframe"},
-	flags: []FlagDef{
+	Name: "CryptoBars", Summary: "Get historical bars",
+	RequiredFlags: []string{"loc", "symbols", "timeframe"},
+	Flags: []FlagDef{
 		{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", Source: "query"},
 		{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", Source: "query"},
 		{Name: "loc", OASName: "loc", Type: "string", Description: "crypto location from where the historical market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Required: true, Source: "path"},
@@ -79,90 +74,90 @@ var CryptoBarsOp = Op{
 }
 
 var CryptoLatestBarsOp = Op{
-	Name: "CryptoLatestBars", summary: "Get latest bars",
-	requiredFlags: []string{"loc", "symbols"},
-	flags: []FlagDef{
+	Name: "CryptoLatestBars", Summary: "Get latest bars",
+	RequiredFlags: []string{"loc", "symbols"},
+	Flags: []FlagDef{
 		{Name: "loc", OASName: "loc", Type: "string", Description: "crypto location from where the latest market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Required: true, Source: "path"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", Required: true, Source: "query"},
 	},
 }
 
 var CryptoLatestOrderbooksOp = Op{
-	Name: "CryptoLatestOrderbooks", summary: "Get latest orderbook",
-	requiredFlags: []string{"loc", "symbols"},
-	flags: []FlagDef{
+	Name: "CryptoLatestOrderbooks", Summary: "Get latest orderbook",
+	RequiredFlags: []string{"loc", "symbols"},
+	Flags: []FlagDef{
 		{Name: "loc", OASName: "loc", Type: "string", Description: "crypto location from where the latest market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Required: true, Source: "path"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", Required: true, Source: "query"},
 	},
 }
 
 var CryptoLatestQuotesOp = Op{
-	Name: "CryptoLatestQuotes", summary: "Get latest quotes",
-	requiredFlags: []string{"loc", "symbols"},
-	flags: []FlagDef{
+	Name: "CryptoLatestQuotes", Summary: "Get latest quotes",
+	RequiredFlags: []string{"loc", "symbols"},
+	Flags: []FlagDef{
 		{Name: "loc", OASName: "loc", Type: "string", Description: "crypto location from where the latest market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Required: true, Source: "path"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", Required: true, Source: "query"},
 	},
 }
 
 var CryptoLatestTradesOp = Op{
-	Name: "CryptoLatestTrades", summary: "Get latest trades",
-	requiredFlags: []string{"loc", "symbols"},
-	flags: []FlagDef{
+	Name: "CryptoLatestTrades", Summary: "Get latest trades",
+	RequiredFlags: []string{"loc", "symbols"},
+	Flags: []FlagDef{
 		{Name: "loc", OASName: "loc", Type: "string", Description: "crypto location from where the latest market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Required: true, Source: "path"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", Required: true, Source: "query"},
 	},
 }
 
 var CryptoPerpLatestBarsOp = Op{
-	Name: "CryptoPerpLatestBars", summary: "Get latest bars",
-	requiredFlags: []string{"loc", "symbols"},
-	flags: []FlagDef{
+	Name: "CryptoPerpLatestBars", Summary: "Get latest bars",
+	RequiredFlags: []string{"loc", "symbols"},
+	Flags: []FlagDef{
 		{Name: "loc", OASName: "loc", Type: "string", Description: "crypto perpetual location", Required: true, Source: "path"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", Required: true, Source: "query"},
 	},
 }
 
 var CryptoPerpLatestFuturesPricingOp = Op{
-	Name: "CryptoPerpLatestFuturesPricing", summary: "Get latest pricing",
-	requiredFlags: []string{"loc", "symbols"},
-	flags: []FlagDef{
+	Name: "CryptoPerpLatestFuturesPricing", Summary: "Get latest pricing",
+	RequiredFlags: []string{"loc", "symbols"},
+	Flags: []FlagDef{
 		{Name: "loc", OASName: "loc", Type: "string", Description: "crypto perpetual location", Required: true, Source: "path"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", Required: true, Source: "query"},
 	},
 }
 
 var CryptoPerpLatestOrderbooksOp = Op{
-	Name: "CryptoPerpLatestOrderbooks", summary: "Get latest orderbook",
-	requiredFlags: []string{"loc", "symbols"},
-	flags: []FlagDef{
+	Name: "CryptoPerpLatestOrderbooks", Summary: "Get latest orderbook",
+	RequiredFlags: []string{"loc", "symbols"},
+	Flags: []FlagDef{
 		{Name: "loc", OASName: "loc", Type: "string", Description: "crypto perpetual location", Required: true, Source: "path"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", Required: true, Source: "query"},
 	},
 }
 
 var CryptoPerpLatestQuotesOp = Op{
-	Name: "CryptoPerpLatestQuotes", summary: "Get latest quotes",
-	requiredFlags: []string{"loc", "symbols"},
-	flags: []FlagDef{
+	Name: "CryptoPerpLatestQuotes", Summary: "Get latest quotes",
+	RequiredFlags: []string{"loc", "symbols"},
+	Flags: []FlagDef{
 		{Name: "loc", OASName: "loc", Type: "string", Description: "crypto perpetual location", Required: true, Source: "path"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", Required: true, Source: "query"},
 	},
 }
 
 var CryptoPerpLatestTradesOp = Op{
-	Name: "CryptoPerpLatestTrades", summary: "Get latest trades",
-	requiredFlags: []string{"loc", "symbols"},
-	flags: []FlagDef{
+	Name: "CryptoPerpLatestTrades", Summary: "Get latest trades",
+	RequiredFlags: []string{"loc", "symbols"},
+	Flags: []FlagDef{
 		{Name: "loc", OASName: "loc", Type: "string", Description: "crypto perpetual location", Required: true, Source: "path"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", Required: true, Source: "query"},
 	},
 }
 
 var CryptoQuotesOp = Op{
-	Name: "CryptoQuotes", summary: "Get historical quotes",
-	requiredFlags: []string{"loc", "symbols"},
-	flags: []FlagDef{
+	Name: "CryptoQuotes", Summary: "Get historical quotes",
+	RequiredFlags: []string{"loc", "symbols"},
+	Flags: []FlagDef{
 		{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", Source: "query"},
 		{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", Source: "query"},
 		{Name: "loc", OASName: "loc", Type: "string", Description: "crypto location from where the historical market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Required: true, Source: "path"},
@@ -174,18 +169,18 @@ var CryptoQuotesOp = Op{
 }
 
 var CryptoSnapshotsOp = Op{
-	Name: "CryptoSnapshots", summary: "Get snapshots",
-	requiredFlags: []string{"loc", "symbols"},
-	flags: []FlagDef{
+	Name: "CryptoSnapshots", Summary: "Get snapshots",
+	RequiredFlags: []string{"loc", "symbols"},
+	Flags: []FlagDef{
 		{Name: "loc", OASName: "loc", Type: "string", Description: "crypto location from where the latest market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Required: true, Source: "path"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", Required: true, Source: "query"},
 	},
 }
 
 var CryptoTradesOp = Op{
-	Name: "CryptoTrades", summary: "Get historical trades",
-	requiredFlags: []string{"loc", "symbols"},
-	flags: []FlagDef{
+	Name: "CryptoTrades", Summary: "Get historical trades",
+	RequiredFlags: []string{"loc", "symbols"},
+	Flags: []FlagDef{
 		{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", Source: "query"},
 		{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", Source: "query"},
 		{Name: "loc", OASName: "loc", Type: "string", Description: "crypto location from where the historical market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Required: true, Source: "path"},
@@ -197,24 +192,24 @@ var CryptoTradesOp = Op{
 }
 
 var FixedIncomeLatestPricesOp = Op{
-	Name: "FixedIncomeLatestPrices", summary: "Get latest prices",
-	requiredFlags: []string{"isins"},
-	flags: []FlagDef{
+	Name: "FixedIncomeLatestPrices", Summary: "Get latest prices",
+	RequiredFlags: []string{"isins"},
+	Flags: []FlagDef{
 		{Name: "isins", OASName: "isins", Type: "string", Description: "A comma-separated list of ISINs with a limit of 1000", Required: true, Source: "query"},
 	},
 }
 
 var LatestRatesOp = Op{
-	Name: "LatestRates", summary: "Get latest rates for currency pairs",
-	requiredFlags: []string{"currency-pairs"},
-	flags: []FlagDef{
+	Name: "LatestRates", Summary: "Get latest rates for currency pairs",
+	RequiredFlags: []string{"currency-pairs"},
+	Flags: []FlagDef{
 		{Name: "currency-pairs", OASName: "currency_pairs", Type: "string", Description: "A comma-separated string with currency pairs", Required: true, Source: "query"},
 	},
 }
 
 var LegacyCalendarOp = Op{
-	Name: "LegacyCalendar", summary: "Get US market calendar",
-	flags: []FlagDef{
+	Name: "LegacyCalendar", Summary: "Get US market calendar",
+	Flags: []FlagDef{
 		{Name: "date-type", OASName: "date_type", Type: "string", Description: "indicates what start and end mean", Completions: []string{"SETTLEMENT", "TRADING"}, Source: "query"},
 		{Name: "end", OASName: "end", Type: "string", Description: "last date to retrieve data for (inclusive)", Source: "query"},
 		{Name: "start", OASName: "start", Type: "string", Description: "first date to retrieve data for (inclusive)", Source: "query"},
@@ -222,38 +217,38 @@ var LegacyCalendarOp = Op{
 }
 
 var LegacyClockOp = Op{
-	Name: "LegacyClock", summary: "Get US market clock",
+	Name: "LegacyClock", Summary: "Get US market clock",
 }
 
 var LogosOp = Op{
-	Name: "Logos", summary: "Get logos",
-	requiredFlags: []string{"symbol"},
-	flags: []FlagDef{
+	Name: "Logos", Summary: "Get logos",
+	RequiredFlags: []string{"symbol"},
+	Flags: []FlagDef{
 		{Name: "placeholder", OASName: "placeholder", Type: "bool", Default: "true", Description: "if true, returns a placeholder image when no logo is available. Defaults to true", Source: "query"},
 		{Name: "symbol", OASName: "symbol", Type: "string", Description: "A unique series of letters assigned to a security for trading purposes", Required: true, Source: "path"},
 	},
 }
 
 var MostActivesOp = Op{
-	Name: "MostActives", summary: "Get most active stocks",
-	flags: []FlagDef{
+	Name: "MostActives", Summary: "Get most active stocks",
+	Flags: []FlagDef{
 		{Name: "by", OASName: "by", Type: "string", Default: "volume", Description: "metric used for ranking the most active stocks", Completions: []string{"trades", "volume"}, Source: "query"},
 		{Name: "top", OASName: "top", Type: "int", Default: "10", Description: "number of top most active stocks to fetch per day", Source: "query"},
 	},
 }
 
 var MoversOp = Op{
-	Name: "Movers", summary: "Get top market movers",
-	requiredFlags: []string{"market-type"},
-	flags: []FlagDef{
+	Name: "Movers", Summary: "Get top market movers",
+	RequiredFlags: []string{"market-type"},
+	Flags: []FlagDef{
 		{Name: "market-type", OASName: "market_type", Type: "string", Description: "screen-specific market (stocks or crypto)", Required: true, Source: "path"},
 		{Name: "top", OASName: "top", Type: "int", Default: "10", Description: "number of top market movers to fetch (gainers and losers)", Source: "query"},
 	},
 }
 
 var NewsOp = Op{
-	Name: "News", summary: "Get news articles",
-	flags: []FlagDef{
+	Name: "News", Summary: "Get news articles",
+	Flags: []FlagDef{
 		{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", Source: "query"},
 		{Name: "exclude-contentless", OASName: "exclude_contentless", Type: "bool", Description: "boolean indicator to exclude news articles that do not contain content", Source: "query"},
 		{Name: "include-content", OASName: "include_content", Type: "bool", Description: "boolean indicator to include content for news articles (if available)", Source: "query"},
@@ -266,9 +261,9 @@ var NewsOp = Op{
 }
 
 var OptionChainOp = Op{
-	Name: "OptionChain", summary: "Get option chain",
-	requiredFlags: []string{"underlying-symbol"},
-	flags: []FlagDef{
+	Name: "OptionChain", Summary: "Get option chain",
+	RequiredFlags: []string{"underlying-symbol"},
+	Flags: []FlagDef{
 		{Name: "expiration-date", OASName: "expiration_date", Type: "string", Description: "filter contracts by the exact expiration date (format: YYYY-MM-DD)", Source: "query"},
 		{Name: "expiration-date-gte", OASName: "expiration_date_gte", Type: "string", Description: "filter contracts with expiration date greater than or equal to the specified date", Source: "query"},
 		{Name: "expiration-date-lte", OASName: "expiration_date_lte", Type: "string", Description: "filter contracts with expiration date less than or equal to the specified date", Source: "query"},
@@ -285,39 +280,39 @@ var OptionChainOp = Op{
 }
 
 var OptionLatestQuotesOp = Op{
-	Name: "OptionLatestQuotes", summary: "Get latest quotes",
-	requiredFlags: []string{"symbols"},
-	flags: []FlagDef{
+	Name: "OptionLatestQuotes", Summary: "Get latest quotes",
+	RequiredFlags: []string{"symbols"},
+	Flags: []FlagDef{
 		{Name: "feed", OASName: "feed", Type: "string", Default: "opra", Description: "source feed of the data", Completions: []string{"indicative", "opra"}, Source: "query"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of contract symbols with a limit of 100", Required: true, Source: "query"},
 	},
 }
 
 var OptionLatestTradesOp = Op{
-	Name: "OptionLatestTrades", summary: "Get latest trades",
-	requiredFlags: []string{"symbols"},
-	flags: []FlagDef{
+	Name: "OptionLatestTrades", Summary: "Get latest trades",
+	RequiredFlags: []string{"symbols"},
+	Flags: []FlagDef{
 		{Name: "feed", OASName: "feed", Type: "string", Default: "opra", Description: "source feed of the data", Completions: []string{"indicative", "opra"}, Source: "query"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of contract symbols with a limit of 100", Required: true, Source: "query"},
 	},
 }
 
 var OptionMetaConditionsOp = Op{
-	Name: "OptionMetaConditions", summary: "Get condition codes",
-	requiredFlags: []string{"ticktype"},
-	flags: []FlagDef{
+	Name: "OptionMetaConditions", Summary: "Get condition codes",
+	RequiredFlags: []string{"ticktype"},
+	Flags: []FlagDef{
 		{Name: "ticktype", OASName: "ticktype", Type: "string", Description: "type of ticks", Required: true, Source: "path"},
 	},
 }
 
 var OptionMetaExchangesOp = Op{
-	Name: "OptionMetaExchanges", summary: "Get exchange codes",
+	Name: "OptionMetaExchanges", Summary: "Get exchange codes",
 }
 
 var OptionSnapshotsOp = Op{
-	Name: "OptionSnapshots", summary: "Get snapshots",
-	requiredFlags: []string{"symbols"},
-	flags: []FlagDef{
+	Name: "OptionSnapshots", Summary: "Get snapshots",
+	RequiredFlags: []string{"symbols"},
+	Flags: []FlagDef{
 		{Name: "feed", OASName: "feed", Type: "string", Default: "opra", Description: "source feed of the data", Completions: []string{"indicative", "opra"}, Source: "query"},
 		{Name: "limit", OASName: "limit", Type: "int", Default: "100", Description: "number of maximum snapshots to return in a response.", Source: "query"},
 		{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", Source: "query"},
@@ -327,9 +322,9 @@ var OptionSnapshotsOp = Op{
 }
 
 var OptionTradesOp = Op{
-	Name: "OptionTrades", summary: "Get historical trades",
-	requiredFlags: []string{"symbols"},
-	flags: []FlagDef{
+	Name: "OptionTrades", Summary: "Get historical trades",
+	RequiredFlags: []string{"symbols"},
+	Flags: []FlagDef{
 		{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", Source: "query"},
 		{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", Source: "query"},
 		{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", Source: "query"},
@@ -340,9 +335,9 @@ var OptionTradesOp = Op{
 }
 
 var RatesOp = Op{
-	Name: "Rates", summary: "Get historical rates for currency pairs",
-	requiredFlags: []string{"currency-pairs"},
-	flags: []FlagDef{
+	Name: "Rates", Summary: "Get historical rates for currency pairs",
+	RequiredFlags: []string{"currency-pairs"},
+	Flags: []FlagDef{
 		{Name: "currency-pairs", OASName: "currency_pairs", Type: "string", Description: "A comma-separated string with currency pairs", Required: true, Source: "query"},
 		{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", Source: "query"},
 		{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", Source: "query"},
@@ -354,9 +349,9 @@ var RatesOp = Op{
 }
 
 var StockAuctionSingleOp = Op{
-	Name: "StockAuctionSingle", summary: "Get historical auctions (single)",
-	requiredFlags: []string{"symbol"},
-	flags: []FlagDef{
+	Name: "StockAuctionSingle", Summary: "Get historical auctions (single)",
+	RequiredFlags: []string{"symbol"},
+	Flags: []FlagDef{
 		{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)", Source: "query"},
 		{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", Source: "query"},
 		{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", Source: "query"},
@@ -370,9 +365,9 @@ var StockAuctionSingleOp = Op{
 }
 
 var StockAuctionsOp = Op{
-	Name: "StockAuctions", summary: "Get historical auctions",
-	requiredFlags: []string{"symbols"},
-	flags: []FlagDef{
+	Name: "StockAuctions", Summary: "Get historical auctions",
+	RequiredFlags: []string{"symbols"},
+	Flags: []FlagDef{
 		{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)", Source: "query"},
 		{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", Source: "query"},
 		{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", Source: "query"},
@@ -386,9 +381,9 @@ var StockAuctionsOp = Op{
 }
 
 var StockBarSingleOp = Op{
-	Name: "StockBarSingle", summary: "Get historical bars (single symbol)",
-	requiredFlags: []string{"symbol", "timeframe"},
-	flags: []FlagDef{
+	Name: "StockBarSingle", Summary: "Get historical bars (single symbol)",
+	RequiredFlags: []string{"symbol", "timeframe"},
+	Flags: []FlagDef{
 		{Name: "adjustment", OASName: "adjustment", Type: "string", Default: "raw", Description: "specifies the adjustments for the bars.\n\n - raw: no adjustments\n - split: adjust price and volume for forward and rev...", Source: "query"},
 		{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)", Source: "query"},
 		{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", Source: "query"},
@@ -404,9 +399,9 @@ var StockBarSingleOp = Op{
 }
 
 var StockBarsOp = Op{
-	Name: "StockBars", summary: "Get historical bars",
-	requiredFlags: []string{"symbols", "timeframe"},
-	flags: []FlagDef{
+	Name: "StockBars", Summary: "Get historical bars",
+	RequiredFlags: []string{"symbols", "timeframe"},
+	Flags: []FlagDef{
 		{Name: "adjustment", OASName: "adjustment", Type: "string", Default: "raw", Description: "specifies the adjustments for the bars.\n\n - raw: no adjustments\n - split: adjust price and volume for forward and rev...", Source: "query"},
 		{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)", Source: "query"},
 		{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", Source: "query"},
@@ -422,9 +417,9 @@ var StockBarsOp = Op{
 }
 
 var StockLatestBarSingleOp = Op{
-	Name: "StockLatestBarSingle", summary: "Get latest bar (single symbol)",
-	requiredFlags: []string{"symbol"},
-	flags: []FlagDef{
+	Name: "StockLatestBarSingle", Summary: "Get latest bar (single symbol)",
+	RequiredFlags: []string{"symbol"},
+	Flags: []FlagDef{
 		{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", Source: "query"},
 		{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}, Source: "query"},
 		{Name: "symbol", OASName: "symbol", Type: "string", Description: "symbol to query", Required: true, Source: "path"},
@@ -432,9 +427,9 @@ var StockLatestBarSingleOp = Op{
 }
 
 var StockLatestBarsOp = Op{
-	Name: "StockLatestBars", summary: "Get latest bars",
-	requiredFlags: []string{"symbols"},
-	flags: []FlagDef{
+	Name: "StockLatestBars", Summary: "Get latest bars",
+	RequiredFlags: []string{"symbols"},
+	Flags: []FlagDef{
 		{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", Source: "query"},
 		{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}, Source: "query"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols", Required: true, Source: "query"},
@@ -442,9 +437,9 @@ var StockLatestBarsOp = Op{
 }
 
 var StockLatestQuoteSingleOp = Op{
-	Name: "StockLatestQuoteSingle", summary: "Get latest quote (single symbol)",
-	requiredFlags: []string{"symbol"},
-	flags: []FlagDef{
+	Name: "StockLatestQuoteSingle", Summary: "Get latest quote (single symbol)",
+	RequiredFlags: []string{"symbol"},
+	Flags: []FlagDef{
 		{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", Source: "query"},
 		{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}, Source: "query"},
 		{Name: "symbol", OASName: "symbol", Type: "string", Description: "symbol to query", Required: true, Source: "path"},
@@ -452,9 +447,9 @@ var StockLatestQuoteSingleOp = Op{
 }
 
 var StockLatestQuotesOp = Op{
-	Name: "StockLatestQuotes", summary: "Get latest quotes",
-	requiredFlags: []string{"symbols"},
-	flags: []FlagDef{
+	Name: "StockLatestQuotes", Summary: "Get latest quotes",
+	RequiredFlags: []string{"symbols"},
+	Flags: []FlagDef{
 		{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", Source: "query"},
 		{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}, Source: "query"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols", Required: true, Source: "query"},
@@ -462,9 +457,9 @@ var StockLatestQuotesOp = Op{
 }
 
 var StockLatestTradeSingleOp = Op{
-	Name: "StockLatestTradeSingle", summary: "Get latest trade (single symbol)",
-	requiredFlags: []string{"symbol"},
-	flags: []FlagDef{
+	Name: "StockLatestTradeSingle", Summary: "Get latest trade (single symbol)",
+	RequiredFlags: []string{"symbol"},
+	Flags: []FlagDef{
 		{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", Source: "query"},
 		{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}, Source: "query"},
 		{Name: "symbol", OASName: "symbol", Type: "string", Description: "symbol to query", Required: true, Source: "path"},
@@ -472,9 +467,9 @@ var StockLatestTradeSingleOp = Op{
 }
 
 var StockLatestTradesOp = Op{
-	Name: "StockLatestTrades", summary: "Get latest trades",
-	requiredFlags: []string{"symbols"},
-	flags: []FlagDef{
+	Name: "StockLatestTrades", Summary: "Get latest trades",
+	RequiredFlags: []string{"symbols"},
+	Flags: []FlagDef{
 		{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", Source: "query"},
 		{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}, Source: "query"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols", Required: true, Source: "query"},
@@ -482,22 +477,22 @@ var StockLatestTradesOp = Op{
 }
 
 var StockMetaConditionsOp = Op{
-	Name: "StockMetaConditions", summary: "Get condition codes",
-	requiredFlags: []string{"tape", "ticktype"},
-	flags: []FlagDef{
+	Name: "StockMetaConditions", Summary: "Get condition codes",
+	RequiredFlags: []string{"tape", "ticktype"},
+	Flags: []FlagDef{
 		{Name: "tape", OASName: "tape", Type: "string", Description: "one character name of the tape", Completions: []string{"A", "B", "C"}, Required: true, Source: "query"},
 		{Name: "ticktype", OASName: "ticktype", Type: "string", Description: "type of ticks", Required: true, Source: "path"},
 	},
 }
 
 var StockMetaExchangesOp = Op{
-	Name: "StockMetaExchanges", summary: "Get exchange codes",
+	Name: "StockMetaExchanges", Summary: "Get exchange codes",
 }
 
 var StockQuoteSingleOp = Op{
-	Name: "StockQuoteSingle", summary: "Get historical quotes (single symbol)",
-	requiredFlags: []string{"symbol"},
-	flags: []FlagDef{
+	Name: "StockQuoteSingle", Summary: "Get historical quotes (single symbol)",
+	RequiredFlags: []string{"symbol"},
+	Flags: []FlagDef{
 		{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)", Source: "query"},
 		{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", Source: "query"},
 		{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", Source: "query"},
@@ -511,9 +506,9 @@ var StockQuoteSingleOp = Op{
 }
 
 var StockQuotesOp = Op{
-	Name: "StockQuotes", summary: "Get historical quotes",
-	requiredFlags: []string{"symbols"},
-	flags: []FlagDef{
+	Name: "StockQuotes", Summary: "Get historical quotes",
+	RequiredFlags: []string{"symbols"},
+	Flags: []FlagDef{
 		{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)", Source: "query"},
 		{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", Source: "query"},
 		{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", Source: "query"},
@@ -527,9 +522,9 @@ var StockQuotesOp = Op{
 }
 
 var StockSnapshotSingleOp = Op{
-	Name: "StockSnapshotSingle", summary: "Get snapshot (single symbol)",
-	requiredFlags: []string{"symbol"},
-	flags: []FlagDef{
+	Name: "StockSnapshotSingle", Summary: "Get snapshot (single symbol)",
+	RequiredFlags: []string{"symbol"},
+	Flags: []FlagDef{
 		{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", Source: "query"},
 		{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}, Source: "query"},
 		{Name: "symbol", OASName: "symbol", Type: "string", Description: "symbol to query", Required: true, Source: "path"},
@@ -537,9 +532,9 @@ var StockSnapshotSingleOp = Op{
 }
 
 var StockSnapshotsOp = Op{
-	Name: "StockSnapshots", summary: "Get snapshots",
-	requiredFlags: []string{"symbols"},
-	flags: []FlagDef{
+	Name: "StockSnapshots", Summary: "Get snapshots",
+	RequiredFlags: []string{"symbols"},
+	Flags: []FlagDef{
 		{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", Source: "query"},
 		{Name: "feed", OASName: "feed", Type: "string", Description: "source feed of the data.", Completions: []string{"boats", "delayed_sip", "iex", "otc", "overnight", "sip"}, Source: "query"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of stock symbols", Required: true, Source: "query"},
@@ -547,9 +542,9 @@ var StockSnapshotsOp = Op{
 }
 
 var StockTradeSingleOp = Op{
-	Name: "StockTradeSingle", summary: "Get historical trades (single symbol)",
-	requiredFlags: []string{"symbol"},
-	flags: []FlagDef{
+	Name: "StockTradeSingle", Summary: "Get historical trades (single symbol)",
+	RequiredFlags: []string{"symbol"},
+	Flags: []FlagDef{
 		{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)", Source: "query"},
 		{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", Source: "query"},
 		{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", Source: "query"},
@@ -563,9 +558,9 @@ var StockTradeSingleOp = Op{
 }
 
 var StockTradesOp = Op{
-	Name: "StockTrades", summary: "Get historical trades",
-	requiredFlags: []string{"symbols"},
-	flags: []FlagDef{
+	Name: "StockTrades", Summary: "Get historical trades",
+	RequiredFlags: []string{"symbols"},
+	Flags: []FlagDef{
 		{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)", Source: "query"},
 		{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", Source: "query"},
 		{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", Source: "query"},
@@ -579,8 +574,8 @@ var StockTradesOp = Op{
 }
 
 var UsCorporatesOp = Op{
-	Name: "UsCorporates", summary: "Get US corporates",
-	flags: []FlagDef{
+	Name: "UsCorporates", Summary: "Get US corporates",
+	Flags: []FlagDef{
 		{Name: "bond-status", OASName: "bond_status", Type: "string", Description: "status of the bond", Completions: []string{"matured", "outstanding", "pre_issuance"}, Source: "query"},
 		{Name: "cusips", OASName: "cusips", Type: "string", Description: "A comma-separated list of CUSIPs with a limit of 1000", Source: "query"},
 		{Name: "isins", OASName: "isins", Type: "string", Description: "A comma-separated list of ISINs with a limit of 1000", Source: "query"},
@@ -589,8 +584,8 @@ var UsCorporatesOp = Op{
 }
 
 var UsTreasuriesOp = Op{
-	Name: "UsTreasuries", summary: "Get US treasuries",
-	flags: []FlagDef{
+	Name: "UsTreasuries", Summary: "Get US treasuries",
+	Flags: []FlagDef{
 		{Name: "bond-status", OASName: "bond_status", Type: "string", Description: "status of the bond", Completions: []string{"matured", "outstanding", "pre_issuance"}, Source: "query"},
 		{Name: "cusips", OASName: "cusips", Type: "string", Description: "A comma-separated list of CUSIPs with a limit of 1000", Source: "query"},
 		{Name: "isins", OASName: "isins", Type: "string", Description: "A comma-separated list of ISINs with a limit of 1000", Source: "query"},
@@ -599,26 +594,26 @@ var UsTreasuriesOp = Op{
 }
 
 var AddAssetToWatchlistOp = Op{
-	Name: "AddAssetToWatchlist", summary: "Add asset to watchlist",
-	requiredFlags: []string{"watchlist-id"},
-	flags: []FlagDef{
+	Name: "AddAssetToWatchlist", Summary: "Add asset to watchlist",
+	RequiredFlags: []string{"watchlist-id"},
+	Flags: []FlagDef{
 		{Name: "symbol", OASName: "symbol", Type: "string", Description: "the symbol name to add to the watchlist", Source: "body"},
 		{Name: "watchlist-id", OASName: "watchlist_id", Type: "string", Description: "watchlist id", Required: true, Source: "path"},
 	},
 }
 
 var AddAssetToWatchlistByNameOp = Op{
-	Name: "AddAssetToWatchlistByName", summary: "Add asset to watchlist by name",
-	requiredFlags: []string{"name"},
-	flags: []FlagDef{
+	Name: "AddAssetToWatchlistByName", Summary: "Add asset to watchlist by name",
+	RequiredFlags: []string{"name"},
+	Flags: []FlagDef{
 		{Name: "name", OASName: "name", Type: "string", Description: "name of the watchlist", Required: true, Source: "query"},
 		{Name: "symbol", OASName: "symbol", Type: "string", Description: "the symbol name to add to the watchlist", Source: "body"},
 	},
 }
 
 var CreateCryptoPerpTransferForAccountOp = Op{
-	Name: "CreateCryptoPerpTransferForAccount", summary: "Request a new withdrawal",
-	flags: []FlagDef{
+	Name: "CreateCryptoPerpTransferForAccount", Summary: "Request a new withdrawal",
+	Flags: []FlagDef{
 		{Name: "address", OASName: "address", Type: "string", Description: "destination wallet address", Source: "body"},
 		{Name: "amount", OASName: "amount", Type: "string", Description: "amount, denoted in the specified asset, to be withdrawn from the user’s wallet", Source: "body"},
 		{Name: "asset", OASName: "asset", Type: "string", Description: "crypto asset symbol, e.g. BTC, ETH, USDT", Source: "body"},
@@ -626,8 +621,8 @@ var CreateCryptoPerpTransferForAccountOp = Op{
 }
 
 var CreateCryptoTransferForAccountOp = Op{
-	Name: "CreateCryptoTransferForAccount", summary: "Request a new withdrawal",
-	flags: []FlagDef{
+	Name: "CreateCryptoTransferForAccount", Summary: "Request a new withdrawal",
+	Flags: []FlagDef{
 		{Name: "address", OASName: "address", Type: "string", Description: "destination wallet address", Source: "body"},
 		{Name: "amount", OASName: "amount", Type: "string", Description: "amount, denoted in the specified asset, to be withdrawn from the user’s wallet", Source: "body"},
 		{Name: "asset", OASName: "asset", Type: "string", Description: "crypto asset symbol, e.g. BTC, ETH, USDT", Source: "body"},
@@ -635,36 +630,36 @@ var CreateCryptoTransferForAccountOp = Op{
 }
 
 var CreateWhitelistedAddressOp = Op{
-	Name: "CreateWhitelistedAddress", summary: "Request a new whitelisted address",
-	flags: []FlagDef{
+	Name: "CreateWhitelistedAddress", Summary: "Request a new whitelisted address",
+	Flags: []FlagDef{
 		{Name: "address", OASName: "address", Type: "string", Description: "address to be whitelisted", Source: "body"},
 		{Name: "asset", OASName: "asset", Type: "string", Description: "symbol of underlying asset for the whitelisted address", Source: "body"},
 	},
 }
 
 var CreateWhitelistedPerpAddressOp = Op{
-	Name: "CreateWhitelistedPerpAddress", summary: "Request a new whitelisted address",
-	flags: []FlagDef{
+	Name: "CreateWhitelistedPerpAddress", Summary: "Request a new whitelisted address",
+	Flags: []FlagDef{
 		{Name: "address", OASName: "address", Type: "string", Description: "address to be whitelisted", Source: "body"},
 		{Name: "asset", OASName: "asset", Type: "string", Description: "symbol of underlying asset for the whitelisted address", Source: "body"},
 	},
 }
 
 var DeleteAllOpenPositionsOp = Op{
-	Name: "DeleteAllOpenPositions", summary: "Close all positions", returnsArray: true,
-	flags: []FlagDef{
+	Name: "DeleteAllOpenPositions", Summary: "Close all positions", ReturnsArray: true,
+	Flags: []FlagDef{
 		{Name: "cancel-orders", OASName: "cancel_orders", Type: "bool", Description: "if true is specified, cancel all open orders before liquidating all positions", Source: "query"},
 	},
 }
 
 var DeleteAllOrdersOp = Op{
-	Name: "DeleteAllOrders", summary: "Delete all orders", returnsArray: true,
+	Name: "DeleteAllOrders", Summary: "Delete all orders", ReturnsArray: true,
 }
 
 var DeleteOpenPositionOp = Op{
-	Name: "DeleteOpenPosition", summary: "Close a position",
-	requiredFlags: []string{"symbol-or-asset-id"},
-	flags: []FlagDef{
+	Name: "DeleteOpenPosition", Summary: "Close a position",
+	RequiredFlags: []string{"symbol-or-asset-id"},
+	Flags: []FlagDef{
 		{Name: "percentage", OASName: "percentage", Type: "string", Description: "percentage of position to liquidate", Source: "query"},
 		{Name: "qty", OASName: "qty", Type: "string", Description: "the number of shares to liquidate. Can accept up to 9 decimal points. Cannot work with percentage", Source: "query"},
 		{Name: "symbol-or-asset-id", OASName: "symbol_or_asset_id", Type: "string", Description: "symbol or assetId", Required: true, Source: "path"},
@@ -672,56 +667,56 @@ var DeleteOpenPositionOp = Op{
 }
 
 var DeleteOrderByOrderIDOp = Op{
-	Name: "DeleteOrderByOrderID", summary: "Delete order by ID",
-	requiredFlags: []string{"order-id"},
-	flags: []FlagDef{
+	Name: "DeleteOrderByOrderID", Summary: "Delete order by ID",
+	RequiredFlags: []string{"order-id"},
+	Flags: []FlagDef{
 		{Name: "order-id", OASName: "order_id", Type: "string", Description: "order id", Required: true, Source: "path"},
 	},
 }
 
 var DeleteWatchlistByIDOp = Op{
-	Name: "DeleteWatchlistByID", summary: "Delete watchlist by id",
-	requiredFlags: []string{"watchlist-id"},
-	flags: []FlagDef{
+	Name: "DeleteWatchlistByID", Summary: "Delete watchlist by id",
+	RequiredFlags: []string{"watchlist-id"},
+	Flags: []FlagDef{
 		{Name: "watchlist-id", OASName: "watchlist_id", Type: "string", Description: "watchlist id", Required: true, Source: "path"},
 	},
 }
 
 var DeleteWatchlistByNameOp = Op{
-	Name: "DeleteWatchlistByName", summary: "Delete watchlist by name",
-	requiredFlags: []string{"name"},
-	flags: []FlagDef{
+	Name: "DeleteWatchlistByName", Summary: "Delete watchlist by name",
+	RequiredFlags: []string{"name"},
+	Flags: []FlagDef{
 		{Name: "name", OASName: "name", Type: "string", Description: "name of the watchlist", Required: true, Source: "query"},
 	},
 }
 
 var DeleteWhitelistedAddressOp = Op{
-	Name: "DeleteWhitelistedAddress", summary: "Delete a whitelisted address",
-	requiredFlags: []string{"whitelisted-address-id"},
-	flags: []FlagDef{
+	Name: "DeleteWhitelistedAddress", Summary: "Delete a whitelisted address",
+	RequiredFlags: []string{"whitelisted-address-id"},
+	Flags: []FlagDef{
 		{Name: "whitelisted-address-id", OASName: "whitelisted_address_id", Type: "string", Description: "whitelisted address to delete", Required: true, Source: "path"},
 	},
 }
 
 var DeleteWhitelistedPerpAddressOp = Op{
-	Name: "DeleteWhitelistedPerpAddress", summary: "Delete a whitelisted address",
-	requiredFlags: []string{"whitelisted-address-id"},
-	flags: []FlagDef{
+	Name: "DeleteWhitelistedPerpAddress", Summary: "Delete a whitelisted address",
+	RequiredFlags: []string{"whitelisted-address-id"},
+	Flags: []FlagDef{
 		{Name: "whitelisted-address-id", OASName: "whitelisted_address_id", Type: "string", Description: "whitelisted address to delete", Required: true, Source: "path"},
 	},
 }
 
 var GetOptionContractSymbolOrIDOp = Op{
-	Name: "GetOptionContractSymbolOrID", summary: "Get an option contract by ID or symbol",
-	requiredFlags: []string{"symbol-or-id"},
-	flags: []FlagDef{
+	Name: "GetOptionContractSymbolOrID", Summary: "Get an option contract by ID or symbol",
+	RequiredFlags: []string{"symbol-or-id"},
+	Flags: []FlagDef{
 		{Name: "symbol-or-id", OASName: "symbol_or_id", Type: "string", Description: "symbol or contract ID", Required: true, Source: "path"},
 	},
 }
 
 var GetOptionsContractsOp = Op{
-	Name: "GetOptionsContracts", summary: "Get option contracts",
-	flags: []FlagDef{
+	Name: "GetOptionsContracts", Summary: "Get option contracts",
+	Flags: []FlagDef{
 		{Name: "expiration-date", OASName: "expiration_date", Type: "string", Description: "filter contracts by the exact expiration date (format: YYYY-MM-DD)", Source: "query"},
 		{Name: "expiration-date-gte", OASName: "expiration_date_gte", Type: "string", Description: "filter contracts with expiration date greater than or equal to the specified date", Source: "query"},
 		{Name: "expiration-date-lte", OASName: "expiration_date_lte", Type: "string", Description: "filter contracts with expiration date less than or equal to the specified date", Source: "query"},
@@ -740,8 +735,8 @@ var GetOptionsContractsOp = Op{
 }
 
 var GetV2AssetsOp = Op{
-	Name: "GetV2Assets", summary: "Get assets", returnsArray: true,
-	flags: []FlagDef{
+	Name: "GetV2Assets", Summary: "Get assets", ReturnsArray: true,
+	Flags: []FlagDef{
 		{Name: "asset-class", OASName: "asset_class", Type: "string", Description: "defaults to us_equity", Source: "query"},
 		{Name: "attributes", OASName: "attributes", Type: "string", Description: "comma separated values to query for more than one attribute", Source: "query"},
 		{Name: "exchange", OASName: "exchange", Type: "string", Description: "optional AMEX, ARCA, BATS, NYSE, NASDAQ, NYSEARCA or OTC", Source: "query"},
@@ -750,17 +745,17 @@ var GetV2AssetsOp = Op{
 }
 
 var GetV2AssetsSymbolOrAssetIDOp = Op{
-	Name: "GetV2AssetsSymbolOrAssetID", summary: "Get an asset by ID or symbol",
-	requiredFlags: []string{"symbol-or-asset-id"},
-	flags: []FlagDef{
+	Name: "GetV2AssetsSymbolOrAssetID", Summary: "Get an asset by ID or symbol",
+	RequiredFlags: []string{"symbol-or-asset-id"},
+	Flags: []FlagDef{
 		{Name: "symbol-or-asset-id", OASName: "symbol_or_asset_id", Type: "string", Description: "symbol or assetId. CUSIP is also accepted for US equities", Required: true, Source: "path"},
 	},
 }
 
 var GetV2CorporateActionsAnnouncementsOp = Op{
-	Name: "GetV2CorporateActionsAnnouncements", summary: "Retrieve announcements",
-	requiredFlags: []string{"ca-types", "since", "until"},
-	flags: []FlagDef{
+	Name: "GetV2CorporateActionsAnnouncements", Summary: "Retrieve announcements",
+	RequiredFlags: []string{"ca-types", "since", "until"},
+	Flags: []FlagDef{
 		{Name: "ca-types", OASName: "ca_types", Type: "string", Description: "A comma-delimited list of Dividend, Merger, Spinoff, or Split", Required: true, Source: "query"},
 		{Name: "cusip", OASName: "cusip", Type: "string", Description: "CUSIP of the company initiating the announcement", Source: "query"},
 		{Name: "date-type", OASName: "date_type", Type: "string", Description: "declaration_date, ex_date, record_date, or payable_date", Source: "query"},
@@ -771,20 +766,20 @@ var GetV2CorporateActionsAnnouncementsOp = Op{
 }
 
 var GetV2CorporateActionsAnnouncementsIDOp = Op{
-	Name: "GetV2CorporateActionsAnnouncementsID", summary: "Retrieve a specific announcement",
-	requiredFlags: []string{"id"},
-	flags: []FlagDef{
+	Name: "GetV2CorporateActionsAnnouncementsID", Summary: "Retrieve a specific announcement",
+	RequiredFlags: []string{"id"},
+	Flags: []FlagDef{
 		{Name: "id", OASName: "id", Type: "string", Description: "corporate announcement’s id", Required: true, Source: "path"},
 	},
 }
 
 var GetAccountOp = Op{
-	Name: "GetAccount", summary: "Get account",
+	Name: "GetAccount", Summary: "Get account",
 }
 
 var GetAccountActivitiesOp = Op{
-	Name: "GetAccountActivities", summary: "Retrieve account activities",
-	flags: []FlagDef{
+	Name: "GetAccountActivities", Summary: "Retrieve account activities",
+	Flags: []FlagDef{
 		{Name: "activity-types", OASName: "activity_types", Type: "string", Description: "A comma-separated list of activity types used to filter the results", Source: "query"},
 		{Name: "after", OASName: "after", Type: "string", Description: "get activities created after this date. Both formats YYYY-MM-DD and YYYY-MM-DDTHH:MM:SSZ are supported", Source: "query"},
 		{Name: "category", OASName: "category", Type: "string", Description: "activity category. Cannot be used with \"activity_types\" parameter", Completions: []string{"non_trade_activity", "trade_activity"}, Source: "query"},
@@ -797,9 +792,9 @@ var GetAccountActivitiesOp = Op{
 }
 
 var GetAccountActivitiesByActivityTypeOp = Op{
-	Name: "GetAccountActivitiesByActivityType", summary: "Retrieve account activities of specific type",
-	requiredFlags: []string{"activity-type"},
-	flags: []FlagDef{
+	Name: "GetAccountActivitiesByActivityType", Summary: "Retrieve account activities of specific type",
+	RequiredFlags: []string{"activity-type"},
+	Flags: []FlagDef{
 		{Name: "activity-type", OASName: "activity_type", Type: "string", Description: "activity type you want to view entries for. A list of valid activity types can be found at the bottom of this page", Required: true, Source: "path"},
 		{Name: "after", OASName: "after", Type: "string", Description: "get activities created after this date. Both formats YYYY-MM-DD and YYYY-MM-DDTHH:MM:SSZ are supported", Source: "query"},
 		{Name: "date", OASName: "date", Type: "string", Description: "filter activities by the activity date. Both formats YYYY-MM-DD and YYYY-MM-DDTHH:MM:SSZ are supported", Source: "query"},
@@ -811,12 +806,12 @@ var GetAccountActivitiesByActivityTypeOp = Op{
 }
 
 var GetAccountConfigOp = Op{
-	Name: "GetAccountConfig", summary: "Get account configurations",
+	Name: "GetAccountConfig", Summary: "Get account configurations",
 }
 
 var GetAccountPortfolioHistoryOp = Op{
-	Name: "GetAccountPortfolioHistory", summary: "Get account portfolio history",
-	flags: []FlagDef{
+	Name: "GetAccountPortfolioHistory", Summary: "Get account portfolio history",
+	Flags: []FlagDef{
 		{Name: "cashflow-types", OASName: "cashflow_types", Type: "string", Description: "cashflow activities to include in the report. One of 'ALL', 'NONE', or a comma-separated list of activity types", Source: "query"},
 		{Name: "end", OASName: "end", Type: "string", Description: "timestamp the data is returned up to in RFC3339 format (including timezone specification)", Source: "query"},
 		{Name: "extended-hours", OASName: "extended_hours", Type: "string", Description: "**deprecated**: Users are strongly advised to **rely on the intraday_reporting query parameter** for better control\no...", Source: "query"},
@@ -829,12 +824,12 @@ var GetAccountPortfolioHistoryOp = Op{
 }
 
 var GetAllOpenPositionsOp = Op{
-	Name: "GetAllOpenPositions", summary: "List all open positions", returnsArray: true,
+	Name: "GetAllOpenPositions", Summary: "List all open positions", ReturnsArray: true,
 }
 
 var GetAllOrdersOp = Op{
-	Name: "GetAllOrders", summary: "Get all orders", returnsArray: true,
-	flags: []FlagDef{
+	Name: "GetAllOrders", Summary: "Get all orders", ReturnsArray: true,
+	Flags: []FlagDef{
 		{Name: "after", OASName: "after", Type: "string", Description: "response will include only ones submitted after this timestamp (exclusive.)", Source: "query"},
 		{Name: "after-order-id", OASName: "after_order_id", Type: "string", Description: "return orders submitted after the order with this ID (exclusive).\nMutually exclusive with before_order_id", Source: "query"},
 		{Name: "asset-class", OASName: "asset_class", Type: "string", Description: "A comma-separated list of asset classes, the response will include only orders in the specified asset classes", Source: "query"},
@@ -850,35 +845,35 @@ var GetAllOrdersOp = Op{
 }
 
 var GetCryptoFundingTransferOp = Op{
-	Name: "GetCryptoFundingTransfer", summary: "Retrieve a crypto funding transfer",
-	requiredFlags: []string{"transfer-id"},
-	flags: []FlagDef{
+	Name: "GetCryptoFundingTransfer", Summary: "Retrieve a crypto funding transfer",
+	RequiredFlags: []string{"transfer-id"},
+	Flags: []FlagDef{
 		{Name: "transfer-id", OASName: "transfer_id", Type: "string", Description: "crypto transfer to retrieve", Required: true, Source: "path"},
 	},
 }
 
 var GetCryptoPerpAccountLeverageOp = Op{
-	Name: "GetCryptoPerpAccountLeverage", summary: "Get account leverage for an asset",
-	flags: []FlagDef{
+	Name: "GetCryptoPerpAccountLeverage", Summary: "Get account leverage for an asset",
+	Flags: []FlagDef{
 		{Name: "symbol", OASName: "symbol", Type: "string", Description: "symbol of underlying asset", Source: "query"},
 	},
 }
 
 var GetCryptoPerpAccountVitalsOp = Op{
-	Name: "GetCryptoPerpAccountVitals", summary: "Retrieve account vitals",
+	Name: "GetCryptoPerpAccountVitals", Summary: "Retrieve account vitals",
 }
 
 var GetCryptoPerpFundingTransferOp = Op{
-	Name: "GetCryptoPerpFundingTransfer", summary: "Retrieve a crypto funding transfer",
-	requiredFlags: []string{"transfer-id"},
-	flags: []FlagDef{
+	Name: "GetCryptoPerpFundingTransfer", Summary: "Retrieve a crypto funding transfer",
+	RequiredFlags: []string{"transfer-id"},
+	Flags: []FlagDef{
 		{Name: "transfer-id", OASName: "transfer_id", Type: "string", Description: "crypto transfer to retrieve", Required: true, Source: "path"},
 	},
 }
 
 var GetCryptoPerpTransferEstimateOp = Op{
-	Name: "GetCryptoPerpTransferEstimate", summary: "Returns the estimated gas fee for a proposed transaction",
-	flags: []FlagDef{
+	Name: "GetCryptoPerpTransferEstimate", Summary: "Returns the estimated gas fee for a proposed transaction",
+	Flags: []FlagDef{
 		{Name: "amount", OASName: "amount", Type: "string", Description: "amount, denoted in the specified asset, of the proposed transaction", Source: "query"},
 		{Name: "asset", OASName: "asset", Type: "string", Description: "asset for the proposed transaction", Source: "query"},
 		{Name: "from-address", OASName: "from_address", Type: "string", Description: "originating address of the proposed transaction", Source: "query"},
@@ -887,8 +882,8 @@ var GetCryptoPerpTransferEstimateOp = Op{
 }
 
 var GetCryptoTransferEstimateOp = Op{
-	Name: "GetCryptoTransferEstimate", summary: "Returns the estimated gas fee for a proposed transaction",
-	flags: []FlagDef{
+	Name: "GetCryptoTransferEstimate", Summary: "Returns the estimated gas fee for a proposed transaction",
+	Flags: []FlagDef{
 		{Name: "amount", OASName: "amount", Type: "string", Description: "amount, denoted in the specified asset, of the proposed transaction", Source: "query"},
 		{Name: "asset", OASName: "asset", Type: "string", Description: "asset for the proposed transaction", Source: "query"},
 		{Name: "from-address", OASName: "from_address", Type: "string", Description: "originating address of the proposed transaction", Source: "query"},
@@ -897,85 +892,85 @@ var GetCryptoTransferEstimateOp = Op{
 }
 
 var GetOpenPositionOp = Op{
-	Name: "GetOpenPosition", summary: "Get an open position",
-	requiredFlags: []string{"symbol-or-asset-id"},
-	flags: []FlagDef{
+	Name: "GetOpenPosition", Summary: "Get an open position",
+	RequiredFlags: []string{"symbol-or-asset-id"},
+	Flags: []FlagDef{
 		{Name: "symbol-or-asset-id", OASName: "symbol_or_asset_id", Type: "string", Description: "symbol or assetId", Required: true, Source: "path"},
 	},
 }
 
 var GetOrderByClientOrderIDOp = Op{
-	Name: "GetOrderByClientOrderID", summary: "Get order by client order ID",
-	requiredFlags: []string{"client-order-id"},
-	flags: []FlagDef{
+	Name: "GetOrderByClientOrderID", Summary: "Get order by client order ID",
+	RequiredFlags: []string{"client-order-id"},
+	Flags: []FlagDef{
 		{Name: "client-order-id", OASName: "client_order_id", Type: "string", Description: "client-assigned order ID", Required: true, Source: "query"},
 	},
 }
 
 var GetOrderByOrderIDOp = Op{
-	Name: "GetOrderByOrderID", summary: "Get order by ID",
-	requiredFlags: []string{"order-id"},
-	flags: []FlagDef{
+	Name: "GetOrderByOrderID", Summary: "Get order by ID",
+	RequiredFlags: []string{"order-id"},
+	Flags: []FlagDef{
 		{Name: "nested", OASName: "nested", Type: "bool", Description: "if true, the result will roll up multi-leg orders under the legs field of primary order", Source: "query"},
 		{Name: "order-id", OASName: "order_id", Type: "string", Description: "order id", Required: true, Source: "path"},
 	},
 }
 
 var GetWatchlistByIDOp = Op{
-	Name: "GetWatchlistByID", summary: "Get watchlist by ID",
-	requiredFlags: []string{"watchlist-id"},
-	flags: []FlagDef{
+	Name: "GetWatchlistByID", Summary: "Get watchlist by ID",
+	RequiredFlags: []string{"watchlist-id"},
+	Flags: []FlagDef{
 		{Name: "watchlist-id", OASName: "watchlist_id", Type: "string", Description: "watchlist id", Required: true, Source: "path"},
 	},
 }
 
 var GetWatchlistByNameOp = Op{
-	Name: "GetWatchlistByName", summary: "Get watchlist by name",
-	requiredFlags: []string{"name"},
-	flags: []FlagDef{
+	Name: "GetWatchlistByName", Summary: "Get watchlist by name",
+	RequiredFlags: []string{"name"},
+	Flags: []FlagDef{
 		{Name: "name", OASName: "name", Type: "string", Description: "name of the watchlist", Required: true, Source: "query"},
 	},
 }
 
 var GetWatchlistsOp = Op{
-	Name: "GetWatchlists", summary: "Get all watchlists", returnsArray: true,
+	Name: "GetWatchlists", Summary: "Get all watchlists", ReturnsArray: true,
 }
 
 var ListCryptoFundingTransfersOp = Op{
-	Name: "ListCryptoFundingTransfers", summary: "Retrieve crypto funding transfers",
+	Name: "ListCryptoFundingTransfers", Summary: "Retrieve crypto funding transfers",
 }
 
 var ListCryptoFundingWalletsOp = Op{
-	Name: "ListCryptoFundingWallets", summary: "Retrieve crypto funding wallets",
-	flags: []FlagDef{
+	Name: "ListCryptoFundingWallets", Summary: "Retrieve crypto funding wallets",
+	Flags: []FlagDef{
 		{Name: "asset", OASName: "asset", Type: "string", Description: "filter by crypto asset symbol, e.g. BTC, ETH, USDT. If specified and no wallet exists, one will be created", Source: "query"},
 		{Name: "network", OASName: "network", Type: "string", Description: "optional network identifier", Completions: []string{"ethereum", "solana"}, Source: "query"},
 	},
 }
 
 var ListCryptoPerpFundingTransfersOp = Op{
-	Name: "ListCryptoPerpFundingTransfers", summary: "Retrieve crypto funding transfers",
+	Name: "ListCryptoPerpFundingTransfers", Summary: "Retrieve crypto funding transfers",
 }
 
 var ListCryptoPerpFundingWalletsOp = Op{
-	Name: "ListCryptoPerpFundingWallets", summary: "Retrieve crypto funding wallets",
-	flags: []FlagDef{
+	Name: "ListCryptoPerpFundingWallets", Summary: "Retrieve crypto funding wallets",
+	Flags: []FlagDef{
 		{Name: "asset", OASName: "asset", Type: "string", Description: "asset", Source: "query"},
 	},
 }
 
 var ListWhitelistedAddressOp = Op{
-	Name: "ListWhitelistedAddress", summary: "Get an array of whitelisted addresses",
+	Name: "ListWhitelistedAddress", Summary: "Get an array of whitelisted addresses",
 }
 
 var ListWhitelistedPerpAddressOp = Op{
-	Name: "ListWhitelistedPerpAddress", summary: "Get an array of whitelisted addresses",
+	Name: "ListWhitelistedPerpAddress", Summary: "Get an array of whitelisted addresses",
 }
 
 var OptionBarsOp = Op{
-	Name: "OptionBars", summary: "Get historical bars",
-	requiredFlags: []string{"symbols", "timeframe"},
-	flags: []FlagDef{
+	Name: "OptionBars", Summary: "Get historical bars",
+	RequiredFlags: []string{"symbols", "timeframe"},
+	Flags: []FlagDef{
 		{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", Source: "query"},
 		{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", Source: "query"},
 		{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", Source: "query"},
@@ -987,24 +982,24 @@ var OptionBarsOp = Op{
 }
 
 var OptionDoNotExerciseOp = Op{
-	Name: "OptionDoNotExercise", summary: "Do not exercise an options position",
-	requiredFlags: []string{"symbol-or-contract-id"},
-	flags: []FlagDef{
+	Name: "OptionDoNotExercise", Summary: "Do not exercise an options position",
+	RequiredFlags: []string{"symbol-or-contract-id"},
+	Flags: []FlagDef{
 		{Name: "symbol-or-contract-id", OASName: "symbol_or_contract_id", Type: "string", Description: "option contract symbol or ID", Required: true, Source: "path"},
 	},
 }
 
 var OptionExerciseOp = Op{
-	Name: "OptionExercise", summary: "Exercise an options position",
-	requiredFlags: []string{"symbol-or-contract-id"},
-	flags: []FlagDef{
+	Name: "OptionExercise", Summary: "Exercise an options position",
+	RequiredFlags: []string{"symbol-or-contract-id"},
+	Flags: []FlagDef{
 		{Name: "symbol-or-contract-id", OASName: "symbol_or_contract_id", Type: "string", Description: "option contract symbol or ID", Required: true, Source: "path"},
 	},
 }
 
 var PatchAccountConfigOp = Op{
-	Name: "PatchAccountConfig", summary: "Update account configurations",
-	flags: []FlagDef{
+	Name: "PatchAccountConfig", Summary: "Update account configurations",
+	Flags: []FlagDef{
 		{Name: "disable-overnight-trading", OASName: "disable_overnight_trading", Type: "bool", Description: "if true, overnight trading is disabled", Source: "body"},
 		{Name: "dtbp-check", OASName: "dtbp_check", Type: "string", Description: "both, entry, or exit. Controls Day Trading Margin Call (DTMC) checks", Completions: []string{"both", "entry", "exit"}, Source: "body"},
 		{Name: "fractional-trading", OASName: "fractional_trading", Type: "bool", Description: "if true, account is able to participate in fractional trading", Source: "body"},
@@ -1019,9 +1014,9 @@ var PatchAccountConfigOp = Op{
 }
 
 var PatchOrderByOrderIDOp = Op{
-	Name: "PatchOrderByOrderID", summary: "Replace order by ID",
-	requiredFlags: []string{"order-id"},
-	flags: []FlagDef{
+	Name: "PatchOrderByOrderID", Summary: "Replace order by ID",
+	RequiredFlags: []string{"order-id"},
+	Flags: []FlagDef{
 		{Name: "advanced-instructions", OASName: "advanced_instructions", Type: "string", Description: "advanced instructions for Elite Smart Router: https://docs.alpaca.markets/docs/alpaca-elite-smart-router", Source: "body"},
 		{Name: "client-order-id", OASName: "client_order_id", Type: "string", Description: "A unique identifier for the new order. Automatically generated if not sent. (<= 128 characters)", Source: "body"},
 		{Name: "limit-price", OASName: "limit_price", Type: "string", Description: "required if original order's type field was limit or stop_limit.", Source: "body"},
@@ -1034,8 +1029,8 @@ var PatchOrderByOrderIDOp = Op{
 }
 
 var PostOrderOp = Op{
-	Name: "PostOrder", summary: "Create an order",
-	flags: []FlagDef{
+	Name: "PostOrder", Summary: "Create an order",
+	Flags: []FlagDef{
 		{Name: "advanced-instructions", OASName: "advanced_instructions", Type: "string", Description: "advanced instructions for Elite Smart Router: https://docs.alpaca.markets/docs/alpaca-elite-smart-router", Source: "body"},
 		{Name: "client-order-id", OASName: "client_order_id", Type: "string", Description: "A unique identifier for the order. Automatically generated if not sent. (<= 128 characters)", Source: "body"},
 		{Name: "extended-hours", OASName: "extended_hours", Type: "bool", Description: "(default) false", Source: "body"},
@@ -1058,34 +1053,34 @@ var PostOrderOp = Op{
 }
 
 var PostWatchlistOp = Op{
-	Name: "PostWatchlist", summary: "Create watchlist",
-	flags: []FlagDef{
+	Name: "PostWatchlist", Summary: "Create watchlist",
+	Flags: []FlagDef{
 		{Name: "name", OASName: "name", Type: "string", Description: "watchlist name", Source: "body"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "list of asset symbols to include in the watchlist", Source: "body"},
 	},
 }
 
 var RemoveAssetFromWatchlistOp = Op{
-	Name: "RemoveAssetFromWatchlist", summary: "Delete symbol from watchlist",
-	requiredFlags: []string{"symbol", "watchlist-id"},
-	flags: []FlagDef{
+	Name: "RemoveAssetFromWatchlist", Summary: "Delete symbol from watchlist",
+	RequiredFlags: []string{"symbol", "watchlist-id"},
+	Flags: []FlagDef{
 		{Name: "symbol", OASName: "symbol", Type: "string", Description: "symbol name to remove from the watchlist content", Required: true, Source: "path"},
 		{Name: "watchlist-id", OASName: "watchlist_id", Type: "string", Description: "watchlist ID", Required: true, Source: "path"},
 	},
 }
 
 var SetCryptoPerpAccountLeverageOp = Op{
-	Name: "SetCryptoPerpAccountLeverage", summary: "Set account leverage for an asset",
-	flags: []FlagDef{
+	Name: "SetCryptoPerpAccountLeverage", Summary: "Set account leverage for an asset",
+	Flags: []FlagDef{
 		{Name: "leverage", OASName: "leverage", Type: "int", Description: "leverage for the underlying asset", Source: "query"},
 		{Name: "symbol", OASName: "symbol", Type: "string", Description: "symbol of underlying asset", Source: "query"},
 	},
 }
 
 var UpdateWatchlistByIDOp = Op{
-	Name: "UpdateWatchlistByID", summary: "Update watchlist by id",
-	requiredFlags: []string{"watchlist-id"},
-	flags: []FlagDef{
+	Name: "UpdateWatchlistByID", Summary: "Update watchlist by id",
+	RequiredFlags: []string{"watchlist-id"},
+	Flags: []FlagDef{
 		{Name: "name", OASName: "name", Type: "string", Description: "watchlist name", Source: "body"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "list of asset symbols to include in the watchlist", Source: "body"},
 		{Name: "watchlist-id", OASName: "watchlist_id", Type: "string", Description: "watchlist id", Required: true, Source: "path"},
@@ -1093,9 +1088,9 @@ var UpdateWatchlistByIDOp = Op{
 }
 
 var UpdateWatchlistByNameOp = Op{
-	Name: "UpdateWatchlistByName", summary: "Update watchlist by name",
-	requiredFlags: []string{"name"},
-	flags: []FlagDef{
+	Name: "UpdateWatchlistByName", Summary: "Update watchlist by name",
+	RequiredFlags: []string{"name"},
+	Flags: []FlagDef{
 		{Name: "name", OASName: "name", Type: "string", Description: "name of the watchlist", Required: true, Source: "query"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "list of asset symbols to include in the watchlist", Source: "body"},
 	},

@@ -22,183 +22,87 @@ func NewTradingClient(raw *client.Client) *TradingClient {
 
 // GetAccount — Get Account
 func (c *TradingClient) GetAccount() (*Account, error) {
-	path := "/v2/account"
-	data, err := c.Raw.Get(path, nil)
-	if err != nil {
-		return nil, err
-	}
-	var result Account
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[Account](c.Raw.Get("/v2/account", nil))
 }
 
 // GetAccountActivities — Retrieve Account Activities
 func (c *TradingClient) GetAccountActivities(params url.Values) (json.RawMessage, error) {
-	path := "/v2/account/activities"
-	data, err := c.Raw.Get(path, params)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return c.Raw.Get("/v2/account/activities", params)
 }
 
 // GetAccountActivitiesByActivityType — Retrieve Account Activities of Specific Type
 func (c *TradingClient) GetAccountActivitiesByActivityType(ActivityType string, params url.Values) (json.RawMessage, error) {
-	path := fmt.Sprintf("/v2/account/activities/%s", url.PathEscape(ActivityType))
-	data, err := c.Raw.Get(path, params)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return c.Raw.Get(fmt.Sprintf("/v2/account/activities/%s", url.PathEscape(ActivityType)), params)
 }
 
 // GetAccountConfig — Get Account Configurations
 func (c *TradingClient) GetAccountConfig() (*AccountConfigurations, error) {
-	path := "/v2/account/configurations"
-	data, err := c.Raw.Get(path, nil)
-	if err != nil {
-		return nil, err
-	}
-	var result AccountConfigurations
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[AccountConfigurations](c.Raw.Get("/v2/account/configurations", nil))
 }
 
 // PatchAccountConfig — Account Configurations
 func (c *TradingClient) PatchAccountConfig(body *AccountConfigurations) (*AccountConfigurations, error) {
-	path := "/v2/account/configurations"
-	data, err := c.Raw.Patch(path, nil, body)
-	if err != nil {
-		return nil, err
-	}
-	var result AccountConfigurations
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[AccountConfigurations](c.Raw.Patch("/v2/account/configurations", nil, body))
 }
 
 // GetAccountPortfolioHistory — Get Account Portfolio History
 func (c *TradingClient) GetAccountPortfolioHistory(params url.Values) (*PortfolioHistory, error) {
-	path := "/v2/account/portfolio/history"
-	data, err := c.Raw.Get(path, params)
-	if err != nil {
-		return nil, err
-	}
-	var result PortfolioHistory
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[PortfolioHistory](c.Raw.Get("/v2/account/portfolio/history", params))
 }
 
 // GetV2Assets — Get Assets
 func (c *TradingClient) GetV2Assets(params url.Values) ([]Assets, error) {
-	path := "/v2/assets"
-	data, err := c.Raw.Get(path, params)
-	if err != nil {
-		return nil, err
-	}
-	var result []Assets
-	return result, json.Unmarshal(data, &result)
+	return unmarshalSlice[Assets](c.Raw.Get("/v2/assets", params))
 }
 
 // UsCorporates — Get US corporates
 func (c *TradingClient) UsCorporates(params url.Values) (*UsCorporatesResp, error) {
-	path := "/v2/assets/fixed_income/us_corporates"
-	data, err := c.Raw.Get(path, params)
-	if err != nil {
-		return nil, err
-	}
-	var result UsCorporatesResp
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[UsCorporatesResp](c.Raw.Get("/v2/assets/fixed_income/us_corporates", params))
 }
 
 // UsTreasuries — Get US treasuries
 func (c *TradingClient) UsTreasuries(params url.Values) (*UsTreasuriesResp, error) {
-	path := "/v2/assets/fixed_income/us_treasuries"
-	data, err := c.Raw.Get(path, params)
-	if err != nil {
-		return nil, err
-	}
-	var result UsTreasuriesResp
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[UsTreasuriesResp](c.Raw.Get("/v2/assets/fixed_income/us_treasuries", params))
 }
 
 // GetV2AssetsSymbolOrAssetID — Get an Asset by ID or Symbol
 func (c *TradingClient) GetV2AssetsSymbolOrAssetID(SymbolOrAssetID string) (*Assets, error) {
-	path := fmt.Sprintf("/v2/assets/%s", url.PathEscape(SymbolOrAssetID))
-	data, err := c.Raw.Get(path, nil)
-	if err != nil {
-		return nil, err
-	}
-	var result Assets
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[Assets](c.Raw.Get(fmt.Sprintf("/v2/assets/%s", url.PathEscape(SymbolOrAssetID)), nil))
 }
 
 // LegacyCalendar — Get US Market Calendar
 func (c *TradingClient) LegacyCalendar(params url.Values) (json.RawMessage, error) {
-	path := "/v2/calendar"
-	data, err := c.Raw.Get(path, params)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return c.Raw.Get("/v2/calendar", params)
 }
 
 // LegacyClock — Get US Market Clock
 func (c *TradingClient) LegacyClock() (*LegacyClock, error) {
-	path := "/v2/clock"
-	data, err := c.Raw.Get(path, nil)
-	if err != nil {
-		return nil, err
-	}
-	var result LegacyClock
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[LegacyClock](c.Raw.Get("/v2/clock", nil))
 }
 
 // GetV2CorporateActionsAnnouncements — Retrieve Announcements
 func (c *TradingClient) GetV2CorporateActionsAnnouncements(params url.Values) (json.RawMessage, error) {
-	path := "/v2/corporate_actions/announcements"
-	data, err := c.Raw.Get(path, params)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return c.Raw.Get("/v2/corporate_actions/announcements", params)
 }
 
 // GetV2CorporateActionsAnnouncementsID — Retrieve a Specific Announcement
 func (c *TradingClient) GetV2CorporateActionsAnnouncementsID(ID string) (json.RawMessage, error) {
-	path := fmt.Sprintf("/v2/corporate_actions/announcements/%s", url.PathEscape(ID))
-	data, err := c.Raw.Get(path, nil)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return c.Raw.Get(fmt.Sprintf("/v2/corporate_actions/announcements/%s", url.PathEscape(ID)), nil)
 }
 
 // GetOptionsContracts — Get Option Contracts
 func (c *TradingClient) GetOptionsContracts(params url.Values) (json.RawMessage, error) {
-	path := "/v2/options/contracts"
-	data, err := c.Raw.Get(path, params)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return c.Raw.Get("/v2/options/contracts", params)
 }
 
 // GetOptionContractSymbolOrID — Get an option contract by ID or Symbol
 func (c *TradingClient) GetOptionContractSymbolOrID(SymbolOrID string) (*OptionContract, error) {
-	path := fmt.Sprintf("/v2/options/contracts/%s", url.PathEscape(SymbolOrID))
-	data, err := c.Raw.Get(path, nil)
-	if err != nil {
-		return nil, err
-	}
-	var result OptionContract
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[OptionContract](c.Raw.Get(fmt.Sprintf("/v2/options/contracts/%s", url.PathEscape(SymbolOrID)), nil))
 }
 
 // GetAllOrders — Get All Orders
 func (c *TradingClient) GetAllOrders(params url.Values) ([]Order, error) {
-	path := "/v2/orders"
-	data, err := c.Raw.Get(path, params)
-	if err != nil {
-		return nil, err
-	}
-	var result []Order
-	return result, json.Unmarshal(data, &result)
+	return unmarshalSlice[Order](c.Raw.Get("/v2/orders", params))
 }
 
 type PostOrderRequest struct {
@@ -224,162 +128,77 @@ type PostOrderRequest struct {
 
 // PostOrder — Create an Order
 func (c *TradingClient) PostOrder(body *PostOrderRequest) (*Order, error) {
-	path := "/v2/orders"
-	data, err := c.Raw.Post(path, nil, body)
-	if err != nil {
-		return nil, err
-	}
-	var result Order
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[Order](c.Raw.Post("/v2/orders", nil, body))
 }
 
 // DeleteAllOrders — Delete All Orders
 func (c *TradingClient) DeleteAllOrders() ([]CanceledOrderResponse, error) {
-	path := "/v2/orders"
-	data, err := c.Raw.Delete(path, nil)
-	if err != nil {
-		return nil, err
-	}
-	var result []CanceledOrderResponse
-	return result, json.Unmarshal(data, &result)
+	return unmarshalSlice[CanceledOrderResponse](c.Raw.Delete("/v2/orders", nil))
 }
 
 // GetOrderByOrderID — Get Order by ID
 func (c *TradingClient) GetOrderByOrderID(OrderID string, params url.Values) (*Order, error) {
-	path := fmt.Sprintf("/v2/orders/%s", url.PathEscape(OrderID))
-	data, err := c.Raw.Get(path, params)
-	if err != nil {
-		return nil, err
-	}
-	var result Order
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[Order](c.Raw.Get(fmt.Sprintf("/v2/orders/%s", url.PathEscape(OrderID)), params))
 }
 
 // PatchOrderByOrderID — Replace Order by ID
 func (c *TradingClient) PatchOrderByOrderID(OrderID string, body *PatchOrderRequest) (*Order, error) {
-	path := fmt.Sprintf("/v2/orders/%s", url.PathEscape(OrderID))
-	data, err := c.Raw.Patch(path, nil, body)
-	if err != nil {
-		return nil, err
-	}
-	var result Order
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[Order](c.Raw.Patch(fmt.Sprintf("/v2/orders/%s", url.PathEscape(OrderID)), nil, body))
 }
 
 // DeleteOrderByOrderID — Delete Order by ID
 func (c *TradingClient) DeleteOrderByOrderID(OrderID string) (json.RawMessage, error) {
-	path := fmt.Sprintf("/v2/orders/%s", url.PathEscape(OrderID))
-	data, err := c.Raw.Delete(path, nil)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return c.Raw.Delete(fmt.Sprintf("/v2/orders/%s", url.PathEscape(OrderID)), nil)
 }
 
 // GetOrderByClientOrderID — Get Order by Client Order ID
 func (c *TradingClient) GetOrderByClientOrderID(params url.Values) (*Order, error) {
-	path := "/v2/orders:by_client_order_id"
-	data, err := c.Raw.Get(path, params)
-	if err != nil {
-		return nil, err
-	}
-	var result Order
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[Order](c.Raw.Get("/v2/orders:by_client_order_id", params))
 }
 
 // GetCryptoPerpAccountVitals — Retrieve Account Vitals
 func (c *TradingClient) GetCryptoPerpAccountVitals() (json.RawMessage, error) {
-	path := "/v2/perpetuals/account_vitals"
-	data, err := c.Raw.Get(path, nil)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return c.Raw.Get("/v2/perpetuals/account_vitals", nil)
 }
 
 // GetCryptoPerpAccountLeverage — Get Account Leverage for an Asset
 func (c *TradingClient) GetCryptoPerpAccountLeverage(params url.Values) (json.RawMessage, error) {
-	path := "/v2/perpetuals/leverage"
-	data, err := c.Raw.Get(path, params)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return c.Raw.Get("/v2/perpetuals/leverage", params)
 }
 
 // SetCryptoPerpAccountLeverage — Set Account Leverage for an Asset
 func (c *TradingClient) SetCryptoPerpAccountLeverage(params url.Values) (json.RawMessage, error) {
-	path := "/v2/perpetuals/leverage"
-	data, err := c.Raw.Post(path, params, nil)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return c.Raw.Post("/v2/perpetuals/leverage", params, nil)
 }
 
 // ListCryptoPerpFundingWallets — Retrieve Crypto Funding Wallets
 func (c *TradingClient) ListCryptoPerpFundingWallets(params url.Values) (*CryptoWallet, error) {
-	path := "/v2/perpetuals/wallets"
-	data, err := c.Raw.Get(path, params)
-	if err != nil {
-		return nil, err
-	}
-	var result CryptoWallet
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[CryptoWallet](c.Raw.Get("/v2/perpetuals/wallets", params))
 }
 
 // GetCryptoPerpTransferEstimate — Returns the estimated gas fee for a proposed transaction
 func (c *TradingClient) GetCryptoPerpTransferEstimate(params url.Values) (json.RawMessage, error) {
-	path := "/v2/perpetuals/wallets/fees/estimate"
-	data, err := c.Raw.Get(path, params)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return c.Raw.Get("/v2/perpetuals/wallets/fees/estimate", params)
 }
 
 // ListCryptoPerpFundingTransfers — Retrieve Crypto Funding Transfers
 func (c *TradingClient) ListCryptoPerpFundingTransfers() (*CryptoTransfer, error) {
-	path := "/v2/perpetuals/wallets/transfers"
-	data, err := c.Raw.Get(path, nil)
-	if err != nil {
-		return nil, err
-	}
-	var result CryptoTransfer
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[CryptoTransfer](c.Raw.Get("/v2/perpetuals/wallets/transfers", nil))
 }
 
 // CreateCryptoPerpTransferForAccount — Request a New Withdrawal
 func (c *TradingClient) CreateCryptoPerpTransferForAccount(body *CreateCryptoTransferRequest) (*CryptoTransfer, error) {
-	path := "/v2/perpetuals/wallets/transfers"
-	data, err := c.Raw.Post(path, nil, body)
-	if err != nil {
-		return nil, err
-	}
-	var result CryptoTransfer
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[CryptoTransfer](c.Raw.Post("/v2/perpetuals/wallets/transfers", nil, body))
 }
 
 // GetCryptoPerpFundingTransfer — Retrieve a Crypto Funding Transfer
 func (c *TradingClient) GetCryptoPerpFundingTransfer(TransferID string) (*CryptoTransfer, error) {
-	path := fmt.Sprintf("/v2/perpetuals/wallets/transfers/%s", url.PathEscape(TransferID))
-	data, err := c.Raw.Get(path, nil)
-	if err != nil {
-		return nil, err
-	}
-	var result CryptoTransfer
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[CryptoTransfer](c.Raw.Get(fmt.Sprintf("/v2/perpetuals/wallets/transfers/%s", url.PathEscape(TransferID)), nil))
 }
 
 // ListWhitelistedPerpAddress — An array of whitelisted addresses
 func (c *TradingClient) ListWhitelistedPerpAddress() (*WhitelistedAddress, error) {
-	path := "/v2/perpetuals/wallets/whitelists"
-	data, err := c.Raw.Get(path, nil)
-	if err != nil {
-		return nil, err
-	}
-	var result WhitelistedAddress
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[WhitelistedAddress](c.Raw.Get("/v2/perpetuals/wallets/whitelists", nil))
 }
 
 type CreateWhitelistedPerpAddressRequest struct {
@@ -389,152 +208,72 @@ type CreateWhitelistedPerpAddressRequest struct {
 
 // CreateWhitelistedPerpAddress — Request a new whitelisted address
 func (c *TradingClient) CreateWhitelistedPerpAddress(body *CreateWhitelistedPerpAddressRequest) (*WhitelistedAddress, error) {
-	path := "/v2/perpetuals/wallets/whitelists"
-	data, err := c.Raw.Post(path, nil, body)
-	if err != nil {
-		return nil, err
-	}
-	var result WhitelistedAddress
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[WhitelistedAddress](c.Raw.Post("/v2/perpetuals/wallets/whitelists", nil, body))
 }
 
 // DeleteWhitelistedPerpAddress — Delete a whitelisted address
 func (c *TradingClient) DeleteWhitelistedPerpAddress(WhitelistedAddressID string) (json.RawMessage, error) {
-	path := fmt.Sprintf("/v2/perpetuals/wallets/whitelists/%s", url.PathEscape(WhitelistedAddressID))
-	data, err := c.Raw.Delete(path, nil)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return c.Raw.Delete(fmt.Sprintf("/v2/perpetuals/wallets/whitelists/%s", url.PathEscape(WhitelistedAddressID)), nil)
 }
 
 // GetAllOpenPositions — All Open Positions
 func (c *TradingClient) GetAllOpenPositions() ([]Position, error) {
-	path := "/v2/positions"
-	data, err := c.Raw.Get(path, nil)
-	if err != nil {
-		return nil, err
-	}
-	var result []Position
-	return result, json.Unmarshal(data, &result)
+	return unmarshalSlice[Position](c.Raw.Get("/v2/positions", nil))
 }
 
 // DeleteAllOpenPositions — Close All Positions
 func (c *TradingClient) DeleteAllOpenPositions(params url.Values) ([]PositionClosedReponse, error) {
-	path := "/v2/positions"
-	data, err := c.Raw.Delete(path, params)
-	if err != nil {
-		return nil, err
-	}
-	var result []PositionClosedReponse
-	return result, json.Unmarshal(data, &result)
+	return unmarshalSlice[PositionClosedReponse](c.Raw.Delete("/v2/positions", params))
 }
 
 // GetOpenPosition — Get an Open Position
 func (c *TradingClient) GetOpenPosition(SymbolOrAssetID string) (*Position, error) {
-	path := fmt.Sprintf("/v2/positions/%s", url.PathEscape(SymbolOrAssetID))
-	data, err := c.Raw.Get(path, nil)
-	if err != nil {
-		return nil, err
-	}
-	var result Position
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[Position](c.Raw.Get(fmt.Sprintf("/v2/positions/%s", url.PathEscape(SymbolOrAssetID)), nil))
 }
 
 // DeleteOpenPosition — Close a Position
 func (c *TradingClient) DeleteOpenPosition(SymbolOrAssetID string, params url.Values) (*Order, error) {
-	path := fmt.Sprintf("/v2/positions/%s", url.PathEscape(SymbolOrAssetID))
-	data, err := c.Raw.Delete(path, params)
-	if err != nil {
-		return nil, err
-	}
-	var result Order
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[Order](c.Raw.Delete(fmt.Sprintf("/v2/positions/%s", url.PathEscape(SymbolOrAssetID)), params))
 }
 
 // OptionDoNotExercise — Do Not Exercise an Options Position
 func (c *TradingClient) OptionDoNotExercise(SymbolOrContractID string) (json.RawMessage, error) {
-	path := fmt.Sprintf("/v2/positions/%s/do-not-exercise", url.PathEscape(SymbolOrContractID))
-	data, err := c.Raw.Post(path, nil, nil)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return c.Raw.Post(fmt.Sprintf("/v2/positions/%s/do-not-exercise", url.PathEscape(SymbolOrContractID)), nil, nil)
 }
 
 // OptionExercise — Exercise an Options Position
 func (c *TradingClient) OptionExercise(SymbolOrContractID string) (json.RawMessage, error) {
-	path := fmt.Sprintf("/v2/positions/%s/exercise", url.PathEscape(SymbolOrContractID))
-	data, err := c.Raw.Post(path, nil, nil)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return c.Raw.Post(fmt.Sprintf("/v2/positions/%s/exercise", url.PathEscape(SymbolOrContractID)), nil, nil)
 }
 
 // ListCryptoFundingWallets — Retrieve Crypto Funding Wallets
 func (c *TradingClient) ListCryptoFundingWallets(params url.Values) (*CryptoWallet, error) {
-	path := "/v2/wallets"
-	data, err := c.Raw.Get(path, params)
-	if err != nil {
-		return nil, err
-	}
-	var result CryptoWallet
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[CryptoWallet](c.Raw.Get("/v2/wallets", params))
 }
 
 // GetCryptoTransferEstimate — Returns the estimated gas fee for a proposed transaction.
 func (c *TradingClient) GetCryptoTransferEstimate(params url.Values) (json.RawMessage, error) {
-	path := "/v2/wallets/fees/estimate"
-	data, err := c.Raw.Get(path, params)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return c.Raw.Get("/v2/wallets/fees/estimate", params)
 }
 
 // ListCryptoFundingTransfers — Retrieve Crypto Funding Transfers
 func (c *TradingClient) ListCryptoFundingTransfers() (*CryptoTransfer, error) {
-	path := "/v2/wallets/transfers"
-	data, err := c.Raw.Get(path, nil)
-	if err != nil {
-		return nil, err
-	}
-	var result CryptoTransfer
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[CryptoTransfer](c.Raw.Get("/v2/wallets/transfers", nil))
 }
 
 // CreateCryptoTransferForAccount — Request a New Withdrawal
 func (c *TradingClient) CreateCryptoTransferForAccount(body *CreateCryptoTransferRequest) (*CryptoTransfer, error) {
-	path := "/v2/wallets/transfers"
-	data, err := c.Raw.Post(path, nil, body)
-	if err != nil {
-		return nil, err
-	}
-	var result CryptoTransfer
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[CryptoTransfer](c.Raw.Post("/v2/wallets/transfers", nil, body))
 }
 
 // GetCryptoFundingTransfer — Retrieve a Crypto Funding Transfer
 func (c *TradingClient) GetCryptoFundingTransfer(TransferID string) (*CryptoTransfer, error) {
-	path := fmt.Sprintf("/v2/wallets/transfers/%s", url.PathEscape(TransferID))
-	data, err := c.Raw.Get(path, nil)
-	if err != nil {
-		return nil, err
-	}
-	var result CryptoTransfer
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[CryptoTransfer](c.Raw.Get(fmt.Sprintf("/v2/wallets/transfers/%s", url.PathEscape(TransferID)), nil))
 }
 
 // ListWhitelistedAddress — An array of whitelisted addresses
 func (c *TradingClient) ListWhitelistedAddress() (*WhitelistedAddress, error) {
-	path := "/v2/wallets/whitelists"
-	data, err := c.Raw.Get(path, nil)
-	if err != nil {
-		return nil, err
-	}
-	var result WhitelistedAddress
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[WhitelistedAddress](c.Raw.Get("/v2/wallets/whitelists", nil))
 }
 
 type CreateWhitelistedAddressRequest struct {
@@ -544,110 +283,52 @@ type CreateWhitelistedAddressRequest struct {
 
 // CreateWhitelistedAddress — Request a new whitelisted address
 func (c *TradingClient) CreateWhitelistedAddress(body *CreateWhitelistedAddressRequest) (*WhitelistedAddress, error) {
-	path := "/v2/wallets/whitelists"
-	data, err := c.Raw.Post(path, nil, body)
-	if err != nil {
-		return nil, err
-	}
-	var result WhitelistedAddress
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[WhitelistedAddress](c.Raw.Post("/v2/wallets/whitelists", nil, body))
 }
 
 // DeleteWhitelistedAddress — Delete a whitelisted address
 func (c *TradingClient) DeleteWhitelistedAddress(WhitelistedAddressID string) (json.RawMessage, error) {
-	path := fmt.Sprintf("/v2/wallets/whitelists/%s", url.PathEscape(WhitelistedAddressID))
-	data, err := c.Raw.Delete(path, nil)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return c.Raw.Delete(fmt.Sprintf("/v2/wallets/whitelists/%s", url.PathEscape(WhitelistedAddressID)), nil)
 }
 
 // GetWatchlists — Get All Watchlists
 func (c *TradingClient) GetWatchlists() ([]WatchlistWithoutAsset, error) {
-	path := "/v2/watchlists"
-	data, err := c.Raw.Get(path, nil)
-	if err != nil {
-		return nil, err
-	}
-	var result []WatchlistWithoutAsset
-	return result, json.Unmarshal(data, &result)
+	return unmarshalSlice[WatchlistWithoutAsset](c.Raw.Get("/v2/watchlists", nil))
 }
 
 // PostWatchlist — Create Watchlist
 func (c *TradingClient) PostWatchlist(body *UpdateWatchlistRequest) (*Watchlist, error) {
-	path := "/v2/watchlists"
-	data, err := c.Raw.Post(path, nil, body)
-	if err != nil {
-		return nil, err
-	}
-	var result Watchlist
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[Watchlist](c.Raw.Post("/v2/watchlists", nil, body))
 }
 
 // GetWatchlistByID — Get Watchlist by ID
 func (c *TradingClient) GetWatchlistByID(WatchlistID string) (*Watchlist, error) {
-	path := fmt.Sprintf("/v2/watchlists/%s", url.PathEscape(WatchlistID))
-	data, err := c.Raw.Get(path, nil)
-	if err != nil {
-		return nil, err
-	}
-	var result Watchlist
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[Watchlist](c.Raw.Get(fmt.Sprintf("/v2/watchlists/%s", url.PathEscape(WatchlistID)), nil))
 }
 
 // AddAssetToWatchlist — Add Asset to Watchlist
 func (c *TradingClient) AddAssetToWatchlist(WatchlistID string, body *AddAssetToWatchlistRequest) (*Watchlist, error) {
-	path := fmt.Sprintf("/v2/watchlists/%s", url.PathEscape(WatchlistID))
-	data, err := c.Raw.Post(path, nil, body)
-	if err != nil {
-		return nil, err
-	}
-	var result Watchlist
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[Watchlist](c.Raw.Post(fmt.Sprintf("/v2/watchlists/%s", url.PathEscape(WatchlistID)), nil, body))
 }
 
 // UpdateWatchlistByID — Update Watchlist By Id
 func (c *TradingClient) UpdateWatchlistByID(WatchlistID string, body *UpdateWatchlistRequest) (*Watchlist, error) {
-	path := fmt.Sprintf("/v2/watchlists/%s", url.PathEscape(WatchlistID))
-	data, err := c.Raw.Put(path, nil, body)
-	if err != nil {
-		return nil, err
-	}
-	var result Watchlist
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[Watchlist](c.Raw.Put(fmt.Sprintf("/v2/watchlists/%s", url.PathEscape(WatchlistID)), nil, body))
 }
 
 // DeleteWatchlistByID — Delete Watchlist By Id
 func (c *TradingClient) DeleteWatchlistByID(WatchlistID string) (json.RawMessage, error) {
-	path := fmt.Sprintf("/v2/watchlists/%s", url.PathEscape(WatchlistID))
-	data, err := c.Raw.Delete(path, nil)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return c.Raw.Delete(fmt.Sprintf("/v2/watchlists/%s", url.PathEscape(WatchlistID)), nil)
 }
 
 // RemoveAssetFromWatchlist — Delete Symbol from Watchlist
 func (c *TradingClient) RemoveAssetFromWatchlist(WatchlistID string, Symbol string) (*Watchlist, error) {
-	path := fmt.Sprintf("/v2/watchlists/%s/%s", url.PathEscape(WatchlistID), url.PathEscape(Symbol))
-	data, err := c.Raw.Delete(path, nil)
-	if err != nil {
-		return nil, err
-	}
-	var result Watchlist
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[Watchlist](c.Raw.Delete(fmt.Sprintf("/v2/watchlists/%s/%s", url.PathEscape(WatchlistID), url.PathEscape(Symbol)), nil))
 }
 
 // GetWatchlistByName — Get Watchlist by Name
 func (c *TradingClient) GetWatchlistByName(params url.Values) (*Watchlist, error) {
-	path := "/v2/watchlists:by_name"
-	data, err := c.Raw.Get(path, params)
-	if err != nil {
-		return nil, err
-	}
-	var result Watchlist
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[Watchlist](c.Raw.Get("/v2/watchlists:by_name", params))
 }
 
 type AddAssetToWatchlistByNameRequest struct {
@@ -656,56 +337,27 @@ type AddAssetToWatchlistByNameRequest struct {
 
 // AddAssetToWatchlistByName — Add Asset to Watchlist By Name
 func (c *TradingClient) AddAssetToWatchlistByName(params url.Values, body *AddAssetToWatchlistByNameRequest) (*Watchlist, error) {
-	path := "/v2/watchlists:by_name"
-	data, err := c.Raw.Post(path, params, body)
-	if err != nil {
-		return nil, err
-	}
-	var result Watchlist
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[Watchlist](c.Raw.Post("/v2/watchlists:by_name", params, body))
 }
 
 // UpdateWatchlistByName — Update Watchlist By Name
 func (c *TradingClient) UpdateWatchlistByName(params url.Values, body *UpdateWatchlistRequest) (*Watchlist, error) {
-	path := "/v2/watchlists:by_name"
-	data, err := c.Raw.Put(path, params, body)
-	if err != nil {
-		return nil, err
-	}
-	var result Watchlist
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[Watchlist](c.Raw.Put("/v2/watchlists:by_name", params, body))
 }
 
 // DeleteWatchlistByName — Delete Watchlist By Name
 func (c *TradingClient) DeleteWatchlistByName(params url.Values) (json.RawMessage, error) {
-	path := "/v2/watchlists:by_name"
-	data, err := c.Raw.Delete(path, params)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return c.Raw.Delete("/v2/watchlists:by_name", params)
 }
 
 // Calendar — Get Market Calendar
 func (c *TradingClient) Calendar(Market string, params url.Values) (*PublicCalendarResp, error) {
-	path := fmt.Sprintf("/v3/calendar/%s", url.PathEscape(Market))
-	data, err := c.Raw.Get(path, params)
-	if err != nil {
-		return nil, err
-	}
-	var result PublicCalendarResp
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[PublicCalendarResp](c.Raw.Get(fmt.Sprintf("/v3/calendar/%s", url.PathEscape(Market)), params))
 }
 
 // Clock — Get Market Clock
 func (c *TradingClient) Clock(params url.Values) (*ClockResp, error) {
-	path := "/v3/clock"
-	data, err := c.Raw.Get(path, params)
-	if err != nil {
-		return nil, err
-	}
-	var result ClockResp
-	return &result, json.Unmarshal(data, &result)
+	return unmarshal[ClockResp](c.Raw.Get("/v3/clock", params))
 }
 
 func (r *CreateCryptoTransferRequest) Validate() error {

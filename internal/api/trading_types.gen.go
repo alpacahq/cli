@@ -372,6 +372,10 @@ type Account struct {
 	TransfersBlocked         bool          `json:"transfers_blocked,omitempty"`
 }
 
+var AccountOptionsApprovedLevelValues = []string{"0", "1", "2", "3"}
+
+var AccountOptionsTradingLevelValues = []string{"0", "1", "2", "3"}
+
 type AccountConfigurations struct {
 	DisableOvernightTrading bool   `json:"disable_overnight_trading,omitempty"`
 	DTBPCheck               string `json:"dtbp_check,omitempty"`
@@ -385,6 +389,10 @@ type AccountConfigurations struct {
 	TradeConfirmEmail       string `json:"trade_confirm_email,omitempty"`
 }
 
+var AccountConfigurationsDTBPCheckValues = []string{"both", "entry", "exit"}
+
+var AccountConfigurationsMaxOptionsTradingLevelValues = []string{"0", "1", "2", "3"}
+
 type AddAssetToWatchlistRequest struct {
 	Symbol string `json:"symbol,omitempty"`
 }
@@ -397,6 +405,10 @@ type AdvancedInstructions struct {
 	MaxPercentage string `json:"max_percentage,omitempty"`
 	StartTime     string `json:"start_time,omitempty"`
 }
+
+var AdvancedInstructionsAlgorithmValues = []string{"DMA", "TWAP", "VWAP"}
+
+var AdvancedInstructionsDestinationValues = []string{"ARCA", "NASDAQ", "NYSE"}
 
 type Assets struct {
 	Attributes                   []string   `json:"attributes,omitempty"`
@@ -416,6 +428,8 @@ type Assets struct {
 	Symbol                       string     `json:"symbol"`
 	Tradable                     bool       `json:"tradable"`
 }
+
+var AssetsStatusValues = []string{"active", "inactive"}
 
 type Calendar struct {
 	Close          string `json:"close"`
@@ -491,6 +505,8 @@ type NonTradeActivities struct {
 	Symbol          string       `json:"symbol,omitempty"`
 }
 
+var NonTradeActivitiesStatusValues = []string{"canceled", "correct", "executed"}
+
 type OptionContract struct {
 	ClosePrice        string              `json:"close_price,omitempty"`
 	ClosePriceDate    string              `json:"close_price_date,omitempty"`
@@ -513,6 +529,12 @@ type OptionContract struct {
 	UnderlyingSymbol  string              `json:"underlying_symbol"`
 }
 
+var OptionContractStatusValues = []string{"active", "inactive"}
+
+var OptionContractStyleValues = []string{"american", "european"}
+
+var OptionContractTypeValues = []string{"call", "put"}
+
 type OptionDeliverable struct {
 	AllocationPercentage string `json:"allocation_percentage"`
 	Amount               string `json:"amount"`
@@ -523,6 +545,12 @@ type OptionDeliverable struct {
 	Symbol               string `json:"symbol"`
 	Type                 string `json:"type"`
 }
+
+var OptionDeliverableSettlementMethodValues = []string{"BTOB", "CADF", "CAFX", "CCC"}
+
+var OptionDeliverableSettlementTypeValues = []string{"T+0", "T+1", "T+2", "T+3", "T+4", "T+5"}
+
+var OptionDeliverableTypeValues = []string{"cash", "equity"}
 
 type Order struct {
 	AssetClass     AssetClass     `json:"asset_class,omitempty"`
@@ -659,6 +687,8 @@ type TradingActivities struct {
 	Type            string       `json:"type,omitempty"`
 }
 
+var TradingActivitiesTypeValues = []string{"fill", "partial_fill"}
+
 type UpdateWatchlistRequest struct {
 	Name    string   `json:"name"`
 	Symbols []string `json:"symbols,omitempty"`
@@ -689,6 +719,8 @@ type WhitelistedAddress struct {
 	ID        string `json:"id,omitempty"`
 	Status    string `json:"status,omitempty"`
 }
+
+var WhitelistedAddressStatusValues = []string{"APPROVED", "PENDING"}
 
 type CalendarDay struct {
 	CoreEnd        string `json:"core_end"`
@@ -835,35 +867,3 @@ type UsTreasury struct {
 	Subtype              TreasurySubtype `json:"subtype"`
 	Tradable             bool            `json:"tradable"`
 }
-
-var AccountOptionsApprovedLevelValues = []string{"0", "1", "2", "3"}
-
-var AccountOptionsTradingLevelValues = []string{"0", "1", "2", "3"}
-
-var AccountConfigurationsDTBPCheckValues = []string{"both", "entry", "exit"}
-
-var AccountConfigurationsMaxOptionsTradingLevelValues = []string{"0", "1", "2", "3"}
-
-var AdvancedInstructionsAlgorithmValues = []string{"DMA", "TWAP", "VWAP"}
-
-var AdvancedInstructionsDestinationValues = []string{"ARCA", "NASDAQ", "NYSE"}
-
-var AssetsStatusValues = []string{"active", "inactive"}
-
-var NonTradeActivitiesStatusValues = []string{"canceled", "correct", "executed"}
-
-var OptionContractStatusValues = []string{"active", "inactive"}
-
-var OptionContractStyleValues = []string{"american", "european"}
-
-var OptionContractTypeValues = []string{"call", "put"}
-
-var OptionDeliverableSettlementMethodValues = []string{"BTOB", "CADF", "CAFX", "CCC"}
-
-var OptionDeliverableSettlementTypeValues = []string{"T+0", "T+1", "T+2", "T+3", "T+4", "T+5"}
-
-var OptionDeliverableTypeValues = []string{"cash", "equity"}
-
-var TradingActivitiesTypeValues = []string{"fill", "partial_fill"}
-
-var WhitelistedAddressStatusValues = []string{"APPROVED", "PENDING"}

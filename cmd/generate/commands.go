@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"log"
-	"sort"
 	"strings"
 )
 
@@ -833,12 +832,7 @@ func genCommands(allEndpoints []*endpointInfo, allSchemas []*schemaInfo) string 
 	// Emit command body first, then prepend header with conditional imports.
 	var body bytes.Buffer
 
-	// Emit parent command vars, sorted by key
-	var parentKeys []string
-	for k := range cmdParents {
-		parentKeys = append(parentKeys, k)
-	}
-	sort.Strings(parentKeys)
+	parentKeys := sortedKeys(cmdParents)
 
 	for _, key := range parentKeys {
 		pdef := cmdParents[key]
@@ -859,12 +853,7 @@ func genCommands(allEndpoints []*endpointInfo, allSchemas []*schemaInfo) string 
 		fmt.Fprintf(&body, "}\n\n")
 	}
 
-	// Emit command vars, sorted by operation ID
-	var opIDs []string
-	for opID := range cmdRegistry {
-		opIDs = append(opIDs, opID)
-	}
-	sort.Strings(opIDs)
+	opIDs := sortedKeys(cmdRegistry)
 
 	for _, opID := range opIDs {
 		def := cmdRegistry[opID]
@@ -914,11 +903,7 @@ func emitCommand(buf *bytes.Buffer, opID string, def cmdDef, ep *endpointInfo, s
 
 	if len(def.defaults) > 0 {
 		var pairs []string
-		var defKeys []string
-		for k := range def.defaults {
-			defKeys = append(defKeys, k)
-		}
-		sort.Strings(defKeys)
+		defKeys := sortedKeys(def.defaults)
 		for _, k := range defKeys {
 			pairs = append(pairs, fmt.Sprintf("%q: %q", k, def.defaults[k]))
 		}
@@ -928,11 +913,7 @@ func emitCommand(buf *bytes.Buffer, opID string, def cmdDef, ep *endpointInfo, s
 	// Register aliased body flags via configure closure
 	if len(def.bodyAliases) > 0 {
 		bodySchema := findSchema(schemas, ep.bodyRef)
-		var aliasKeys []string
-		for k := range def.bodyAliases {
-			aliasKeys = append(aliasKeys, k)
-		}
-		sort.Strings(aliasKeys)
+		aliasKeys := sortedKeys(def.bodyAliases)
 		var aliasLines []string
 		for _, oasKebab := range aliasKeys {
 			alias := def.bodyAliases[oasKebab]
@@ -1090,11 +1071,7 @@ func buildInlinePostBody(ep *endpointInfo) string {
 		return ""
 	}
 
-	var propNames []string
-	for name := range props {
-		propNames = append(propNames, name)
-	}
-	sort.Strings(propNames)
+	propNames := sortedKeys(props)
 
 	// Only handle flat scalar (all string fields)
 	for _, name := range propNames {
@@ -1126,12 +1103,7 @@ func buildPostBody(ep *endpointInfo, def cmdDef, schemas []*schemaInfo) string {
 		return ""
 	}
 
-	// Check all fields are strings (flat scalar)
-	var propNames []string
-	for name := range bodySchema.props {
-		propNames = append(propNames, name)
-	}
-	sort.Strings(propNames)
+	propNames := sortedKeys(bodySchema.props)
 
 	for _, name := range propNames {
 		ps := bodySchema.props[name]
@@ -1165,11 +1137,7 @@ func buildPatchBodyWithAliases(ep *endpointInfo, def cmdDef, clientVar string, s
 		return ""
 	}
 
-	var propNames []string
-	for name := range bodySchema.props {
-		propNames = append(propNames, name)
-	}
-	sort.Strings(propNames)
+	propNames := sortedKeys(bodySchema.props)
 
 	var b strings.Builder
 	fmt.Fprintf(&b, "body := &api.%s{}\n", ep.bodyRef)
@@ -1229,11 +1197,7 @@ func buildPostBodyBlock(ep *endpointInfo, def cmdDef, clientVar string, schemas 
 		return ""
 	}
 
-	var propNames []string
-	for name := range bodySchema.props {
-		propNames = append(propNames, name)
-	}
-	sort.Strings(propNames)
+	propNames := sortedKeys(bodySchema.props)
 
 	type fieldCat struct {
 		goField  string
@@ -1319,11 +1283,7 @@ func structRefBodyFields(bodyRef string, schemas []*schemaInfo) []jsonField {
 		return nil
 	}
 
-	var propNames []string
-	for name := range bodySchema.props {
-		propNames = append(propNames, name)
-	}
-	sort.Strings(propNames)
+	propNames := sortedKeys(bodySchema.props)
 
 	var fields []jsonField
 	for _, name := range propNames {
@@ -1396,11 +1356,7 @@ func emitInit(buf *bytes.Buffer, opIDs []string, allEndpoints []*endpointInfo) {
 		parentVar string
 	}
 	var parentWires []parentWire
-	var parentKeys []string
-	for k := range cmdParents {
-		parentKeys = append(parentKeys, k)
-	}
-	sort.Strings(parentKeys)
+	parentKeys := sortedKeys(cmdParents)
 
 	for _, key := range parentKeys {
 		pdef := cmdParents[key]

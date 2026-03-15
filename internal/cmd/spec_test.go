@@ -271,13 +271,12 @@ func TestAllOpsValid(t *testing.T) {
 		t.Fatal("api.AllOps is empty — generator may not have run")
 	}
 	for _, op := range api.AllOps {
-		summary := op.Summary()
-		if summary == "" {
-			t.Errorf("op has empty Summary()")
+		if op.Summary == "" {
+			t.Errorf("op %q has empty Summary", op.Name)
 			continue
 		}
-		t.Run(summary, func(t *testing.T) {
-			for _, f := range op.Flags() {
+		t.Run(op.Summary, func(t *testing.T) {
+			for _, f := range op.Flags {
 				if f.Name == "" {
 					t.Error("FlagDef has empty Name")
 				}

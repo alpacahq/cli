@@ -278,10 +278,10 @@ func printCommandSchema(cmd *cobra.Command) error {
 	w := cmd.OutOrStdout()
 
 	if op, ok := api.OpByName(opName); ok {
-		if op.ReturnsArray() {
-			schemaComment.Fprintf(w, "// %s — returns an array of:\n", op.Summary())
-		} else if s := op.Summary(); s != "" {
-			schemaComment.Fprintf(w, "// %s\n", s)
+		if op.ReturnsArray {
+			schemaComment.Fprintf(w, "// %s — returns an array of:\n", op.Summary)
+		} else if op.Summary != "" {
+			schemaComment.Fprintf(w, "// %s\n", op.Summary)
 		}
 	}
 	fmt.Fprintln(w, "{")
