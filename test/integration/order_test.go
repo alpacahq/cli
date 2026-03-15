@@ -415,6 +415,7 @@ func TestOrderList_AfterOrderID(t *testing.T) {
 
 	filtered := parseJSONArray(t, alpaca(t, "order", "list",
 		"--status", "open",
+		"--direction", "asc",
 		"--after-order-id", first,
 	))
 
