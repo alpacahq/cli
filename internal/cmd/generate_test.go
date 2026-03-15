@@ -24,11 +24,11 @@ func TestGeneratedCodeIsUpToDate(t *testing.T) {
 	cmdDir := filepath.Join(root, "internal", "cmd")
 
 	generatedFiles := []genFile{
-		{apiDir, "trading_types.go"},
-		{apiDir, "trading_client.go"},
-		{apiDir, "marketdata_types.go"},
-		{apiDir, "marketdata_client.go"},
-		{apiDir, "descriptions.go"},
+		{apiDir, "trading_types.gen.go"},
+		{apiDir, "trading_client.gen.go"},
+		{apiDir, "marketdata_types.gen.go"},
+		{apiDir, "marketdata_client.gen.go"},
+		{apiDir, "descriptions.gen.go"},
 		{cmdDir, "params.gen.go"},
 		{cmdDir, "commands.gen.go"},
 	}

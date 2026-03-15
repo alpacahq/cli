@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"encoding/json"
+	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/alpacahq/cli/internal/api"
@@ -67,6 +69,28 @@ func attachCmd(cmd *cobra.Command, op api.Op, fetch func(cmd *cobra.Command, arg
 		fn(cmd)
 	}
 	cmdutil.RegisterFlags(cmd, op.Flags(), cmdFlagOpts[cmd])
+}
+
+// queryFromFlags builds url.Values from cobra flags using FlagDef metadata,
+// replacing per-endpoint *ParamsFromFlags boilerplate with a single runtime helper.
+func queryFromFlags(cmd *cobra.Command, op api.Op) url.Values {
+	v := url.Values{}
+	for _, f := range op.Flags() {
+		if f.Source != "query" || !cmd.Flags().Changed(f.Name) {
+			continue
+		}
+		switch f.Type {
+		case "string":
+			v.Set(f.OASName, cmdutil.Str(cmd, f.Name))
+		case "int":
+			v.Set(f.OASName, fmt.Sprint(cmdutil.Int(cmd, f.Name)))
+		case "bool":
+			if cmdutil.Bool(cmd, f.Name) {
+				v.Set(f.OASName, "true")
+			}
+		}
+	}
+	return v
 }
 
 // normalizePathParam strips slashes from path param values (e.g. BTC/USD → BTCUSD).

@@ -31,10 +31,10 @@ func main() {
 	dedup(tSchemas)
 	dedup(mSchemas)
 
-	writeGo(filepath.Join(outDir, "trading_types.go"), genTypes("trading-api.json", tSchemas))
-	writeGo(filepath.Join(outDir, "trading_client.go"), genClient("Trading", "trading-api.json", tSchemas, tEndpoints, false))
-	writeGo(filepath.Join(outDir, "marketdata_types.go"), genTypes("market-data-api.json", mSchemas))
-	writeGo(filepath.Join(outDir, "marketdata_client.go"), genClient("MarketData", "market-data-api.json", mSchemas, mEndpoints, true))
+	writeGo(filepath.Join(outDir, "trading_types.gen.go"), genTypes("trading-api.json", tSchemas))
+	writeGo(filepath.Join(outDir, "trading_client.gen.go"), genClient("Trading", "trading-api.json", tSchemas, tEndpoints, false))
+	writeGo(filepath.Join(outDir, "marketdata_types.gen.go"), genTypes("market-data-api.json", mSchemas))
+	writeGo(filepath.Join(outDir, "marketdata_client.gen.go"), genClient("MarketData", "market-data-api.json", mSchemas, mEndpoints, true))
 
 	var ops []*opDesc
 	ops = append(ops, collectDescriptions(tEndpoints, tSchemas, tSpec)...)
@@ -42,7 +42,7 @@ func main() {
 	sort.Slice(ops, func(i, j int) bool {
 		return ops[i].operationID < ops[j].operationID
 	})
-	writeGo(filepath.Join(outDir, "descriptions.go"), writeTypedDescriptionsFile(ops))
+	writeGo(filepath.Join(outDir, "descriptions.gen.go"), writeTypedDescriptionsFile(ops))
 
 	for _, ep := range tEndpoints {
 		ep.specSource = "trading"
@@ -638,64 +638,14 @@ func genClient(clientName, specFile string, schemas []*schemaInfo, endpoints []*
 		}
 	}
 
-	var mutating []string
-	for _, ep := range endpoints {
-		switch ep.method {
-		case "POST", "PUT", "PATCH", "DELETE":
-			mutating = append(mutating, ep.goName)
-		}
-	}
-	if len(mutating) > 0 {
-		fmt.Fprintf(&buf, "var %sMutatingMethods = map[string]bool{\n", clientName)
-		for _, m := range mutating {
-			fmt.Fprintf(&buf, "\t%q: true,\n", m)
-		}
-		fmt.Fprintf(&buf, "}\n\n")
-	}
-
 	return buf.String()
 }
 
 func genEndpointMethod(buf *bytes.Buffer, ep *endpointInfo, clientName, getMethod string, schemas []*schemaInfo, isData bool) {
 	hasParams := len(ep.queryParams) > 0
-	paramsTypeName := ep.goName + "Params"
 
-	// If response type references an alias schema, clear it to use json.RawMessage
 	if ep.responseRef != "" && !schemaHasType(schemas, ep.responseRef) {
 		ep.responseRef = ""
-	}
-
-	if hasParams {
-		fmt.Fprintf(buf, "type %s struct {\n", paramsTypeName)
-		for _, p := range ep.queryParams {
-			if p.defaultVal != "" {
-				fmt.Fprintf(buf, "\t%s %s // default: %s\n", p.goName, p.goType, p.defaultVal)
-			} else {
-				fmt.Fprintf(buf, "\t%s %s\n", p.goName, p.goType)
-			}
-		}
-		fmt.Fprintf(buf, "}\n\n")
-
-		fmt.Fprintf(buf, "func (p *%s) Values() url.Values {\n", paramsTypeName)
-		fmt.Fprintf(buf, "\tif p == nil { return nil }\n")
-		fmt.Fprintf(buf, "\tv := url.Values{}\n")
-		for _, p := range ep.queryParams {
-			switch p.goType {
-			case "string":
-				fmt.Fprintf(buf, "\tif p.%s != \"\" { v.Set(%q, p.%s) }\n", p.goName, p.name, p.goName)
-			case "int":
-				fmt.Fprintf(buf, "\tif p.%s != 0 { v.Set(%q, fmt.Sprint(p.%s)) }\n", p.goName, p.name, p.goName)
-			case "bool":
-				fmt.Fprintf(buf, "\tif p.%s { v.Set(%q, \"true\") }\n", p.goName, p.name)
-			}
-		}
-		fmt.Fprintf(buf, "\treturn v\n}\n\n")
-
-		for _, p := range ep.queryParams {
-			if len(p.enumValues) > 0 {
-				genValuesSlice(buf, paramsTypeName+p.goName, p.enumValues)
-			}
-		}
 	}
 
 	bodyType := ep.bodyRef
@@ -716,7 +666,7 @@ func genEndpointMethod(buf *bytes.Buffer, ep *endpointInfo, clientName, getMetho
 		args = append(args, pp.goName+" string")
 	}
 	if hasParams {
-		args = append(args, "params *"+paramsTypeName)
+		args = append(args, "params url.Values")
 	}
 	if bodyType != "" {
 		args = append(args, "body *"+bodyType)
@@ -742,49 +692,23 @@ func genEndpointMethod(buf *bytes.Buffer, ep *endpointInfo, clientName, getMetho
 	pathExpr := buildPathExpr(ep.path, ep.pathParams)
 	fmt.Fprintf(buf, "\tpath := %s\n", pathExpr)
 
+	paramsExpr := "nil"
+	if hasParams {
+		paramsExpr = "params"
+	}
+
 	switch ep.method {
 	case "GET":
-		if hasParams {
-			fmt.Fprintf(buf, "\tdata, err := c.%s(path, params.Values())\n", getMethod)
-		} else {
-			fmt.Fprintf(buf, "\tdata, err := c.%s(path, nil)\n", getMethod)
-		}
+		fmt.Fprintf(buf, "\tdata, err := c.%s(path, %s)\n", getMethod, paramsExpr)
 	case "DELETE":
-		if hasParams {
-			fmt.Fprintf(buf, "\tdata, err := c.Raw.Delete(path, params.Values())\n")
-		} else {
-			fmt.Fprintf(buf, "\tdata, err := c.Raw.Delete(path, nil)\n")
-		}
-	case "POST":
-		paramsArg := "nil"
-		if hasParams {
-			paramsArg = "params.Values()"
-		}
+		fmt.Fprintf(buf, "\tdata, err := c.Raw.Delete(path, %s)\n", paramsExpr)
+	default:
+		bodyExpr := "nil"
 		if bodyType != "" {
-			fmt.Fprintf(buf, "\tdata, err := c.Raw.Post(path, %s, body)\n", paramsArg)
-		} else {
-			fmt.Fprintf(buf, "\tdata, err := c.Raw.Post(path, %s, nil)\n", paramsArg)
+			bodyExpr = "body"
 		}
-	case "PUT":
-		paramsArg := "nil"
-		if hasParams {
-			paramsArg = "params.Values()"
-		}
-		if bodyType != "" {
-			fmt.Fprintf(buf, "\tdata, err := c.Raw.Put(path, %s, body)\n", paramsArg)
-		} else {
-			fmt.Fprintf(buf, "\tdata, err := c.Raw.Put(path, %s, nil)\n", paramsArg)
-		}
-	case "PATCH":
-		paramsArg := "nil"
-		if hasParams {
-			paramsArg = "params.Values()"
-		}
-		if bodyType != "" {
-			fmt.Fprintf(buf, "\tdata, err := c.Raw.Patch(path, %s, body)\n", paramsArg)
-		} else {
-			fmt.Fprintf(buf, "\tdata, err := c.Raw.Patch(path, %s, nil)\n", paramsArg)
-		}
+		methodFunc := strings.ToUpper(ep.method[:1]) + strings.ToLower(ep.method[1:])
+		fmt.Fprintf(buf, "\tdata, err := c.Raw.%s(path, %s, %s)\n", methodFunc, paramsExpr, bodyExpr)
 	}
 
 	fmt.Fprintf(buf, "\tif err != nil { return nil, err }\n")
@@ -1563,43 +1487,6 @@ func genFromFlags(endpoints []*endpointInfo, schemas []*schemaInfo) string {
 		return sorted[i].goName < sorted[j].goName
 	})
 
-	for _, ep := range sorted {
-		if len(ep.queryParams) == 0 {
-			continue
-		}
-
-		funcName := lcFirst(ep.goName) + "ParamsFromFlags"
-		paramsType := ep.goName + "Params"
-
-		qps := make([]paramInfo, len(ep.queryParams))
-		copy(qps, ep.queryParams)
-		sort.Slice(qps, func(i, j int) bool {
-			return qps[i].name < qps[j].name
-		})
-
-		fmt.Fprintf(&buf, "func %s(cmd *cobra.Command) *api.%s {\n", funcName, paramsType)
-		fmt.Fprintf(&buf, "\tp := &api.%s{}\n", paramsType)
-		fmt.Fprintf(&buf, "\tflags := cmd.Flags()\n")
-
-		for _, qp := range qps {
-			flagName := strings.ReplaceAll(qp.name, "_", "-")
-			helper := "cmdutil.Str"
-			switch qp.goType {
-			case "int":
-				helper = "cmdutil.Int"
-			case "bool":
-				helper = "cmdutil.Bool"
-			}
-			fmt.Fprintf(&buf, "\tif flags.Changed(%q) {\n", flagName)
-			fmt.Fprintf(&buf, "\t\tp.%s = %s(cmd, %q)\n", qp.goName, helper, flagName)
-			fmt.Fprintf(&buf, "\t}\n")
-		}
-
-		fmt.Fprintf(&buf, "\treturn p\n")
-		fmt.Fprintf(&buf, "}\n\n")
-	}
-
-	// GEN2: generate BodyFromFlags for PATCH/PUT endpoints with body refs
 	generated := map[string]bool{}
 	for _, ep := range sorted {
 		if (ep.method == "PATCH" || ep.method == "PUT") && ep.bodyRef != "" && !generated[ep.bodyRef] {

@@ -1027,7 +1027,7 @@ func buildFetchBody(opID string, def cmdDef, ep *endpointInfo, clientVar string,
 				args = append(args, pathParamExpr(pp, def))
 			}
 			if hasQueryParams {
-				args = append(args, lcFirst(ep.goName)+"ParamsFromFlags(cmd)")
+				args = append(args, queryFromFlagsExpr(ep))
 			}
 			args = append(args, bodyExpr)
 			call := fmt.Sprintf("%s.%s(%s)", clientVar, methodName, strings.Join(args, ", "))
@@ -1051,7 +1051,7 @@ func buildFetchBody(opID string, def cmdDef, ep *endpointInfo, clientVar string,
 				args = append(args, pathParamExpr(pp, def))
 			}
 			if hasQueryParams {
-				args = append(args, lcFirst(ep.goName)+"ParamsFromFlags(cmd)")
+				args = append(args, queryFromFlagsExpr(ep))
 			}
 			args = append(args, bodyExpr)
 			call := fmt.Sprintf("%s.%s(%s)", clientVar, methodName, strings.Join(args, ", "))
@@ -1068,7 +1068,7 @@ func buildFetchBody(opID string, def cmdDef, ep *endpointInfo, clientVar string,
 		args = append(args, pathParamExpr(pp, def))
 	}
 	if hasQueryParams {
-		args = append(args, lcFirst(ep.goName)+"ParamsFromFlags(cmd)")
+		args = append(args, queryFromFlagsExpr(ep))
 	}
 
 	call := fmt.Sprintf("%s.%s(%s)", clientVar, methodName, strings.Join(args, ", "))
@@ -1221,7 +1221,7 @@ func buildPatchBodyWithAliases(ep *endpointInfo, def cmdDef, clientVar string, s
 		args = append(args, pathParamExpr(pp, def))
 	}
 	if len(ep.queryParams) > 0 {
-		args = append(args, lcFirst(ep.goName)+"ParamsFromFlags(cmd)")
+		args = append(args, queryFromFlagsExpr(ep))
 	}
 	args = append(args, "body")
 
@@ -1302,7 +1302,7 @@ func buildPostBodyBlock(ep *endpointInfo, def cmdDef, clientVar string, schemas 
 		args = append(args, pathParamExpr(pp, def))
 	}
 	if len(ep.queryParams) > 0 {
-		args = append(args, lcFirst(ep.goName)+"ParamsFromFlags(cmd)")
+		args = append(args, queryFromFlagsExpr(ep))
 	}
 	args = append(args, "body")
 
@@ -1314,6 +1314,10 @@ func buildPostBodyBlock(ep *endpointInfo, def cmdDef, clientVar string, schemas 
 		fmt.Fprintf(&b, "\treturn %s", call)
 	}
 	return b.String()
+}
+
+func queryFromFlagsExpr(ep *endpointInfo) string {
+	return fmt.Sprintf("queryFromFlags(cmd, api.%sOp)", ep.goName)
 }
 
 type jsonField struct {

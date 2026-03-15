@@ -31,104 +31,20 @@ func (c *TradingClient) GetAccount() (*Account, error) {
 	return &result, json.Unmarshal(data, &result)
 }
 
-type GetAccountActivitiesParams struct {
-	ActivityTypes string
-	Category      string
-	Date          string
-	Until         string
-	After         string
-	Direction     string // default: desc
-	PageSize      int    // default: 100
-	PageToken     string
-}
-
-func (p *GetAccountActivitiesParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.ActivityTypes != "" {
-		v.Set("activity_types", p.ActivityTypes)
-	}
-	if p.Category != "" {
-		v.Set("category", p.Category)
-	}
-	if p.Date != "" {
-		v.Set("date", p.Date)
-	}
-	if p.Until != "" {
-		v.Set("until", p.Until)
-	}
-	if p.After != "" {
-		v.Set("after", p.After)
-	}
-	if p.Direction != "" {
-		v.Set("direction", p.Direction)
-	}
-	if p.PageSize != 0 {
-		v.Set("page_size", fmt.Sprint(p.PageSize))
-	}
-	if p.PageToken != "" {
-		v.Set("page_token", p.PageToken)
-	}
-	return v
-}
-
-var GetAccountActivitiesParamsCategoryValues = []string{"non_trade_activity", "trade_activity"}
-
-var GetAccountActivitiesParamsDirectionValues = []string{"asc", "desc"}
-
 // GetAccountActivities — Retrieve Account Activities
-func (c *TradingClient) GetAccountActivities(params *GetAccountActivitiesParams) (json.RawMessage, error) {
+func (c *TradingClient) GetAccountActivities(params url.Values) (json.RawMessage, error) {
 	path := "/v2/account/activities"
-	data, err := c.Raw.Get(path, params.Values())
+	data, err := c.Raw.Get(path, params)
 	if err != nil {
 		return nil, err
 	}
 	return data, nil
 }
 
-type GetAccountActivitiesByActivityTypeParams struct {
-	Date      string
-	Until     string
-	After     string
-	Direction string // default: desc
-	PageSize  int    // default: 100
-	PageToken string
-}
-
-func (p *GetAccountActivitiesByActivityTypeParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.Date != "" {
-		v.Set("date", p.Date)
-	}
-	if p.Until != "" {
-		v.Set("until", p.Until)
-	}
-	if p.After != "" {
-		v.Set("after", p.After)
-	}
-	if p.Direction != "" {
-		v.Set("direction", p.Direction)
-	}
-	if p.PageSize != 0 {
-		v.Set("page_size", fmt.Sprint(p.PageSize))
-	}
-	if p.PageToken != "" {
-		v.Set("page_token", p.PageToken)
-	}
-	return v
-}
-
-var GetAccountActivitiesByActivityTypeParamsDirectionValues = []string{"asc", "desc"}
-
 // GetAccountActivitiesByActivityType — Retrieve Account Activities of Specific Type
-func (c *TradingClient) GetAccountActivitiesByActivityType(ActivityType string, params *GetAccountActivitiesByActivityTypeParams) (json.RawMessage, error) {
+func (c *TradingClient) GetAccountActivitiesByActivityType(ActivityType string, params url.Values) (json.RawMessage, error) {
 	path := fmt.Sprintf("/v2/account/activities/%s", url.PathEscape(ActivityType))
-	data, err := c.Raw.Get(path, params.Values())
+	data, err := c.Raw.Get(path, params)
 	if err != nil {
 		return nil, err
 	}
@@ -157,57 +73,10 @@ func (c *TradingClient) PatchAccountConfig(body *AccountConfigurations) (*Accoun
 	return &result, json.Unmarshal(data, &result)
 }
 
-type GetAccountPortfolioHistoryParams struct {
-	Period            string
-	Timeframe         string
-	IntradayReporting string // default: market_hours
-	Start             string
-	PNLReset          string // default: per_day
-	End               string
-	ExtendedHours     string
-	CashflowTypes     string
-}
-
-func (p *GetAccountPortfolioHistoryParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.Period != "" {
-		v.Set("period", p.Period)
-	}
-	if p.Timeframe != "" {
-		v.Set("timeframe", p.Timeframe)
-	}
-	if p.IntradayReporting != "" {
-		v.Set("intraday_reporting", p.IntradayReporting)
-	}
-	if p.Start != "" {
-		v.Set("start", p.Start)
-	}
-	if p.PNLReset != "" {
-		v.Set("pnl_reset", p.PNLReset)
-	}
-	if p.End != "" {
-		v.Set("end", p.End)
-	}
-	if p.ExtendedHours != "" {
-		v.Set("extended_hours", p.ExtendedHours)
-	}
-	if p.CashflowTypes != "" {
-		v.Set("cashflow_types", p.CashflowTypes)
-	}
-	return v
-}
-
-var GetAccountPortfolioHistoryParamsIntradayReportingValues = []string{"continuous", "extended_hours", "market_hours"}
-
-var GetAccountPortfolioHistoryParamsPNLResetValues = []string{"no_reset", "per_day"}
-
 // GetAccountPortfolioHistory — Get Account Portfolio History
-func (c *TradingClient) GetAccountPortfolioHistory(params *GetAccountPortfolioHistoryParams) (*PortfolioHistory, error) {
+func (c *TradingClient) GetAccountPortfolioHistory(params url.Values) (*PortfolioHistory, error) {
 	path := "/v2/account/portfolio/history"
-	data, err := c.Raw.Get(path, params.Values())
+	data, err := c.Raw.Get(path, params)
 	if err != nil {
 		return nil, err
 	}
@@ -215,37 +84,10 @@ func (c *TradingClient) GetAccountPortfolioHistory(params *GetAccountPortfolioHi
 	return &result, json.Unmarshal(data, &result)
 }
 
-type GetV2AssetsParams struct {
-	Status     string
-	AssetClass string
-	Exchange   string
-	Attributes string
-}
-
-func (p *GetV2AssetsParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.Status != "" {
-		v.Set("status", p.Status)
-	}
-	if p.AssetClass != "" {
-		v.Set("asset_class", p.AssetClass)
-	}
-	if p.Exchange != "" {
-		v.Set("exchange", p.Exchange)
-	}
-	if p.Attributes != "" {
-		v.Set("attributes", p.Attributes)
-	}
-	return v
-}
-
 // GetV2Assets — Get Assets
-func (c *TradingClient) GetV2Assets(params *GetV2AssetsParams) ([]Assets, error) {
+func (c *TradingClient) GetV2Assets(params url.Values) ([]Assets, error) {
 	path := "/v2/assets"
-	data, err := c.Raw.Get(path, params.Values())
+	data, err := c.Raw.Get(path, params)
 	if err != nil {
 		return nil, err
 	}
@@ -253,39 +95,10 @@ func (c *TradingClient) GetV2Assets(params *GetV2AssetsParams) ([]Assets, error)
 	return result, json.Unmarshal(data, &result)
 }
 
-type UsCorporatesParams struct {
-	BondStatus string
-	Isins      string
-	Cusips     string
-	Tickers    string
-}
-
-func (p *UsCorporatesParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.BondStatus != "" {
-		v.Set("bond_status", p.BondStatus)
-	}
-	if p.Isins != "" {
-		v.Set("isins", p.Isins)
-	}
-	if p.Cusips != "" {
-		v.Set("cusips", p.Cusips)
-	}
-	if p.Tickers != "" {
-		v.Set("tickers", p.Tickers)
-	}
-	return v
-}
-
-var UsCorporatesParamsBondStatusValues = []string{"matured", "outstanding", "pre_issuance"}
-
 // UsCorporates — Get US corporates
-func (c *TradingClient) UsCorporates(params *UsCorporatesParams) (*UsCorporatesResp, error) {
+func (c *TradingClient) UsCorporates(params url.Values) (*UsCorporatesResp, error) {
 	path := "/v2/assets/fixed_income/us_corporates"
-	data, err := c.Raw.Get(path, params.Values())
+	data, err := c.Raw.Get(path, params)
 	if err != nil {
 		return nil, err
 	}
@@ -293,41 +106,10 @@ func (c *TradingClient) UsCorporates(params *UsCorporatesParams) (*UsCorporatesR
 	return &result, json.Unmarshal(data, &result)
 }
 
-type UsTreasuriesParams struct {
-	Subtype    string
-	BondStatus string
-	Cusips     string
-	Isins      string
-}
-
-func (p *UsTreasuriesParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.Subtype != "" {
-		v.Set("subtype", p.Subtype)
-	}
-	if p.BondStatus != "" {
-		v.Set("bond_status", p.BondStatus)
-	}
-	if p.Cusips != "" {
-		v.Set("cusips", p.Cusips)
-	}
-	if p.Isins != "" {
-		v.Set("isins", p.Isins)
-	}
-	return v
-}
-
-var UsTreasuriesParamsSubtypeValues = []string{"bill", "bond", "floating", "note", "strips", "tips"}
-
-var UsTreasuriesParamsBondStatusValues = []string{"matured", "outstanding", "pre_issuance"}
-
 // UsTreasuries — Get US treasuries
-func (c *TradingClient) UsTreasuries(params *UsTreasuriesParams) (*UsTreasuriesResp, error) {
+func (c *TradingClient) UsTreasuries(params url.Values) (*UsTreasuriesResp, error) {
 	path := "/v2/assets/fixed_income/us_treasuries"
-	data, err := c.Raw.Get(path, params.Values())
+	data, err := c.Raw.Get(path, params)
 	if err != nil {
 		return nil, err
 	}
@@ -346,35 +128,10 @@ func (c *TradingClient) GetV2AssetsSymbolOrAssetID(SymbolOrAssetID string) (*Ass
 	return &result, json.Unmarshal(data, &result)
 }
 
-type LegacyCalendarParams struct {
-	Start    string
-	End      string
-	DateType string
-}
-
-func (p *LegacyCalendarParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.Start != "" {
-		v.Set("start", p.Start)
-	}
-	if p.End != "" {
-		v.Set("end", p.End)
-	}
-	if p.DateType != "" {
-		v.Set("date_type", p.DateType)
-	}
-	return v
-}
-
-var LegacyCalendarParamsDateTypeValues = []string{"SETTLEMENT", "TRADING"}
-
 // LegacyCalendar — Get US Market Calendar
-func (c *TradingClient) LegacyCalendar(params *LegacyCalendarParams) (json.RawMessage, error) {
+func (c *TradingClient) LegacyCalendar(params url.Values) (json.RawMessage, error) {
 	path := "/v2/calendar"
-	data, err := c.Raw.Get(path, params.Values())
+	data, err := c.Raw.Get(path, params)
 	if err != nil {
 		return nil, err
 	}
@@ -392,45 +149,10 @@ func (c *TradingClient) LegacyClock() (*LegacyClock, error) {
 	return &result, json.Unmarshal(data, &result)
 }
 
-type GetV2CorporateActionsAnnouncementsParams struct {
-	CaTypes  string
-	Since    string
-	Until    string
-	Symbol   string
-	Cusip    string
-	DateType string
-}
-
-func (p *GetV2CorporateActionsAnnouncementsParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.CaTypes != "" {
-		v.Set("ca_types", p.CaTypes)
-	}
-	if p.Since != "" {
-		v.Set("since", p.Since)
-	}
-	if p.Until != "" {
-		v.Set("until", p.Until)
-	}
-	if p.Symbol != "" {
-		v.Set("symbol", p.Symbol)
-	}
-	if p.Cusip != "" {
-		v.Set("cusip", p.Cusip)
-	}
-	if p.DateType != "" {
-		v.Set("date_type", p.DateType)
-	}
-	return v
-}
-
 // GetV2CorporateActionsAnnouncements — Retrieve Announcements
-func (c *TradingClient) GetV2CorporateActionsAnnouncements(params *GetV2CorporateActionsAnnouncementsParams) (json.RawMessage, error) {
+func (c *TradingClient) GetV2CorporateActionsAnnouncements(params url.Values) (json.RawMessage, error) {
 	path := "/v2/corporate_actions/announcements"
-	data, err := c.Raw.Get(path, params.Values())
+	data, err := c.Raw.Get(path, params)
 	if err != nil {
 		return nil, err
 	}
@@ -447,83 +169,10 @@ func (c *TradingClient) GetV2CorporateActionsAnnouncementsID(ID string) (json.Ra
 	return data, nil
 }
 
-type GetOptionsContractsParams struct {
-	UnderlyingSymbols string
-	ShowDeliverables  bool
-	Status            string
-	ExpirationDate    string
-	ExpirationDateGte string
-	ExpirationDateLte string
-	RootSymbol        string
-	Type              string
-	Style             string
-	StrikePriceGte    string
-	StrikePriceLte    string
-	PageToken         string
-	Limit             int
-	Ppind             bool
-}
-
-func (p *GetOptionsContractsParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.UnderlyingSymbols != "" {
-		v.Set("underlying_symbols", p.UnderlyingSymbols)
-	}
-	if p.ShowDeliverables {
-		v.Set("show_deliverables", "true")
-	}
-	if p.Status != "" {
-		v.Set("status", p.Status)
-	}
-	if p.ExpirationDate != "" {
-		v.Set("expiration_date", p.ExpirationDate)
-	}
-	if p.ExpirationDateGte != "" {
-		v.Set("expiration_date_gte", p.ExpirationDateGte)
-	}
-	if p.ExpirationDateLte != "" {
-		v.Set("expiration_date_lte", p.ExpirationDateLte)
-	}
-	if p.RootSymbol != "" {
-		v.Set("root_symbol", p.RootSymbol)
-	}
-	if p.Type != "" {
-		v.Set("type", p.Type)
-	}
-	if p.Style != "" {
-		v.Set("style", p.Style)
-	}
-	if p.StrikePriceGte != "" {
-		v.Set("strike_price_gte", p.StrikePriceGte)
-	}
-	if p.StrikePriceLte != "" {
-		v.Set("strike_price_lte", p.StrikePriceLte)
-	}
-	if p.PageToken != "" {
-		v.Set("page_token", p.PageToken)
-	}
-	if p.Limit != 0 {
-		v.Set("limit", fmt.Sprint(p.Limit))
-	}
-	if p.Ppind {
-		v.Set("ppind", "true")
-	}
-	return v
-}
-
-var GetOptionsContractsParamsStatusValues = []string{"active", "inactive"}
-
-var GetOptionsContractsParamsTypeValues = []string{"call", "put"}
-
-var GetOptionsContractsParamsStyleValues = []string{"american", "european"}
-
 // GetOptionsContracts — Get Option Contracts
-func (c *TradingClient) GetOptionsContracts(params *GetOptionsContractsParams) (json.RawMessage, error) {
+func (c *TradingClient) GetOptionsContracts(params url.Values) (json.RawMessage, error) {
 	path := "/v2/options/contracts"
-	data, err := c.Raw.Get(path, params.Values())
+	data, err := c.Raw.Get(path, params)
 	if err != nil {
 		return nil, err
 	}
@@ -541,69 +190,10 @@ func (c *TradingClient) GetOptionContractSymbolOrID(SymbolOrID string) (*OptionC
 	return &result, json.Unmarshal(data, &result)
 }
 
-type GetAllOrdersParams struct {
-	Status        string
-	Limit         int
-	After         string
-	Until         string
-	Direction     string
-	Nested        bool
-	Symbols       string
-	Side          string
-	AssetClass    string
-	BeforeOrderID string
-	AfterOrderID  string
-}
-
-func (p *GetAllOrdersParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.Status != "" {
-		v.Set("status", p.Status)
-	}
-	if p.Limit != 0 {
-		v.Set("limit", fmt.Sprint(p.Limit))
-	}
-	if p.After != "" {
-		v.Set("after", p.After)
-	}
-	if p.Until != "" {
-		v.Set("until", p.Until)
-	}
-	if p.Direction != "" {
-		v.Set("direction", p.Direction)
-	}
-	if p.Nested {
-		v.Set("nested", "true")
-	}
-	if p.Symbols != "" {
-		v.Set("symbols", p.Symbols)
-	}
-	if p.Side != "" {
-		v.Set("side", p.Side)
-	}
-	if p.AssetClass != "" {
-		v.Set("asset_class", p.AssetClass)
-	}
-	if p.BeforeOrderID != "" {
-		v.Set("before_order_id", p.BeforeOrderID)
-	}
-	if p.AfterOrderID != "" {
-		v.Set("after_order_id", p.AfterOrderID)
-	}
-	return v
-}
-
-var GetAllOrdersParamsStatusValues = []string{"all", "closed", "open"}
-
-var GetAllOrdersParamsDirectionValues = []string{"asc", "desc"}
-
 // GetAllOrders — Get All Orders
-func (c *TradingClient) GetAllOrders(params *GetAllOrdersParams) ([]Order, error) {
+func (c *TradingClient) GetAllOrders(params url.Values) ([]Order, error) {
 	path := "/v2/orders"
-	data, err := c.Raw.Get(path, params.Values())
+	data, err := c.Raw.Get(path, params)
 	if err != nil {
 		return nil, err
 	}
@@ -654,25 +244,10 @@ func (c *TradingClient) DeleteAllOrders() ([]CanceledOrderResponse, error) {
 	return result, json.Unmarshal(data, &result)
 }
 
-type GetOrderByOrderIDParams struct {
-	Nested bool
-}
-
-func (p *GetOrderByOrderIDParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.Nested {
-		v.Set("nested", "true")
-	}
-	return v
-}
-
 // GetOrderByOrderID — Get Order by ID
-func (c *TradingClient) GetOrderByOrderID(OrderID string, params *GetOrderByOrderIDParams) (*Order, error) {
+func (c *TradingClient) GetOrderByOrderID(OrderID string, params url.Values) (*Order, error) {
 	path := fmt.Sprintf("/v2/orders/%s", url.PathEscape(OrderID))
-	data, err := c.Raw.Get(path, params.Values())
+	data, err := c.Raw.Get(path, params)
 	if err != nil {
 		return nil, err
 	}
@@ -701,25 +276,10 @@ func (c *TradingClient) DeleteOrderByOrderID(OrderID string) (json.RawMessage, e
 	return data, nil
 }
 
-type GetOrderByClientOrderIDParams struct {
-	ClientOrderID string
-}
-
-func (p *GetOrderByClientOrderIDParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.ClientOrderID != "" {
-		v.Set("client_order_id", p.ClientOrderID)
-	}
-	return v
-}
-
 // GetOrderByClientOrderID — Get Order by Client Order ID
-func (c *TradingClient) GetOrderByClientOrderID(params *GetOrderByClientOrderIDParams) (*Order, error) {
+func (c *TradingClient) GetOrderByClientOrderID(params url.Values) (*Order, error) {
 	path := "/v2/orders:by_client_order_id"
-	data, err := c.Raw.Get(path, params.Values())
+	data, err := c.Raw.Get(path, params)
 	if err != nil {
 		return nil, err
 	}
@@ -737,79 +297,30 @@ func (c *TradingClient) GetCryptoPerpAccountVitals() (json.RawMessage, error) {
 	return data, nil
 }
 
-type GetCryptoPerpAccountLeverageParams struct {
-	Symbol string
-}
-
-func (p *GetCryptoPerpAccountLeverageParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.Symbol != "" {
-		v.Set("symbol", p.Symbol)
-	}
-	return v
-}
-
 // GetCryptoPerpAccountLeverage — Get Account Leverage for an Asset
-func (c *TradingClient) GetCryptoPerpAccountLeverage(params *GetCryptoPerpAccountLeverageParams) (json.RawMessage, error) {
+func (c *TradingClient) GetCryptoPerpAccountLeverage(params url.Values) (json.RawMessage, error) {
 	path := "/v2/perpetuals/leverage"
-	data, err := c.Raw.Get(path, params.Values())
+	data, err := c.Raw.Get(path, params)
 	if err != nil {
 		return nil, err
 	}
 	return data, nil
-}
-
-type SetCryptoPerpAccountLeverageParams struct {
-	Symbol   string
-	Leverage int
-}
-
-func (p *SetCryptoPerpAccountLeverageParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.Symbol != "" {
-		v.Set("symbol", p.Symbol)
-	}
-	if p.Leverage != 0 {
-		v.Set("leverage", fmt.Sprint(p.Leverage))
-	}
-	return v
 }
 
 // SetCryptoPerpAccountLeverage — Set Account Leverage for an Asset
-func (c *TradingClient) SetCryptoPerpAccountLeverage(params *SetCryptoPerpAccountLeverageParams) (json.RawMessage, error) {
+func (c *TradingClient) SetCryptoPerpAccountLeverage(params url.Values) (json.RawMessage, error) {
 	path := "/v2/perpetuals/leverage"
-	data, err := c.Raw.Post(path, params.Values(), nil)
+	data, err := c.Raw.Post(path, params, nil)
 	if err != nil {
 		return nil, err
 	}
 	return data, nil
 }
 
-type ListCryptoPerpFundingWalletsParams struct {
-	Asset string
-}
-
-func (p *ListCryptoPerpFundingWalletsParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.Asset != "" {
-		v.Set("asset", p.Asset)
-	}
-	return v
-}
-
 // ListCryptoPerpFundingWallets — Retrieve Crypto Funding Wallets
-func (c *TradingClient) ListCryptoPerpFundingWallets(params *ListCryptoPerpFundingWalletsParams) (*CryptoWallet, error) {
+func (c *TradingClient) ListCryptoPerpFundingWallets(params url.Values) (*CryptoWallet, error) {
 	path := "/v2/perpetuals/wallets"
-	data, err := c.Raw.Get(path, params.Values())
+	data, err := c.Raw.Get(path, params)
 	if err != nil {
 		return nil, err
 	}
@@ -817,37 +328,10 @@ func (c *TradingClient) ListCryptoPerpFundingWallets(params *ListCryptoPerpFundi
 	return &result, json.Unmarshal(data, &result)
 }
 
-type GetCryptoPerpTransferEstimateParams struct {
-	Asset       string
-	FromAddress string
-	ToAddress   string
-	Amount      string
-}
-
-func (p *GetCryptoPerpTransferEstimateParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.Asset != "" {
-		v.Set("asset", p.Asset)
-	}
-	if p.FromAddress != "" {
-		v.Set("from_address", p.FromAddress)
-	}
-	if p.ToAddress != "" {
-		v.Set("to_address", p.ToAddress)
-	}
-	if p.Amount != "" {
-		v.Set("amount", p.Amount)
-	}
-	return v
-}
-
 // GetCryptoPerpTransferEstimate — Returns the estimated gas fee for a proposed transaction
-func (c *TradingClient) GetCryptoPerpTransferEstimate(params *GetCryptoPerpTransferEstimateParams) (json.RawMessage, error) {
+func (c *TradingClient) GetCryptoPerpTransferEstimate(params url.Values) (json.RawMessage, error) {
 	path := "/v2/perpetuals/wallets/fees/estimate"
-	data, err := c.Raw.Get(path, params.Values())
+	data, err := c.Raw.Get(path, params)
 	if err != nil {
 		return nil, err
 	}
@@ -935,25 +419,10 @@ func (c *TradingClient) GetAllOpenPositions() ([]Position, error) {
 	return result, json.Unmarshal(data, &result)
 }
 
-type DeleteAllOpenPositionsParams struct {
-	CancelOrders bool
-}
-
-func (p *DeleteAllOpenPositionsParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.CancelOrders {
-		v.Set("cancel_orders", "true")
-	}
-	return v
-}
-
 // DeleteAllOpenPositions — Close All Positions
-func (c *TradingClient) DeleteAllOpenPositions(params *DeleteAllOpenPositionsParams) ([]PositionClosedReponse, error) {
+func (c *TradingClient) DeleteAllOpenPositions(params url.Values) ([]PositionClosedReponse, error) {
 	path := "/v2/positions"
-	data, err := c.Raw.Delete(path, params.Values())
+	data, err := c.Raw.Delete(path, params)
 	if err != nil {
 		return nil, err
 	}
@@ -972,29 +441,10 @@ func (c *TradingClient) GetOpenPosition(SymbolOrAssetID string) (*Position, erro
 	return &result, json.Unmarshal(data, &result)
 }
 
-type DeleteOpenPositionParams struct {
-	Qty        string
-	Percentage string
-}
-
-func (p *DeleteOpenPositionParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.Qty != "" {
-		v.Set("qty", p.Qty)
-	}
-	if p.Percentage != "" {
-		v.Set("percentage", p.Percentage)
-	}
-	return v
-}
-
 // DeleteOpenPosition — Close a Position
-func (c *TradingClient) DeleteOpenPosition(SymbolOrAssetID string, params *DeleteOpenPositionParams) (*Order, error) {
+func (c *TradingClient) DeleteOpenPosition(SymbolOrAssetID string, params url.Values) (*Order, error) {
 	path := fmt.Sprintf("/v2/positions/%s", url.PathEscape(SymbolOrAssetID))
-	data, err := c.Raw.Delete(path, params.Values())
+	data, err := c.Raw.Delete(path, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1022,31 +472,10 @@ func (c *TradingClient) OptionExercise(SymbolOrContractID string) (json.RawMessa
 	return data, nil
 }
 
-type ListCryptoFundingWalletsParams struct {
-	Asset   string
-	Network string
-}
-
-func (p *ListCryptoFundingWalletsParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.Asset != "" {
-		v.Set("asset", p.Asset)
-	}
-	if p.Network != "" {
-		v.Set("network", p.Network)
-	}
-	return v
-}
-
-var ListCryptoFundingWalletsParamsNetworkValues = []string{"ethereum", "solana"}
-
 // ListCryptoFundingWallets — Retrieve Crypto Funding Wallets
-func (c *TradingClient) ListCryptoFundingWallets(params *ListCryptoFundingWalletsParams) (*CryptoWallet, error) {
+func (c *TradingClient) ListCryptoFundingWallets(params url.Values) (*CryptoWallet, error) {
 	path := "/v2/wallets"
-	data, err := c.Raw.Get(path, params.Values())
+	data, err := c.Raw.Get(path, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1054,37 +483,10 @@ func (c *TradingClient) ListCryptoFundingWallets(params *ListCryptoFundingWallet
 	return &result, json.Unmarshal(data, &result)
 }
 
-type GetCryptoTransferEstimateParams struct {
-	Asset       string
-	FromAddress string
-	ToAddress   string
-	Amount      string
-}
-
-func (p *GetCryptoTransferEstimateParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.Asset != "" {
-		v.Set("asset", p.Asset)
-	}
-	if p.FromAddress != "" {
-		v.Set("from_address", p.FromAddress)
-	}
-	if p.ToAddress != "" {
-		v.Set("to_address", p.ToAddress)
-	}
-	if p.Amount != "" {
-		v.Set("amount", p.Amount)
-	}
-	return v
-}
-
 // GetCryptoTransferEstimate — Returns the estimated gas fee for a proposed transaction.
-func (c *TradingClient) GetCryptoTransferEstimate(params *GetCryptoTransferEstimateParams) (json.RawMessage, error) {
+func (c *TradingClient) GetCryptoTransferEstimate(params url.Values) (json.RawMessage, error) {
 	path := "/v2/wallets/fees/estimate"
-	data, err := c.Raw.Get(path, params.Values())
+	data, err := c.Raw.Get(path, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1237,45 +639,15 @@ func (c *TradingClient) RemoveAssetFromWatchlist(WatchlistID string, Symbol stri
 	return &result, json.Unmarshal(data, &result)
 }
 
-type GetWatchlistByNameParams struct {
-	Name string
-}
-
-func (p *GetWatchlistByNameParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.Name != "" {
-		v.Set("name", p.Name)
-	}
-	return v
-}
-
 // GetWatchlistByName — Get Watchlist by Name
-func (c *TradingClient) GetWatchlistByName(params *GetWatchlistByNameParams) (*Watchlist, error) {
+func (c *TradingClient) GetWatchlistByName(params url.Values) (*Watchlist, error) {
 	path := "/v2/watchlists:by_name"
-	data, err := c.Raw.Get(path, params.Values())
+	data, err := c.Raw.Get(path, params)
 	if err != nil {
 		return nil, err
 	}
 	var result Watchlist
 	return &result, json.Unmarshal(data, &result)
-}
-
-type AddAssetToWatchlistByNameParams struct {
-	Name string
-}
-
-func (p *AddAssetToWatchlistByNameParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.Name != "" {
-		v.Set("name", p.Name)
-	}
-	return v
 }
 
 type AddAssetToWatchlistByNameRequest struct {
@@ -1283,35 +655,20 @@ type AddAssetToWatchlistByNameRequest struct {
 }
 
 // AddAssetToWatchlistByName — Add Asset to Watchlist By Name
-func (c *TradingClient) AddAssetToWatchlistByName(params *AddAssetToWatchlistByNameParams, body *AddAssetToWatchlistByNameRequest) (*Watchlist, error) {
+func (c *TradingClient) AddAssetToWatchlistByName(params url.Values, body *AddAssetToWatchlistByNameRequest) (*Watchlist, error) {
 	path := "/v2/watchlists:by_name"
-	data, err := c.Raw.Post(path, params.Values(), body)
+	data, err := c.Raw.Post(path, params, body)
 	if err != nil {
 		return nil, err
 	}
 	var result Watchlist
 	return &result, json.Unmarshal(data, &result)
-}
-
-type UpdateWatchlistByNameParams struct {
-	Name string
-}
-
-func (p *UpdateWatchlistByNameParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.Name != "" {
-		v.Set("name", p.Name)
-	}
-	return v
 }
 
 // UpdateWatchlistByName — Update Watchlist By Name
-func (c *TradingClient) UpdateWatchlistByName(params *UpdateWatchlistByNameParams, body *UpdateWatchlistRequest) (*Watchlist, error) {
+func (c *TradingClient) UpdateWatchlistByName(params url.Values, body *UpdateWatchlistRequest) (*Watchlist, error) {
 	path := "/v2/watchlists:by_name"
-	data, err := c.Raw.Put(path, params.Values(), body)
+	data, err := c.Raw.Put(path, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1319,60 +676,20 @@ func (c *TradingClient) UpdateWatchlistByName(params *UpdateWatchlistByNameParam
 	return &result, json.Unmarshal(data, &result)
 }
 
-type DeleteWatchlistByNameParams struct {
-	Name string
-}
-
-func (p *DeleteWatchlistByNameParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.Name != "" {
-		v.Set("name", p.Name)
-	}
-	return v
-}
-
 // DeleteWatchlistByName — Delete Watchlist By Name
-func (c *TradingClient) DeleteWatchlistByName(params *DeleteWatchlistByNameParams) (json.RawMessage, error) {
+func (c *TradingClient) DeleteWatchlistByName(params url.Values) (json.RawMessage, error) {
 	path := "/v2/watchlists:by_name"
-	data, err := c.Raw.Delete(path, params.Values())
+	data, err := c.Raw.Delete(path, params)
 	if err != nil {
 		return nil, err
 	}
 	return data, nil
 }
 
-type CalendarParams struct {
-	Start    string
-	End      string
-	Timezone string
-}
-
-func (p *CalendarParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.Start != "" {
-		v.Set("start", p.Start)
-	}
-	if p.End != "" {
-		v.Set("end", p.End)
-	}
-	if p.Timezone != "" {
-		v.Set("timezone", p.Timezone)
-	}
-	return v
-}
-
-var CalendarParamsTimezoneValues = []string{"UTC"}
-
 // Calendar — Get Market Calendar
-func (c *TradingClient) Calendar(Market string, params *CalendarParams) (*PublicCalendarResp, error) {
+func (c *TradingClient) Calendar(Market string, params url.Values) (*PublicCalendarResp, error) {
 	path := fmt.Sprintf("/v3/calendar/%s", url.PathEscape(Market))
-	data, err := c.Raw.Get(path, params.Values())
+	data, err := c.Raw.Get(path, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1380,29 +697,10 @@ func (c *TradingClient) Calendar(Market string, params *CalendarParams) (*Public
 	return &result, json.Unmarshal(data, &result)
 }
 
-type ClockParams struct {
-	Markets string
-	Time    string
-}
-
-func (p *ClockParams) Values() url.Values {
-	if p == nil {
-		return nil
-	}
-	v := url.Values{}
-	if p.Markets != "" {
-		v.Set("markets", p.Markets)
-	}
-	if p.Time != "" {
-		v.Set("time", p.Time)
-	}
-	return v
-}
-
 // Clock — Get Market Clock
-func (c *TradingClient) Clock(params *ClockParams) (*ClockResp, error) {
+func (c *TradingClient) Clock(params url.Values) (*ClockResp, error) {
 	path := "/v3/clock"
-	data, err := c.Raw.Get(path, params.Values())
+	data, err := c.Raw.Get(path, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1436,31 +734,4 @@ func (r *UpdateWatchlistRequest) Validate() error {
 		return fmt.Errorf("missing required fields: %s", strings.Join(missing, ", "))
 	}
 	return nil
-}
-
-var TradingMutatingMethods = map[string]bool{
-	"PatchAccountConfig":                 true,
-	"PostOrder":                          true,
-	"DeleteAllOrders":                    true,
-	"PatchOrderByOrderID":                true,
-	"DeleteOrderByOrderID":               true,
-	"SetCryptoPerpAccountLeverage":       true,
-	"CreateCryptoPerpTransferForAccount": true,
-	"CreateWhitelistedPerpAddress":       true,
-	"DeleteWhitelistedPerpAddress":       true,
-	"DeleteAllOpenPositions":             true,
-	"DeleteOpenPosition":                 true,
-	"OptionDoNotExercise":                true,
-	"OptionExercise":                     true,
-	"CreateCryptoTransferForAccount":     true,
-	"CreateWhitelistedAddress":           true,
-	"DeleteWhitelistedAddress":           true,
-	"PostWatchlist":                      true,
-	"AddAssetToWatchlist":                true,
-	"UpdateWatchlistByID":                true,
-	"DeleteWatchlistByID":                true,
-	"RemoveAssetFromWatchlist":           true,
-	"AddAssetToWatchlistByName":          true,
-	"UpdateWatchlistByName":              true,
-	"DeleteWatchlistByName":              true,
 }
