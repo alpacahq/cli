@@ -22,6 +22,10 @@ Fix any failures you introduce before moving on.
 
 When a refactor changes command names, flags, or output shape, review `test/integration/` and update any affected tests so they stay in sync.
 
+## Design Notes
+
+- **`FlagDef.OASName` must stay**: Flag names are kebab-case (`page-token`), OAS names are snake_case (`page_token`). The mapping `_ → -` is lossy — if an upstream OAS param ever uses a hyphen, runtime reversal (`- → _`) would silently send the wrong query key. Keep both fields.
+
 ## Keep docs in sync
 
 When a change affects CLI behavior, update any stale docs:
