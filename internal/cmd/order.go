@@ -64,18 +64,6 @@ var orderSubmitCmd = &cobra.Command{
 	},
 }
 
-var orderReplaceCmd = fetchCmd("replace", api.PatchOrderByOrderIDOp, func(cmd *cobra.Command, args []string) (any, error) {
-	body, _ := patchOrderRequestBodyFromFlags(cmd)
-	if cmdutil.Changed(cmd, "advanced-instructions") {
-		if err := json.Unmarshal([]byte(cmdutil.Str(cmd, "advanced-instructions")), &body.AdvancedInstructions); err != nil {
-			return nil, fmt.Errorf("--advanced-instructions: %w", err)
-		}
-	}
-	return tradingClient.PatchOrderByOrderID(cmdutil.Str(cmd, "order-id"), body)
-}, func(c *cobra.Command) {
-	c.Example = `  alpaca order replace --order-id <id> --qty 20 --limit-price 190.00`
-})
-
 func init() {
 	cmdutil.RegisterFlags(orderSubmitCmd, api.PostOrderOp.Flags(), &cmdutil.FlagOpts{
 		Defaults: map[string]string{"type": "market"},
@@ -83,7 +71,6 @@ func init() {
 	orderSubmitCmd.Flags().Bool("dry-run", false, "Print the request body without submitting")
 
 	orderCmd.AddCommand(orderSubmitCmd)
-	orderCmd.AddCommand(orderReplaceCmd)
 }
 
 func applyBracket(body *api.PostOrderRequest, takeProfit, stopLoss string) {
