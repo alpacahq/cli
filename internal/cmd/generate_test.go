@@ -6,6 +6,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"testing"
+
+	"github.com/spf13/cobra"
 )
 
 // TestGeneratedCodeIsUpToDate re-runs the code generator and verifies the
@@ -28,6 +30,7 @@ func TestGeneratedCodeIsUpToDate(t *testing.T) {
 		{apiDir, "marketdata_client.go"},
 		{apiDir, "descriptions.go"},
 		{cmdDir, "params_generated.go"},
+		{cmdDir, "commands_generated.go"},
 	}
 
 	snapshots := make(map[string][]byte, len(generatedFiles))
@@ -63,4 +66,17 @@ func TestGeneratedCodeIsUpToDate(t *testing.T) {
 	if len(drifted) > 0 {
 		t.Errorf("generated code is out of date in: %v\nRun 'make generate' and commit the result.", drifted)
 	}
+}
+
+func TestAllCommandsHaveExamples(t *testing.T) {
+	var check func(*cobra.Command)
+	check = func(cmd *cobra.Command) {
+		if !cmd.HasSubCommands() && cmd.Example == "" {
+			t.Errorf("command %q has no example", cmd.CommandPath())
+		}
+		for _, sub := range cmd.Commands() {
+			check(sub)
+		}
+	}
+	check(rootCmd)
 }

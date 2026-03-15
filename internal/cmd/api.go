@@ -42,18 +42,20 @@ var apiPostCmd = &cobra.Command{
 }
 
 var apiPatchCmd = &cobra.Command{
-	Use:   "patch <path>",
-	Short: "PATCH request",
-	Args:  cobra.ExactArgs(1),
+	Use:     "patch <path>",
+	Short:   "PATCH request",
+	Example: `  alpaca api patch /v2/account/configurations --data '{"no_shorting":true}'`,
+	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return rawAPI(cmd, "PATCH", args[0])
 	},
 }
 
 var apiDeleteCmd = &cobra.Command{
-	Use:   "delete <path>",
-	Short: "DELETE request",
-	Args:  cobra.ExactArgs(1),
+	Use:     "delete <path>",
+	Short:   "DELETE request",
+	Example: `  alpaca api delete /v2/orders/61e69015-8549-4baf-b96f-9c4f3e8d0c35`,
+	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return rawAPI(cmd, "DELETE", args[0])
 	},

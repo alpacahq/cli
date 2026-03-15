@@ -10,11 +10,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var orderCmd = &cobra.Command{
-	Use:   "order",
-	Short: "Manage orders",
-}
-
 var orderSubmitCmd = &cobra.Command{
 	Use:   "submit",
 	Short: api.PostOrderOp.Summary(),
@@ -69,37 +64,6 @@ var orderSubmitCmd = &cobra.Command{
 	},
 }
 
-var orderListCmd = fetchCmd("list", api.GetAllOrdersOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return tradingClient.GetAllOrders(getAllOrdersParamsFromFlags(cmd))
-}, flagOpts(&cmdutil.FlagOpts{Defaults: map[string]string{"status": "open"}}),
-	func(c *cobra.Command) {
-		c.Example = `  alpaca order list
-  alpaca order list --status closed --limit 20
-  alpaca order list --symbols AAPL,MSFT --after 2025-01-01`
-	})
-
-var orderGetCmd = fetchCmd("get", api.GetOrderByOrderIDOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return tradingClient.GetOrderByOrderID(cmdutil.Str(cmd, "order-id"), getOrderByOrderIDParamsFromFlags(cmd))
-}, func(c *cobra.Command) {
-	c.Example = `  alpaca order get --order-id 61e69015-8549-4baf-b96f-9c4f3e8d0c35`
-})
-
-var orderGetByClientIDCmd = fetchCmd("get-by-client-id", api.GetOrderByClientOrderIDOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return tradingClient.GetOrderByClientOrderID(getOrderByClientOrderIDParamsFromFlags(cmd))
-}, func(c *cobra.Command) {
-	c.Example = `  alpaca order get-by-client-id --client-order-id my-order-123`
-})
-
-var orderCancelCmd = fetchCmd("cancel", api.DeleteOrderByOrderIDOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return voidResponse(tradingClient.DeleteOrderByOrderID(cmdutil.Str(cmd, "order-id")))
-})
-
-var orderCancelAllCmd = fetchCmd("cancel-all", api.DeleteAllOrdersOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return tradingClient.DeleteAllOrders()
-}, func(c *cobra.Command) {
-	c.Example = `  alpaca order cancel-all`
-})
-
 var orderReplaceCmd = fetchCmd("replace", api.PatchOrderByOrderIDOp, func(cmd *cobra.Command, args []string) (any, error) {
 	body, _ := patchOrderRequestBodyFromFlags(cmd)
 	if cmdutil.Changed(cmd, "advanced-instructions") {
@@ -119,11 +83,6 @@ func init() {
 	orderSubmitCmd.Flags().Bool("dry-run", false, "Print the request body without submitting")
 
 	orderCmd.AddCommand(orderSubmitCmd)
-	orderCmd.AddCommand(orderListCmd)
-	orderCmd.AddCommand(orderGetCmd)
-	orderCmd.AddCommand(orderGetByClientIDCmd)
-	orderCmd.AddCommand(orderCancelCmd)
-	orderCmd.AddCommand(orderCancelAllCmd)
 	orderCmd.AddCommand(orderReplaceCmd)
 }
 

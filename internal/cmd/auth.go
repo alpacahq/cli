@@ -309,7 +309,9 @@ var profileListCmd = &cobra.Command{
 var profileSwitchCmd = &cobra.Command{
 	Use:   "switch <name>",
 	Short: "Switch the active profile",
-	Args:  cobra.ExactArgs(1),
+	Example: `  alpaca profile switch live
+  alpaca profile switch paper`,
+	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		name := args[0]
 		profiles, err := config.ListProfiles()

@@ -9,11 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var dataCmd = &cobra.Command{
-	Use:   "data",
-	Short: "Access market data",
-}
-
 // fetchPaginated returns raw API response for a single page, or accumulates
 // all pages when --all is set. The key param identifies the array field inside
 // the response envelope (e.g. "bars", "trades", "quotes") for pagination extraction.
@@ -76,11 +71,6 @@ var dataSnapshotCmd = fetchCmd("snapshot", api.StockSnapshotSingleOp, func(cmd *
   alpaca data snapshot --symbol BTC/USD --feed sip`
 })
 
-var dataLatestCmd = &cobra.Command{
-	Use:   "latest",
-	Short: "Get latest market data",
-}
-
 var dataLatestTradeCmd = fetchCmd("trade", api.StockLatestTradeSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.LatestTrade(cmdutil.Str(cmd, "symbol"), stockLatestTradeSingleParamsFromFlags(cmd).Values())
 }, func(c *cobra.Command) {
@@ -115,7 +105,6 @@ func init() {
 	dataCmd.AddCommand(dataQuotesCmd)
 	dataCmd.AddCommand(dataTradesCmd)
 	dataCmd.AddCommand(dataSnapshotCmd)
-	dataCmd.AddCommand(dataLatestCmd)
 }
 
 func extractArray(data json.RawMessage, symbol, key string) json.RawMessage {

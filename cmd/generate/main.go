@@ -44,6 +44,13 @@ func main() {
 	})
 	writeGo(filepath.Join(outDir, "descriptions.go"), writeTypedDescriptionsFile(ops))
 
+	for _, ep := range tEndpoints {
+		ep.specSource = "trading"
+	}
+	for _, ep := range mEndpoints {
+		ep.specSource = "marketdata"
+	}
+
 	var allEndpoints []*endpointInfo
 	allEndpoints = append(allEndpoints, tEndpoints...)
 	allEndpoints = append(allEndpoints, mEndpoints...)
@@ -54,6 +61,9 @@ func main() {
 
 	cmdDir := filepath.Join(root, "internal", "cmd")
 	writeGo(filepath.Join(cmdDir, "params_generated.go"), genFromFlags(allEndpoints, allSchemas))
+
+	checkExhaustive(allEndpoints)
+	writeGo(filepath.Join(cmdDir, "commands_generated.go"), genCommands(allEndpoints, allSchemas))
 
 	fmt.Printf("Generated %d trading types, %d market data types\n", len(tSchemas), len(mSchemas))
 	fmt.Printf("Generated %d trading endpoints, %d market data endpoints\n", len(tEndpoints), len(mEndpoints))
@@ -183,17 +193,19 @@ func dedup(schemas []*schemaInfo) {
 // --- Endpoint extraction ---
 
 type endpointInfo struct {
-	method       string
-	path         string
-	operationID  string
-	summary      string
-	goName       string
-	pathParams   []paramInfo
-	queryParams  []paramInfo
-	bodyRef      string
-	bodyInline   map[string]any
-	responseRef  string
-	returnsArray bool
+	method        string
+	path          string
+	operationID   string
+	summary       string
+	goName        string
+	pathParams    []paramInfo
+	queryParams   []paramInfo
+	bodyRef       string
+	bodyInline    map[string]any
+	responseRef   string
+	returnsArray  bool
+	responseEmpty bool   // true if 2xx response has no content body (204 etc.)
+	specSource    string // "trading" or "marketdata" — set after extraction
 }
 
 type paramInfo struct {
@@ -341,6 +353,7 @@ func extractEndpoints(spec map[string]any) []*endpointInfo {
 				}
 			}
 
+			ep.responseEmpty = true
 			if responses, ok := op["responses"].(map[string]any); ok {
 				var codes []string
 				for code := range responses {
@@ -355,6 +368,7 @@ func extractEndpoints(spec map[string]any) []*endpointInfo {
 						continue
 					}
 					if content, ok := resp["content"].(map[string]any); ok {
+						ep.responseEmpty = false
 						if jc, ok := content["application/json"].(map[string]any); ok {
 							if schema, ok := jc["schema"].(map[string]any); ok {
 								if ref, ok := schema["$ref"].(string); ok {

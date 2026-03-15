@@ -36,6 +36,8 @@ is auto-detected (Homebrew, go install, or binary download) and the
 appropriate upgrade command is shown.
 
 Use --check to see if an update is available without installing.`,
+	Example: `  alpaca update
+  alpaca update --check`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		suppressUpdateNotice = true
 		checkOnly := cmdutil.Bool(cmd, "check")

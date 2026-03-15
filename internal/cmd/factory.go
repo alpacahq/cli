@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"strings"
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
@@ -58,6 +59,35 @@ func fetchCmd(use string, op api.Op, fetch func(cmd *cobra.Command, args []strin
 	}
 	cmdutil.RegisterFlags(cmd, op.Flags(), cmdFlagOpts[cmd])
 	return cmd
+}
+
+// attachCmd mirrors fetchCmd but operates on an existing command. Used for
+// self: true commands where a parent group is also directly runnable.
+func attachCmd(cmd *cobra.Command, op api.Op, fetch func(cmd *cobra.Command, args []string) (any, error), configure ...func(*cobra.Command)) {
+	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		if req := registeredRequired(cmd, op); len(req) > 0 {
+			if err := cmdutil.RequireAll(cmd, req...); err != nil {
+				return err
+			}
+		}
+		data, err := fetch(cmd, args)
+		if err != nil {
+			return err
+		}
+		if cmdJSON[cmd] {
+			return output.JSON(cmd.OutOrStdout(), data)
+		}
+		return output.Render(cmd.OutOrStdout(), getOutput(), data)
+	}
+	for _, fn := range configure {
+		fn(cmd)
+	}
+	cmdutil.RegisterFlags(cmd, op.Flags(), cmdFlagOpts[cmd])
+}
+
+// normalizePathParam strips slashes from path param values (e.g. BTC/USD → BTCUSD).
+func normalizePathParam(s string) string {
+	return strings.ReplaceAll(s, "/", "")
 }
 
 // voidResponse wraps a client call that may return empty data (204 no content),

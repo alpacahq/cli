@@ -14,9 +14,10 @@ import (
 )
 
 var doctorCmd = &cobra.Command{
-	Use:   "doctor",
-	Short: "Check CLI configuration and connectivity",
-	Long:  "Run diagnostic checks on your Alpaca CLI setup: config files, credentials, and API connectivity.",
+	Use:     "doctor",
+	Short:   "Check CLI configuration and connectivity",
+	Long:    "Run diagnostic checks on your Alpaca CLI setup: config files, credentials, and API connectivity.",
+	Example: `  alpaca doctor`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		w := cmd.OutOrStdout()
 		allOK := true

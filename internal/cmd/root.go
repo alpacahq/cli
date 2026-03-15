@@ -86,9 +86,10 @@ func printJSONError(apiErr *client.APIError) {
 }
 
 var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Print the version of alpaca CLI",
-	Long:  `Print the version of alpaca CLI with cached update availability (use "alpaca update --check" for a live check).`,
+	Use:     "version",
+	Short:   "Print the version of alpaca CLI",
+	Long:    `Print the version of alpaca CLI with cached update availability (use "alpaca update --check" for a live check).`,
+	Example: `  alpaca version`,
 	Run: func(cmd *cobra.Command, args []string) {
 		suppressUpdateNotice = true
 		state := loadUpdateState()
@@ -203,7 +204,7 @@ func init() {
 
 	rootCmd.AddGroup(tradingGroup, accountGroup, utilGroup)
 
-	addGroup(rootCmd, tradingGroup.ID, orderCmd, positionCmd, optionCmd, clockCmd, calendarCmd, dataCmd)
+	addGroup(rootCmd, tradingGroup.ID, orderCmd, positionCmd, optionCmd, clockCmd, calendarCmd, dataCmd, cryptoPerpCmd)
 	addGroup(rootCmd, accountGroup.ID, accountCmd, assetCmd, corporateActionCmd, watchlistCmd, walletCmd)
 	addGroup(rootCmd, utilGroup.ID, profileCmd, apiCmd, setupCmd, updateCmd, versionCmd, doctorCmd)
 }
