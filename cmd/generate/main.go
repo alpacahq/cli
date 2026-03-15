@@ -1390,15 +1390,20 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 	fmt.Fprintf(&buf, "// Code generated from api/specs; DO NOT EDIT.\n\n")
 	fmt.Fprintf(&buf, "package api\n\n")
 
-	fmt.Fprintf(&buf, "// Op is satisfied by every generated operation variable (e.g. GetAccountOp).\n")
-	fmt.Fprintf(&buf, "// Use it to pass operations type-safely instead of raw strings.\n")
-	fmt.Fprintf(&buf, "type Op interface {\n")
-	fmt.Fprintf(&buf, "\tSummary() string\n")
-	fmt.Fprintf(&buf, "\tFlags() []FlagDef\n")
-	fmt.Fprintf(&buf, "\tRequiredFlags() []string\n")
-	fmt.Fprintf(&buf, "\tResponseFields() []ResponseField\n")
+	// Op struct + methods
+	fmt.Fprintf(&buf, "// Op describes a generated API operation. Passed to fetchCmd/attachCmd\n")
+	fmt.Fprintf(&buf, "// for automatic flag registration, help text, and required-flag validation.\n")
+	fmt.Fprintf(&buf, "type Op struct {\n")
+	fmt.Fprintf(&buf, "\tName          string\n")
+	fmt.Fprintf(&buf, "\tsummary       string\n")
+	fmt.Fprintf(&buf, "\tflags         []FlagDef\n")
+	fmt.Fprintf(&buf, "\trequiredFlags []string\n")
 	fmt.Fprintf(&buf, "}\n\n")
+	fmt.Fprintf(&buf, "func (o Op) Summary() string         { return o.summary }\n")
+	fmt.Fprintf(&buf, "func (o Op) Flags() []FlagDef        { return o.flags }\n")
+	fmt.Fprintf(&buf, "func (o Op) RequiredFlags() []string { return o.requiredFlags }\n\n")
 
+	// FlagDef struct
 	fmt.Fprintf(&buf, "// FlagDef describes a CLI flag derived from the OpenAPI spec.\n")
 	fmt.Fprintf(&buf, "type FlagDef struct {\n")
 	fmt.Fprintf(&buf, "\tName        string   // kebab-case CLI flag name\n")
@@ -1412,21 +1417,8 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 	fmt.Fprintf(&buf, "\tSource      string   // \"path\", \"query\", or \"body\"\n")
 	fmt.Fprintf(&buf, "}\n\n")
 
+	// Per-op vars
 	for _, op := range ops {
-		typeName := lcFirst(op.goName) + "Op"
-
-		fmt.Fprintf(&buf, "type %s struct{}\n\n", typeName)
-
-		fmt.Fprintf(&buf, "var %sOp = %s{}\n\n", op.goName, typeName)
-
-		fmt.Fprintf(&buf, "func (o %s) Summary() string {\n", typeName)
-		fmt.Fprintf(&buf, "\treturn %q\n", op.summary)
-		fmt.Fprintf(&buf, "}\n\n")
-
-		fmt.Fprintf(&buf, "func (o %s) ResponseFields() []ResponseField {\n", typeName)
-		fmt.Fprintf(&buf, "\treturn ResponseSchemas[%q]\n", op.goName)
-		fmt.Fprintf(&buf, "}\n\n")
-
 		var reqFlags []string
 		reqSeen := map[string]bool{}
 		for _, p := range op.params {
@@ -1435,26 +1427,25 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 				reqSeen[p.flagName] = true
 			}
 		}
-		fmt.Fprintf(&buf, "func (o %s) RequiredFlags() []string {\n", typeName)
+		sort.Strings(reqFlags)
+
+		fmt.Fprintf(&buf, "var %sOp = Op{\n", op.goName)
+		fmt.Fprintf(&buf, "\tName: %q, summary: %q,\n", op.goName, op.summary)
+
 		if len(reqFlags) > 0 {
-			sort.Strings(reqFlags)
-			fmt.Fprintf(&buf, "\treturn []string{")
+			fmt.Fprintf(&buf, "\trequiredFlags: []string{")
 			for i, name := range reqFlags {
 				if i > 0 {
 					buf.WriteString(", ")
 				}
 				fmt.Fprintf(&buf, "%q", name)
 			}
-			fmt.Fprintf(&buf, "}\n")
-		} else {
-			fmt.Fprintf(&buf, "\treturn nil\n")
+			fmt.Fprintf(&buf, "},\n")
 		}
-		fmt.Fprintf(&buf, "}\n\n")
 
-		fmt.Fprintf(&buf, "func (o %s) Flags() []FlagDef {\n", typeName)
 		if len(op.params) > 0 {
 			seen := map[string]bool{}
-			fmt.Fprintf(&buf, "\treturn []FlagDef{\n")
+			fmt.Fprintf(&buf, "\tflags: []FlagDef{\n")
 			for _, p := range op.params {
 				if seen[p.oasName] {
 					continue
@@ -1482,13 +1473,13 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 				fmt.Fprintf(&buf, ", Source: %q", p.source)
 				fmt.Fprintf(&buf, "},\n")
 			}
-			fmt.Fprintf(&buf, "\t}\n")
-		} else {
-			fmt.Fprintf(&buf, "\treturn nil\n")
+			fmt.Fprintf(&buf, "\t},\n")
 		}
+
 		fmt.Fprintf(&buf, "}\n\n")
 	}
 
+	// ResponseField type + maps (for --schema rendering)
 	fmt.Fprintf(&buf, "// ResponseField describes a field in an API response.\n")
 	fmt.Fprintf(&buf, "type ResponseField struct {\n")
 	fmt.Fprintf(&buf, "\tName        string\n")
