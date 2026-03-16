@@ -2,14 +2,14 @@
 name: alpaca-cli
 description: >
   Install, configure, and use the Alpaca CLI — a command-line tool for the
-  Alpaca Trading API. Covers installation (Go, Homebrew), API key
+  Alpaca Trading API. Covers installation (Go), API key
   authentication, profile management, and agent/automation integration.
   Use when the user asks to install the Alpaca CLI, set up Alpaca API
   credentials, trade stocks or crypto from the command line, get market data
   via CLI, or integrate the Alpaca CLI into scripts, CI pipelines, or AI
   agent workflows. Keywords: alpaca, trading, stocks, crypto, market data,
   brokerage, command line, CLI tool, API key setup.
-compatibility: Requires Go (go install) or Homebrew (brew install) for installation. macOS, Linux, and Windows supported.
+compatibility: Requires Go (go install) for installation. macOS, Linux, and Windows supported.
 ---
 
 # Alpaca CLI
@@ -22,18 +22,10 @@ Check if already installed:
 alpaca version
 ```
 
-If not installed, choose one method:
-
-**Go** (recommended — works on macOS, Linux, Windows):
+If not installed:
 
 ```bash
 go install github.com/alpacahq/cli/cmd/alpaca@latest
-```
-
-**Homebrew** (macOS / Linux):
-
-```bash
-brew install alpacahq/tap/alpaca
 ```
 
 ## Authentication
@@ -216,7 +208,7 @@ The response includes a `next_page_token` field when more data is available.
 
 ## Troubleshooting
 
-**`command not found: alpaca`** — Ensure `$GOPATH/bin` (usually `~/go/bin`) is in your `PATH`. For Homebrew, run `brew link alpacahq/tap/alpaca`.
+**`command not found: alpaca`** — Ensure `$GOPATH/bin` (usually `~/go/bin`) is in your `PATH`.
 
 **Exit code 2 on every command** — Credentials are missing or invalid. Re-run `alpaca profile login` or verify `ALPACA_API_KEY` / `ALPACA_SECRET_KEY` env vars.
 

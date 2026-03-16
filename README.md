@@ -22,16 +22,16 @@ The CLI is driven by OpenAPI specs — types, clients, param structs, flag defin
 
 ## Install
 
-**Homebrew** (macOS / Linux):
-
-```bash
-brew install alpacahq/tap/alpaca
-```
-
-**Go**:
+**Go** (recommended):
 
 ```bash
 go install github.com/alpacahq/cli/cmd/alpaca@latest
+```
+
+**Homebrew** (macOS / Linux) — *coming soon*:
+
+```bash
+brew install alpacahq/tap/alpaca
 ```
 
 ## Quick Start
@@ -506,8 +506,8 @@ The CLI checks for updates in the background (once every 24 hours) and shows a n
 
 | Install method | Upgrade command |
 |---|---|
-| Homebrew | `brew upgrade alpaca` |
 | go install | `go install github.com/alpacahq/cli/cmd/alpaca@latest` |
+| Homebrew | `brew upgrade alpaca` *(coming soon)* |
 
 ```bash
 alpaca update          # Check for updates and show upgrade command
