@@ -21,6 +21,8 @@ var doctorCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		w := cmd.OutOrStdout()
 		allOK := true
+		usingEnvCredentials := os.Getenv("ALPACA_ACCESS_TOKEN") != "" ||
+			(os.Getenv("ALPACA_API_KEY") != "" && os.Getenv("ALPACA_SECRET_KEY") != "")
 
 		fmt.Fprintf(w, "Alpaca CLI %s\n", version)
 		fmt.Fprintf(w, "  Go:       %s\n", runtime.Version())
@@ -29,14 +31,22 @@ var doctorCmd = &cobra.Command{
 		configDir := config.Dir()
 		fmt.Fprintf(w, "Config:     %s\n", configDir)
 		if _, err := os.Stat(configDir); os.IsNotExist(err) {
-			allOK = printCheck(w, false, "config directory does not exist")
+			if usingEnvCredentials {
+				printCheck(w, true, "config directory does not exist (ok when using env vars)")
+			} else {
+				allOK = printCheck(w, false, "config directory does not exist")
+			}
 		} else {
 			printCheck(w, true, "config directory exists")
 		}
 
 		profiles, _ := config.ListProfiles()
 		if len(profiles) == 0 {
-			allOK = printCheck(w, false, "no profiles configured — run `alpaca profile login`")
+			if usingEnvCredentials {
+				printCheck(w, true, "no saved profiles configured (using env var credentials)")
+			} else {
+				allOK = printCheck(w, false, "no profiles configured — run `alpaca profile login`")
+			}
 		} else {
 			printCheck(w, true, fmt.Sprintf("%d profile(s): %s", len(profiles), joinMax(profiles, 5)))
 		}
@@ -89,9 +99,8 @@ var doctorCmd = &cobra.Command{
 				if method == "" {
 					method = detectInstallMethod()
 				}
-				allOK = printCheck(w, false, fmt.Sprintf(
-					"update available: %s → %s — run `%s`",
-					version, state.LatestVersion, upgradeCommand(method)))
+				fmt.Fprintf(w, "  - update available: %s → %s — run `%s`\n",
+					version, state.LatestVersion, upgradeCommand(method))
 			}
 		} else {
 			fmt.Fprintln(w, "  - run `alpaca update --check` to check for updates")

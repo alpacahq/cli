@@ -183,6 +183,7 @@ alpaca position list
 | `alpaca watchlist update-by-name` | Update watchlist by name |
 | `alpaca watchlist delete-by-name` | Delete watchlist by name |
 | `alpaca watchlist add-by-name` | Add symbol to watchlist by name |
+| `alpaca watchlist remove-by-name` | Remove symbol from watchlist by name |
 | `alpaca wallet list` | List crypto wallets |
 | `alpaca wallet transfer list` | List crypto transfers |
 | `alpaca wallet transfer get` | Get a crypto transfer |
@@ -224,7 +225,7 @@ alpaca position list
 | `alpaca api [METHOD] <path>` | Raw API request (GET, POST, PATCH, DELETE) |
 | `alpaca doctor` | Check config and API connectivity |
 | `alpaca update` | Check for updates and show upgrade instructions |
-| `alpaca version` | Print version |
+| `alpaca version` | Print version (`alpaca --version` also works) |
 
 Every command supports `--help` for full flag documentation.
 
@@ -265,8 +266,6 @@ Credentials are stored in `~/.config/alpaca/profiles/`.
 | `ALPACA_VERBOSE` | Show HTTP request summaries on stderr (any non-empty value) |
 | `ALPACA_DEBUG` | Show HTTP request/response headers and bodies on stderr (any non-empty value) |
 | `ALPACA_TRACE` | Show HTTP timing breakdown on stderr — DNS, TLS, TTFB (any non-empty value) |
-| `ALPACA_NO_UPDATE_NOTIFY` | Suppress background update notices (any non-empty value) |
-
 Global flags: `--csv`, `--jq`, `--profile`, `--verbose`, `--debug`, `--trace`, `--quiet`, `--schema`, `--timeout`.
 
 Precedence: flags > env vars > profile config > defaults.
@@ -369,7 +368,7 @@ The CLI is fully non-interactive — no TTY detection, no interactive prompts.
 |------|---------|
 | `0` | Success |
 | `1` | API or general error |
-| `2` | Authentication error (401/403) |
+| `2` | Authentication error (401) |
 
 ### Diagnostics
 
@@ -502,7 +501,7 @@ make test-integration
 
 ## Self-Update
 
-The CLI checks for updates in the background (once every 24 hours) and shows a notice on stderr when a newer version is available. The upgrade command is tailored to your install method:
+Check for updates explicitly when you want upgrade guidance. The upgrade command is tailored to your install method:
 
 | Install method | Upgrade command |
 |---|---|
@@ -513,8 +512,6 @@ The CLI checks for updates in the background (once every 24 hours) and shows a n
 alpaca update          # Check for updates and show upgrade command
 alpaca update --check  # Machine-readable update check (JSON)
 ```
-
-Suppress update notices with `ALPACA_NO_UPDATE_NOTIFY=1` or `--quiet`.
 
 ## License
 

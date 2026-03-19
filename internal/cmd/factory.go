@@ -29,7 +29,7 @@ func fetchCmd(use string, op api.Op, fetch func(cmd *cobra.Command, args []strin
 		if err != nil {
 			return err
 		}
-		return renderData(cmd.OutOrStdout(), data)
+		return renderData(cmd, data)
 	}
 	for _, fn := range configure {
 		fn(cmd)
@@ -55,7 +55,7 @@ func attachCmd(cmd *cobra.Command, op api.Op, fetch func(cmd *cobra.Command, arg
 		if err != nil {
 			return err
 		}
-		return renderData(cmd.OutOrStdout(), data)
+		return renderData(cmd, data)
 	}
 	for _, fn := range configure {
 		fn(cmd)

@@ -28,7 +28,6 @@ Queries GitHub for the latest release, detects your install method
 	Example: `  alpaca update
   alpaca update --check`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		suppressUpdateNotice = true
 		checkOnly := cmdutil.Bool(cmd, "check")
 
 		latest, err := getLatestVersion()

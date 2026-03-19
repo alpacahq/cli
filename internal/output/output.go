@@ -39,9 +39,19 @@ func JSON(w io.Writer, data any) error {
 }
 
 func CSV(w io.Writer, data any) error {
+	return CSVWithHeaders(w, data, nil)
+}
+
+func CSVWithHeaders(w io.Writer, data any, headers []string) error {
 	rows := toRows(data)
 	if len(rows) == 0 {
-		return nil
+		if len(headers) == 0 {
+			return nil
+		}
+		cw := csv.NewWriter(w)
+		_ = cw.Write(headers)
+		cw.Flush()
+		return cw.Error()
 	}
 
 	keys := sortedKeys(rows[0])

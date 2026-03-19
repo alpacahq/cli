@@ -160,8 +160,8 @@ func TestError403(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected *APIError, got %T", err)
 	}
-	if apiErr.ExitCode() != ExitAuthError {
-		t.Errorf("expected exit code %d for 403, got %d", ExitAuthError, apiErr.ExitCode())
+	if apiErr.ExitCode() != ExitAPIError {
+		t.Errorf("expected exit code %d for 403, got %d", ExitAPIError, apiErr.ExitCode())
 	}
 }
 
@@ -403,8 +403,8 @@ func TestErrorPathInfrastructure(t *testing.T) {
 			name:     "403_forbidden",
 			status:   403,
 			body:     `{"message":"forbidden"}`,
-			wantExit: ExitAuthError,
-			wantHint: "denied",
+			wantExit: ExitAPIError,
+			wantHint: "forbidden",
 			wantMsg:  "forbidden",
 		},
 		{

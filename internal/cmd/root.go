@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"strings"
 	"time"
@@ -33,6 +32,7 @@ var (
 	debugFlag     bool
 	traceFlag     bool
 	schemaFlag    bool
+	versionFlag   bool
 	profileFlag   string
 	timeoutFlag   int
 )
@@ -48,12 +48,7 @@ func Root() *cobra.Command {
 }
 
 func Execute() error {
-	updateCh := checkForUpdateAsync()
-
 	err := rootCmd.Execute()
-
-	showUpdateNotice(updateCh)
-
 	if err != nil {
 		var apiErr *client.APIError
 		if errors.As(err, &apiErr) {
@@ -90,26 +85,11 @@ func printJSONError(apiErr *client.APIError) {
 var versionCmd = &cobra.Command{
 	Use:     "version",
 	Short:   "Print the version of alpaca CLI",
-	Long:    `Print the version of alpaca CLI with cached update availability (use "alpaca update --check" for a live check).`,
+	Long:    `Print the version of alpaca CLI.`,
 	Example: `  alpaca version`,
-	Run: func(cmd *cobra.Command, args []string) {
-		suppressUpdateNotice = true
-		state := loadUpdateState()
-		m := map[string]any{
-			"version": version,
-		}
-		if state != nil && state.LatestVersion != "" {
-			latest := strings.TrimPrefix(state.LatestVersion, "v")
-			current := strings.TrimPrefix(version, "v")
-			m["latest"] = latest
-			m["update_available"] = current != latest
-			m["update_command"] = upgradeCommand(detectInstallMethod())
-			m["update_url"] = fmt.Sprintf("https://github.com/%s/%s/releases/tag/%s",
-				repoOwner, repoName, state.LatestVersion)
-		}
-		enc := json.NewEncoder(os.Stdout)
-		enc.SetIndent("", "  ")
-		_ = enc.Encode(m)
+	RunE: func(cmd *cobra.Command, args []string) error {
+		_, err := fmt.Fprintln(cmd.OutOrStdout(), version)
+		return err
 	},
 }
 
@@ -122,6 +102,10 @@ To check for updates:  alpaca update --check`,
 	SilenceUsage:  true,
 	SilenceErrors: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if versionFlag {
+			_, err := fmt.Fprintln(cmd.OutOrStdout(), version)
+			return err
+		}
 		if ha, _ := cmd.Flags().GetBool("help-all"); ha {
 			printCommandTree(cmd.OutOrStdout(), cmd, 0)
 			return nil
@@ -200,6 +184,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&schemaFlag, "schema", false, "Show response schema for this command and exit")
 
 	rootCmd.Flags().Bool("help-all", false, "Print full reference for every command")
+	rootCmd.Flags().BoolVar(&versionFlag, "version", false, "Print the version of alpaca CLI")
 
 	tradingGroup := &cobra.Group{ID: "trading", Title: "Trading"}
 	accountGroup := &cobra.Group{ID: "account", Title: "Account & Assets"}
@@ -242,7 +227,7 @@ func getOutput() output.Format {
 }
 
 // renderData is the unified output pipeline: jq filter → format render.
-func renderData(w io.Writer, data any) error {
+func renderData(cmd *cobra.Command, data any) error {
 	if jqFlag != "" {
 		var err error
 		data, err = output.ApplyJQ(data, jqFlag)
@@ -250,7 +235,29 @@ func renderData(w io.Writer, data any) error {
 			return err
 		}
 	}
-	return output.Render(w, getOutput(), data)
+	if getOutput() == output.FormatCSV {
+		return output.CSVWithHeaders(cmd.OutOrStdout(), data, csvHeadersForCommand(cmd))
+	}
+	return output.Render(cmd.OutOrStdout(), getOutput(), data)
+}
+
+func csvHeadersForCommand(cmd *cobra.Command) []string {
+	if jqFlag != "" || cmd == nil {
+		return nil
+	}
+	opName := cmd.Annotations["op"]
+	if opName == "" {
+		return nil
+	}
+	fields, ok := api.ResponseSchema(opName)
+	if !ok || len(fields) == 0 {
+		return nil
+	}
+	headers := make([]string, 0, len(fields))
+	for _, f := range fields {
+		headers = append(headers, f.Name)
+	}
+	return headers
 }
 
 var (

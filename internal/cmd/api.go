@@ -51,7 +51,7 @@ METHOD defaults to GET if omitted.`,
 				return fmt.Errorf("invalid JSON in --body: %w", err)
 			}
 			body = m
-		case stdinHasData():
+		case methodSupportsBody(method) && stdinHasData():
 			raw, err := io.ReadAll(os.Stdin)
 			if err != nil {
 				return fmt.Errorf("reading stdin: %w", err)
@@ -70,7 +70,7 @@ METHOD defaults to GET if omitted.`,
 			return err
 		}
 
-		return renderData(cmd.OutOrStdout(), data)
+		return renderData(cmd, data)
 	},
 }
 
@@ -95,6 +95,15 @@ func stdinHasData() bool {
 		return false
 	}
 	return (stat.Mode() & os.ModeCharDevice) == 0
+}
+
+func methodSupportsBody(method string) bool {
+	switch method {
+	case "POST", "PUT", "PATCH":
+		return true
+	default:
+		return false
+	}
 }
 
 func init() {

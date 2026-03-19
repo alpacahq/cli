@@ -66,6 +66,16 @@ func TestCSV_Empty(t *testing.T) {
 	}
 }
 
+func TestCSVWithHeaders_Empty(t *testing.T) {
+	var buf bytes.Buffer
+	if err := CSVWithHeaders(&buf, json.RawMessage(`[]`), []string{"id", "symbol"}); err != nil {
+		t.Fatal(err)
+	}
+	if got := strings.TrimSpace(buf.String()); got != "id,symbol" {
+		t.Errorf("expected header-only CSV, got: %s", got)
+	}
+}
+
 func TestRawField_Types(t *testing.T) {
 	row := map[string]any{
 		"str":   "hello",

@@ -3,12 +3,14 @@
 package integration
 
 import (
+	"fmt"
 	"testing"
 	"time"
 )
 
 func TestWatchlist(t *testing.T) {
-	name := "cli-integration-test"
+	name := fmt.Sprintf("cli-integration-test-%d", time.Now().UnixNano())
+	renamed := name + "-renamed"
 
 	out := alpaca(t, "watchlist", "create",
 		"--name", name,
@@ -92,17 +94,35 @@ func TestWatchlist(t *testing.T) {
 
 		time.Sleep(300 * time.Millisecond)
 
+		out = alpaca(t, "watchlist", "remove-by-name", "--name", name, "--symbol", "TSLA")
+		removed := parseJSONMap(t, out)
+		if removed["name"] != name {
+			t.Errorf("remove-by-name returned wrong name: %v", removed["name"])
+		}
+
 		out = alpaca(t, "watchlist", "update-by-name", "--name", name,
+			"--new-name", renamed,
 			"--symbols", "AAPL",
 		)
 		updated := parseJSONMap(t, out)
-		if updated["name"] != name {
+		if updated["name"] != renamed {
 			t.Errorf("update-by-name returned wrong name: %v", updated["name"])
+		}
+
+		_, _, code := alpacaWithStderr(t, "watchlist", "get-by-name", "--name", name)
+		if code == 0 {
+			t.Error("old watchlist name should not resolve after rename")
+		}
+
+		out = alpaca(t, "watchlist", "get-by-name", "--name", renamed)
+		renamedList := parseJSONMap(t, out)
+		if renamedList["name"] != renamed {
+			t.Errorf("get-by-name after rename returned wrong name: %v", renamedList["name"])
 		}
 	})
 
 	t.Run("delete_by_name", func(t *testing.T) {
-		alpaca(t, "watchlist", "delete-by-name", "--name", name)
+		alpaca(t, "watchlist", "delete-by-name", "--name", renamed)
 
 		_, _, code := alpacaWithStderr(t, "watchlist", "get", "--watchlist-id", wlID)
 		if code == 0 {

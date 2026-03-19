@@ -358,6 +358,59 @@ func TestOrderSubmit_DryRun(t *testing.T) {
 	if body["side"] != "buy" {
 		t.Errorf("dry-run body should have side buy, got %v", body["side"])
 	}
+	if body["time_in_force"] != "day" {
+		t.Errorf("dry-run body should default time_in_force to day for equities, got %v", body["time_in_force"])
+	}
+}
+
+func TestOrderSubmit_DryRun_CryptoDefaultsToGTC(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "order", "submit",
+		"--symbol", "BTC/USD",
+		"--notional", "10",
+		"--side", "buy",
+		"--type", "market",
+		"--dry-run",
+	)
+	body := parseJSONMap(t, out)
+	if body["time_in_force"] != "gtc" {
+		t.Errorf("crypto dry-run should default time_in_force to gtc, got %v", body["time_in_force"])
+	}
+}
+
+func TestOrderSubmit_DryRun_ParsesComplexObjects(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "order", "submit",
+		"--symbol", "AAPL",
+		"--qty", "1",
+		"--side", "buy",
+		"--type", "limit",
+		"--limit-price", "100",
+		"--take-profit", `{"limit_price":"260"}`,
+		"--stop-loss", `{"stop_price":"240","limit_price":"239"}`,
+		"--dry-run",
+	)
+	body := parseJSONMap(t, out)
+	if body["order_class"] != "bracket" {
+		t.Fatalf("expected order_class bracket, got %v", body["order_class"])
+	}
+	takeProfit, ok := body["take_profit"].(map[string]any)
+	if !ok {
+		t.Fatalf("expected take_profit object, got %T", body["take_profit"])
+	}
+	if takeProfit["limit_price"] != "260" {
+		t.Errorf("expected take_profit.limit_price 260, got %v", takeProfit["limit_price"])
+	}
+	stopLoss, ok := body["stop_loss"].(map[string]any)
+	if !ok {
+		t.Fatalf("expected stop_loss object, got %T", body["stop_loss"])
+	}
+	if stopLoss["stop_price"] != "240" {
+		t.Errorf("expected stop_loss.stop_price 240, got %v", stopLoss["stop_price"])
+	}
+	if stopLoss["limit_price"] != "239" {
+		t.Errorf("expected stop_loss.limit_price 239, got %v", stopLoss["limit_price"])
+	}
 }
 
 func TestOrderList_StatusFilter(t *testing.T) {

@@ -2,14 +2,12 @@ package cmd
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/alpacahq/cli/internal/config"
-	"github.com/fatih/color"
 )
 
 const (
@@ -23,10 +21,6 @@ type updateState struct {
 	CheckedAt     time.Time `json:"checked_at"`
 	InstallMethod string    `json:"install_method"`
 }
-
-// suppressUpdateNotice is set by commands that handle update info themselves
-// (update, version) to avoid a redundant stderr notice.
-var suppressUpdateNotice bool
 
 func detectInstallMethod() string {
 	exe, err := os.Executable()
@@ -98,82 +92,4 @@ func saveUpdateState(s *updateState) {
 
 func versionsEqual(a, b string) bool {
 	return strings.TrimPrefix(a, "v") == strings.TrimPrefix(b, "v")
-}
-
-// checkForUpdateAsync spawns a background goroutine to check for updates.
-// Returns a channel that receives an *updateState if an update is available,
-// or is closed with no value if no update is needed.
-func checkForUpdateAsync() <-chan *updateState {
-	ch := make(chan *updateState, 1)
-
-	if version == "dev" || quietFlag || os.Getenv("ALPACA_NO_UPDATE_NOTIFY") != "" {
-		close(ch)
-		return ch
-	}
-
-	go func() {
-		defer close(ch)
-
-		state := loadUpdateState()
-		if state != nil && time.Since(state.CheckedAt) < updateCheckTTL {
-			if state.LatestVersion != "" && !versionsEqual(version, state.LatestVersion) {
-				ch <- state
-			}
-			return
-		}
-
-		latest, err := getLatestVersion()
-		if err != nil {
-			return
-		}
-
-		newState := &updateState{
-			LatestVersion: latest,
-			CheckedAt:     time.Now(),
-			InstallMethod: detectInstallMethod(),
-		}
-		saveUpdateState(newState)
-
-		// Don't notify on the very first check (user just installed).
-		if state == nil {
-			return
-		}
-
-		if !versionsEqual(version, latest) {
-			ch <- newState
-		}
-	}()
-
-	return ch
-}
-
-func showUpdateNotice(ch <-chan *updateState) {
-	if suppressUpdateNotice {
-		return
-	}
-
-	var state *updateState
-	select {
-	case s, ok := <-ch:
-		if !ok {
-			return
-		}
-		state = s
-	case <-time.After(200 * time.Millisecond):
-		return
-	}
-
-	if state == nil {
-		return
-	}
-
-	method := state.InstallMethod
-	if method == "" {
-		method = detectInstallMethod()
-	}
-
-	fmt.Fprintln(os.Stderr)
-	color.New(color.FgYellow).Fprintf(os.Stderr,
-		"A new version of alpaca is available: %s → %s\n", version, state.LatestVersion)
-	fmt.Fprintf(os.Stderr, "Run `%s` to upgrade.\n", upgradeCommand(method))
 }

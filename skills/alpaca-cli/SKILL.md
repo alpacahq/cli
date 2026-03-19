@@ -102,7 +102,7 @@ Errors are always JSON on stderr:
 |------|---------|
 | `0` | Success |
 | `1` | API or general error |
-| `2` | Authentication error (401/403) |
+| `2` | Authentication error (401) |
 
 ### Dry run
 
@@ -156,13 +156,11 @@ alpaca order list --jq '[.[] | {id, symbol, side, qty}]'
 | `ALPACA_VERBOSE` | Show HTTP request summaries on stderr |
 | `ALPACA_DEBUG` | Show HTTP request/response headers and bodies on stderr |
 | `ALPACA_TRACE` | Show HTTP timing breakdown on stderr (DNS, TLS, TTFB) |
-| `ALPACA_NO_UPDATE_NOTIFY` | Suppress background update notices |
-
 Precedence: flags > env vars > profile config > defaults.
 
 ## Self-update
 
-The CLI checks for updates in the background and shows a notice when a newer version is available. Before starting work, check for updates programmatically:
+Check for updates explicitly before starting work when you need upgrade guidance:
 
 ```bash
 alpaca update --check --quiet

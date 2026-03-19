@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/cmdutil"
@@ -47,10 +48,12 @@ var orderSubmitCmd = &cobra.Command{
 		}
 
 		if body.TimeInForce == "" {
-			body.TimeInForce = "day"
+			body.TimeInForce = defaultTimeInForce(body.Symbol)
 		}
 
-		applyBracket(body, cmdutil.Str(cmd, "take-profit"), cmdutil.Str(cmd, "stop-loss"))
+		if err := applyBracket(body, cmdutil.Str(cmd, "take-profit"), cmdutil.Str(cmd, "stop-loss")); err != nil {
+			return err
+		}
 
 		if cmdutil.Bool(cmd, "dry-run") {
 			return output.JSON(cmd.OutOrStdout(), body)
@@ -60,7 +63,7 @@ var orderSubmitCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return renderData(cmd.OutOrStdout(), order)
+		return renderData(cmd, order)
 	},
 }
 
@@ -73,15 +76,46 @@ func init() {
 	orderCmd.AddCommand(orderSubmitCmd)
 }
 
-func applyBracket(body *api.PostOrderRequest, takeProfit, stopLoss string) {
+func defaultTimeInForce(symbol string) api.TimeInForce {
+	if strings.Contains(symbol, "/") {
+		return "gtc"
+	}
+	return "day"
+}
+
+func applyBracket(body *api.PostOrderRequest, takeProfit, stopLoss string) error {
 	if takeProfit == "" && stopLoss == "" {
-		return
+		return nil
 	}
 	body.OrderClass = "bracket"
 	if takeProfit != "" {
-		body.TakeProfit = map[string]any{"limit_price": takeProfit}
+		val, err := parseOrderObjectFlag("--take-profit", takeProfit, "limit_price")
+		if err != nil {
+			return err
+		}
+		body.TakeProfit = val
 	}
 	if stopLoss != "" {
-		body.StopLoss = map[string]any{"stop_price": stopLoss}
+		val, err := parseOrderObjectFlag("--stop-loss", stopLoss, "stop_price")
+		if err != nil {
+			return err
+		}
+		body.StopLoss = val
 	}
+	return nil
+}
+
+func parseOrderObjectFlag(flagName, raw, shorthandKey string) (map[string]any, error) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return nil, nil
+	}
+	if strings.HasPrefix(raw, "{") {
+		var out map[string]any
+		if err := json.Unmarshal([]byte(raw), &out); err != nil {
+			return nil, fmt.Errorf("%s: %w", flagName, err)
+		}
+		return out, nil
+	}
+	return map[string]any{shorthandKey: raw}, nil
 }

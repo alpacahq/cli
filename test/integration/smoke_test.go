@@ -10,8 +10,25 @@ import (
 func TestSmoke_Version(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "version")
-	v := parseJSONMap(t, out)
-	requireFields(t, v, "version")
+	s := strings.TrimSpace(string(out))
+	if s == "" {
+		t.Fatal("version output should not be empty")
+	}
+	if strings.HasPrefix(s, "{") {
+		t.Fatalf("version output should be plain text, got JSON: %s", s)
+	}
+}
+
+func TestSmoke_RootVersionFlag(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "--version")
+	s := strings.TrimSpace(string(out))
+	if s == "" {
+		t.Fatal("--version output should not be empty")
+	}
+	if strings.HasPrefix(s, "{") {
+		t.Fatalf("--version output should be plain text, got JSON: %s", s)
+	}
 }
 
 func TestSmoke_Account(t *testing.T) {
@@ -58,7 +75,10 @@ func TestSmoke_Assets(t *testing.T) {
 
 func TestSmoke_Doctor(t *testing.T) {
 	t.Parallel()
-	stdout, stderr, _ := alpacaWithStderr(t, "doctor")
+	stdout, stderr, code := alpacaWithStderr(t, "doctor")
+	if code != 0 {
+		t.Fatalf("doctor should succeed for a healthy test setup, got exit %d\nstdout: %s\nstderr: %s", code, stdout, stderr)
+	}
 	combined := string(stdout) + string(stderr)
 	if !strings.Contains(combined, "trading") && !strings.Contains(combined, "Trading") &&
 		!strings.Contains(combined, "API") && !strings.Contains(combined, "check") {

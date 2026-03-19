@@ -66,7 +66,7 @@ func (e *APIError) Error() string {
 }
 
 func (e *APIError) ExitCode() int {
-	if e.StatusCode == 401 || e.StatusCode == 403 {
+	if e.StatusCode == 401 {
 		return ExitAuthError
 	}
 	return ExitAPIError
@@ -84,7 +84,7 @@ func (e *APIError) Hint() string {
 	case 401:
 		return "Invalid credentials. Run `alpaca profile login` to re-authenticate."
 	case 403:
-		return "Access denied. Check your permissions or account status. If using OAuth, you may need additional scopes — run `alpaca profile login` to re-authorize."
+		return "Forbidden. Check your permissions, account status, minimum order size, or feature availability."
 	}
 	return ""
 }
@@ -229,7 +229,7 @@ func (c *Client) do(method, reqURL string, body any) (json.RawMessage, error) {
 	if err != nil {
 		return nil, &APIError{
 			Message: fmt.Sprintf("could not reach %s: %v", c.scrub(reqURL), c.scrubErr(err)),
-			hint:    "check your internet connection and base URL. Run `alpaca profile status` to verify configuration",
+			hint:    "check your internet connection and base URL. Run `alpaca doctor` to verify configuration",
 		}
 	}
 	defer func() { _ = resp.Body.Close() }()
@@ -264,7 +264,7 @@ func (c *Client) do(method, reqURL string, body any) (json.RawMessage, error) {
 		if resp.StatusCode == 401 {
 			var probe map[string]any
 			if json.Unmarshal(respBody, &probe) != nil {
-				apiErr.hint = "Received a non-API response (possible proxy or wrong URL). Verify your base URL with `alpaca profile status`."
+				apiErr.hint = "Received a non-API response (possible proxy or wrong URL). Verify your base URL with `alpaca doctor`."
 			}
 		}
 		if resp.StatusCode == 429 {

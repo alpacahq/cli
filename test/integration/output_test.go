@@ -76,8 +76,12 @@ func TestOutput_PositionList_CSV(t *testing.T) {
 		t.Fatalf("position list --csv exited %d", code)
 	}
 	s := strings.TrimSpace(string(stdout))
-	if s != "" && !strings.Contains(s, ",") {
-		t.Error("non-empty CSV output should contain commas")
+	if s == "" {
+		t.Fatal("position list --csv should emit at least a header row")
+	}
+	lines := strings.Split(s, "\n")
+	if !strings.Contains(lines[0], ",") {
+		t.Error("CSV header should contain commas")
 	}
 }
 

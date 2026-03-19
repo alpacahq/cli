@@ -65,6 +65,17 @@ func TestHelpAll(t *testing.T) {
 	}
 }
 
+func TestHelpHasNoUpdateNoticeOnStderr(t *testing.T) {
+	t.Parallel()
+	_, stderr, code := alpacaWithStderr(t, "--help")
+	if code != 0 {
+		t.Fatalf("expected exit 0, got %d", code)
+	}
+	if len(stderr) != 0 {
+		t.Fatalf("--help should not write to stderr, got: %s", stderr)
+	}
+}
+
 func TestUnknownCommand(t *testing.T) {
 	t.Parallel()
 	_, stderr, code := alpacaWithStderr(t, "notacommand")
