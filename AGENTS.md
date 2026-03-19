@@ -22,6 +22,18 @@ Fix any failures you introduce before moving on.
 
 When a refactor changes command names, flags, or output shape, review `test/integration/` and update any affected tests so they stay in sync.
 
+## Output contract
+
+Commands fall into two categories with different output rules:
+
+**API commands** (trading, data, account, watchlist, etc.) — call Alpaca endpoints and return structured JSON on stdout. These are the agent pipeline. They support `--csv`, `--jq`, `--quiet`, and `--schema`. Errors go to stderr as JSON.
+
+**Operational commands** (`version`, `doctor`, `profile *`, `update`, `completion`, `--help`, `--help-all`, `--schema`) — manage the CLI itself. These emit human-readable text on stdout. The machine-readable signal is the **exit code** (0 = success, non-zero = failure), not the output format. Do not convert these to JSON — an agent that needs to verify connectivity runs `alpaca account get --quiet`, not `alpaca doctor`.
+
+The one exception is `update --check`, which emits JSON because agents need to programmatically decide whether to upgrade.
+
+**Rule of thumb:** if a command hits the Alpaca API and returns API data, it emits JSON. If it manages the CLI's own state or helps a human troubleshoot, it emits text.
+
 ## Design Notes
 
 - **`FlagDef.OASName` must stay**: Flag names are kebab-case (`page-token`), OAS names are snake_case (`page_token`). The mapping `_ → -` is lossy — if an upstream OAS param ever uses a hyphen, runtime reversal (`- → _`) would silently send the wrong query key. Keep both fields.
