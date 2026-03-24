@@ -3,6 +3,7 @@
 package integration
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
 )
@@ -111,5 +112,56 @@ func TestOutput_Clock_CSV(t *testing.T) {
 	}
 	if !strings.Contains(s, "is_open") {
 		t.Error("CSV output should contain 'is_open' column")
+	}
+}
+
+// --- --jq flag ---
+
+func TestOutput_JQ_ExtractField(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "account", "get", "--jq", ".id")
+	var id string
+	if err := json.Unmarshal(out, &id); err != nil {
+		t.Fatalf("--jq '.id' should return a JSON string, got: %s", out)
+	}
+	if id == "" {
+		t.Error("expected non-empty account id")
+	}
+}
+
+func TestOutput_JQ_ArrayElement(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "order", "list", "--status", "all", "--limit", "5", "--jq", ".[0]")
+	s := strings.TrimSpace(string(out))
+	if s == "null" {
+		t.Skip("no orders to test --jq array indexing")
+	}
+	order := parseJSONMap(t, out)
+	requireFields(t, order, "id", "symbol")
+}
+
+func TestOutput_JQ_MapArray(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "order", "list", "--status", "all", "--limit", "3", "--jq", "[.[].symbol]")
+	var symbols []string
+	if err := json.Unmarshal(out, &symbols); err != nil {
+		t.Fatalf("--jq '[.[].symbol]' should return array of strings, got: %s", out)
+	}
+}
+
+func TestOutput_JQ_WithCSV(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "account", "get", "--jq", "{id, status}", "--csv")
+	s := strings.TrimSpace(string(out))
+	if !strings.Contains(s, ",") {
+		t.Error("--jq + --csv should produce comma-separated output")
+	}
+}
+
+func TestOutput_JQ_InvalidExpression(t *testing.T) {
+	t.Parallel()
+	_, _, code := alpacaFail(t, "account", "get", "--jq", ".[invalid")
+	if code == 0 {
+		t.Fatal("invalid jq expression should fail")
 	}
 }

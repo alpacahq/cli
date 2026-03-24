@@ -461,6 +461,87 @@ func TestOrderList_Direction(t *testing.T) {
 	}
 }
 
+func TestOrderList_Nested(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "order", "submit",
+		"--symbol", "AAPL",
+		"--qty", "1",
+		"--side", "buy",
+		"--type", "limit",
+		"--limit-price", "1.00",
+		"--time-in-force", "gtc",
+		"--order-class", "bracket",
+		"--take-profit", "200",
+		"--stop-loss", "0.50",
+	)
+	order := parseJSONMap(t, out)
+	id := order["id"].(string)
+	t.Cleanup(func() {
+		_ = makeCmd("order", "cancel", "--order-id", id).Run()
+	})
+
+	pollFor(t, 5*time.Second, "bracket order with nested legs", func() bool {
+		out := alpaca(t, "order", "list", "--status", "open", "--nested")
+		orders := parseJSONArray(t, out)
+		for _, o := range orders {
+			if o["id"] == id {
+				if legs, ok := o["legs"].([]any); ok && len(legs) >= 2 {
+					return true
+				}
+			}
+		}
+		return false
+	})
+}
+
+func TestOrderList_SideFilter(t *testing.T) {
+	t.Parallel()
+	_ = submitTestOrder(t) // buy side
+
+	out := alpaca(t, "order", "list", "--status", "open", "--side", "buy")
+	orders := parseJSONArray(t, out)
+	for _, o := range orders {
+		if o["side"] != "buy" {
+			t.Errorf("--side buy filter returned order with side %v", o["side"])
+		}
+	}
+}
+
+func TestOrderList_AfterUntil(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "order", "list", "--status", "all",
+		"--after", daysAgo(30),
+		"--until", daysAgo(0),
+		"--limit", "5",
+	)
+	_ = parseJSONArray(t, out)
+}
+
+func TestOrderSubmit_EquityMarketOrder(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "order", "submit",
+		"--symbol", "AAPL",
+		"--qty", "1",
+		"--side", "buy",
+		"--type", "market",
+		"--time-in-force", "day",
+	)
+	order := parseJSONMap(t, out)
+	id := order["id"].(string)
+	t.Cleanup(func() {
+		_ = makeCmd("order", "cancel", "--order-id", id).Run()
+		_ = makeCmd("position", "close", "--symbol-or-asset-id", "AAPL").Run()
+	})
+
+	if order["type"] != "market" {
+		t.Errorf("expected type market, got %v", order["type"])
+	}
+	if order["symbol"] != "AAPL" {
+		t.Errorf("expected symbol AAPL, got %v", order["symbol"])
+	}
+	requireFields(t, order, "id", "qty")
+}
+
 // TODO: after_order_id is in the OAS but not functional on the public trading API.
 // Re-enable when the server supports it.
 // func TestOrderList_AfterOrderID(t *testing.T) { ... }
