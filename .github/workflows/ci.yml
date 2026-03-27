@@ -47,7 +47,6 @@ jobs:
 
   integration:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -62,8 +61,8 @@ jobs:
           ALPACA_TEST_SECRET_KEY: ${{ secrets.ALPACA_TEST_SECRET_KEY }}
         run: |
           if [ -z "$ALPACA_TEST_API_KEY" ]; then
-            echo "::warning::Skipping integration tests — secrets not configured"
-            exit 0
+            echo "::error::Integration secrets not configured - set ALPACA_TEST_API_KEY and ALPACA_TEST_SECRET_KEY in repo secrets"
+            exit 1
           fi
           make test-integration
 

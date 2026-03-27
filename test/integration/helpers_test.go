@@ -22,8 +22,8 @@ func TestMain(m *testing.M) {
 	hasAPIKey := os.Getenv("ALPACA_TEST_API_KEY") != "" && os.Getenv("ALPACA_TEST_SECRET_KEY") != ""
 	hasToken := os.Getenv("ALPACA_TEST_ACCESS_TOKEN") != ""
 	if !hasAPIKey && !hasToken {
-		fmt.Fprintln(os.Stderr, "Skipping integration tests: set ALPACA_TEST_API_KEY+ALPACA_TEST_SECRET_KEY or ALPACA_TEST_ACCESS_TOKEN")
-		os.Exit(0)
+		fmt.Fprintln(os.Stderr, "Integration tests require credentials: set ALPACA_TEST_API_KEY+ALPACA_TEST_SECRET_KEY or ALPACA_TEST_ACCESS_TOKEN")
+		os.Exit(1)
 	}
 
 	dir, err := os.MkdirTemp("", "alpaca-cli-test")
