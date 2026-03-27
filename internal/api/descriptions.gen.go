@@ -29,6 +29,7 @@ type FlagDef struct {
 
 var CalendarOp = Op{
 	Name: "Calendar", Summary: "Get market calendar",
+	Long:    "This endpoint returns the market calendar",
 	Example: `  alpaca calendar market --market XNYS --start 2025-01-01`,
 	Flags: []FlagDef{
 		{Name: "end", OASName: "end", Type: "string", Description: "last date to retrieve data for (inclusive). Default: one week from the start date", Source: "query"},
@@ -40,6 +41,7 @@ var CalendarOp = Op{
 
 var ClockOp = Op{
 	Name: "Clock", Summary: "Get market clock",
+	Long:    "This API serves information about multiple markets: the current time, if it's a market day, the current phase of the market, etc",
 	Example: `  alpaca clock markets --markets XNYS,XNAS`,
 	Flags: []FlagDef{
 		{Name: "markets", OASName: "markets", Type: "string", Description: "comma-separated list of markets", Source: "query"},
@@ -49,6 +51,7 @@ var ClockOp = Op{
 
 var CorporateActionsOp = Op{
 	Name: "CorporateActions", Summary: "Get corporate actions",
+	Long:    "This endpoint provides data about the corporate actions for each given symbol over a specified time period",
 	Example: `  alpaca data corporate-actions --symbols AAPL --types forward_split --start 2025-01-01`,
 	Flags: []FlagDef{
 		{Name: "cusips", OASName: "cusips", Type: "string", Description: "A comma-separated list of CUSIPs", Source: "query"},
@@ -65,6 +68,7 @@ var CorporateActionsOp = Op{
 
 var CryptoBarsOp = Op{
 	Name: "CryptoBars", Summary: "Get historical bars",
+	Long:    "The crypto bars API provides historical aggregates for a list of crypto symbols between the specified dates",
 	Example: `  alpaca data crypto bars --symbols BTC/USD --start 2025-01-01 --timeframe 1Day`,
 	Flags: []FlagDef{
 		{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", Source: "query"},
@@ -80,6 +84,7 @@ var CryptoBarsOp = Op{
 
 var CryptoLatestBarsOp = Op{
 	Name: "CryptoLatestBars", Summary: "Get latest bars",
+	Long:    "The latest multi-bars endpoint returns the latest minute-aggregated historical bar data for each of the crypto symbols provided",
 	Example: `  alpaca data crypto latest-bars --symbols BTC/USD`,
 	Flags: []FlagDef{
 		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto location from where the latest market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Required: true, Source: "path"},
@@ -89,6 +94,7 @@ var CryptoLatestBarsOp = Op{
 
 var CryptoLatestOrderbooksOp = Op{
 	Name: "CryptoLatestOrderbooks", Summary: "Get latest orderbook",
+	Long:    "The latest orderbook endpoint returns the latest bid and ask orderbook for the crypto symbols provided",
 	Example: `  alpaca data crypto-orderbook --symbols BTC/USD,ETH/USD`,
 	Flags: []FlagDef{
 		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto location from where the latest market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Required: true, Source: "path"},
@@ -98,6 +104,7 @@ var CryptoLatestOrderbooksOp = Op{
 
 var CryptoLatestQuotesOp = Op{
 	Name: "CryptoLatestQuotes", Summary: "Get latest quotes",
+	Long:    "The latest quotes endpoint returns the latest bid and ask prices for the crypto symbols provided",
 	Example: `  alpaca data crypto latest-quotes --symbols BTC/USD`,
 	Flags: []FlagDef{
 		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto location from where the latest market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Required: true, Source: "path"},
@@ -107,6 +114,7 @@ var CryptoLatestQuotesOp = Op{
 
 var CryptoLatestTradesOp = Op{
 	Name: "CryptoLatestTrades", Summary: "Get latest trades",
+	Long:    "The latest trades endpoint returns the latest trade data for the crypto symbols provided",
 	Example: `  alpaca data crypto latest-trades --symbols BTC/USD`,
 	Flags: []FlagDef{
 		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto location from where the latest market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Required: true, Source: "path"},
@@ -116,6 +124,7 @@ var CryptoLatestTradesOp = Op{
 
 var CryptoPerpLatestBarsOp = Op{
 	Name: "CryptoPerpLatestBars", Summary: "Get latest bars",
+	Long:    "The latest bars endpoint returns the latest bar data for the crypto perpetual futures symbols provided",
 	Example: `  alpaca crypto-perp data latest-bars --symbols BTC/USD`,
 	Flags: []FlagDef{
 		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto perpetual location", Required: true, Source: "path"},
@@ -125,6 +134,7 @@ var CryptoPerpLatestBarsOp = Op{
 
 var CryptoPerpLatestFuturesPricingOp = Op{
 	Name: "CryptoPerpLatestFuturesPricing", Summary: "Get latest pricing",
+	Long:    "The latest futures pricing endpoint returns the latest pricing data for the crypto perpetual futures symbols provided",
 	Example: `  alpaca crypto-perp data latest-futures-pricing --symbols BTC/USD`,
 	Flags: []FlagDef{
 		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto perpetual location", Required: true, Source: "path"},
@@ -134,6 +144,7 @@ var CryptoPerpLatestFuturesPricingOp = Op{
 
 var CryptoPerpLatestOrderbooksOp = Op{
 	Name: "CryptoPerpLatestOrderbooks", Summary: "Get latest orderbook",
+	Long:    "The latest orderbook endpoint returns the latest bid and ask orderbook for the crypto perpetual futures symbols provided",
 	Example: `  alpaca crypto-perp data latest-orderbooks --symbols BTC/USD`,
 	Flags: []FlagDef{
 		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto perpetual location", Required: true, Source: "path"},
@@ -143,6 +154,7 @@ var CryptoPerpLatestOrderbooksOp = Op{
 
 var CryptoPerpLatestQuotesOp = Op{
 	Name: "CryptoPerpLatestQuotes", Summary: "Get latest quotes",
+	Long:    "The latest quotes endpoint returns the latest bid and ask prices for the crypto perpetual futures symbols provided",
 	Example: `  alpaca crypto-perp data latest-quotes --symbols BTC/USD`,
 	Flags: []FlagDef{
 		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto perpetual location", Required: true, Source: "path"},
@@ -152,6 +164,7 @@ var CryptoPerpLatestQuotesOp = Op{
 
 var CryptoPerpLatestTradesOp = Op{
 	Name: "CryptoPerpLatestTrades", Summary: "Get latest trades",
+	Long:    "The latest trades endpoint returns the latest trade data for the crypto perpetual futures symbols provided",
 	Example: `  alpaca crypto-perp data latest-trades --symbols BTC/USD`,
 	Flags: []FlagDef{
 		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto perpetual location", Required: true, Source: "path"},
@@ -161,6 +174,7 @@ var CryptoPerpLatestTradesOp = Op{
 
 var CryptoQuotesOp = Op{
 	Name: "CryptoQuotes", Summary: "Get historical quotes",
+	Long:    "The crypto quotes API provides historical quote data for a list of crypto symbols between the specified dates. The oldest date to retrieve historical quotes of us-1 location is 14th October, 2025 12AM UTC",
 	Example: `  alpaca data crypto quotes --symbols BTC/USD --start 2025-01-01`,
 	Flags: []FlagDef{
 		{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", Source: "query"},
@@ -175,6 +189,7 @@ var CryptoQuotesOp = Op{
 
 var CryptoSnapshotsOp = Op{
 	Name: "CryptoSnapshots", Summary: "Get snapshots",
+	Long:    "The snapshots endpoint returns the latest trade, latest quote, latest minute bar, latest daily bar, and previous daily bar data for crypto symbols",
 	Example: `  alpaca data crypto snapshots --symbols BTC/USD`,
 	Flags: []FlagDef{
 		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto location from where the latest market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Required: true, Source: "path"},
@@ -184,6 +199,7 @@ var CryptoSnapshotsOp = Op{
 
 var CryptoTradesOp = Op{
 	Name: "CryptoTrades", Summary: "Get historical trades",
+	Long:    "The crypto trades API provides historical trade data for a list of crypto symbols between the specified dates",
 	Example: `  alpaca data crypto trades --symbols BTC/USD --start 2025-01-01`,
 	Flags: []FlagDef{
 		{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", Source: "query"},
@@ -198,6 +214,7 @@ var CryptoTradesOp = Op{
 
 var FixedIncomeLatestPricesOp = Op{
 	Name: "FixedIncomeLatestPrices", Summary: "Get latest prices",
+	Long:    "This endpoint returns the latest prices for the given fixed income securities",
 	Example: `  alpaca data fixed-income --isins 912797KR1,912797LB5`,
 	Flags: []FlagDef{
 		{Name: "isins", OASName: "isins", Type: "string", Description: "A comma-separated list of ISINs with a limit of 1000", Required: true, Source: "query"},
@@ -206,6 +223,7 @@ var FixedIncomeLatestPricesOp = Op{
 
 var LatestRatesOp = Op{
 	Name: "LatestRates", Summary: "Get latest rates for currency pairs",
+	Long:    "Get the latest forex rates for the given currency pairs",
 	Example: `  alpaca data forex latest --currency-pairs EUR/USD,GBP/USD`,
 	Flags: []FlagDef{
 		{Name: "currency-pairs", OASName: "currency_pairs", Type: "string", Description: "A comma-separated string with currency pairs", Required: true, Source: "query"},
@@ -214,6 +232,7 @@ var LatestRatesOp = Op{
 
 var LegacyCalendarOp = Op{
 	Name: "LegacyCalendar", Summary: "Get US market calendar",
+	Long: "The calendar API serves the full list of market days from 1970 to 2029. It can also be queried by specifying a start and/or end time to narrow down the results",
 	Example: `  alpaca calendar
   alpaca calendar --start 2025-01-01 --end 2025-12-31`,
 	Flags: []FlagDef{
@@ -225,11 +244,13 @@ var LegacyCalendarOp = Op{
 
 var LegacyClockOp = Op{
 	Name: "LegacyClock", Summary: "Get US market clock",
+	Long:    "The clock API serves the current market timestamp, whether or not the market is currently open, as well as the times of the next market open and close",
 	Example: `  alpaca clock`,
 }
 
 var LogosOp = Op{
 	Name: "Logos", Summary: "Get logos",
+	Long:    "Get the image of the company logo for the given symbol",
 	Example: `  alpaca data logo --symbol AAPL`,
 	Flags: []FlagDef{
 		{Name: "placeholder", OASName: "placeholder", Type: "bool", Default: "true", Description: "if true, returns a placeholder image when no logo is available. Defaults to true", Source: "query"},
@@ -239,6 +260,7 @@ var LogosOp = Op{
 
 var MostActivesOp = Op{
 	Name: "MostActives", Summary: "Get most active stocks",
+	Long: "Returns the most active stocks by volume or trade count based on real time SIP data. By default, returns the top 10 symbols by volume",
 	Example: `  alpaca data screener most-actives
   alpaca data screener most-actives --by trades --top 10`,
 	Flags: []FlagDef{
@@ -249,6 +271,7 @@ var MostActivesOp = Op{
 
 var MoversOp = Op{
 	Name: "Movers", Summary: "Get top market movers",
+	Long: "Returns the top market movers (gainers and losers) based on real time SIP data. The change for each symbol is calculated from the previous closing price and the latest closing price",
 	Example: `  alpaca data screener movers
   alpaca data screener movers --market-type crypto --top 5`,
 	Flags: []FlagDef{
@@ -259,6 +282,7 @@ var MoversOp = Op{
 
 var NewsOp = Op{
 	Name: "News", Summary: "Get news articles",
+	Long: "Returns the latest news articles across stocks and crypto. By default, returns the latest 10 news articles",
 	Example: `  alpaca data news
   alpaca data news --symbols AAPL,MSFT --limit 10`,
 	Flags: []FlagDef{
@@ -275,6 +299,7 @@ var NewsOp = Op{
 
 var OptionChainOp = Op{
 	Name: "OptionChain", Summary: "Get option chain",
+	Long: "The option chain endpoint provides the latest trade, latest quote, and greeks for each contract symbol of the underlying symbol",
 	Example: `  alpaca data option chain --underlying-symbol AAPL
   alpaca data option chain --underlying-symbol SPY --expiration-date 2025-06-20 --type call`,
 	Flags: []FlagDef{
@@ -295,6 +320,7 @@ var OptionChainOp = Op{
 
 var OptionLatestQuotesOp = Op{
 	Name: "OptionLatestQuotes", Summary: "Get latest quotes",
+	Long:    "The latest multi-quotes endpoint provides the latest bid and ask prices for each given contract symbol",
 	Example: `  alpaca data option latest-quotes --symbols AAPL250620C00200000`,
 	Flags: []FlagDef{
 		{Name: "feed", OASName: "feed", Type: "string", Default: "opra", Description: "source feed of the data", Completions: []string{"indicative", "opra"}, Source: "query"},
@@ -304,6 +330,7 @@ var OptionLatestQuotesOp = Op{
 
 var OptionLatestTradesOp = Op{
 	Name: "OptionLatestTrades", Summary: "Get latest trades",
+	Long:    "The latest multi-trades endpoint provides the latest historical trade data for multiple given contract symbols",
 	Example: `  alpaca data option latest-trades --symbols AAPL250620C00200000`,
 	Flags: []FlagDef{
 		{Name: "feed", OASName: "feed", Type: "string", Default: "opra", Description: "source feed of the data", Completions: []string{"indicative", "opra"}, Source: "query"},
@@ -313,6 +340,7 @@ var OptionLatestTradesOp = Op{
 
 var OptionMetaConditionsOp = Op{
 	Name: "OptionMetaConditions", Summary: "Get condition codes",
+	Long:    "Returns the mapping between the condition codes and names",
 	Example: `  alpaca data option conditions --ticktype trade`,
 	Flags: []FlagDef{
 		{Name: "ticktype", OASName: "ticktype", Type: "string", Description: "type of ticks", Required: true, Source: "path"},
@@ -321,11 +349,13 @@ var OptionMetaConditionsOp = Op{
 
 var OptionMetaExchangesOp = Op{
 	Name: "OptionMetaExchanges", Summary: "Get exchange codes",
+	Long:    "Returns the mapping between the option exchange codes and the corresponding exchange names",
 	Example: `  alpaca data option exchanges`,
 }
 
 var OptionSnapshotsOp = Op{
 	Name: "OptionSnapshots", Summary: "Get snapshots",
+	Long: "The snapshots endpoint provides the latest trade, latest quote and greeks for each given contract symbol",
 	Example: `  alpaca data option snapshot --symbols AAPL250620C00200000
   alpaca data option snapshot --symbols AAPL250620C00200000,AAPL250620P00200000`,
 	Flags: []FlagDef{
@@ -339,6 +369,7 @@ var OptionSnapshotsOp = Op{
 
 var OptionTradesOp = Op{
 	Name: "OptionTrades", Summary: "Get historical trades",
+	Long:    "The historical option trades API provides trade data for a list of contract symbols between the specified dates",
 	Example: `  alpaca data option trades --symbols AAPL250620C00200000 --start 2025-01-01`,
 	Flags: []FlagDef{
 		{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", Source: "query"},
@@ -352,6 +383,7 @@ var OptionTradesOp = Op{
 
 var RatesOp = Op{
 	Name: "Rates", Summary: "Get historical rates for currency pairs",
+	Long: "Get historical forex rates for the given currency pairs in the given time interval and at the given timeframe (snapshot frequency)",
 	Example: `  alpaca data forex rates --currency-pairs EUR/USD,GBP/USD --start 2025-01-01
   alpaca data forex rates --currency-pairs USD/JPY --timeframe 1Hour`,
 	Flags: []FlagDef{
@@ -367,6 +399,7 @@ var RatesOp = Op{
 
 var StockAuctionSingleOp = Op{
 	Name: "StockAuctionSingle", Summary: "Get historical auctions (single)",
+	Long:    "The historical auctions endpoint provides auction prices for the given stock symbol between the specified dates",
 	Example: `  alpaca data auction --symbol AAPL --start 2025-01-01`,
 	Flags: []FlagDef{
 		{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)", Source: "query"},
@@ -383,6 +416,7 @@ var StockAuctionSingleOp = Op{
 
 var StockAuctionsOp = Op{
 	Name: "StockAuctions", Summary: "Get historical auctions",
+	Long: "The historical auctions endpoint provides auction prices for a list of stock symbols between the specified dates",
 	Example: `  alpaca data auctions --symbols AAPL --start 2025-01-01
   alpaca data auctions --symbols AAPL,MSFT --limit 10`,
 	Flags: []FlagDef{
@@ -400,6 +434,7 @@ var StockAuctionsOp = Op{
 
 var StockBarSingleOp = Op{
 	Name: "StockBarSingle", Summary: "Get historical bars (single symbol)",
+	Long: "The historical stock bars API provides aggregates for the stock symbol between the specified dates",
 	Example: `  alpaca data bars --symbol AAPL --start 2025-01-01 --timeframe 1Day
   alpaca data bars --symbol AAPL --start 2025-01-01 --end 2025-06-01 --limit 100`,
 	Flags: []FlagDef{
@@ -419,6 +454,7 @@ var StockBarSingleOp = Op{
 
 var StockBarsOp = Op{
 	Name: "StockBars", Summary: "Get historical bars",
+	Long:    "The historical stock bars API provides aggregates for a list of stock symbols between the specified dates",
 	Example: `  alpaca data multi-bars --symbols AAPL,MSFT --start 2025-01-01 --timeframe 1Day`,
 	Flags: []FlagDef{
 		{Name: "adjustment", OASName: "adjustment", Type: "string", Default: "raw", Description: "specifies the adjustments for the bars.\n\n - raw: no adjustments\n - split: adjust price and volume for forward and rev...", Source: "query"},
@@ -437,6 +473,7 @@ var StockBarsOp = Op{
 
 var StockLatestBarSingleOp = Op{
 	Name: "StockLatestBarSingle", Summary: "Get latest bar (single symbol)",
+	Long:    "The latest bar endpoint returns the latest minute bar for the given ticker symbol",
 	Example: `  alpaca data latest-bar --symbol AAPL`,
 	Flags: []FlagDef{
 		{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", Source: "query"},
@@ -447,6 +484,7 @@ var StockLatestBarSingleOp = Op{
 
 var StockLatestBarsOp = Op{
 	Name: "StockLatestBars", Summary: "Get latest bars",
+	Long:    "The latest bars endpoint provides the latest minute bar for the given ticker symbols",
 	Example: `  alpaca data latest-bars --symbols AAPL,MSFT`,
 	Flags: []FlagDef{
 		{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", Source: "query"},
@@ -457,6 +495,7 @@ var StockLatestBarsOp = Op{
 
 var StockLatestQuoteSingleOp = Op{
 	Name: "StockLatestQuoteSingle", Summary: "Get latest quote (single symbol)",
+	Long:    "The latest quote endpoint provides the latest best bid and ask prices for a given ticker symbol",
 	Example: `  alpaca data latest-quote --symbol AAPL`,
 	Flags: []FlagDef{
 		{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", Source: "query"},
@@ -467,6 +506,7 @@ var StockLatestQuoteSingleOp = Op{
 
 var StockLatestQuotesOp = Op{
 	Name: "StockLatestQuotes", Summary: "Get latest quotes",
+	Long:    "The latest quotes endpoint provides the latest best bid and ask prices for the given ticker symbols",
 	Example: `  alpaca data latest-quotes --symbols AAPL,MSFT`,
 	Flags: []FlagDef{
 		{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", Source: "query"},
@@ -477,6 +517,7 @@ var StockLatestQuotesOp = Op{
 
 var StockLatestTradeSingleOp = Op{
 	Name: "StockLatestTradeSingle", Summary: "Get latest trade (single symbol)",
+	Long: "The latest trade endpoint provides the latest trade for the given ticker symbol",
 	Example: `  alpaca data latest-trade --symbol AAPL
   alpaca data latest-trade --symbol AAPL --feed sip`,
 	Flags: []FlagDef{
@@ -488,6 +529,7 @@ var StockLatestTradeSingleOp = Op{
 
 var StockLatestTradesOp = Op{
 	Name: "StockLatestTrades", Summary: "Get latest trades",
+	Long:    "The latest trades endpoint provides the latest trades for the given ticker symbols",
 	Example: `  alpaca data latest-trades --symbols AAPL,MSFT`,
 	Flags: []FlagDef{
 		{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", Source: "query"},
@@ -498,6 +540,7 @@ var StockLatestTradesOp = Op{
 
 var StockMetaConditionsOp = Op{
 	Name: "StockMetaConditions", Summary: "Get condition codes",
+	Long:    "Returns the mapping between the condition codes and names",
 	Example: `  alpaca data meta conditions --ticktype trade`,
 	Flags: []FlagDef{
 		{Name: "tape", OASName: "tape", Type: "string", Description: "one character name of the tape", Completions: []string{"A", "B", "C"}, Required: true, Source: "query"},
@@ -507,11 +550,13 @@ var StockMetaConditionsOp = Op{
 
 var StockMetaExchangesOp = Op{
 	Name: "StockMetaExchanges", Summary: "Get exchange codes",
+	Long:    "Returns the mapping between the stock exchange codes and the corresponding exchange names",
 	Example: `  alpaca data meta exchanges`,
 }
 
 var StockQuoteSingleOp = Op{
 	Name: "StockQuoteSingle", Summary: "Get historical quotes (single symbol)",
+	Long: "The historical stock quotes API provides quote data for a stock symbol between the specified dates",
 	Example: `  alpaca data quotes --symbol AAPL --start 2025-01-01
   alpaca data quotes --symbol AAPL --start 2025-01-01 --end 2025-01-31 --limit 50`,
 	Flags: []FlagDef{
@@ -529,6 +574,7 @@ var StockQuoteSingleOp = Op{
 
 var StockQuotesOp = Op{
 	Name: "StockQuotes", Summary: "Get historical quotes",
+	Long:    "The historical stock quotes API provides quote data for a list of stock symbols between the specified dates",
 	Example: `  alpaca data multi-quotes --symbols AAPL,MSFT --start 2025-01-01`,
 	Flags: []FlagDef{
 		{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)", Source: "query"},
@@ -557,6 +603,7 @@ var StockSnapshotSingleOp = Op{
 
 var StockSnapshotsOp = Op{
 	Name: "StockSnapshots", Summary: "Get snapshots",
+	Long:    "The snapshot endpoint for multiple tickers provides the latest trade, latest quote, minute bar, daily bar, and previous daily bar data for each given ticker symbol",
 	Example: `  alpaca data multi-snapshots --symbols AAPL,MSFT`,
 	Flags: []FlagDef{
 		{Name: "currency", OASName: "currency", Type: "string", Description: "currency of all prices in ISO 4217 format. Default: USD", Source: "query"},
@@ -567,6 +614,7 @@ var StockSnapshotsOp = Op{
 
 var StockTradeSingleOp = Op{
 	Name: "StockTradeSingle", Summary: "Get historical trades (single symbol)",
+	Long: "The historical stock trades API provides trade data for a stock symbol between the specified dates",
 	Example: `  alpaca data trades --symbol AAPL --start 2025-01-01
   alpaca data trades --symbol AAPL --start 2025-01-01 --limit 100`,
 	Flags: []FlagDef{
@@ -584,6 +632,7 @@ var StockTradeSingleOp = Op{
 
 var StockTradesOp = Op{
 	Name: "StockTrades", Summary: "Get historical trades",
+	Long:    "The historical stock trades API provides trade data for a list of stock symbols between the specified dates",
 	Example: `  alpaca data multi-trades --symbols AAPL,MSFT --start 2025-01-01`,
 	Flags: []FlagDef{
 		{Name: "asof", OASName: "asof", Type: "string", Description: "as-of date of the queried stock symbol(s)", Source: "query"},
@@ -600,6 +649,7 @@ var StockTradesOp = Op{
 
 var UsCorporatesOp = Op{
 	Name: "UsCorporates", Summary: "Get US corporates",
+	Long: "Serves the list of US corporates available at Alpaca. The response is sorted by ISIN",
 	Example: `  alpaca asset bond
   alpaca asset bond --bond-status active`,
 	Flags: []FlagDef{
@@ -612,6 +662,7 @@ var UsCorporatesOp = Op{
 
 var UsTreasuriesOp = Op{
 	Name: "UsTreasuries", Summary: "Get US treasuries",
+	Long: "Serves the list of US treasuries available at Alpaca. The response is sorted by ISIN",
 	Example: `  alpaca asset treasury
   alpaca asset treasury --bond-status active`,
 	Flags: []FlagDef{
@@ -624,6 +675,7 @@ var UsTreasuriesOp = Op{
 
 var AddAssetToWatchlistOp = Op{
 	Name: "AddAssetToWatchlist", Summary: "Add asset to watchlist",
+	Long:    "Append an asset for the symbol to the end of watchlist asset list",
 	Example: `  alpaca watchlist add --watchlist-id <id> --symbol AAPL`,
 	Flags: []FlagDef{
 		{Name: "symbol", OASName: "symbol", Type: "string", Description: "the symbol name to add to the watchlist", Source: "body"},
@@ -633,6 +685,7 @@ var AddAssetToWatchlistOp = Op{
 
 var AddAssetToWatchlistByNameOp = Op{
 	Name: "AddAssetToWatchlistByName", Summary: "Add asset to watchlist by name",
+	Long:    "Append an asset for the symbol to the end of watchlist asset list",
 	Example: `  alpaca watchlist add-by-name --name "Tech Stocks" --symbol NVDA`,
 	Flags: []FlagDef{
 		{Name: "name", OASName: "name", Type: "string", Description: "name of the watchlist", Required: true, Source: "query"},
@@ -642,6 +695,7 @@ var AddAssetToWatchlistByNameOp = Op{
 
 var CreateCryptoPerpTransferForAccountOp = Op{
 	Name: "CreateCryptoPerpTransferForAccount", Summary: "Request a new withdrawal",
+	Long:    "Creates a withdrawal request. Note that outgoing withdrawals must be sent to a whitelisted address and you must whitelist addresses at least 24 hours in advance. If you attempt to withdraw funds to a non-whitelisted address then the transfer will be rejected",
 	Example: `  alpaca crypto-perp wallet transfer create --amount 0.5 --address 0xabc... --asset BTC`,
 	Flags: []FlagDef{
 		{Name: "address", OASName: "address", Type: "string", Description: "destination wallet address", Source: "body"},
@@ -652,6 +706,7 @@ var CreateCryptoPerpTransferForAccountOp = Op{
 
 var CreateCryptoTransferForAccountOp = Op{
 	Name: "CreateCryptoTransferForAccount", Summary: "Request a new withdrawal",
+	Long:    "Creates a withdrawal request. Note that outgoing withdrawals must be sent to a whitelisted address and you must whitelist addresses at least 24 hours in advance. If you attempt to withdraw funds to a non-whitelisted address then the transfer will be rejected",
 	Example: `  alpaca wallet transfer create --amount 0.5 --address 0xabc... --asset BTC`,
 	Flags: []FlagDef{
 		{Name: "address", OASName: "address", Type: "string", Description: "destination wallet address", Source: "body"},
@@ -680,6 +735,7 @@ var CreateWhitelistedPerpAddressOp = Op{
 
 var DeleteAllOpenPositionsOp = Op{
 	Name: "DeleteAllOpenPositions", Summary: "Close all positions", ReturnsArray: true,
+	Long:    "Closes (liquidates) all of the account’s open long and short positions. A response will be provided for each order that is attempted to be cancelled. If an order is no longer cancelable, the server will respond with status 500 and reject the request",
 	Example: `  alpaca position close-all`,
 	Flags: []FlagDef{
 		{Name: "cancel-orders", OASName: "cancel_orders", Type: "bool", Description: "if true is specified, cancel all open orders before liquidating all positions", Source: "query"},
@@ -688,11 +744,13 @@ var DeleteAllOpenPositionsOp = Op{
 
 var DeleteAllOrdersOp = Op{
 	Name: "DeleteAllOrders", Summary: "Delete all orders", ReturnsArray: true,
+	Long:    "Attempts to cancel all open orders. A response will be provided for each order that is attempted to be cancelled. If an order is no longer cancelable, the server will respond with status 500 and reject the request",
 	Example: `  alpaca order cancel-all`,
 }
 
 var DeleteOpenPositionOp = Op{
 	Name: "DeleteOpenPosition", Summary: "Close a position",
+	Long: "Closes (liquidates) the account’s open position for the given symbol. Works for both long and short positions",
 	Example: `  alpaca position close --symbol-or-asset-id AAPL
   alpaca position close --symbol-or-asset-id AAPL --qty 5
   alpaca position close --symbol-or-asset-id AAPL --percentage 50`,
@@ -705,6 +763,7 @@ var DeleteOpenPositionOp = Op{
 
 var DeleteOrderByOrderIDOp = Op{
 	Name: "DeleteOrderByOrderID", Summary: "Delete order by ID",
+	Long:    "Attempts to cancel an Open Order. If the order is no longer cancelable, the request will be rejected with status 422; otherwise accepted with return status 204",
 	Example: `  alpaca order cancel --order-id <id>`,
 	Flags: []FlagDef{
 		{Name: "order-id", OASName: "order_id", Type: "string", Description: "order id", Required: true, Source: "path"},
@@ -713,6 +772,7 @@ var DeleteOrderByOrderIDOp = Op{
 
 var DeleteWatchlistByIDOp = Op{
 	Name: "DeleteWatchlistByID", Summary: "Delete watchlist by id",
+	Long:    "Delete a watchlist. This is a permanent deletion",
 	Example: `  alpaca watchlist delete --watchlist-id <id>`,
 	Flags: []FlagDef{
 		{Name: "watchlist-id", OASName: "watchlist_id", Type: "string", Description: "watchlist id", Required: true, Source: "path"},
@@ -721,6 +781,7 @@ var DeleteWatchlistByIDOp = Op{
 
 var DeleteWatchlistByNameOp = Op{
 	Name: "DeleteWatchlistByName", Summary: "Delete watchlist by name",
+	Long:    "Delete a watchlist. This is a permanent deletion",
 	Example: `  alpaca watchlist delete-by-name --name "Tech Stocks"`,
 	Flags: []FlagDef{
 		{Name: "name", OASName: "name", Type: "string", Description: "name of the watchlist", Required: true, Source: "query"},
@@ -745,6 +806,7 @@ var DeleteWhitelistedPerpAddressOp = Op{
 
 var GetOptionContractSymbolOrIDOp = Op{
 	Name: "GetOptionContractSymbolOrID", Summary: "Get an option contract by ID or symbol",
+	Long:    "Get an option contract by symbol or contract ID. The symbol or id should be passed in as a path parameter",
 	Example: `  alpaca option get --symbol-or-id AAPL250620C00200000`,
 	Flags: []FlagDef{
 		{Name: "symbol-or-id", OASName: "symbol_or_id", Type: "string", Description: "symbol or contract ID", Required: true, Source: "path"},
@@ -777,6 +839,7 @@ var GetOptionsContractsOp = Op{
 
 var GetV2AssetsOp = Op{
 	Name: "GetV2Assets", Summary: "Get assets", ReturnsArray: true,
+	Long: "The assets API serves as the master list of assets available for trade and data consumption from Alpaca. Assets are sorted by asset class, exchange and symbol",
 	Example: `  alpaca asset list
   alpaca asset list --asset-class us_equity --status active
   alpaca asset list --exchange NYSE`,
@@ -790,6 +853,7 @@ var GetV2AssetsOp = Op{
 
 var GetV2AssetsSymbolOrAssetIDOp = Op{
 	Name: "GetV2AssetsSymbolOrAssetID", Summary: "Get an asset by ID or symbol",
+	Long: "Get the asset model for a given symbol or asset_id. The symbol or asset_id should be passed in as a path parameter",
 	Example: `  alpaca asset get --symbol-or-asset-id AAPL
   alpaca asset get --symbol-or-asset-id BTC/USD`,
 	Flags: []FlagDef{
@@ -799,6 +863,7 @@ var GetV2AssetsSymbolOrAssetIDOp = Op{
 
 var GetV2CorporateActionsAnnouncementsOp = Op{
 	Name: "GetV2CorporateActionsAnnouncements", Summary: "Retrieve announcements",
+	Long: "This endpoint is deprecated, please use the new corporate actions endpoint instead",
 	Example: `  alpaca corporate-action list --ca-types reverse_split --since 2025-01-01 --until 2025-12-31
   alpaca corporate-action list --ca-types cash_dividend --symbol AAPL --since 2025-01-01 --until 2025-06-30`,
 	Flags: []FlagDef{
@@ -813,6 +878,7 @@ var GetV2CorporateActionsAnnouncementsOp = Op{
 
 var GetV2CorporateActionsAnnouncementsIDOp = Op{
 	Name: "GetV2CorporateActionsAnnouncementsID", Summary: "Retrieve a specific announcement",
+	Long:    "This endpoint is deprecated, please use the new corporate actions endpoint instead",
 	Example: `  alpaca corporate-action get --id <announcement-id>`,
 	Flags: []FlagDef{
 		{Name: "id", OASName: "id", Type: "string", Description: "corporate announcement’s id", Required: true, Source: "path"},
@@ -821,11 +887,13 @@ var GetV2CorporateActionsAnnouncementsIDOp = Op{
 
 var GetAccountOp = Op{
 	Name: "GetAccount", Summary: "Get account",
+	Long:    "Returns your account details",
 	Example: `  alpaca account get`,
 }
 
 var GetAccountActivitiesOp = Op{
 	Name: "GetAccountActivities", Summary: "Retrieve account activities",
+	Long: "Returns a list of activities",
 	Example: `  alpaca account activity list
   alpaca account activity list --activity-types FILL,TRANS --page-size 20
   alpaca account activity list --direction desc`,
@@ -843,6 +911,7 @@ var GetAccountActivitiesOp = Op{
 
 var GetAccountActivitiesByActivityTypeOp = Op{
 	Name: "GetAccountActivitiesByActivityType", Summary: "Retrieve account activities of specific type",
+	Long: "Returns account activity entries for a specific type of activity",
 	Example: `  alpaca account activity list-by-type --activity-type FILL --page-size 20
   alpaca account activity list-by-type --activity-type DIV --after 2025-01-01`,
 	Flags: []FlagDef{
@@ -858,6 +927,7 @@ var GetAccountActivitiesByActivityTypeOp = Op{
 
 var GetAccountConfigOp = Op{
 	Name: "GetAccountConfig", Summary: "Get account configurations",
+	Long:    "gets the current account configuration values",
 	Example: `  alpaca account config get`,
 }
 
@@ -880,12 +950,14 @@ var GetAccountPortfolioHistoryOp = Op{
 
 var GetAllOpenPositionsOp = Op{
 	Name: "GetAllOpenPositions", Summary: "List all open positions", ReturnsArray: true,
+	Long: "The positions API provides information about an account’s current open positions. The response will include information such as cost basis, shares traded, and market value, which will be updated live as price information is updated",
 	Example: `  alpaca position list
   alpaca position list --csv`,
 }
 
 var GetAllOrdersOp = Op{
 	Name: "GetAllOrders", Summary: "Get all orders", ReturnsArray: true,
+	Long: "Retrieves a list of orders for the account, filtered by the supplied query parameters",
 	Example: `  alpaca order list
   alpaca order list --status closed --limit 20
   alpaca order list --symbols AAPL,MSFT --after 2025-01-01`,
@@ -906,6 +978,7 @@ var GetAllOrdersOp = Op{
 
 var GetCryptoFundingTransferOp = Op{
 	Name: "GetCryptoFundingTransfer", Summary: "Retrieve a crypto funding transfer",
+	Long:    "Returns a specific wallet transfer by passing into the query the transfer_id",
 	Example: `  alpaca wallet transfer get --transfer-id <id>`,
 	Flags: []FlagDef{
 		{Name: "transfer-id", OASName: "transfer_id", Type: "string", Description: "crypto transfer to retrieve", Required: true, Source: "path"},
@@ -914,6 +987,7 @@ var GetCryptoFundingTransferOp = Op{
 
 var GetCryptoPerpAccountLeverageOp = Op{
 	Name: "GetCryptoPerpAccountLeverage", Summary: "Get account leverage for an asset",
+	Long:    "Retrieves the current leverage setting for the crypto perpetuals account, specific to a given underlying asset. To use this endpoint, provide the 'symbol' of the asset as a query parameter",
 	Example: `  alpaca crypto-perp leverage`,
 	Flags: []FlagDef{
 		{Name: "symbol", OASName: "symbol", Type: "string", Description: "symbol of underlying asset", Source: "query"},
@@ -922,11 +996,13 @@ var GetCryptoPerpAccountLeverageOp = Op{
 
 var GetCryptoPerpAccountVitalsOp = Op{
 	Name: "GetCryptoPerpAccountVitals", Summary: "Retrieve account vitals",
+	Long:    "Fetches key financial metrics for the crypto perpetuals account, providing a snapshot of its current status by detailing the relationship between the user's positions and their collateral",
 	Example: `  alpaca crypto-perp vitals`,
 }
 
 var GetCryptoPerpFundingTransferOp = Op{
 	Name: "GetCryptoPerpFundingTransfer", Summary: "Retrieve a crypto funding transfer",
+	Long:    "Returns a specific wallet transfer by passing into the query the transfer_id",
 	Example: `  alpaca crypto-perp wallet transfer get --transfer-id <id>`,
 	Flags: []FlagDef{
 		{Name: "transfer-id", OASName: "transfer_id", Type: "string", Description: "crypto transfer to retrieve", Required: true, Source: "path"},
@@ -958,6 +1034,7 @@ var GetCryptoTransferEstimateOp = Op{
 
 var GetOpenPositionOp = Op{
 	Name: "GetOpenPosition", Summary: "Get an open position",
+	Long: "Retrieves the account’s open position for the given symbol or assetId",
 	Example: `  alpaca position get --symbol-or-asset-id AAPL
   alpaca position get --symbol-or-asset-id BTC/USD`,
 	Flags: []FlagDef{
@@ -967,6 +1044,7 @@ var GetOpenPositionOp = Op{
 
 var GetOrderByClientOrderIDOp = Op{
 	Name: "GetOrderByClientOrderID", Summary: "Get order by client order ID",
+	Long:    "Retrieves a single order specified by the client order ID",
 	Example: `  alpaca order get-by-client-id --client-order-id my-order-123`,
 	Flags: []FlagDef{
 		{Name: "client-order-id", OASName: "client_order_id", Type: "string", Description: "client-assigned order ID", Required: true, Source: "query"},
@@ -975,6 +1053,7 @@ var GetOrderByClientOrderIDOp = Op{
 
 var GetOrderByOrderIDOp = Op{
 	Name: "GetOrderByOrderID", Summary: "Get order by ID",
+	Long:    "Retrieves a single order for the given order_id",
 	Example: `  alpaca order get --order-id 61e69015-8549-4baf-b96f-9c4f3e8d0c35`,
 	Flags: []FlagDef{
 		{Name: "nested", OASName: "nested", Type: "bool", Description: "if true, the result will roll up multi-leg orders under the legs field of primary order", Source: "query"},
@@ -984,6 +1063,7 @@ var GetOrderByOrderIDOp = Op{
 
 var GetWatchlistByIDOp = Op{
 	Name: "GetWatchlistByID", Summary: "Get watchlist by ID",
+	Long:    "Returns a watchlist identified by the ID",
 	Example: `  alpaca watchlist get --watchlist-id <id>`,
 	Flags: []FlagDef{
 		{Name: "watchlist-id", OASName: "watchlist_id", Type: "string", Description: "watchlist id", Required: true, Source: "path"},
@@ -992,6 +1072,7 @@ var GetWatchlistByIDOp = Op{
 
 var GetWatchlistByNameOp = Op{
 	Name: "GetWatchlistByName", Summary: "Get watchlist by name",
+	Long:    "You can also call GET, PUT, POST and DELETE with watchlist name with another endpoint /v2/watchlists:by_name and query parameter name=<watchlist_name>, instead of /v2/watchlists/{watchlist_id} endpoints",
 	Example: `  alpaca watchlist get-by-name --name "Tech Stocks"`,
 	Flags: []FlagDef{
 		{Name: "name", OASName: "name", Type: "string", Description: "name of the watchlist", Required: true, Source: "query"},
@@ -1000,16 +1081,19 @@ var GetWatchlistByNameOp = Op{
 
 var GetWatchlistsOp = Op{
 	Name: "GetWatchlists", Summary: "Get all watchlists", ReturnsArray: true,
+	Long:    "Returns the list of watchlists registered under the account",
 	Example: `  alpaca watchlist list`,
 }
 
 var ListCryptoFundingTransfersOp = Op{
 	Name: "ListCryptoFundingTransfers", Summary: "Retrieve crypto funding transfers",
+	Long:    "Returns an array of all transfers associated with the given account across all wallets",
 	Example: `  alpaca wallet transfer list`,
 }
 
 var ListCryptoFundingWalletsOp = Op{
 	Name: "ListCryptoFundingWallets", Summary: "Retrieve crypto funding wallets",
+	Long:    "Lists wallets for the account given in the path parameter. If an asset is specified and no wallet for the account and asset pair exists one will be created. If no asset is specified only existing wallets will be listed for the account. An account may have at most one wallet per asset",
 	Example: `  alpaca wallet list`,
 	Flags: []FlagDef{
 		{Name: "asset", OASName: "asset", Type: "string", Description: "filter by crypto asset symbol, e.g. BTC, ETH, USDT. If specified and no wallet exists, one will be created", Source: "query"},
@@ -1019,11 +1103,13 @@ var ListCryptoFundingWalletsOp = Op{
 
 var ListCryptoPerpFundingTransfersOp = Op{
 	Name: "ListCryptoPerpFundingTransfers", Summary: "Retrieve crypto funding transfers",
+	Long:    "Returns an array of all transfers associated with the given account across all wallets",
 	Example: `  alpaca crypto-perp wallet transfer list`,
 }
 
 var ListCryptoPerpFundingWalletsOp = Op{
 	Name: "ListCryptoPerpFundingWallets", Summary: "Retrieve crypto funding wallets",
+	Long:    "Lists wallets for the account given in the path parameter. If an asset is specified and no wallet for the account and asset pair exists one will be created. If no asset is specified only existing wallets will be listed for the account. An account may have at most one wallet per asset",
 	Example: `  alpaca crypto-perp wallet list`,
 	Flags: []FlagDef{
 		{Name: "asset", OASName: "asset", Type: "string", Description: "asset", Source: "query"},
@@ -1042,6 +1128,7 @@ var ListWhitelistedPerpAddressOp = Op{
 
 var OptionBarsOp = Op{
 	Name: "OptionBars", Summary: "Get historical bars",
+	Long: "The historical option bars API provides aggregates for a list of option symbols between the specified dates",
 	Example: `  alpaca data option bars --symbols AAPL250620C00200000 --start 2025-01-01
   alpaca data option bars --symbols AAPL250620C00200000,AAPL250620P00200000 --timeframe 1Day`,
 	Flags: []FlagDef{
@@ -1057,6 +1144,7 @@ var OptionBarsOp = Op{
 
 var OptionDoNotExerciseOp = Op{
 	Name: "OptionDoNotExercise", Summary: "Do not exercise an options position",
+	Long:    "This endpoint enables users to submit a do-not-exercise (DNE) instruction for a held option contract, preventing automatic exercise at expiry. By default, Alpaca will automatically exercise in-the-money (ITM) contracts at expiry. This endpoint allows users to override that behavior",
 	Example: `  alpaca option do-not-exercise --symbol-or-contract-id AAPL250620C00200000`,
 	Flags: []FlagDef{
 		{Name: "symbol-or-contract-id", OASName: "symbol_or_contract_id", Type: "string", Description: "option contract symbol or ID", Required: true, Source: "path"},
@@ -1065,6 +1153,7 @@ var OptionDoNotExerciseOp = Op{
 
 var OptionExerciseOp = Op{
 	Name: "OptionExercise", Summary: "Exercise an options position",
+	Long:    "This endpoint enables users to exercise a held option contract, converting it into the underlying asset based on the specified terms. All available held shares of this option contract will be exercised. By default, Alpaca will automatically exercise in-the-money (ITM) contracts at expiry",
 	Example: `  alpaca option exercise --symbol-or-contract-id AAPL250620C00200000`,
 	Flags: []FlagDef{
 		{Name: "symbol-or-contract-id", OASName: "symbol_or_contract_id", Type: "string", Description: "option contract symbol or ID", Required: true, Source: "path"},
@@ -1073,6 +1162,7 @@ var OptionExerciseOp = Op{
 
 var PatchAccountConfigOp = Op{
 	Name: "PatchAccountConfig", Summary: "Update account configurations",
+	Long: "Updates and returns the current account configuration values",
 	Example: `  alpaca account config set --no-shorting true
   alpaca account config set --dtbp-check entry`,
 	Flags: []FlagDef{
@@ -1091,6 +1181,7 @@ var PatchAccountConfigOp = Op{
 
 var PatchOrderByOrderIDOp = Op{
 	Name: "PatchOrderByOrderID", Summary: "Replace order by ID",
+	Long:    "Replaces a single order with updated parameters. Each parameter overrides the corresponding attribute of the existing order. The other attributes remain the same as the existing order",
 	Example: `  alpaca order replace --order-id <id> --qty 20 --limit-price 190.00`,
 	Flags: []FlagDef{
 		{Name: "advanced-instructions", OASName: "advanced_instructions", Type: "string", Description: "advanced instructions for Elite Smart Router: https://docs.alpaca.markets/docs/alpaca-elite-smart-router", Source: "body"},
@@ -1106,6 +1197,7 @@ var PatchOrderByOrderIDOp = Op{
 
 var PostOrderOp = Op{
 	Name: "PostOrder", Summary: "Create an order",
+	Long: "Places a new order for the given account. An order request may be rejected if the account is not authorized for trading, or if the tradable balance is insufficient to fill the order",
 	Flags: []FlagDef{
 		{Name: "advanced-instructions", OASName: "advanced_instructions", Type: "string", Description: "advanced instructions for Elite Smart Router: https://docs.alpaca.markets/docs/alpaca-elite-smart-router", Source: "body"},
 		{Name: "client-order-id", OASName: "client_order_id", Type: "string", Description: "A unique identifier for the order. Automatically generated if not sent. (<= 128 characters)", Source: "body"},
@@ -1130,6 +1222,7 @@ var PostOrderOp = Op{
 
 var PostWatchlistOp = Op{
 	Name: "PostWatchlist", Summary: "Create watchlist",
+	Long:    "Create a new watchlist with initial set of assets",
 	Example: `  alpaca watchlist create --name "Tech Stocks" --symbols AAPL,MSFT,GOOG`,
 	Flags: []FlagDef{
 		{Name: "name", OASName: "name", Type: "string", Description: "watchlist name", Source: "body"},
@@ -1139,6 +1232,7 @@ var PostWatchlistOp = Op{
 
 var RemoveAssetFromWatchlistOp = Op{
 	Name: "RemoveAssetFromWatchlist", Summary: "Delete symbol from watchlist",
+	Long:    "Delete one entry for an asset by symbol name",
 	Example: `  alpaca watchlist remove --watchlist-id <id> --symbol AAPL`,
 	Flags: []FlagDef{
 		{Name: "symbol", OASName: "symbol", Type: "string", Description: "symbol name to remove from the watchlist content", Required: true, Source: "path"},
@@ -1148,6 +1242,7 @@ var RemoveAssetFromWatchlistOp = Op{
 
 var SetCryptoPerpAccountLeverageOp = Op{
 	Name: "SetCryptoPerpAccountLeverage", Summary: "Set account leverage for an asset",
+	Long:    "Updates the leverage for the crypto perpetuals account for a specific underlying asset. Provide the 'symbol' of the asset and the desired 'leverage' (as an integer) using query parameters. The system will return the asset's symbol and the newly set leverage value upon successful update",
 	Example: `  alpaca crypto-perp set-leverage --asset BTC --leverage 5`,
 	Flags: []FlagDef{
 		{Name: "leverage", OASName: "leverage", Type: "int", Description: "leverage for the underlying asset", Source: "query"},
@@ -1157,6 +1252,7 @@ var SetCryptoPerpAccountLeverageOp = Op{
 
 var UpdateWatchlistByIDOp = Op{
 	Name: "UpdateWatchlistByID", Summary: "Update watchlist by id",
+	Long:    "Update the name and/or content of watchlist",
 	Example: `  alpaca watchlist update --watchlist-id <id> --name "Updated" --symbols AAPL,MSFT`,
 	Flags: []FlagDef{
 		{Name: "name", OASName: "name", Type: "string", Description: "watchlist name", Source: "body"},
@@ -1167,6 +1263,7 @@ var UpdateWatchlistByIDOp = Op{
 
 var UpdateWatchlistByNameOp = Op{
 	Name: "UpdateWatchlistByName", Summary: "Update watchlist by name",
+	Long:    "Update the name and/or content of watchlist",
 	Example: `  alpaca watchlist update-by-name --name "Tech Stocks" --new-name "Technology" --symbols AAPL,MSFT`,
 	Flags: []FlagDef{
 		{Name: "name", OASName: "name", Type: "string", Description: "name of the watchlist", Required: true, Source: "query"},

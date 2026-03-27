@@ -187,6 +187,7 @@ type endpointInfo struct {
 	path          string
 	operationID   string
 	summary       string
+	description   string // OAS operation description (longer than summary)
 	goName        string
 	pathParams    []paramInfo
 	queryParams   []paramInfo
@@ -242,12 +243,14 @@ func extractEndpoints(spec map[string]any) []*endpointInfo {
 				continue
 			}
 			summary, _ := op["summary"].(string)
+			description, _ := op["description"].(string)
 
 			ep := &endpointInfo{
 				method:      strings.ToUpper(method),
 				path:        path,
 				operationID: opID,
 				summary:     summary,
+				description: description,
 				goName:      toGoName(opID),
 			}
 
@@ -812,6 +815,7 @@ type opDesc struct {
 	operationID    string
 	goName         string
 	summary        string
+	description    string // OAS operation description, cleaned up for Long help
 	params         []*flagDesc
 	responseFields []*responseFieldDesc
 	responseRef    string
@@ -846,6 +850,7 @@ func collectDescriptions(endpoints []*endpointInfo, spec map[string]any) []*opDe
 			operationID: ep.operationID,
 			goName:      toGoName(ep.operationID),
 			summary:     normalizeSummary(ep.method, ep.summary, ep.returnsArray),
+			description: normalizeOASDescription(ep.description),
 		}
 
 		for _, p := range ep.queryParams {
@@ -1126,6 +1131,84 @@ func normalizeSummary(method, summary string, returnsArray bool) string {
 	return s
 }
 
+// normalizeOASDescription cleans an OAS operation description for use as
+// Cobra Long help text. Takes the first paragraph, strips markdown artifacts,
+// and trims to a reasonable length at a sentence boundary.
+func normalizeOASDescription(raw string) string {
+	s := strings.TrimSpace(raw)
+	if s == "" {
+		return ""
+	}
+
+	// Take only the first paragraph (split on blank line).
+	if i := strings.Index(s, "\n\n"); i >= 0 {
+		s = s[:i]
+	}
+
+	// Strip markdown blockquote markers.
+	lines := strings.Split(s, "\n")
+	var cleaned []string
+	for _, line := range lines {
+		line = strings.TrimPrefix(line, "> ")
+		line = strings.TrimPrefix(line, ">")
+		if trimmed := strings.TrimSpace(line); trimmed != "" {
+			cleaned = append(cleaned, trimmed)
+		}
+	}
+	s = strings.Join(cleaned, " ")
+
+	// Convert markdown links [text](url) to just text.
+	s = stripMarkdownLinks(s)
+
+	// Trim trailing period for consistency with Short.
+	s = strings.TrimRight(s, ".")
+
+	// Cap at ~300 chars at a sentence boundary.
+	if len(s) > 300 {
+		cut := 300
+		if i := strings.LastIndex(s[:cut], ". "); i > 100 {
+			s = s[:i]
+		} else {
+			s = s[:cut]
+			if i := strings.LastIndex(s, " "); i > 0 {
+				s = strings.TrimRight(s[:i], " .,")
+			}
+		}
+	}
+
+	return s
+}
+
+// stripMarkdownLinks replaces [text](url) with text.
+func stripMarkdownLinks(s string) string {
+	var b strings.Builder
+	b.Grow(len(s))
+	for i := 0; i < len(s); {
+		if s[i] == '[' {
+			close := strings.Index(s[i:], "](")
+			if close < 0 {
+				b.WriteByte(s[i])
+				i++
+				continue
+			}
+			linkText := s[i+1 : i+close]
+			urlStart := i + close + 2
+			urlEnd := strings.IndexByte(s[urlStart:], ')')
+			if urlEnd < 0 {
+				b.WriteByte(s[i])
+				i++
+				continue
+			}
+			b.WriteString(linkText)
+			i = urlStart + urlEnd + 1
+		} else {
+			b.WriteByte(s[i])
+			i++
+		}
+	}
+	return b.String()
+}
+
 func titleToSentence(s string) string {
 	words := strings.Fields(s)
 	for i := 1; i < len(words); i++ {
@@ -1208,13 +1291,13 @@ func writeTypedDescriptionsFile(ops []*opDesc) string {
 		}
 		fmt.Fprintf(&buf, ",\n")
 
-		if def, ok := cmdRegistry[op.goName]; ok {
-			if def.long != "" {
-				fmt.Fprintf(&buf, "\tLong: %q,\n", def.long)
-			}
-			if def.examples != "" {
-				fmt.Fprintf(&buf, "\tExample: %s,\n", backtickQuote(def.examples))
-			}
+		if def, ok := cmdRegistry[op.goName]; ok && def.long != "" {
+			fmt.Fprintf(&buf, "\tLong: %q,\n", def.long)
+		} else if op.description != "" && op.description != op.summary {
+			fmt.Fprintf(&buf, "\tLong: %q,\n", op.description)
+		}
+		if def, ok := cmdRegistry[op.goName]; ok && def.examples != "" {
+			fmt.Fprintf(&buf, "\tExample: %s,\n", backtickQuote(def.examples))
 		}
 
 		if len(op.params) > 0 {
