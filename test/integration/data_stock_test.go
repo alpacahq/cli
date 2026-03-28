@@ -42,6 +42,61 @@ func TestDataBars_Adjustment(t *testing.T) {
 	requireFields(t, data, "bars")
 }
 
+func TestDataBars_Feed(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "data", "bars", "--symbol", "AAPL",
+		"--start", daysAgo(100),
+		"--end", daysAgo(93),
+		"--timeframe", "1Day",
+		"--feed", "iex",
+	)
+	data := parseJSONMap(t, out)
+	requireFields(t, data, "bars")
+}
+
+func TestDataBars_Currency(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "data", "bars", "--symbol", "AAPL",
+		"--start", daysAgo(100),
+		"--end", daysAgo(93),
+		"--timeframe", "1Day",
+		"--currency", "USD",
+	)
+	data := parseJSONMap(t, out)
+	requireFields(t, data, "bars")
+}
+
+func TestDataBars_Sort(t *testing.T) {
+	t.Parallel()
+	outAsc := alpaca(t, "data", "bars", "--symbol", "AAPL",
+		"--start", daysAgo(100),
+		"--end", daysAgo(90),
+		"--timeframe", "1Day",
+		"--sort", "asc",
+	)
+	outDesc := alpaca(t, "data", "bars", "--symbol", "AAPL",
+		"--start", daysAgo(100),
+		"--end", daysAgo(90),
+		"--timeframe", "1Day",
+		"--sort", "desc",
+	)
+	asc := parseJSONMap(t, outAsc)
+	desc := parseJSONMap(t, outDesc)
+	requireFields(t, asc, "bars")
+	requireFields(t, desc, "bars")
+
+	ascBars, _ := asc["bars"].([]any)
+	descBars, _ := desc["bars"].([]any)
+	if len(ascBars) < 2 || len(descBars) < 2 {
+		t.Skip("not enough bars to verify sort order")
+	}
+	firstAsc, _ := ascBars[0].(map[string]any)
+	firstDesc, _ := descBars[0].(map[string]any)
+	if firstAsc["t"] == firstDesc["t"] {
+		t.Error("expected different first timestamps for asc vs desc sort")
+	}
+}
+
 func TestDataQuotes(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "data", "quotes", "--symbol", "AAPL",
