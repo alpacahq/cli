@@ -119,6 +119,23 @@ echo '{"symbol":"AAPL","qty":"1","side":"buy","type":"market","time_in_force":"d
   | alpaca api POST /v2/orders
 ```
 
+### Idempotent order submission
+
+Always pass `--client-order-id` when submitting orders. The API rejects duplicates (409), preventing double-orders on ambiguous failures:
+
+```bash
+CLIENT_ORDER_ID="$(uuidgen)"
+alpaca order submit --symbol AAPL --side buy --qty 10 --type market --client-order-id "$CLIENT_ORDER_ID" --quiet
+```
+
+On failure or timeout, check before retrying:
+
+```bash
+alpaca order get-by-client-id --client-order-id "$CLIENT_ORDER_ID" --quiet
+```
+
+If the order is returned, it went through - do not resubmit. If 404 (exit code 1), retry is safe.
+
 ### Resilience
 
 The CLI retries on 429 and 5xx with exponential backoff (max 3 attempts). `Retry-After` headers are respected.
@@ -221,7 +238,8 @@ The response includes a `next_page_token` field when more data is available.
 - **NEVER** omit `--quiet` in automation or agent workflows — without it, output may include hints and warnings on stderr that break parsing.
 - **NEVER** ignore exit code `2` — it means authentication failed. Do not retry; fix credentials first.
 - **NEVER** hardcode API keys in scripts or committed files — use environment variables or profile-based auth.
-- **NEVER** submit live orders without confirming the user's intent — use `--dry-run` to preview first when there is any ambiguity.
+- **NEVER** submit live orders without confirming the user's intent - use `--dry-run` to preview first when there is any ambiguity.
+- **NEVER** submit orders without `--client-order-id` in automation - without it, retries after ambiguous failures (timeouts, network errors) risk placing duplicate orders.
 
 ## Further reading
 
