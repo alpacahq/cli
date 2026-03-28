@@ -35,7 +35,6 @@ func TestGeneratedCodeIsUpToDate(t *testing.T) {
 		{apiDir, "marketdata_types.gen.go"},
 		{apiDir, "marketdata_client.gen.go"},
 		{apiDir, "descriptions.gen.go"},
-		{cmdDir, "params.gen.go"},
 		{cmdDir, "commands.gen.go"},
 	}
 

@@ -765,12 +765,10 @@ var cmdRegistry = map[string]cmdDef{
 
 var cmdSkip = map[string]string{}
 
-func checkExhaustive(allEndpoints []*endpointInfo) {
-	epByOp := map[string]*endpointInfo{}
-	for _, ep := range allEndpoints {
-		epByOp[ep.goName] = ep
-		_, inRegistry := cmdRegistry[ep.goName]
-		_, inSkip := cmdSkip[ep.goName]
+func checkExhaustive(epByOp map[string]*endpointInfo) {
+	for goName, ep := range epByOp {
+		_, inRegistry := cmdRegistry[goName]
+		_, inSkip := cmdSkip[goName]
 		if !inRegistry && !inSkip {
 			log.Fatalf("unregistered operation %q (goName=%q) — add to cmdRegistry or cmdSkip in cmd/generate/commands.go", ep.operationID, ep.goName)
 		}
@@ -816,12 +814,7 @@ func findSchemaByOASName(name string) *schemaInfo {
 	return schemaByOASName[name]
 }
 
-func genCommands(allEndpoints []*endpointInfo) string {
-	epByOp := map[string]*endpointInfo{}
-	for _, ep := range allEndpoints {
-		epByOp[ep.goName] = ep
-	}
-
+func genCommands(epByOp map[string]*endpointInfo) string {
 	// Emit command body first, then prepend header with conditional imports.
 	var body bytes.Buffer
 
@@ -849,7 +842,7 @@ func genCommands(allEndpoints []*endpointInfo) string {
 	}
 
 	// Emit single init() for all wiring
-	emitInit(&body, &attachBuf, opIDs, allEndpoints)
+	emitInit(&body, &attachBuf, opIDs)
 
 	// Assemble final output with header
 	var buf bytes.Buffer
@@ -940,37 +933,29 @@ func buildFetchBody(opID string, def cmdDef, ep *endpointInfo, clientVar string)
 	hasBodyInline := len(ep.bodyInline) > 0
 	hasQueryParams := len(ep.queryParams) > 0
 
-	// For PATCH/PUT with body and bodyAliases → inline body with aliases
-	if isPatch && hasBodyRef && len(def.bodyAliases) > 0 {
-		return buildPatchBodyWithAliases(ep, def, clientVar)
-	}
-
-	// For PATCH with body
+	// PATCH/PUT with body ref
 	if isPatch && hasBodyRef {
-		bodyFuncName := lcFirst(ep.bodyRef) + "BodyFromFlags"
-		var args []string
-		for _, pp := range ep.pathParams {
-			args = append(args, pathParamExpr(pp, def))
+		bodySchema := findSchema(ep.bodyRef)
+		if bodySchema != nil && bodySchema.kind == "struct" {
+			if patchCode, ok := buildPatchBody(ep.bodyRef, bodySchema.props, def.bodyAliases); ok {
+				var args []string
+				for _, pp := range ep.pathParams {
+					args = append(args, pathParamExpr(pp, def))
+				}
+				if hasQueryParams {
+					args = append(args, queryFromFlagsExpr(ep))
+				}
+				args = append(args, "body")
+				call := fmt.Sprintf("%s.%s(%s)", clientVar, methodName, strings.Join(args, ", "))
+				if isVoid {
+					return patchCode + "\n\treturn voidResponse(" + call + ")"
+				}
+				return patchCode + "\n\treturn " + call
+			}
 		}
-		args = append(args, "body")
-
-		lines := fmt.Sprintf("body, changed := %s(cmd)\n", bodyFuncName)
-		for _, jf := range structRefBodyFields(ep.bodyRef) {
-			lines += fmt.Sprintf("\tif cmdutil.Changed(cmd, %q) {\n", jf.flagName)
-			lines += fmt.Sprintf("\t\tif err := json.Unmarshal([]byte(cmdutil.Str(cmd, %q)), &body.%s); err != nil {\n", jf.flagName, jf.goField)
-			lines += fmt.Sprintf("\t\t\treturn nil, fmt.Errorf(\"--%s: %%w\", err)\n", jf.flagName)
-			lines += "\t\t}\n"
-			lines += "\t\tchanged = true\n"
-			lines += "\t}\n"
-		}
-		lines += "\tif !changed {\n"
-		lines += "\t\treturn nil, fmt.Errorf(\"specify at least one flag to change (see '%s --help')\", cmd.CommandPath())\n"
-		lines += "\t}\n"
-		lines += fmt.Sprintf("\treturn %s.%s(%s)", clientVar, methodName, strings.Join(args, ", "))
-		return lines
 	}
 
-	// For POST with body ref or inline body schema
+	// POST with body ref or inline body schema
 	if isPost && (hasBodyRef || hasBodyInline) {
 		var typeName string
 		var props map[string]map[string]any
@@ -978,7 +963,7 @@ func buildFetchBody(opID string, def cmdDef, ep *endpointInfo, clientVar string)
 			if s := findSchema(ep.bodyRef); s != nil && s.kind == "struct" {
 				typeName, props = ep.bodyRef, s.props
 			}
-		} else if p := flattenInlineProps(ep.bodyInline); p != nil {
+		} else if p := extractProps(ep.bodyInline); p != nil {
 			typeName, props = ep.goName+"Request", p
 		}
 		if bodyCode, ok := buildPostBody(typeName, props, def.bodySkipFields); ok {
@@ -1019,7 +1004,7 @@ func buildFetchBody(opID string, def cmdDef, ep *endpointInfo, clientVar string)
 	return "return " + call
 }
 
-func flattenInlineProps(schema map[string]any) map[string]map[string]any {
+func extractProps(schema map[string]any) map[string]map[string]any {
 	props, ok := schema["properties"].(map[string]any)
 	if !ok || len(props) == 0 {
 		return nil
@@ -1033,32 +1018,27 @@ func flattenInlineProps(schema map[string]any) map[string]map[string]any {
 	return result
 }
 
-// buildPostBody generates the body-construction code for POST commands.
-// Handles string, boolean, integer, enum $ref, string arrays, and complex
-// types (struct $ref, nested objects, non-string arrays) via JSON unmarshal.
-// Fields listed in skipFields (kebab-case) are excluded from generation.
-func buildPostBody(typeName string, props map[string]map[string]any, skipFields []string) (string, bool) {
-	if typeName == "" || len(props) == 0 {
-		return "", false
-	}
+type fieldKind struct {
+	goField    string
+	flagName   string
+	kind       string // "string", "bool", "int", "enum", "arrayString", "json"
+	enumGoType string
+}
+
+func classifyFields(props map[string]map[string]any, skipFields []string, aliases map[string]string) ([]fieldKind, bool) {
 	skip := make(map[string]bool, len(skipFields))
 	for _, f := range skipFields {
 		skip[f] = true
 	}
-
 	propNames := sortedKeys(props)
-
-	type postField struct {
-		goField    string
-		flagName   string
-		kind       string // "string", "bool", "int", "enum", "arrayString", "json"
-		enumGoType string
-	}
-	var fields []postField
+	var fields []fieldKind
 	for _, name := range propNames {
 		flagName := strings.ReplaceAll(name, "_", "-")
 		if skip[flagName] {
 			continue
+		}
+		if alias, ok := aliases[flagName]; ok {
+			flagName = alias
 		}
 		ps := props[name]
 		goField := toGoName(name)
@@ -1068,38 +1048,50 @@ func buildPostBody(typeName string, props map[string]map[string]any, skipFields 
 			if s := findSchemaByOASName(rn); s != nil {
 				switch s.kind {
 				case "enum":
-					fields = append(fields, postField{goField, flagName, "enum", s.goName})
+					fields = append(fields, fieldKind{goField, flagName, "enum", s.goName})
 				case "struct":
-					fields = append(fields, postField{goField, flagName, "json", ""})
+					fields = append(fields, fieldKind{goField, flagName, "json", ""})
 				default:
-					return "", false
+					return nil, false
 				}
 			} else {
-				return "", false
+				return nil, false
 			}
 			continue
 		}
 
 		switch t, _ := ps["type"].(string); t {
 		case "string":
-			fields = append(fields, postField{goField, flagName, "string", ""})
+			fields = append(fields, fieldKind{goField, flagName, "string", ""})
 		case "boolean":
-			fields = append(fields, postField{goField, flagName, "bool", ""})
+			fields = append(fields, fieldKind{goField, flagName, "bool", ""})
 		case "integer":
-			fields = append(fields, postField{goField, flagName, "int", ""})
+			fields = append(fields, fieldKind{goField, flagName, "int", ""})
 		case "array":
 			if items, ok := ps["items"].(map[string]any); ok {
 				if itemType, _ := items["type"].(string); itemType == "string" {
-					fields = append(fields, postField{goField, flagName, "arrayString", ""})
+					fields = append(fields, fieldKind{goField, flagName, "arrayString", ""})
 					continue
 				}
 			}
-			fields = append(fields, postField{goField, flagName, "json", ""})
+			fields = append(fields, fieldKind{goField, flagName, "json", ""})
 		case "object":
-			fields = append(fields, postField{goField, flagName, "json", ""})
+			fields = append(fields, fieldKind{goField, flagName, "json", ""})
 		default:
-			return "", false
+			return nil, false
 		}
+	}
+	return fields, true
+}
+
+// buildPostBody generates body-construction code for POST commands.
+func buildPostBody(typeName string, props map[string]map[string]any, skipFields []string) (string, bool) {
+	if typeName == "" || len(props) == 0 {
+		return "", false
+	}
+	fields, ok := classifyFields(props, skipFields, nil)
+	if !ok {
+		return "", false
 	}
 
 	var b strings.Builder
@@ -1156,99 +1148,54 @@ func buildPostBody(typeName string, props map[string]map[string]any, skipFields 
 	return b.String(), true
 }
 
-func buildPatchBodyWithAliases(ep *endpointInfo, def cmdDef, clientVar string) string {
-	bodySchema := findSchema(ep.bodyRef)
-	if bodySchema == nil || bodySchema.kind != "struct" {
-		return ""
+// buildPatchBody generates body-construction code for PATCH/PUT commands
+// with change tracking. Only fields explicitly set by the user are included.
+func buildPatchBody(typeName string, props map[string]map[string]any, aliases map[string]string) (string, bool) {
+	if typeName == "" || len(props) == 0 {
+		return "", false
 	}
-
-	propNames := sortedKeys(bodySchema.props)
+	fields, ok := classifyFields(props, nil, aliases)
+	if !ok {
+		return "", false
+	}
 
 	var b strings.Builder
-	fmt.Fprintf(&b, "body := &api.%s{}\n", ep.bodyRef)
-	b.WriteString("\tvar changed bool\n")
+	fmt.Fprintf(&b, "body := &api.%s{}\n", typeName)
+	b.WriteString("\tvar changed bool")
 
-	for _, name := range propNames {
-		ps := bodySchema.props[name]
-		flagName := strings.ReplaceAll(name, "_", "-")
-		if alias, ok := def.bodyAliases[flagName]; ok {
-			flagName = alias
-		}
-		goField := toGoName(name)
-
-		if _, ok := ps["$ref"]; ok {
-			continue
-		}
-		switch t, _ := ps["type"].(string); t {
+	for _, f := range fields {
+		fmt.Fprintf(&b, "\n\tif cmdutil.Changed(cmd, %q) {\n", f.flagName)
+		switch f.kind {
 		case "string":
-			fmt.Fprintf(&b, "\tif cmdutil.Changed(cmd, %q) {\n", flagName)
-			fmt.Fprintf(&b, "\t\tbody.%s = cmdutil.Str(cmd, %q)\n", goField, flagName)
-			b.WriteString("\t\tchanged = true\n")
-			b.WriteString("\t}\n")
-		case "array":
-			if items, ok := ps["items"].(map[string]any); ok {
-				if itemType, _ := items["type"].(string); itemType == "string" {
-					fmt.Fprintf(&b, "\tif cmdutil.Changed(cmd, %q) {\n", flagName)
-					fmt.Fprintf(&b, "\t\tif s := cmdutil.Str(cmd, %q); s != \"\" {\n", flagName)
-					fmt.Fprintf(&b, "\t\t\tbody.%s = strings.Split(s, \",\")\n", goField)
-					b.WriteString("\t\t}\n")
-					b.WriteString("\t\tchanged = true\n")
-					b.WriteString("\t}\n")
-				}
-			}
+			fmt.Fprintf(&b, "\t\tbody.%s = cmdutil.Str(cmd, %q)\n", f.goField, f.flagName)
+		case "bool":
+			fmt.Fprintf(&b, "\t\tbody.%s = cmdutil.Bool(cmd, %q)\n", f.goField, f.flagName)
+		case "int":
+			fmt.Fprintf(&b, "\t\tbody.%s = cmdutil.Int(cmd, %q)\n", f.goField, f.flagName)
+		case "enum":
+			fmt.Fprintf(&b, "\t\tbody.%s = api.%s(cmdutil.Str(cmd, %q))\n", f.goField, f.enumGoType, f.flagName)
+		case "arrayString":
+			fmt.Fprintf(&b, "\t\tif s := cmdutil.Str(cmd, %q); s != \"\" {\n", f.flagName)
+			fmt.Fprintf(&b, "\t\t\tbody.%s = strings.Split(s, \",\")\n", f.goField)
+			b.WriteString("\t\t}\n")
+		case "json":
+			fmt.Fprintf(&b, "\t\tif err := json.Unmarshal([]byte(cmdutil.Str(cmd, %q)), &body.%s); err != nil {\n", f.flagName, f.goField)
+			fmt.Fprintf(&b, "\t\t\treturn nil, fmt.Errorf(\"--%s: %%w\", err)\n", f.flagName)
+			b.WriteString("\t\t}\n")
 		}
+		b.WriteString("\t\tchanged = true\n")
+		b.WriteString("\t}")
 	}
 
-	b.WriteString("\tif !changed {\n")
+	b.WriteString("\n\tif !changed {\n")
 	b.WriteString("\t\treturn nil, fmt.Errorf(\"specify at least one flag to change (see '%s --help')\", cmd.CommandPath())\n")
-	b.WriteString("\t}\n")
+	b.WriteString("\t}")
 
-	var args []string
-	for _, pp := range ep.pathParams {
-		args = append(args, pathParamExpr(pp, def))
-	}
-	if len(ep.queryParams) > 0 {
-		args = append(args, queryFromFlagsExpr(ep))
-	}
-	args = append(args, "body")
-
-	fmt.Fprintf(&b, "\treturn %s.%s(%s)", clientVar, ep.goName, strings.Join(args, ", "))
-	return b.String()
+	return b.String(), true
 }
 
 func queryFromFlagsExpr(ep *endpointInfo) string {
 	return fmt.Sprintf("queryFromFlags(cmd, api.%sOp)", ep.goName)
-}
-
-type jsonField struct {
-	flagName string
-	goField  string
-}
-
-func structRefBodyFields(bodyRef string) []jsonField {
-	bodySchema := findSchema(bodyRef)
-	if bodySchema == nil || bodySchema.kind != "struct" {
-		return nil
-	}
-
-	propNames := sortedKeys(bodySchema.props)
-
-	var fields []jsonField
-	for _, name := range propNames {
-		ps := bodySchema.props[name]
-		ref, ok := ps["$ref"].(string)
-		if !ok {
-			continue
-		}
-		rn := refBaseName(ref)
-		if s := findSchemaByOASName(rn); s != nil && s.kind == "struct" {
-			fields = append(fields, jsonField{
-				flagName: strings.ReplaceAll(name, "_", "-"),
-				goField:  toGoName(name),
-			})
-		}
-	}
-	return fields
 }
 
 func pathParamExpr(pp paramInfo, def cmdDef) string {
@@ -1280,7 +1227,7 @@ func ucFirst(s string) string {
 	return strings.ToUpper(s[:1]) + s[1:]
 }
 
-func emitInit(buf, attachBuf *bytes.Buffer, opIDs []string, allEndpoints []*endpointInfo) {
+func emitInit(buf, attachBuf *bytes.Buffer, opIDs []string) {
 	// Collect child→parent relationships for non-self commands
 	type childEntry struct {
 		varName string

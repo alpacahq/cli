@@ -11,3 +11,4 @@ man/
 *.out
 .DS_Store
 .envrc
+generate

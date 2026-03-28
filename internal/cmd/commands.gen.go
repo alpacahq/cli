@@ -470,7 +470,48 @@ var optionTradesCmd = fetchCmd("trades", api.OptionTradesOp, func(cmd *cobra.Com
 })
 
 var patchAccountConfigCmd = fetchCmd("set", api.PatchAccountConfigOp, func(cmd *cobra.Command, args []string) (any, error) {
-	body, changed := accountConfigurationsBodyFromFlags(cmd)
+	body := &api.AccountConfigurations{}
+	var changed bool
+	if cmdutil.Changed(cmd, "disable-overnight-trading") {
+		body.DisableOvernightTrading = cmdutil.Bool(cmd, "disable-overnight-trading")
+		changed = true
+	}
+	if cmdutil.Changed(cmd, "dtbp-check") {
+		body.DTBPCheck = cmdutil.Str(cmd, "dtbp-check")
+		changed = true
+	}
+	if cmdutil.Changed(cmd, "fractional-trading") {
+		body.FractionalTrading = cmdutil.Bool(cmd, "fractional-trading")
+		changed = true
+	}
+	if cmdutil.Changed(cmd, "max-margin-multiplier") {
+		body.MaxMarginMultiplier = cmdutil.Str(cmd, "max-margin-multiplier")
+		changed = true
+	}
+	if cmdutil.Changed(cmd, "max-options-trading-level") {
+		body.MaxOptionsTradingLevel = cmdutil.Int(cmd, "max-options-trading-level")
+		changed = true
+	}
+	if cmdutil.Changed(cmd, "no-shorting") {
+		body.NoShorting = cmdutil.Bool(cmd, "no-shorting")
+		changed = true
+	}
+	if cmdutil.Changed(cmd, "pdt-check") {
+		body.PDTCheck = cmdutil.Str(cmd, "pdt-check")
+		changed = true
+	}
+	if cmdutil.Changed(cmd, "ptp-no-exception-entry") {
+		body.PtpNoExceptionEntry = cmdutil.Bool(cmd, "ptp-no-exception-entry")
+		changed = true
+	}
+	if cmdutil.Changed(cmd, "suspend-trade") {
+		body.SuspendTrade = cmdutil.Bool(cmd, "suspend-trade")
+		changed = true
+	}
+	if cmdutil.Changed(cmd, "trade-confirm-email") {
+		body.TradeConfirmEmail = cmdutil.Str(cmd, "trade-confirm-email")
+		changed = true
+	}
 	if !changed {
 		return nil, fmt.Errorf("specify at least one flag to change (see '%s --help')", cmd.CommandPath())
 	}
@@ -478,11 +519,36 @@ var patchAccountConfigCmd = fetchCmd("set", api.PatchAccountConfigOp, func(cmd *
 })
 
 var patchOrderByOrderIDCmd = fetchCmd("replace", api.PatchOrderByOrderIDOp, func(cmd *cobra.Command, args []string) (any, error) {
-	body, changed := patchOrderRequestBodyFromFlags(cmd)
+	body := &api.PatchOrderRequest{}
+	var changed bool
 	if cmdutil.Changed(cmd, "advanced-instructions") {
 		if err := json.Unmarshal([]byte(cmdutil.Str(cmd, "advanced-instructions")), &body.AdvancedInstructions); err != nil {
 			return nil, fmt.Errorf("--advanced-instructions: %w", err)
 		}
+		changed = true
+	}
+	if cmdutil.Changed(cmd, "client-order-id") {
+		body.ClientOrderID = cmdutil.Str(cmd, "client-order-id")
+		changed = true
+	}
+	if cmdutil.Changed(cmd, "limit-price") {
+		body.LimitPrice = cmdutil.Str(cmd, "limit-price")
+		changed = true
+	}
+	if cmdutil.Changed(cmd, "qty") {
+		body.Qty = cmdutil.Str(cmd, "qty")
+		changed = true
+	}
+	if cmdutil.Changed(cmd, "stop-price") {
+		body.StopPrice = cmdutil.Str(cmd, "stop-price")
+		changed = true
+	}
+	if cmdutil.Changed(cmd, "time-in-force") {
+		body.TimeInForce = api.TimeInForce(cmdutil.Str(cmd, "time-in-force"))
+		changed = true
+	}
+	if cmdutil.Changed(cmd, "trail") {
+		body.Trail = cmdutil.Str(cmd, "trail")
 		changed = true
 	}
 	if !changed {
@@ -621,7 +687,18 @@ var stockTradesCmd = fetchCmd("multi-trades", api.StockTradesOp, func(cmd *cobra
 })
 
 var updateWatchlistByIDCmd = fetchCmd("update", api.UpdateWatchlistByIDOp, func(cmd *cobra.Command, args []string) (any, error) {
-	body, changed := updateWatchlistRequestBodyFromFlags(cmd)
+	body := &api.UpdateWatchlistRequest{}
+	var changed bool
+	if cmdutil.Changed(cmd, "name") {
+		body.Name = cmdutil.Str(cmd, "name")
+		changed = true
+	}
+	if cmdutil.Changed(cmd, "symbols") {
+		if s := cmdutil.Str(cmd, "symbols"); s != "" {
+			body.Symbols = strings.Split(s, ",")
+		}
+		changed = true
+	}
 	if !changed {
 		return nil, fmt.Errorf("specify at least one flag to change (see '%s --help')", cmd.CommandPath())
 	}
