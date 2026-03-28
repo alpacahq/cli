@@ -128,6 +128,9 @@ To check for updates:  alpaca update --check`,
 			return nil
 		}
 
+		if os.Getenv("ALPACA_QUIET") != "" {
+			quietFlag = true
+		}
 		if quietFlag {
 			color.NoColor = true
 		}

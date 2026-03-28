@@ -3,6 +3,9 @@
 package integration
 
 import (
+	"bytes"
+	"errors"
+	"os/exec"
 	"strings"
 	"testing"
 )
@@ -51,6 +54,29 @@ func TestQuietFlag(t *testing.T) {
 		if strings.Contains(se, "Hint") || strings.Contains(se, "hint") {
 			t.Error("--quiet should suppress hint output")
 		}
+	}
+}
+
+func TestQuietEnvVar(t *testing.T) {
+	t.Parallel()
+	cmd := makeCmd("order", "list")
+	cmd.Env = append(cmd.Env, "ALPACA_QUIET=1")
+	var stderrBuf bytes.Buffer
+	cmd.Stderr = &stderrBuf
+	stdout, err := cmd.Output()
+	if err != nil {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
+			t.Fatalf("expected exit 0, got %d (stderr: %s)", exitErr.ExitCode(), stderrBuf.Bytes())
+		}
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(stdout) == 0 {
+		t.Fatal("expected JSON output on stdout")
+	}
+	se := stderrBuf.String()
+	if strings.Contains(se, "Hint") || strings.Contains(se, "hint") {
+		t.Error("ALPACA_QUIET should suppress hint output")
 	}
 }
 

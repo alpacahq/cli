@@ -88,6 +88,13 @@ alpaca position list --quiet
 alpaca data latest-trade --symbol AAPL --quiet
 ```
 
+Or set it once via environment variable so every invocation is quiet:
+
+```bash
+export ALPACA_QUIET=1
+alpaca position list
+```
+
 ### Structured errors on stderr
 
 Errors are always JSON on stderr:
@@ -170,6 +177,7 @@ alpaca order list --jq '[.[] | {id, symbol, side, qty}]'
 | `ALPACA_PROFILE` | Profile name to use |
 | `ALPACA_OUTPUT` | Default output format (`json`, `csv`) |
 | `ALPACA_CONFIG_DIR` | Config directory (default: `~/.config/alpaca`) |
+| `ALPACA_QUIET` | Suppress non-data output - warnings, hints, color |
 | `ALPACA_VERBOSE` | Show HTTP request summaries on stderr |
 | `ALPACA_DEBUG` | Show HTTP request/response headers and bodies on stderr |
 | `ALPACA_TRACE` | Show HTTP timing breakdown on stderr (DNS, TLS, TTFB) |

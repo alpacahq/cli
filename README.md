@@ -263,9 +263,10 @@ Credentials are stored in `~/.config/alpaca/profiles/`.
 | `ALPACA_PROFILE` | Profile name to use |
 | `ALPACA_OUTPUT` | Default output format (`json`, `csv`) |
 | `ALPACA_CONFIG_DIR` | Config directory (default: `~/.config/alpaca`) |
+| `ALPACA_QUIET` | Suppress non-data output - warnings, hints, color (any non-empty value) |
 | `ALPACA_VERBOSE` | Show HTTP request summaries on stderr (any non-empty value) |
 | `ALPACA_DEBUG` | Show HTTP request/response headers and bodies on stderr (any non-empty value) |
-| `ALPACA_TRACE` | Show HTTP timing breakdown on stderr — DNS, TLS, TTFB (any non-empty value) |
+| `ALPACA_TRACE` | Show HTTP timing breakdown on stderr - DNS, TLS, TTFB (any non-empty value) |
 Global flags: `--csv`, `--jq`, `--profile`, `--verbose`, `--debug`, `--trace`, `--quiet`, `--schema`, `--timeout`.
 
 Precedence: flags > env vars > profile config > defaults.
