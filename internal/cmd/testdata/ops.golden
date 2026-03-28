@@ -1,0 +1,597 @@
+Calendar: "Get market calendar"
+  end (query, string) -> end
+  market (path, string, required) -> market
+  start (query, string) -> start
+  timezone (query, string) -> timezone
+
+Clock: "Get market clock"
+  markets (query, string) -> markets
+  time (query, string) -> time
+
+CorporateActions: "Get corporate actions"
+  cusips (query, string) -> cusips
+  end (query, string) -> end
+  ids (query, string) -> ids
+  limit (query, int, default=100) -> limit
+  page-token (query, string) -> page_token
+  sort (query, string, default=asc) -> sort
+  start (query, string) -> start
+  symbols (query, string) -> symbols
+  types (query, string) -> types
+
+CryptoBars: "Get historical bars"
+  end (query, string) -> end
+  limit (query, int, default=1000) -> limit
+  loc (path, string, required, default=us) -> loc
+  page-token (query, string) -> page_token
+  sort (query, string, default=asc) -> sort
+  start (query, string) -> start
+  symbols (query, string, required) -> symbols
+  timeframe (query, string, required) -> timeframe
+
+CryptoLatestBars: "Get latest bars"
+  loc (path, string, required, default=us) -> loc
+  symbols (query, string, required) -> symbols
+
+CryptoLatestOrderbooks: "Get latest orderbook"
+  loc (path, string, required, default=us) -> loc
+  symbols (query, string, required) -> symbols
+
+CryptoLatestQuotes: "Get latest quotes"
+  loc (path, string, required, default=us) -> loc
+  symbols (query, string, required) -> symbols
+
+CryptoLatestTrades: "Get latest trades"
+  loc (path, string, required, default=us) -> loc
+  symbols (query, string, required) -> symbols
+
+CryptoPerpLatestBars: "Get latest bars"
+  loc (path, string, required, default=us) -> loc
+  symbols (query, string, required) -> symbols
+
+CryptoPerpLatestFuturesPricing: "Get latest pricing"
+  loc (path, string, required, default=us) -> loc
+  symbols (query, string, required) -> symbols
+
+CryptoPerpLatestOrderbooks: "Get latest orderbook"
+  loc (path, string, required, default=us) -> loc
+  symbols (query, string, required) -> symbols
+
+CryptoPerpLatestQuotes: "Get latest quotes"
+  loc (path, string, required, default=us) -> loc
+  symbols (query, string, required) -> symbols
+
+CryptoPerpLatestTrades: "Get latest trades"
+  loc (path, string, required, default=us) -> loc
+  symbols (query, string, required) -> symbols
+
+CryptoQuotes: "Get historical quotes"
+  end (query, string) -> end
+  limit (query, int, default=1000) -> limit
+  loc (path, string, required, default=us) -> loc
+  page-token (query, string) -> page_token
+  sort (query, string, default=asc) -> sort
+  start (query, string) -> start
+  symbols (query, string, required) -> symbols
+
+CryptoSnapshots: "Get snapshots"
+  loc (path, string, required, default=us) -> loc
+  symbols (query, string, required) -> symbols
+
+CryptoTrades: "Get historical trades"
+  end (query, string) -> end
+  limit (query, int, default=1000) -> limit
+  loc (path, string, required, default=us) -> loc
+  page-token (query, string) -> page_token
+  sort (query, string, default=asc) -> sort
+  start (query, string) -> start
+  symbols (query, string, required) -> symbols
+
+FixedIncomeLatestPrices: "Get latest prices"
+  isins (query, string, required) -> isins
+
+LatestRates: "Get latest rates for currency pairs"
+  currency-pairs (query, string, required) -> currency_pairs
+
+LegacyCalendar: "Get US market calendar"
+  date-type (query, string) -> date_type
+  end (query, string) -> end
+  start (query, string) -> start
+
+LegacyClock: "Get US market clock"
+
+Logos: "Get logos"
+  placeholder (query, bool, default=true) -> placeholder
+  symbol (path, string, required) -> symbol
+
+MostActives: "Get most active stocks"
+  by (query, string, default=volume) -> by
+  top (query, int, default=10) -> top
+
+Movers: "Get top market movers"
+  market-type (path, string, required, default=stocks) -> market_type
+  top (query, int, default=10) -> top
+
+News: "Get news articles"
+  end (query, string) -> end
+  exclude-contentless (query, bool) -> exclude_contentless
+  include-content (query, bool) -> include_content
+  limit (query, int) -> limit
+  page-token (query, string) -> page_token
+  sort (query, string, default=desc) -> sort
+  start (query, string) -> start
+  symbols (query, string) -> symbols
+
+OptionChain: "Get option chain"
+  expiration-date (query, string) -> expiration_date
+  expiration-date-gte (query, string) -> expiration_date_gte
+  expiration-date-lte (query, string) -> expiration_date_lte
+  feed (query, string, default=opra) -> feed
+  limit (query, int, default=100) -> limit
+  page-token (query, string) -> page_token
+  root-symbol (query, string) -> root_symbol
+  strike-price-gte (query, string) -> strike_price_gte
+  strike-price-lte (query, string) -> strike_price_lte
+  type (query, string) -> type
+  underlying-symbol (path, string, required) -> underlying_symbol
+  updated-since (query, string) -> updated_since
+
+OptionLatestQuotes: "Get latest quotes"
+  feed (query, string, default=opra) -> feed
+  symbols (query, string, required) -> symbols
+
+OptionLatestTrades: "Get latest trades"
+  feed (query, string, default=opra) -> feed
+  symbols (query, string, required) -> symbols
+
+OptionMetaConditions: "Get condition codes"
+  ticktype (path, string, required) -> ticktype
+
+OptionMetaExchanges: "Get exchange codes"
+
+OptionSnapshots: "Get snapshots"
+  feed (query, string, default=opra) -> feed
+  limit (query, int, default=100) -> limit
+  page-token (query, string) -> page_token
+  symbols (query, string, required) -> symbols
+  updated-since (query, string) -> updated_since
+
+OptionTrades: "Get historical trades"
+  end (query, string) -> end
+  limit (query, int, default=1000) -> limit
+  page-token (query, string) -> page_token
+  sort (query, string, default=asc) -> sort
+  start (query, string) -> start
+  symbols (query, string, required) -> symbols
+
+Rates: "Get historical rates for currency pairs"
+  currency-pairs (query, string, required) -> currency_pairs
+  end (query, string) -> end
+  limit (query, int, default=1000) -> limit
+  page-token (query, string) -> page_token
+  sort (query, string, default=asc) -> sort
+  start (query, string) -> start
+  timeframe (query, string, default=1Min) -> timeframe
+
+StockAuctionSingle: "Get historical auctions (single)"
+  asof (query, string) -> asof
+  currency (query, string) -> currency
+  end (query, string) -> end
+  feed (query, string, default=sip) -> feed
+  limit (query, int, default=1000) -> limit
+  page-token (query, string) -> page_token
+  sort (query, string, default=asc) -> sort
+  start (query, string) -> start
+  symbol (path, string, required) -> symbol
+
+StockAuctions: "Get historical auctions"
+  asof (query, string) -> asof
+  currency (query, string) -> currency
+  end (query, string) -> end
+  feed (query, string, default=sip) -> feed
+  limit (query, int, default=1000) -> limit
+  page-token (query, string) -> page_token
+  sort (query, string, default=asc) -> sort
+  start (query, string) -> start
+  symbols (query, string, required) -> symbols
+
+StockBarSingle: "Get historical bars (single symbol)"
+  adjustment (query, string, default=raw) -> adjustment
+  asof (query, string) -> asof
+  currency (query, string) -> currency
+  end (query, string) -> end
+  feed (query, string, default=sip) -> feed
+  limit (query, int, default=1000) -> limit
+  page-token (query, string) -> page_token
+  sort (query, string, default=asc) -> sort
+  start (query, string) -> start
+  symbol (path, string, required) -> symbol
+  timeframe (query, string, required) -> timeframe
+
+StockBars: "Get historical bars"
+  adjustment (query, string, default=raw) -> adjustment
+  asof (query, string) -> asof
+  currency (query, string) -> currency
+  end (query, string) -> end
+  feed (query, string, default=sip) -> feed
+  limit (query, int, default=1000) -> limit
+  page-token (query, string) -> page_token
+  sort (query, string, default=asc) -> sort
+  start (query, string) -> start
+  symbols (query, string, required) -> symbols
+  timeframe (query, string, required) -> timeframe
+
+StockLatestBarSingle: "Get latest bar (single symbol)"
+  currency (query, string) -> currency
+  feed (query, string) -> feed
+  symbol (path, string, required) -> symbol
+
+StockLatestBars: "Get latest bars"
+  currency (query, string) -> currency
+  feed (query, string) -> feed
+  symbols (query, string, required) -> symbols
+
+StockLatestQuoteSingle: "Get latest quote (single symbol)"
+  currency (query, string) -> currency
+  feed (query, string) -> feed
+  symbol (path, string, required) -> symbol
+
+StockLatestQuotes: "Get latest quotes"
+  currency (query, string) -> currency
+  feed (query, string) -> feed
+  symbols (query, string, required) -> symbols
+
+StockLatestTradeSingle: "Get latest trade (single symbol)"
+  currency (query, string) -> currency
+  feed (query, string) -> feed
+  symbol (path, string, required) -> symbol
+
+StockLatestTrades: "Get latest trades"
+  currency (query, string) -> currency
+  feed (query, string) -> feed
+  symbols (query, string, required) -> symbols
+
+StockMetaConditions: "Get condition codes"
+  tape (query, string, required) -> tape
+  ticktype (path, string, required) -> ticktype
+
+StockMetaExchanges: "Get exchange codes"
+
+StockQuoteSingle: "Get historical quotes (single symbol)"
+  asof (query, string) -> asof
+  currency (query, string) -> currency
+  end (query, string) -> end
+  feed (query, string, default=sip) -> feed
+  limit (query, int, default=1000) -> limit
+  page-token (query, string) -> page_token
+  sort (query, string, default=asc) -> sort
+  start (query, string) -> start
+  symbol (path, string, required) -> symbol
+
+StockQuotes: "Get historical quotes"
+  asof (query, string) -> asof
+  currency (query, string) -> currency
+  end (query, string) -> end
+  feed (query, string, default=sip) -> feed
+  limit (query, int, default=1000) -> limit
+  page-token (query, string) -> page_token
+  sort (query, string, default=asc) -> sort
+  start (query, string) -> start
+  symbols (query, string, required) -> symbols
+
+StockSnapshotSingle: "Get snapshot (single symbol)"
+  currency (query, string) -> currency
+  feed (query, string) -> feed
+  symbol (path, string, required) -> symbol
+
+StockSnapshots: "Get snapshots"
+  currency (query, string) -> currency
+  feed (query, string) -> feed
+  symbols (query, string, required) -> symbols
+
+StockTradeSingle: "Get historical trades (single symbol)"
+  asof (query, string) -> asof
+  currency (query, string) -> currency
+  end (query, string) -> end
+  feed (query, string, default=sip) -> feed
+  limit (query, int, default=1000) -> limit
+  page-token (query, string) -> page_token
+  sort (query, string, default=asc) -> sort
+  start (query, string) -> start
+  symbol (path, string, required) -> symbol
+
+StockTrades: "Get historical trades"
+  asof (query, string) -> asof
+  currency (query, string) -> currency
+  end (query, string) -> end
+  feed (query, string, default=sip) -> feed
+  limit (query, int, default=1000) -> limit
+  page-token (query, string) -> page_token
+  sort (query, string, default=asc) -> sort
+  start (query, string) -> start
+  symbols (query, string, required) -> symbols
+
+UsCorporates: "Get US corporates"
+  bond-status (query, string) -> bond_status
+  cusips (query, string) -> cusips
+  isins (query, string) -> isins
+  tickers (query, string) -> tickers
+
+UsTreasuries: "Get US treasuries"
+  bond-status (query, string) -> bond_status
+  cusips (query, string) -> cusips
+  isins (query, string) -> isins
+  subtype (query, string) -> subtype
+
+AddAssetToWatchlist: "Add asset to watchlist"
+  symbol (body, string) -> symbol
+  watchlist-id (path, string, required) -> watchlist_id
+
+AddAssetToWatchlistByName: "Add asset to watchlist by name"
+  name (query, string, required) -> name
+  symbol (body, string) -> symbol
+
+CreateCryptoPerpTransferForAccount: "Request a new withdrawal"
+  address (body, string) -> address
+  amount (body, string) -> amount
+  asset (body, string) -> asset
+
+CreateCryptoTransferForAccount: "Request a new withdrawal"
+  address (body, string) -> address
+  amount (body, string) -> amount
+  asset (body, string) -> asset
+
+CreateWhitelistedAddress: "Request a new whitelisted address"
+  address (body, string) -> address
+  asset (body, string) -> asset
+
+CreateWhitelistedPerpAddress: "Request a new whitelisted address"
+  address (body, string) -> address
+  asset (body, string) -> asset
+
+DeleteAllOpenPositions: "Close all positions"
+  cancel-orders (query, bool) -> cancel_orders
+
+DeleteAllOrders: "Delete all orders"
+
+DeleteOpenPosition: "Close a position"
+  percentage (query, string) -> percentage
+  qty (query, string) -> qty
+  symbol-or-asset-id (path, string, required) -> symbol_or_asset_id
+
+DeleteOrderByOrderID: "Delete order by ID"
+  order-id (path, string, required) -> order_id
+
+DeleteWatchlistByID: "Delete watchlist by id"
+  watchlist-id (path, string, required) -> watchlist_id
+
+DeleteWatchlistByName: "Delete watchlist by name"
+  name (query, string, required) -> name
+
+DeleteWhitelistedAddress: "Delete a whitelisted address"
+  whitelisted-address-id (path, string, required) -> whitelisted_address_id
+
+DeleteWhitelistedPerpAddress: "Delete a whitelisted address"
+  whitelisted-address-id (path, string, required) -> whitelisted_address_id
+
+GetOptionContractSymbolOrID: "Get an option contract by ID or symbol"
+  symbol-or-id (path, string, required) -> symbol_or_id
+
+GetOptionsContracts: "Get option contracts"
+  expiration-date (query, string) -> expiration_date
+  expiration-date-gte (query, string) -> expiration_date_gte
+  expiration-date-lte (query, string) -> expiration_date_lte
+  limit (query, int) -> limit
+  page-token (query, string) -> page_token
+  ppind (query, bool) -> ppind
+  root-symbol (query, string) -> root_symbol
+  show-deliverables (query, bool) -> show_deliverables
+  status (query, string) -> status
+  strike-price-gte (query, string) -> strike_price_gte
+  strike-price-lte (query, string) -> strike_price_lte
+  style (query, string) -> style
+  type (query, string) -> type
+  underlying-symbols (query, string) -> underlying_symbols
+
+GetV2Assets: "Get assets"
+  asset-class (query, string) -> asset_class
+  attributes (query, string) -> attributes
+  exchange (query, string) -> exchange
+  status (query, string) -> status
+
+GetV2AssetsSymbolOrAssetID: "Get an asset by ID or symbol"
+  symbol-or-asset-id (path, string, required) -> symbol_or_asset_id
+
+GetV2CorporateActionsAnnouncements: "Retrieve announcements"
+  ca-types (query, string, required) -> ca_types
+  cusip (query, string) -> cusip
+  date-type (query, string) -> date_type
+  since (query, string, required) -> since
+  symbol (query, string) -> symbol
+  until (query, string, required) -> until
+
+GetV2CorporateActionsAnnouncementsID: "Retrieve a specific announcement"
+  id (path, string, required) -> id
+
+GetAccount: "Get account"
+
+GetAccountActivities: "Retrieve account activities"
+  activity-types (query, string) -> activity_types
+  after (query, string) -> after
+  category (query, string) -> category
+  date (query, string) -> date
+  direction (query, string, default=desc) -> direction
+  page-size (query, int, default=100) -> page_size
+  page-token (query, string) -> page_token
+  until (query, string) -> until
+
+GetAccountActivitiesByActivityType: "Retrieve account activities of specific type"
+  activity-type (path, string, required) -> activity_type
+  after (query, string) -> after
+  date (query, string) -> date
+  direction (query, string, default=desc) -> direction
+  page-size (query, int, default=100) -> page_size
+  page-token (query, string) -> page_token
+  until (query, string) -> until
+
+GetAccountConfig: "Get account configurations"
+
+GetAccountPortfolioHistory: "Get account portfolio history"
+  cashflow-types (query, string) -> cashflow_types
+  end (query, string) -> end
+  extended-hours (query, string) -> extended_hours
+  intraday-reporting (query, string, default=market_hours) -> intraday_reporting
+  period (query, string) -> period
+  pnl-reset (query, string, default=per_day) -> pnl_reset
+  start (query, string) -> start
+  timeframe (query, string) -> timeframe
+
+GetAllOpenPositions: "List all open positions"
+
+GetAllOrders: "Get all orders"
+  after (query, string) -> after
+  after-order-id (query, string) -> after_order_id
+  asset-class (query, string) -> asset_class
+  before-order-id (query, string) -> before_order_id
+  direction (query, string) -> direction
+  limit (query, int) -> limit
+  nested (query, bool) -> nested
+  side (query, string) -> side
+  status (query, string, default=open) -> status
+  symbols (query, string) -> symbols
+  until (query, string) -> until
+
+GetCryptoFundingTransfer: "Retrieve a crypto funding transfer"
+  transfer-id (path, string, required) -> transfer_id
+
+GetCryptoPerpAccountLeverage: "Get account leverage for an asset"
+  symbol (query, string) -> symbol
+
+GetCryptoPerpAccountVitals: "Retrieve account vitals"
+
+GetCryptoPerpFundingTransfer: "Retrieve a crypto funding transfer"
+  transfer-id (path, string, required) -> transfer_id
+
+GetCryptoPerpTransferEstimate: "Returns the estimated gas fee for a proposed transaction"
+  amount (query, string) -> amount
+  asset (query, string) -> asset
+  from-address (query, string) -> from_address
+  to-address (query, string) -> to_address
+
+GetCryptoTransferEstimate: "Returns the estimated gas fee for a proposed transaction"
+  amount (query, string) -> amount
+  asset (query, string) -> asset
+  from-address (query, string) -> from_address
+  to-address (query, string) -> to_address
+
+GetOpenPosition: "Get an open position"
+  symbol-or-asset-id (path, string, required) -> symbol_or_asset_id
+
+GetOrderByClientOrderID: "Get order by client order ID"
+  client-order-id (query, string, required) -> client_order_id
+
+GetOrderByOrderID: "Get order by ID"
+  nested (query, bool) -> nested
+  order-id (path, string, required) -> order_id
+
+GetWatchlistByID: "Get watchlist by ID"
+  watchlist-id (path, string, required) -> watchlist_id
+
+GetWatchlistByName: "Get watchlist by name"
+  name (query, string, required) -> name
+
+GetWatchlists: "Get all watchlists"
+
+ListCryptoFundingTransfers: "Retrieve crypto funding transfers"
+
+ListCryptoFundingWallets: "Retrieve crypto funding wallets"
+  asset (query, string) -> asset
+  network (query, string) -> network
+
+ListCryptoPerpFundingTransfers: "Retrieve crypto funding transfers"
+
+ListCryptoPerpFundingWallets: "Retrieve crypto funding wallets"
+  asset (query, string) -> asset
+
+ListWhitelistedAddress: "Get an array of whitelisted addresses"
+
+ListWhitelistedPerpAddress: "Get an array of whitelisted addresses"
+
+OptionBars: "Get historical bars"
+  end (query, string) -> end
+  limit (query, int, default=1000) -> limit
+  page-token (query, string) -> page_token
+  sort (query, string, default=asc) -> sort
+  start (query, string) -> start
+  symbols (query, string, required) -> symbols
+  timeframe (query, string, required) -> timeframe
+
+OptionDoNotExercise: "Do not exercise an options position"
+  symbol-or-contract-id (path, string, required) -> symbol_or_contract_id
+
+OptionExercise: "Exercise an options position"
+  symbol-or-contract-id (path, string, required) -> symbol_or_contract_id
+
+PatchAccountConfig: "Update account configurations"
+  disable-overnight-trading (body, bool) -> disable_overnight_trading
+  dtbp-check (body, string) -> dtbp_check
+  fractional-trading (body, bool) -> fractional_trading
+  max-margin-multiplier (body, string) -> max_margin_multiplier
+  max-options-trading-level (body, int) -> max_options_trading_level
+  no-shorting (body, bool) -> no_shorting
+  pdt-check (body, string) -> pdt_check
+  ptp-no-exception-entry (body, bool) -> ptp_no_exception_entry
+  suspend-trade (body, bool) -> suspend_trade
+  trade-confirm-email (body, string) -> trade_confirm_email
+
+PatchOrderByOrderID: "Replace order by ID"
+  advanced-instructions (body, string) -> advanced_instructions
+  client-order-id (body, string) -> client_order_id
+  limit-price (body, string) -> limit_price
+  order-id (path, string, required) -> order_id
+  qty (body, string) -> qty
+  stop-price (body, string) -> stop_price
+  time-in-force (body, string) -> time_in_force
+  trail (body, string) -> trail
+
+PostOrder: "Create an order"
+  advanced-instructions (body, string) -> advanced_instructions
+  client-order-id (body, string) -> client_order_id
+  extended-hours (body, bool) -> extended_hours
+  legs (body, string) -> legs
+  limit-price (body, string) -> limit_price
+  notional (body, string) -> notional
+  order-class (body, string) -> order_class
+  position-intent (body, string) -> position_intent
+  qty (body, string) -> qty
+  side (body, string) -> side
+  stop-loss (body, string) -> stop_loss
+  stop-price (body, string) -> stop_price
+  symbol (body, string) -> symbol
+  take-profit (body, string) -> take_profit
+  time-in-force (body, string) -> time_in_force
+  trail-percent (body, string) -> trail_percent
+  trail-price (body, string) -> trail_price
+  type (body, string) -> type
+
+PostWatchlist: "Create watchlist"
+  name (body, string) -> name
+  symbols (body, string) -> symbols
+
+RemoveAssetFromWatchlist: "Delete symbol from watchlist"
+  symbol (path, string, required) -> symbol
+  watchlist-id (path, string, required) -> watchlist_id
+
+SetCryptoPerpAccountLeverage: "Set account leverage for an asset"
+  leverage (query, int) -> leverage
+  symbol (query, string) -> symbol
+
+UpdateWatchlistByID: "Update watchlist by id"
+  name (body, string) -> name
+  symbols (body, string) -> symbols
+  watchlist-id (path, string, required) -> watchlist_id
+
+UpdateWatchlistByName: "Update watchlist by name"
+  name (query, string, required) -> name
+  symbols (body, string) -> symbols
+
