@@ -572,7 +572,7 @@ PostOrder: "Create an order"
   time-in-force (body, string) -> time_in_force
   trail-percent (body, string) -> trail_percent
   trail-price (body, string) -> trail_price
-  type (body, string) -> type
+  type (body, string, default=market) -> type
 
 PostWatchlist: "Create watchlist"
   name (body, string) -> name

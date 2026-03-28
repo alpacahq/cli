@@ -1198,6 +1198,10 @@ var PatchOrderByOrderIDOp = Op{
 var PostOrderOp = Op{
 	Name: "PostOrder", Summary: "Create an order",
 	Long: "Places a new order for the given account. An order request may be rejected if the account is not authorized for trading, or if the tradable balance is insufficient to fill the order",
+	Example: `  alpaca order submit --symbol AAPL --qty 10 --side buy --type market
+  alpaca order submit --symbol AAPL --qty 5 --side buy --type limit --limit-price 185.00
+  alpaca order submit --symbol AAPL --qty 10 --side sell --type stop --stop-price 175.00
+  alpaca order submit --symbol AAPL --notional 1000 --side buy --type market`,
 	Flags: []FlagDef{
 		{Name: "advanced-instructions", OASName: "advanced_instructions", Type: "string", Description: "advanced instructions for Elite Smart Router: https://docs.alpaca.markets/docs/alpaca-elite-smart-router", Source: "body"},
 		{Name: "client-order-id", OASName: "client_order_id", Type: "string", Description: "A unique identifier for the order. Automatically generated if not sent. (<= 128 characters)", Source: "body"},
@@ -1216,7 +1220,7 @@ var PostOrderOp = Op{
 		{Name: "time-in-force", OASName: "time_in_force", Type: "string", Description: "time-In-Force values supported by Alpaca vary based on the order's security type", Completions: []string{"cls", "day", "fok", "gtc", "ioc", "opg"}, Source: "body"},
 		{Name: "trail-percent", OASName: "trail_percent", Type: "string", Description: "this or trail_price is required if type is trailing_stop", Source: "body"},
 		{Name: "trail-price", OASName: "trail_price", Type: "string", Description: "this or trail_percent is required if type is trailing_stop", Source: "body"},
-		{Name: "type", OASName: "type", Type: "string", Description: "order types supported by Alpaca vary based on the order's security type", Completions: []string{"limit", "market", "stop", "stop_limit", "trailing_stop"}, Source: "body"},
+		{Name: "type", OASName: "type", Type: "string", Default: "market", Description: "order types supported by Alpaca vary based on the order's security type", Completions: []string{"limit", "market", "stop", "stop_limit", "trailing_stop"}, Source: "body"},
 	},
 }
 

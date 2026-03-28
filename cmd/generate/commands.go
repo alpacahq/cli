@@ -8,14 +8,17 @@ import (
 )
 
 type cmdDef struct {
-	parent      string
-	use         string
-	self        bool
-	examples    string
-	long        string
-	defaults    map[string]string
-	normalize   []string
-	bodyAliases map[string]string // body field kebab name → CLI alias (resolves flag collisions)
+	parent         string
+	use            string
+	self           bool
+	examples       string
+	long           string
+	defaults       map[string]string
+	normalize      []string
+	bodyAliases    map[string]string // body field kebab name → CLI alias (resolves flag collisions)
+	bodyHook       string            // hand-written func(cmd, body) (any, error) called after body construction
+	bodySkipFields []string          // body fields (kebab-case) excluded from generation; handled by bodyHook
+	configureFunc  string            // hand-written func(cmd) appended to configure closures
 }
 
 type parentDef struct {
@@ -144,7 +147,19 @@ var cmdRegistry = map[string]cmdDef{
 		examples: "  alpaca corporate-action get --id <announcement-id>",
 	},
 
-	// --- order (trivial ones) ---
+	// --- order ---
+	"PostOrder": {
+		parent:         "order",
+		use:            "submit",
+		defaults:       map[string]string{"type": "market"},
+		bodyHook:       "postOrderHook",
+		bodySkipFields: []string{"take-profit", "stop-loss"},
+		configureFunc:  "configureOrderSubmit",
+		examples: `  alpaca order submit --symbol AAPL --qty 10 --side buy --type market
+  alpaca order submit --symbol AAPL --qty 5 --side buy --type limit --limit-price 185.00
+  alpaca order submit --symbol AAPL --qty 10 --side sell --type stop --stop-price 175.00
+  alpaca order submit --symbol AAPL --notional 1000 --side buy --type market`,
+	},
 	"GetAllOrders": {
 		parent:   "order",
 		use:      "list",
@@ -748,9 +763,7 @@ var cmdRegistry = map[string]cmdDef{
 	},
 }
 
-var cmdSkip = map[string]string{
-	"PostOrder": "hand-written: bracket orders, enums, dry-run, JSON parsing",
-}
+var cmdSkip = map[string]string{}
 
 func checkExhaustive(allEndpoints []*endpointInfo) {
 	epByOp := map[string]*endpointInfo{}
@@ -891,6 +904,10 @@ func emitCommand(buf, attachBuf *bytes.Buffer, opID string, def cmdDef, ep *endp
 		configures = append(configures, fmt.Sprintf("func(c *cobra.Command) {\n%s\n\t}", strings.Join(aliasLines, "\n")))
 	}
 
+	if def.configureFunc != "" {
+		configures = append(configures, def.configureFunc)
+	}
+
 	// Build the fetch callback
 	fetchBody := buildFetchBody(opID, def, ep, clientVar)
 
@@ -964,7 +981,7 @@ func buildFetchBody(opID string, def cmdDef, ep *endpointInfo, clientVar string)
 		} else if p := flattenInlineProps(ep.bodyInline); p != nil {
 			typeName, props = ep.goName+"Request", p
 		}
-		if bodyCode, ok := buildPostBody(typeName, props); ok {
+		if bodyCode, ok := buildPostBody(typeName, props, def.bodySkipFields); ok {
 			var args []string
 			for _, pp := range ep.pathParams {
 				args = append(args, pathParamExpr(pp, def))
@@ -974,10 +991,15 @@ func buildFetchBody(opID string, def cmdDef, ep *endpointInfo, clientVar string)
 			}
 			args = append(args, "body")
 			call := fmt.Sprintf("%s.%s(%s)", clientVar, methodName, strings.Join(args, ", "))
-			if isVoid {
-				return bodyCode + "\n\treturn voidResponse(" + call + ")"
+
+			result := bodyCode
+			if def.bodyHook != "" {
+				result += fmt.Sprintf("\n\tif hookResult, err := %s(cmd, body); err != nil {\n\t\treturn nil, err\n\t} else if hookResult != nil {\n\t\treturn hookResult, nil\n\t}", def.bodyHook)
 			}
-			return bodyCode + "\n\treturn " + call
+			if isVoid {
+				return result + "\n\treturn voidResponse(" + call + ")"
+			}
+			return result + "\n\treturn " + call
 		}
 	}
 
@@ -1012,68 +1034,125 @@ func flattenInlineProps(schema map[string]any) map[string]map[string]any {
 }
 
 // buildPostBody generates the body-construction code for POST commands.
-// Returns the code string and true if successful, or ("", false) if the
-// body schema contains unsupported field types ($ref, non-string, non-[]string).
-func buildPostBody(typeName string, props map[string]map[string]any) (string, bool) {
+// Handles string, boolean, integer, enum $ref, string arrays, and complex
+// types (struct $ref, nested objects, non-string arrays) via JSON unmarshal.
+// Fields listed in skipFields (kebab-case) are excluded from generation.
+func buildPostBody(typeName string, props map[string]map[string]any, skipFields []string) (string, bool) {
 	if typeName == "" || len(props) == 0 {
 		return "", false
 	}
+	skip := make(map[string]bool, len(skipFields))
+	for _, f := range skipFields {
+		skip[f] = true
+	}
+
 	propNames := sortedKeys(props)
 
-	type field struct {
-		goField, flagName, kind string // kind: "string" or "arrayString"
+	type postField struct {
+		goField    string
+		flagName   string
+		kind       string // "string", "bool", "int", "enum", "arrayString", "json"
+		enumGoType string
 	}
-	var fields []field
-	var hasArray bool
+	var fields []postField
 	for _, name := range propNames {
-		ps := props[name]
-		if _, ok := ps["$ref"].(string); ok {
-			return "", false
-		}
 		flagName := strings.ReplaceAll(name, "_", "-")
+		if skip[flagName] {
+			continue
+		}
+		ps := props[name]
 		goField := toGoName(name)
+
+		if ref, ok := ps["$ref"].(string); ok {
+			rn := refBaseName(ref)
+			if s := findSchemaByOASName(rn); s != nil {
+				switch s.kind {
+				case "enum":
+					fields = append(fields, postField{goField, flagName, "enum", s.goName})
+				case "struct":
+					fields = append(fields, postField{goField, flagName, "json", ""})
+				default:
+					return "", false
+				}
+			} else {
+				return "", false
+			}
+			continue
+		}
+
 		switch t, _ := ps["type"].(string); t {
 		case "string":
-			fields = append(fields, field{goField, flagName, "string"})
+			fields = append(fields, postField{goField, flagName, "string", ""})
+		case "boolean":
+			fields = append(fields, postField{goField, flagName, "bool", ""})
+		case "integer":
+			fields = append(fields, postField{goField, flagName, "int", ""})
 		case "array":
 			if items, ok := ps["items"].(map[string]any); ok {
 				if itemType, _ := items["type"].(string); itemType == "string" {
-					fields = append(fields, field{goField, flagName, "arrayString"})
-					hasArray = true
+					fields = append(fields, postField{goField, flagName, "arrayString", ""})
 					continue
 				}
 			}
-			return "", false
+			fields = append(fields, postField{goField, flagName, "json", ""})
+		case "object":
+			fields = append(fields, postField{goField, flagName, "json", ""})
 		default:
 			return "", false
 		}
 	}
 
-	if !hasArray {
-		var lines []string
-		lines = append(lines, fmt.Sprintf("body := &api.%s{", typeName))
-		for _, f := range fields {
-			lines = append(lines, fmt.Sprintf("\t\t%s: cmdutil.Str(cmd, %q),", f.goField, f.flagName))
+	var b strings.Builder
+
+	// Struct initializer with inline-assignable fields
+	fmt.Fprintf(&b, "body := &api.%s{", typeName)
+	hasInline := false
+	for _, f := range fields {
+		var expr string
+		switch f.kind {
+		case "string":
+			expr = fmt.Sprintf("cmdutil.Str(cmd, %q)", f.flagName)
+		case "bool":
+			expr = fmt.Sprintf("cmdutil.Bool(cmd, %q)", f.flagName)
+		case "int":
+			expr = fmt.Sprintf("cmdutil.Int(cmd, %q)", f.flagName)
+		case "enum":
+			expr = fmt.Sprintf("api.%s(cmdutil.Str(cmd, %q))", f.enumGoType, f.flagName)
+		default:
+			continue
 		}
-		lines = append(lines, "\t}")
-		return strings.Join(lines, "\n"), true
+		if !hasInline {
+			b.WriteString("\n")
+			hasInline = true
+		}
+		fmt.Fprintf(&b, "\t\t%s: %s,\n", f.goField, expr)
+	}
+	if hasInline {
+		b.WriteString("\t}")
+	} else {
+		b.WriteString("}")
 	}
 
-	var b strings.Builder
-	fmt.Fprintf(&b, "body := &api.%s{\n", typeName)
-	for _, f := range fields {
-		if f.kind == "string" {
-			fmt.Fprintf(&b, "\t\t%s: cmdutil.Str(cmd, %q),\n", f.goField, f.flagName)
-		}
-	}
-	b.WriteString("\t}\n")
+	// Post-init: string arrays (comma-split)
 	for _, f := range fields {
 		if f.kind == "arrayString" {
-			fmt.Fprintf(&b, "\tif s := cmdutil.Str(cmd, %q); s != \"\" {\n", f.flagName)
+			fmt.Fprintf(&b, "\n\tif s := cmdutil.Str(cmd, %q); s != \"\" {\n", f.flagName)
 			fmt.Fprintf(&b, "\t\tbody.%s = strings.Split(s, \",\")\n", f.goField)
 			b.WriteString("\t}")
 		}
 	}
+
+	// Post-init: JSON unmarshal for complex types
+	for _, f := range fields {
+		if f.kind == "json" {
+			fmt.Fprintf(&b, "\n\tif cmdutil.Changed(cmd, %q) {\n", f.flagName)
+			fmt.Fprintf(&b, "\t\tif err := json.Unmarshal([]byte(cmdutil.Str(cmd, %q)), &body.%s); err != nil {\n", f.flagName, f.goField)
+			fmt.Fprintf(&b, "\t\t\treturn nil, fmt.Errorf(\"--%s: %%w\", err)\n", f.flagName)
+			b.WriteString("\t\t}\n")
+			b.WriteString("\t}")
+		}
+	}
+
 	return b.String(), true
 }
 

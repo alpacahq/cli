@@ -491,6 +491,41 @@ var patchOrderByOrderIDCmd = fetchCmd("replace", api.PatchOrderByOrderIDOp, func
 	return tradingClient.PatchOrderByOrderID(cmdutil.Str(cmd, "order-id"), body)
 })
 
+var postOrderCmd = fetchCmd("submit", api.PostOrderOp, func(cmd *cobra.Command, args []string) (any, error) {
+	body := &api.PostOrderRequest{
+		ClientOrderID:  cmdutil.Str(cmd, "client-order-id"),
+		ExtendedHours:  cmdutil.Bool(cmd, "extended-hours"),
+		LimitPrice:     cmdutil.Str(cmd, "limit-price"),
+		Notional:       cmdutil.Str(cmd, "notional"),
+		OrderClass:     api.OrderClass(cmdutil.Str(cmd, "order-class")),
+		PositionIntent: api.PositionIntent(cmdutil.Str(cmd, "position-intent")),
+		Qty:            cmdutil.Str(cmd, "qty"),
+		Side:           api.OrderSide(cmdutil.Str(cmd, "side")),
+		StopPrice:      cmdutil.Str(cmd, "stop-price"),
+		Symbol:         cmdutil.Str(cmd, "symbol"),
+		TimeInForce:    api.TimeInForce(cmdutil.Str(cmd, "time-in-force")),
+		TrailPercent:   cmdutil.Str(cmd, "trail-percent"),
+		TrailPrice:     cmdutil.Str(cmd, "trail-price"),
+		Type:           api.OrderType(cmdutil.Str(cmd, "type")),
+	}
+	if cmdutil.Changed(cmd, "advanced-instructions") {
+		if err := json.Unmarshal([]byte(cmdutil.Str(cmd, "advanced-instructions")), &body.AdvancedInstructions); err != nil {
+			return nil, fmt.Errorf("--advanced-instructions: %w", err)
+		}
+	}
+	if cmdutil.Changed(cmd, "legs") {
+		if err := json.Unmarshal([]byte(cmdutil.Str(cmd, "legs")), &body.Legs); err != nil {
+			return nil, fmt.Errorf("--legs: %w", err)
+		}
+	}
+	if hookResult, err := postOrderHook(cmd, body); err != nil {
+		return nil, err
+	} else if hookResult != nil {
+		return hookResult, nil
+	}
+	return tradingClient.PostOrder(body)
+}, configureOrderSubmit)
+
 var postWatchlistCmd = fetchCmd("create", api.PostWatchlistOp, func(cmd *cobra.Command, args []string) (any, error) {
 	body := &api.UpdateWatchlistRequest{
 		Name: cmdutil.Str(cmd, "name"),
@@ -723,6 +758,7 @@ func init() {
 	dataOptionCmd.AddCommand(optionTradesCmd)
 	accountConfigCmd.AddCommand(patchAccountConfigCmd)
 	orderCmd.AddCommand(patchOrderByOrderIDCmd)
+	orderCmd.AddCommand(postOrderCmd)
 	watchlistCmd.AddCommand(postWatchlistCmd)
 	dataForexCmd.AddCommand(ratesCmd)
 	watchlistCmd.AddCommand(removeAssetFromWatchlistCmd)
