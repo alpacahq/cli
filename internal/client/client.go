@@ -282,7 +282,7 @@ func (c *Client) do(method, reqURL string, body any) (json.RawMessage, error) {
 	}
 
 	if len(respBody) == 0 {
-		return json.RawMessage("null"), nil
+		return nil, nil
 	}
 
 	return json.RawMessage(respBody), nil

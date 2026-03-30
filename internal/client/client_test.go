@@ -214,8 +214,8 @@ func TestEmpty204Response(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if string(data) != "null" {
-		t.Errorf("expected null for empty body, got %s", string(data))
+	if data != nil {
+		t.Errorf("expected nil for empty body, got %s", string(data))
 	}
 }
 
