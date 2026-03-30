@@ -870,10 +870,7 @@ func genCommands(epByOp map[string]*endpointInfo) string {
 func emitCommand(buf, attachBuf *bytes.Buffer, opID string, def cmdDef, ep *endpointInfo) {
 	opVar := opID + "Op"
 	parentVar := def.parent + "Cmd"
-	clientVar := "tradingClient"
-	if ep.specSource == "marketdata" {
-		clientVar = "dataClient"
-	}
+	clientVar := ep.clientVar
 
 	// Build configure closures for bodyAliases (Long/Example/Defaults are
 	// embedded in the Op struct).

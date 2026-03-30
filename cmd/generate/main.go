@@ -22,7 +22,7 @@ type specConfig struct {
 	specFile     string
 	prefix       string // output file prefix: "trading" or "marketdata"
 	clientName   string
-	specSource   string // "trading" or "marketdata"
+	clientVar    string // package-level var in root.go: "tradingClient" or "dataClient"
 	baseURLField string // field on client.Client: "BaseURL" or "DataURL"
 }
 
@@ -34,8 +34,8 @@ type specResult struct {
 }
 
 var specs = []specConfig{
-	{"trading-api.json", "trading", "Trading", "trading", "BaseURL"},
-	{"market-data-api.json", "marketdata", "MarketData", "marketdata", "DataURL"},
+	{"trading-api.json", "trading", "Trading", "tradingClient", "BaseURL"},
+	{"market-data-api.json", "marketdata", "MarketData", "dataClient", "DataURL"},
 }
 
 func main() {
@@ -72,7 +72,7 @@ func main() {
 		writeGo(filepath.Join(outDir, r.config.prefix+"_client.gen.go"), genClient(r.config.clientName, r.config.specFile, r.endpoints, r.config.baseURLField))
 		ops = append(ops, collectDescriptions(r.endpoints, r.spec)...)
 		for _, ep := range r.endpoints {
-			ep.specSource = r.config.specSource
+			ep.clientVar = r.config.clientVar
 		}
 		allEndpoints = append(allEndpoints, r.endpoints...)
 	}
@@ -199,7 +199,7 @@ type endpointInfo struct {
 	responseRef   string
 	returnsArray  bool
 	responseEmpty bool   // true if 2xx response has no content body (204 etc.)
-	specSource    string // "trading" or "marketdata" — set after extraction
+	clientVar     string // package-level var name for generated commands
 }
 
 type paramInfo struct {
