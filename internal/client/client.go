@@ -109,34 +109,38 @@ func (c *Client) SetTimeout(d time.Duration) {
 	c.HTTP.Timeout = d
 }
 
+// Do sends an HTTP request against baseURL + path with optional query params
+// and body. All other Client methods are thin wrappers around Do.
+func (c *Client) Do(method, baseURL, path string, params url.Values, body any) (json.RawMessage, error) {
+	u := baseURL + path
+	if len(params) > 0 {
+		u += "?" + params.Encode()
+	}
+	return c.doWithRetry(method, u, body)
+}
+
 func (c *Client) Get(path string, params url.Values) (json.RawMessage, error) {
-	u := c.tradingURL(path, params)
-	return c.doWithRetry("GET", u, nil)
+	return c.Do("GET", c.BaseURL, path, params, nil)
 }
 
 func (c *Client) Post(path string, params url.Values, body any) (json.RawMessage, error) {
-	u := c.tradingURL(path, params)
-	return c.doWithRetry("POST", u, body)
+	return c.Do("POST", c.BaseURL, path, params, body)
 }
 
 func (c *Client) Put(path string, params url.Values, body any) (json.RawMessage, error) {
-	u := c.tradingURL(path, params)
-	return c.doWithRetry("PUT", u, body)
+	return c.Do("PUT", c.BaseURL, path, params, body)
 }
 
 func (c *Client) Patch(path string, params url.Values, body any) (json.RawMessage, error) {
-	u := c.tradingURL(path, params)
-	return c.doWithRetry("PATCH", u, body)
+	return c.Do("PATCH", c.BaseURL, path, params, body)
 }
 
 func (c *Client) Delete(path string, params url.Values) (json.RawMessage, error) {
-	u := c.tradingURL(path, params)
-	return c.doWithRetry("DELETE", u, nil)
+	return c.Do("DELETE", c.BaseURL, path, params, nil)
 }
 
 func (c *Client) GetData(path string, params url.Values) (json.RawMessage, error) {
-	u := c.dataURL(path, params)
-	return c.doWithRetry("GET", u, nil)
+	return c.Do("GET", c.DataURL, path, params, nil)
 }
 
 func (c *Client) RawRequest(method, fullURL string, body any) (json.RawMessage, error) {
@@ -314,22 +318,6 @@ func (c *Client) scrubErr(err error) error {
 		return err
 	}
 	return fmt.Errorf("%s", msg)
-}
-
-func (c *Client) tradingURL(path string, params url.Values) string {
-	u := c.BaseURL + path
-	if len(params) > 0 {
-		u += "?" + params.Encode()
-	}
-	return u
-}
-
-func (c *Client) dataURL(path string, params url.Values) string {
-	u := c.DataURL + path
-	if len(params) > 0 {
-		u += "?" + params.Encode()
-	}
-	return u
 }
 
 // traceTimings prints each HTTP phase to stderr as it completes.

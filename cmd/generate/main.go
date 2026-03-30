@@ -19,10 +19,11 @@ var (
 )
 
 type specConfig struct {
-	specFile   string
-	prefix     string // output file prefix: "trading" or "marketdata"
-	clientName string
-	specSource string // "trading" or "marketdata" — determines base URL routing
+	specFile     string
+	prefix       string // output file prefix: "trading" or "marketdata"
+	clientName   string
+	specSource   string // "trading" or "marketdata"
+	baseURLField string // field on client.Client: "BaseURL" or "DataURL"
 }
 
 type specResult struct {
@@ -33,8 +34,8 @@ type specResult struct {
 }
 
 var specs = []specConfig{
-	{"trading-api.json", "trading", "Trading", "trading"},
-	{"market-data-api.json", "marketdata", "MarketData", "marketdata"},
+	{"trading-api.json", "trading", "Trading", "trading", "BaseURL"},
+	{"market-data-api.json", "marketdata", "MarketData", "marketdata", "DataURL"},
 }
 
 func main() {
@@ -68,7 +69,7 @@ func main() {
 	var allEndpoints []*endpointInfo
 	for _, r := range results {
 		writeGo(filepath.Join(outDir, r.config.prefix+"_types.gen.go"), genTypes(r.config.specFile, r.schemas))
-		writeGo(filepath.Join(outDir, r.config.prefix+"_client.gen.go"), genClient(r.config.clientName, r.config.specFile, r.endpoints, r.config.specSource))
+		writeGo(filepath.Join(outDir, r.config.prefix+"_client.gen.go"), genClient(r.config.clientName, r.config.specFile, r.endpoints, r.config.baseURLField))
 		ops = append(ops, collectDescriptions(r.endpoints, r.spec)...)
 		for _, ep := range r.endpoints {
 			ep.specSource = r.config.specSource
@@ -457,21 +458,16 @@ func resolveGoType(schema map[string]any) string {
 
 // --- Client generation ---
 
-func genClient(clientName, specFile string, endpoints []*endpointInfo, specSource string) string {
+func genClient(clientName, specFile string, endpoints []*endpointInfo, baseURLField string) string {
 	var body bytes.Buffer
 
 	fmt.Fprintf(&body, "// %sClient provides typed methods for the %s API.\n", clientName, clientName)
-	fmt.Fprintf(&body, "type %sClient struct {\n\tRaw *client.Client\n}\n\n", clientName)
+	fmt.Fprintf(&body, "type %sClient struct {\n\tRaw *client.Client\n\tbaseURL string\n}\n\n", clientName)
 	fmt.Fprintf(&body, "func New%sClient(raw *client.Client) *%sClient {\n", clientName, clientName)
-	fmt.Fprintf(&body, "\treturn &%sClient{Raw: raw}\n}\n\n", clientName)
-
-	getMethod := "Raw.Get"
-	if specSource == "marketdata" {
-		getMethod = "Raw.GetData"
-	}
+	fmt.Fprintf(&body, "\treturn &%sClient{Raw: raw, baseURL: raw.%s}\n}\n\n", clientName, baseURLField)
 
 	for _, ep := range endpoints {
-		genEndpointMethod(&body, ep, clientName, getMethod)
+		genEndpointMethod(&body, ep, clientName)
 	}
 
 	validated := map[string]bool{}
@@ -526,7 +522,7 @@ func genClient(clientName, specFile string, endpoints []*endpointInfo, specSourc
 	return buf.String()
 }
 
-func genEndpointMethod(buf *bytes.Buffer, ep *endpointInfo, clientName, getMethod string) {
+func genEndpointMethod(buf *bytes.Buffer, ep *endpointInfo, clientName string) {
 	hasParams := len(ep.queryParams) > 0
 
 	if ep.responseRef != "" && !schemaHasType(ep.responseRef) {
@@ -579,21 +575,12 @@ func genEndpointMethod(buf *bytes.Buffer, ep *endpointInfo, clientName, getMetho
 	if hasParams {
 		paramsExpr = "params"
 	}
-
-	var callExpr string
-	switch ep.method {
-	case "GET":
-		callExpr = fmt.Sprintf("c.%s(%s, %s)", getMethod, pathExpr, paramsExpr)
-	case "DELETE":
-		callExpr = fmt.Sprintf("c.Raw.Delete(%s, %s)", pathExpr, paramsExpr)
-	default:
-		bodyExpr := "nil"
-		if bodyType != "" {
-			bodyExpr = "body"
-		}
-		methodFunc := strings.ToUpper(ep.method[:1]) + strings.ToLower(ep.method[1:])
-		callExpr = fmt.Sprintf("c.Raw.%s(%s, %s, %s)", methodFunc, pathExpr, paramsExpr, bodyExpr)
+	bodyExpr := "nil"
+	if bodyType != "" {
+		bodyExpr = "body"
 	}
+
+	callExpr := fmt.Sprintf("c.Raw.Do(%q, c.baseURL, %s, %s, %s)", ep.method, pathExpr, paramsExpr, bodyExpr)
 
 	if respType != "" {
 		if ep.returnsArray {
