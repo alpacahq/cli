@@ -15,6 +15,7 @@ import (
 var accountCmd = &cobra.Command{
 	Use:   "account",
 	Short: "Manage your trading account",
+	Long:  "View account details, portfolio history, activity log, and account configuration.",
 }
 
 var accountConfigCmd = &cobra.Command{
@@ -30,26 +31,31 @@ var activityCmd = &cobra.Command{
 var assetCmd = &cobra.Command{
 	Use:   "asset",
 	Short: "Browse assets",
+	Long:  "List and look up equities, options contracts, treasuries, and corporate bonds available for trading.",
 }
 
 var calendarCmd = &cobra.Command{
 	Use:   "calendar",
 	Short: "Market calendar",
+	Long:  "List trading days with open/close times for US equity and international markets.",
 }
 
 var clockCmd = &cobra.Command{
 	Use:   "clock",
 	Short: "Market clock",
+	Long:  "Check whether markets are currently open and when they next open or close.",
 }
 
 var corporateActionCmd = &cobra.Command{
 	Use:   "corporate-action",
 	Short: "Corporate actions announcements",
+	Long:  "Query corporate action announcements such as splits, dividends, mergers, and spin-offs.",
 }
 
 var cryptoPerpCmd = &cobra.Command{
 	Use:   "crypto-perp",
 	Short: "Crypto perpetuals (futures)",
+	Long:  "Trade crypto perpetual futures. View account vitals, manage leverage, fund wallets, and access perpetuals market data.",
 }
 
 var cryptoPerpDataCmd = &cobra.Command{
@@ -75,11 +81,13 @@ var cryptoPerpWhitelistCmd = &cobra.Command{
 var dataCmd = &cobra.Command{
 	Use:   "data",
 	Short: "Access market data",
+	Long:  "Historical and real-time market data for stocks, crypto, options, and forex. Includes bars, quotes, trades, snapshots, auctions, screeners, and news.",
 }
 
 var dataCryptoCmd = &cobra.Command{
 	Use:   "crypto",
 	Short: "Crypto market data",
+	Long:  "Bars, quotes, trades, snapshots, and orderbooks for crypto pairs.",
 }
 
 var dataForexCmd = &cobra.Command{
@@ -95,31 +103,37 @@ var dataMetaCmd = &cobra.Command{
 var dataOptionCmd = &cobra.Command{
 	Use:   "option",
 	Short: "Options market data",
+	Long:  "Bars, trades, snapshots, chains, latest quotes, and exchange/condition reference data for options.",
 }
 
 var optionCmd = &cobra.Command{
 	Use:   "option",
 	Short: "Options trading",
+	Long:  "List option contracts, look up by symbol, and exercise or decline exercise. For option market data, use 'data option'.",
 }
 
 var orderCmd = &cobra.Command{
 	Use:   "order",
 	Short: "Manage orders",
+	Long:  "Submit, list, replace, and cancel orders. Supports market, limit, stop, stop-limit, and trailing-stop order types with bracket (take-profit/stop-loss) legs.",
 }
 
 var positionCmd = &cobra.Command{
 	Use:   "position",
 	Short: "Manage positions",
+	Long:  "List, inspect, and close open positions. Supports partial closes by quantity or percentage.",
 }
 
 var screenerCmd = &cobra.Command{
 	Use:   "screener",
 	Short: "Stock and crypto screener and market movers",
+	Long:  "Most active stocks and top market movers by volume, trade count, or price change.",
 }
 
 var walletCmd = &cobra.Command{
 	Use:   "wallet",
 	Short: "Crypto funding wallets and transfers",
+	Long:  "View crypto funding wallets, create and track transfers, and manage whitelisted withdrawal addresses.",
 }
 
 var walletTransferCmd = &cobra.Command{
@@ -135,6 +149,7 @@ var walletWhitelistCmd = &cobra.Command{
 var watchlistCmd = &cobra.Command{
 	Use:   "watchlist",
 	Short: "Manage watchlists",
+	Long:  "Create, update, and delete watchlists. Add or remove symbols by watchlist ID or name.",
 }
 
 var addAssetToWatchlistCmd = fetchCmd("add", api.AddAssetToWatchlistOp, func(cmd *cobra.Command, args []string) (any, error) {

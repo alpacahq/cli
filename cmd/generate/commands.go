@@ -24,30 +24,73 @@ type cmdDef struct {
 type parentDef struct {
 	use    string
 	short  string
+	long   string
 	parent string
 }
 
 var cmdParents = map[string]parentDef{
-	"account":         {use: "account", short: "Manage your trading account"},
-	"accountConfig":   {use: "config", short: "Manage account configuration", parent: "account"},
-	"activity":        {use: "activity", short: "Account activities (fills, dividends, transfers, etc.)", parent: "account"},
-	"asset":           {use: "asset", short: "Browse assets"},
-	"position":        {use: "position", short: "Manage positions"},
-	"corporateAction": {use: "corporate-action", short: "Corporate actions announcements"},
-	"option":          {use: "option", short: "Options trading"},
-	"order":           {use: "order", short: "Manage orders"},
-	"wallet":          {use: "wallet", short: "Crypto funding wallets and transfers"},
+	"account": {
+		use: "account", short: "Manage your trading account",
+		long: "View account details, portfolio history, activity log, and account configuration.",
+	},
+	"accountConfig": {use: "config", short: "Manage account configuration", parent: "account"},
+	"activity":      {use: "activity", short: "Account activities (fills, dividends, transfers, etc.)", parent: "account"},
+	"asset": {
+		use: "asset", short: "Browse assets",
+		long: "List and look up equities, options contracts, treasuries, and corporate bonds available for trading.",
+	},
+	"position": {
+		use: "position", short: "Manage positions",
+		long: "List, inspect, and close open positions. Supports partial closes by quantity or percentage.",
+	},
+	"corporateAction": {
+		use: "corporate-action", short: "Corporate actions announcements",
+		long: "Query corporate action announcements such as splits, dividends, mergers, and spin-offs.",
+	},
+	"option": {
+		use: "option", short: "Options trading",
+		long: "List option contracts, look up by symbol, and exercise or decline exercise. For option market data, use 'data option'.",
+	},
+	"order": {
+		use: "order", short: "Manage orders",
+		long: "Submit, list, replace, and cancel orders. Supports market, limit, stop, stop-limit, and trailing-stop order types with bracket (take-profit/stop-loss) legs.",
+	},
+	"wallet": {
+		use: "wallet", short: "Crypto funding wallets and transfers",
+		long: "View crypto funding wallets, create and track transfers, and manage whitelisted withdrawal addresses.",
+	},
 	"walletTransfer":  {use: "transfer", short: "Manage crypto transfers", parent: "wallet"},
 	"walletWhitelist": {use: "whitelist", short: "Manage whitelisted crypto addresses", parent: "wallet"},
-	"clock":           {use: "clock", short: "Market clock"},
-	"calendar":        {use: "calendar", short: "Market calendar"},
-	"data":            {use: "data", short: "Access market data"},
-	"dataOption":      {use: "option", short: "Options market data", parent: "data"},
-	"dataForex":       {use: "forex", short: "Foreign exchange rate data", parent: "data"},
-	"dataMeta":        {use: "meta", short: "Stock exchange and condition reference data", parent: "data"},
-	"screener":        {use: "screener", short: "Stock and crypto screener and market movers", parent: "data"},
-	"watchlist":       {use: "watchlist", short: "Manage watchlists"},
-	"cryptoPerp":      {use: "crypto-perp", short: "Crypto perpetuals (futures)"},
+	"clock": {
+		use: "clock", short: "Market clock",
+		long: "Check whether markets are currently open and when they next open or close.",
+	},
+	"calendar": {
+		use: "calendar", short: "Market calendar",
+		long: "List trading days with open/close times for US equity and international markets.",
+	},
+	"data": {
+		use: "data", short: "Access market data",
+		long: "Historical and real-time market data for stocks, crypto, options, and forex. Includes bars, quotes, trades, snapshots, auctions, screeners, and news.",
+	},
+	"dataOption": {
+		use: "option", short: "Options market data", parent: "data",
+		long: "Bars, trades, snapshots, chains, latest quotes, and exchange/condition reference data for options.",
+	},
+	"dataForex": {use: "forex", short: "Foreign exchange rate data", parent: "data"},
+	"dataMeta":  {use: "meta", short: "Stock exchange and condition reference data", parent: "data"},
+	"screener": {
+		use: "screener", short: "Stock and crypto screener and market movers", parent: "data",
+		long: "Most active stocks and top market movers by volume, trade count, or price change.",
+	},
+	"watchlist": {
+		use: "watchlist", short: "Manage watchlists",
+		long: "Create, update, and delete watchlists. Add or remove symbols by watchlist ID or name.",
+	},
+	"cryptoPerp": {
+		use: "crypto-perp", short: "Crypto perpetuals (futures)",
+		long: "Trade crypto perpetual futures. View account vitals, manage leverage, fund wallets, and access perpetuals market data.",
+	},
 	"cryptoPerpWallet": {
 		use: "wallet", short: "Crypto perpetuals funding wallets and transfers",
 		parent: "cryptoPerp",
@@ -64,7 +107,10 @@ var cmdParents = map[string]parentDef{
 		use: "data", short: "Crypto perpetuals market data",
 		parent: "cryptoPerp",
 	},
-	"dataCrypto": {use: "crypto", short: "Crypto market data", parent: "data"},
+	"dataCrypto": {
+		use: "crypto", short: "Crypto market data", parent: "data",
+		long: "Bars, quotes, trades, snapshots, and orderbooks for crypto pairs.",
+	},
 }
 
 var cmdRegistry = map[string]cmdDef{
@@ -826,6 +872,9 @@ func genCommands(epByOp map[string]*endpointInfo) string {
 		fmt.Fprintf(&body, "var %s = &cobra.Command{\n", varName)
 		fmt.Fprintf(&body, "\tUse:   %q,\n", pdef.use)
 		fmt.Fprintf(&body, "\tShort: %q,\n", pdef.short)
+		if pdef.long != "" {
+			fmt.Fprintf(&body, "\tLong: %q,\n", pdef.long)
+		}
 		fmt.Fprintf(&body, "}\n\n")
 	}
 
