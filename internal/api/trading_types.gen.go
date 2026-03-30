@@ -114,7 +114,7 @@ type AdvancedInstructions struct {
 type Assets struct {
 	Attributes                   []string   `json:"attributes,omitempty"`
 	Class                        AssetClass `json:"class"`
-	Cusip                        string     `json:"cusip,omitempty"`
+	Cusip                        *string    `json:"cusip,omitempty"`
 	EasyToBorrow                 bool       `json:"easy_to_borrow"`
 	Exchange                     Exchange   `json:"exchange"`
 	Fractionable                 bool       `json:"fractionable"`
@@ -240,73 +240,73 @@ type OptionDeliverable struct {
 type Order struct {
 	AssetClass     AssetClass     `json:"asset_class,omitempty"`
 	AssetID        string         `json:"asset_id,omitempty"`
-	CanceledAt     string         `json:"canceled_at,omitempty"`
+	CanceledAt     *string        `json:"canceled_at,omitempty"`
 	ClientOrderID  string         `json:"client_order_id,omitempty"`
 	CreatedAt      string         `json:"created_at,omitempty"`
-	ExpiredAt      string         `json:"expired_at,omitempty"`
+	ExpiredAt      *string        `json:"expired_at,omitempty"`
 	ExtendedHours  bool           `json:"extended_hours,omitempty"`
-	FailedAt       string         `json:"failed_at,omitempty"`
-	FilledAt       string         `json:"filled_at,omitempty"`
-	FilledAvgPrice string         `json:"filled_avg_price,omitempty"`
+	FailedAt       *string        `json:"failed_at,omitempty"`
+	FilledAt       *string        `json:"filled_at,omitempty"`
+	FilledAvgPrice *string        `json:"filled_avg_price,omitempty"`
 	FilledQty      string         `json:"filled_qty,omitempty"`
-	Hwm            string         `json:"hwm,omitempty"`
+	Hwm            *string        `json:"hwm,omitempty"`
 	ID             string         `json:"id,omitempty"`
 	Legs           []OrderLeg     `json:"legs,omitempty"`
-	LimitPrice     string         `json:"limit_price,omitempty"`
-	Notional       string         `json:"notional"`
+	LimitPrice     *string        `json:"limit_price,omitempty"`
+	Notional       *string        `json:"notional"`
 	OrderClass     OrderClass     `json:"order_class,omitempty"`
 	OrderType      string         `json:"order_type,omitempty"`
 	PositionIntent PositionIntent `json:"position_intent,omitempty"`
-	Qty            string         `json:"qty,omitempty"`
-	ReplacedAt     string         `json:"replaced_at,omitempty"`
-	ReplacedBy     string         `json:"replaced_by,omitempty"`
-	Replaces       string         `json:"replaces,omitempty"`
+	Qty            *string        `json:"qty,omitempty"`
+	ReplacedAt     *string        `json:"replaced_at,omitempty"`
+	ReplacedBy     *string        `json:"replaced_by,omitempty"`
+	Replaces       *string        `json:"replaces,omitempty"`
 	Side           OrderSide      `json:"side,omitempty"`
 	Status         OrderStatus    `json:"status,omitempty"`
-	StopPrice      string         `json:"stop_price,omitempty"`
-	SubmittedAt    string         `json:"submitted_at,omitempty"`
+	StopPrice      *string        `json:"stop_price,omitempty"`
+	SubmittedAt    *string        `json:"submitted_at,omitempty"`
 	Symbol         string         `json:"symbol,omitempty"`
 	TimeInForce    TimeInForce    `json:"time_in_force"`
-	TrailPercent   string         `json:"trail_percent,omitempty"`
-	TrailPrice     string         `json:"trail_price,omitempty"`
+	TrailPercent   *string        `json:"trail_percent,omitempty"`
+	TrailPrice     *string        `json:"trail_price,omitempty"`
 	Type           OrderType      `json:"type"`
-	UpdatedAt      string         `json:"updated_at,omitempty"`
+	UpdatedAt      *string        `json:"updated_at,omitempty"`
 }
 
 type OrderLeg struct {
 	AssetClass     AssetClass     `json:"asset_class,omitempty"`
 	AssetID        string         `json:"asset_id,omitempty"`
-	CanceledAt     string         `json:"canceled_at,omitempty"`
+	CanceledAt     *string        `json:"canceled_at,omitempty"`
 	ClientOrderID  string         `json:"client_order_id,omitempty"`
 	CreatedAt      string         `json:"created_at,omitempty"`
-	ExpiredAt      string         `json:"expired_at,omitempty"`
+	ExpiredAt      *string        `json:"expired_at,omitempty"`
 	ExtendedHours  bool           `json:"extended_hours,omitempty"`
-	FailedAt       string         `json:"failed_at,omitempty"`
-	FilledAt       string         `json:"filled_at,omitempty"`
-	FilledAvgPrice string         `json:"filled_avg_price,omitempty"`
+	FailedAt       *string        `json:"failed_at,omitempty"`
+	FilledAt       *string        `json:"filled_at,omitempty"`
+	FilledAvgPrice *string        `json:"filled_avg_price,omitempty"`
 	FilledQty      string         `json:"filled_qty,omitempty"`
-	Hwm            string         `json:"hwm,omitempty"`
+	Hwm            *string        `json:"hwm,omitempty"`
 	ID             string         `json:"id,omitempty"`
 	Legs           []any          `json:"legs,omitempty"`
-	LimitPrice     string         `json:"limit_price,omitempty"`
-	Notional       string         `json:"notional"`
+	LimitPrice     *string        `json:"limit_price,omitempty"`
+	Notional       *string        `json:"notional"`
 	OrderClass     OrderClass     `json:"order_class,omitempty"`
 	OrderType      string         `json:"order_type,omitempty"`
 	PositionIntent PositionIntent `json:"position_intent,omitempty"`
-	Qty            string         `json:"qty"`
-	ReplacedAt     string         `json:"replaced_at,omitempty"`
-	ReplacedBy     string         `json:"replaced_by,omitempty"`
-	Replaces       string         `json:"replaces,omitempty"`
+	Qty            *string        `json:"qty"`
+	ReplacedAt     *string        `json:"replaced_at,omitempty"`
+	ReplacedBy     *string        `json:"replaced_by,omitempty"`
+	Replaces       *string        `json:"replaces,omitempty"`
 	Side           OrderSide      `json:"side"`
 	Status         OrderStatus    `json:"status,omitempty"`
-	StopPrice      string         `json:"stop_price,omitempty"`
-	SubmittedAt    string         `json:"submitted_at,omitempty"`
+	StopPrice      *string        `json:"stop_price,omitempty"`
+	SubmittedAt    *string        `json:"submitted_at,omitempty"`
 	Symbol         string         `json:"symbol"`
 	TimeInForce    TimeInForce    `json:"time_in_force"`
-	TrailPercent   string         `json:"trail_percent,omitempty"`
-	TrailPrice     string         `json:"trail_price,omitempty"`
+	TrailPercent   *string        `json:"trail_percent,omitempty"`
+	TrailPrice     *string        `json:"trail_price,omitempty"`
 	Type           OrderType      `json:"type"`
-	UpdatedAt      string         `json:"updated_at,omitempty"`
+	UpdatedAt      *string        `json:"updated_at,omitempty"`
 }
 
 type PatchOrderRequest struct {

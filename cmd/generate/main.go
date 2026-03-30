@@ -410,6 +410,9 @@ func genStruct(buf *bytes.Buffer, s *schemaInfo) {
 		fieldSchema := s.props[fieldName]
 		goField := toGoName(fieldName)
 		goType := resolveGoType(fieldSchema)
+		if isNullable(fieldSchema) && isScalarType(goType) {
+			goType = "*" + goType
+		}
 		tag := fieldName
 		if !s.required[fieldName] {
 			tag += ",omitempty"
@@ -417,6 +420,19 @@ func genStruct(buf *bytes.Buffer, s *schemaInfo) {
 		fmt.Fprintf(buf, "\t%s %s `json:%q`\n", goField, goType, tag)
 	}
 	fmt.Fprintf(buf, "}\n\n")
+}
+
+func isNullable(schema map[string]any) bool {
+	v, _ := schema["nullable"].(bool)
+	return v
+}
+
+func isScalarType(goType string) bool {
+	switch goType {
+	case "string", "int", "float64", "bool":
+		return true
+	}
+	return false
 }
 
 func resolveGoType(schema map[string]any) string {

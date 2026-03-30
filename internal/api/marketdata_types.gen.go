@@ -247,7 +247,7 @@ type News struct {
 	Summary   string      `json:"summary"`
 	Symbols   []string    `json:"symbols"`
 	UpdatedAt string      `json:"updated_at"`
-	URL       string      `json:"url,omitempty"`
+	URL       *string     `json:"url,omitempty"`
 }
 
 type NewsImage struct {
