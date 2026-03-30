@@ -924,33 +924,39 @@ func emitCommand(buf, attachBuf *bytes.Buffer, opID string, def cmdDef, ep *endp
 	}
 }
 
+func buildCallExpr(ep *endpointInfo, def cmdDef, clientVar string, extraArgs ...string) string {
+	var args []string
+	for _, pp := range ep.pathParams {
+		args = append(args, pathParamExpr(pp, def))
+	}
+	if len(ep.queryParams) > 0 {
+		args = append(args, queryFromFlagsExpr(ep))
+	}
+	args = append(args, extraArgs...)
+	return fmt.Sprintf("%s.%s(%s)", clientVar, ep.goName, strings.Join(args, ", "))
+}
+
+func returnExpr(call string, isVoid bool) string {
+	if isVoid {
+		return "return voidResponse(" + call + ")"
+	}
+	return "return " + call
+}
+
 func buildFetchBody(opID string, def cmdDef, ep *endpointInfo, clientVar string) string {
-	methodName := ep.goName
 	isVoid := ep.responseEmpty || ep.responseRef == ""
 	isPatch := ep.method == "PATCH" || ep.method == "PUT"
 	isPost := ep.method == "POST"
 	hasBodyRef := ep.bodyRef != ""
 	hasBodyInline := len(ep.bodyInline) > 0
-	hasQueryParams := len(ep.queryParams) > 0
 
 	// PATCH/PUT with body ref
 	if isPatch && hasBodyRef {
 		bodySchema := findSchema(ep.bodyRef)
 		if bodySchema != nil && bodySchema.kind == "struct" {
 			if patchCode, ok := buildPatchBody(ep.bodyRef, bodySchema.props, def.bodyAliases); ok {
-				var args []string
-				for _, pp := range ep.pathParams {
-					args = append(args, pathParamExpr(pp, def))
-				}
-				if hasQueryParams {
-					args = append(args, queryFromFlagsExpr(ep))
-				}
-				args = append(args, "body")
-				call := fmt.Sprintf("%s.%s(%s)", clientVar, methodName, strings.Join(args, ", "))
-				if isVoid {
-					return patchCode + "\n\treturn voidResponse(" + call + ")"
-				}
-				return patchCode + "\n\treturn " + call
+				call := buildCallExpr(ep, def, clientVar, "body")
+				return patchCode + "\n\t" + returnExpr(call, isVoid)
 			}
 		}
 	}
@@ -967,41 +973,18 @@ func buildFetchBody(opID string, def cmdDef, ep *endpointInfo, clientVar string)
 			typeName, props = ep.goName+"Request", p
 		}
 		if bodyCode, ok := buildPostBody(typeName, props, def.bodySkipFields); ok {
-			var args []string
-			for _, pp := range ep.pathParams {
-				args = append(args, pathParamExpr(pp, def))
-			}
-			if hasQueryParams {
-				args = append(args, queryFromFlagsExpr(ep))
-			}
-			args = append(args, "body")
-			call := fmt.Sprintf("%s.%s(%s)", clientVar, methodName, strings.Join(args, ", "))
-
+			call := buildCallExpr(ep, def, clientVar, "body")
 			result := bodyCode
 			if def.bodyHook != "" {
 				result += fmt.Sprintf("\n\tif hookResult, err := %s(cmd, body); err != nil {\n\t\treturn nil, err\n\t} else if hookResult != nil {\n\t\treturn hookResult, nil\n\t}", def.bodyHook)
 			}
-			if isVoid {
-				return result + "\n\treturn voidResponse(" + call + ")"
-			}
-			return result + "\n\treturn " + call
+			return result + "\n\t" + returnExpr(call, isVoid)
 		}
 	}
 
-	// Standard: build argument list
-	var args []string
-	for _, pp := range ep.pathParams {
-		args = append(args, pathParamExpr(pp, def))
-	}
-	if hasQueryParams {
-		args = append(args, queryFromFlagsExpr(ep))
-	}
-
-	call := fmt.Sprintf("%s.%s(%s)", clientVar, methodName, strings.Join(args, ", "))
-	if isVoid {
-		return "return voidResponse(" + call + ")"
-	}
-	return "return " + call
+	// Standard: no body
+	call := buildCallExpr(ep, def, clientVar)
+	return returnExpr(call, isVoid)
 }
 
 func extractProps(schema map[string]any) map[string]map[string]any {

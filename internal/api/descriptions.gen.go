@@ -4,36 +4,13 @@ package api
 
 import "sync"
 
-// Op describes a generated API operation. Passed to fetchCmd/attachCmd
-// for automatic flag registration, help text, and required-flag validation.
-type Op struct {
-	Name         string
-	Summary      string
-	Long         string
-	Example      string
-	ReturnsArray bool
-	Flags        []FlagDef
-}
-
-// FlagDef describes a CLI flag derived from the OpenAPI spec.
-type FlagDef struct {
-	Name        string // kebab-case CLI flag name
-	OASName     string // original OAS property/parameter name
-	Type        string // "string", "bool", "int"
-	Default     string
-	Description string
-	Completions []string // enum values for shell completion
-	Required    bool     // true if OAS marks this parameter as required
-	Source      string   // "path", "query", or "body"
-}
-
 var CalendarOp = Op{
 	Name: "Calendar", Summary: "Get market calendar",
 	Long:    "This endpoint returns the market calendar",
 	Example: `  alpaca calendar market --market XNYS --start 2025-01-01`,
 	Flags: []FlagDef{
 		{Name: "end", OASName: "end", Type: "string", Description: "last date to retrieve data for (inclusive). Default: one week from the start date", Source: "query"},
-		{Name: "market", OASName: "market", Type: "string", Description: "market identifier (MIC, BIC, or acronym)", Required: true, Source: "path"},
+		{Name: "market", OASName: "market", Type: "string", Description: "market identifier (MIC, BIC, or acronym)", Completions: []string{"BMO", "BNYM", "BOATS", "CEUX", "CHIX", "HKEX", "IEX", "IEXG", "ISE", "LSE", "MTA", "MTAA", "NASDAQ", "NYSE", "OCEA", "OPRA", "OTC", "OTCM", "SIFMA", "TADAWUL", "XAMS", "XBRU", "XDUB", "XETR", "XETRA", "XHKG", "XLIS", "XLON", "XNAS", "XNYS", "XPAR", "XSAU"}, Required: true, Source: "path"},
 		{Name: "start", OASName: "start", Type: "string", Description: "first date to retrieve data for (inclusive). Default: today", Source: "query"},
 		{Name: "timezone", OASName: "timezone", Type: "string", Description: "timezone of the times. Default: the timezone of the market", Completions: []string{"UTC"}, Source: "query"},
 	},
@@ -73,7 +50,7 @@ var CryptoBarsOp = Op{
 	Flags: []FlagDef{
 		{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", Source: "query"},
 		{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", Source: "query"},
-		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto location from where the historical market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Required: true, Source: "path"},
+		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto location from where the historical market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Completions: []string{"bs-1", "eu-1", "us", "us-1", "us-2"}, Required: true, Source: "path"},
 		{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", Source: "query"},
 		{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}, Source: "query"},
 		{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval", Source: "query"},
@@ -87,7 +64,7 @@ var CryptoLatestBarsOp = Op{
 	Long:    "The latest multi-bars endpoint returns the latest minute-aggregated historical bar data for each of the crypto symbols provided",
 	Example: `  alpaca data crypto latest-bars --symbols BTC/USD`,
 	Flags: []FlagDef{
-		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto location from where the latest market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Required: true, Source: "path"},
+		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto location from where the latest market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Completions: []string{"bs-1", "eu-1", "us", "us-1", "us-2"}, Required: true, Source: "path"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", Required: true, Source: "query"},
 	},
 }
@@ -97,7 +74,7 @@ var CryptoLatestOrderbooksOp = Op{
 	Long:    "The latest orderbook endpoint returns the latest bid and ask orderbook for the crypto symbols provided",
 	Example: `  alpaca data crypto-orderbook --symbols BTC/USD,ETH/USD`,
 	Flags: []FlagDef{
-		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto location from where the latest market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Required: true, Source: "path"},
+		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto location from where the latest market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Completions: []string{"bs-1", "eu-1", "us", "us-1", "us-2"}, Required: true, Source: "path"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", Required: true, Source: "query"},
 	},
 }
@@ -107,7 +84,7 @@ var CryptoLatestQuotesOp = Op{
 	Long:    "The latest quotes endpoint returns the latest bid and ask prices for the crypto symbols provided",
 	Example: `  alpaca data crypto latest-quotes --symbols BTC/USD`,
 	Flags: []FlagDef{
-		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto location from where the latest market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Required: true, Source: "path"},
+		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto location from where the latest market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Completions: []string{"bs-1", "eu-1", "us", "us-1", "us-2"}, Required: true, Source: "path"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", Required: true, Source: "query"},
 	},
 }
@@ -117,7 +94,7 @@ var CryptoLatestTradesOp = Op{
 	Long:    "The latest trades endpoint returns the latest trade data for the crypto symbols provided",
 	Example: `  alpaca data crypto latest-trades --symbols BTC/USD`,
 	Flags: []FlagDef{
-		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto location from where the latest market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Required: true, Source: "path"},
+		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto location from where the latest market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Completions: []string{"bs-1", "eu-1", "us", "us-1", "us-2"}, Required: true, Source: "path"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", Required: true, Source: "query"},
 	},
 }
@@ -127,7 +104,7 @@ var CryptoPerpLatestBarsOp = Op{
 	Long:    "The latest bars endpoint returns the latest bar data for the crypto perpetual futures symbols provided",
 	Example: `  alpaca crypto-perp data latest-bars --symbols BTC/USD`,
 	Flags: []FlagDef{
-		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto perpetual location", Required: true, Source: "path"},
+		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto perpetual location", Completions: []string{"global"}, Required: true, Source: "path"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", Required: true, Source: "query"},
 	},
 }
@@ -137,7 +114,7 @@ var CryptoPerpLatestFuturesPricingOp = Op{
 	Long:    "The latest futures pricing endpoint returns the latest pricing data for the crypto perpetual futures symbols provided",
 	Example: `  alpaca crypto-perp data latest-futures-pricing --symbols BTC/USD`,
 	Flags: []FlagDef{
-		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto perpetual location", Required: true, Source: "path"},
+		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto perpetual location", Completions: []string{"global"}, Required: true, Source: "path"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", Required: true, Source: "query"},
 	},
 }
@@ -147,7 +124,7 @@ var CryptoPerpLatestOrderbooksOp = Op{
 	Long:    "The latest orderbook endpoint returns the latest bid and ask orderbook for the crypto perpetual futures symbols provided",
 	Example: `  alpaca crypto-perp data latest-orderbooks --symbols BTC/USD`,
 	Flags: []FlagDef{
-		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto perpetual location", Required: true, Source: "path"},
+		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto perpetual location", Completions: []string{"global"}, Required: true, Source: "path"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", Required: true, Source: "query"},
 	},
 }
@@ -157,7 +134,7 @@ var CryptoPerpLatestQuotesOp = Op{
 	Long:    "The latest quotes endpoint returns the latest bid and ask prices for the crypto perpetual futures symbols provided",
 	Example: `  alpaca crypto-perp data latest-quotes --symbols BTC/USD`,
 	Flags: []FlagDef{
-		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto perpetual location", Required: true, Source: "path"},
+		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto perpetual location", Completions: []string{"global"}, Required: true, Source: "path"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", Required: true, Source: "query"},
 	},
 }
@@ -167,7 +144,7 @@ var CryptoPerpLatestTradesOp = Op{
 	Long:    "The latest trades endpoint returns the latest trade data for the crypto perpetual futures symbols provided",
 	Example: `  alpaca crypto-perp data latest-trades --symbols BTC/USD`,
 	Flags: []FlagDef{
-		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto perpetual location", Required: true, Source: "path"},
+		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto perpetual location", Completions: []string{"global"}, Required: true, Source: "path"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", Required: true, Source: "query"},
 	},
 }
@@ -179,7 +156,7 @@ var CryptoQuotesOp = Op{
 	Flags: []FlagDef{
 		{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", Source: "query"},
 		{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", Source: "query"},
-		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto location from where the historical market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Required: true, Source: "path"},
+		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto location from where the historical market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Completions: []string{"bs-1", "eu-1", "us", "us-1", "us-2"}, Required: true, Source: "path"},
 		{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", Source: "query"},
 		{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}, Source: "query"},
 		{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval", Source: "query"},
@@ -192,7 +169,7 @@ var CryptoSnapshotsOp = Op{
 	Long:    "The snapshots endpoint returns the latest trade, latest quote, latest minute bar, latest daily bar, and previous daily bar data for crypto symbols",
 	Example: `  alpaca data crypto snapshots --symbols BTC/USD`,
 	Flags: []FlagDef{
-		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto location from where the latest market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Required: true, Source: "path"},
+		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto location from where the latest market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Completions: []string{"bs-1", "eu-1", "us", "us-1", "us-2"}, Required: true, Source: "path"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", Required: true, Source: "query"},
 	},
 }
@@ -204,7 +181,7 @@ var CryptoTradesOp = Op{
 	Flags: []FlagDef{
 		{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", Source: "query"},
 		{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", Source: "query"},
-		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto location from where the historical market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Required: true, Source: "path"},
+		{Name: "loc", OASName: "loc", Type: "string", Default: "us", Description: "crypto location from where the historical market data is retrieved.\n- us: Alpaca US\n- us-1: Kraken US\n- eu-1: Kraken EU", Completions: []string{"bs-1", "eu-1", "us", "us-1", "us-2"}, Required: true, Source: "path"},
 		{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", Source: "query"},
 		{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}, Source: "query"},
 		{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval", Source: "query"},
@@ -275,7 +252,7 @@ var MoversOp = Op{
 	Example: `  alpaca data screener movers
   alpaca data screener movers --market-type crypto --top 5`,
 	Flags: []FlagDef{
-		{Name: "market-type", OASName: "market_type", Type: "string", Default: "stocks", Description: "screen-specific market (stocks or crypto)", Required: true, Source: "path"},
+		{Name: "market-type", OASName: "market_type", Type: "string", Default: "stocks", Description: "screen-specific market (stocks or crypto)", Completions: []string{"crypto", "stocks"}, Required: true, Source: "path"},
 		{Name: "top", OASName: "top", Type: "int", Default: "10", Description: "number of top market movers to fetch (gainers and losers)", Source: "query"},
 	},
 }
@@ -343,7 +320,7 @@ var OptionMetaConditionsOp = Op{
 	Long:    "Returns the mapping between the condition codes and names",
 	Example: `  alpaca data option conditions --ticktype trade`,
 	Flags: []FlagDef{
-		{Name: "ticktype", OASName: "ticktype", Type: "string", Description: "type of ticks", Required: true, Source: "path"},
+		{Name: "ticktype", OASName: "ticktype", Type: "string", Description: "type of ticks", Completions: []string{"quote", "trade"}, Required: true, Source: "path"},
 	},
 }
 
@@ -544,7 +521,7 @@ var StockMetaConditionsOp = Op{
 	Example: `  alpaca data meta conditions --ticktype trade`,
 	Flags: []FlagDef{
 		{Name: "tape", OASName: "tape", Type: "string", Description: "one character name of the tape", Completions: []string{"A", "B", "C"}, Required: true, Source: "query"},
-		{Name: "ticktype", OASName: "ticktype", Type: "string", Description: "type of ticks", Required: true, Source: "path"},
+		{Name: "ticktype", OASName: "ticktype", Type: "string", Description: "type of ticks", Completions: []string{"quote", "trade"}, Required: true, Source: "path"},
 	},
 }
 
@@ -1273,14 +1250,6 @@ var UpdateWatchlistByNameOp = Op{
 		{Name: "name", OASName: "name", Type: "string", Description: "name of the watchlist", Required: true, Source: "query"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "list of asset symbols to include in the watchlist", Source: "body"},
 	},
-}
-
-// ResponseField describes a field in an API response.
-type ResponseField struct {
-	Name        string
-	Type        string
-	Description string
-	EnumValues  []string
 }
 
 var accountConfigurationsResponseFields = []ResponseField{
