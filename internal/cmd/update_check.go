@@ -1,26 +1,16 @@
 package cmd
 
 import (
-	"encoding/json"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
-	"time"
-
-	"github.com/alpacahq/cli/internal/config"
 )
 
 const (
-	updateCheckTTL   = 24 * time.Hour
 	installHomebrew  = "homebrew"
 	installGoInstall = "goinstall"
 )
-
-type updateState struct {
-	LatestVersion string    `json:"latest_version"`
-	CheckedAt     time.Time `json:"checked_at"`
-	InstallMethod string    `json:"install_method"`
-}
 
 func detectInstallMethod() string {
 	exe, err := os.Executable()
@@ -62,34 +52,27 @@ func upgradeCommand(method string) string {
 	}
 }
 
-func updateStatePath() string {
-	return filepath.Join(config.Dir(), "update-state.json")
-}
-
-func loadUpdateState() *updateState {
-	data, err := os.ReadFile(updateStatePath())
-	if err != nil {
-		return nil
+// versionNewer reports whether latest is strictly greater than current
+// using numeric major.minor.patch comparison.
+func versionNewer(latest, current string) bool {
+	parseVer := func(s string) [3]int {
+		s = strings.TrimPrefix(s, "v")
+		if idx := strings.IndexByte(s, '-'); idx != -1 {
+			s = s[:idx]
+		}
+		parts := strings.SplitN(s, ".", 3)
+		var v [3]int
+		for i := 0; i < len(parts) && i < 3; i++ {
+			n, _ := strconv.Atoi(parts[i])
+			v[i] = n
+		}
+		return v
 	}
-	var s updateState
-	if err := json.Unmarshal(data, &s); err != nil {
-		return nil
+	l, c := parseVer(latest), parseVer(current)
+	for i := range 3 {
+		if l[i] != c[i] {
+			return l[i] > c[i]
+		}
 	}
-	return &s
-}
-
-func saveUpdateState(s *updateState) {
-	dir := config.Dir()
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		return
-	}
-	data, err := json.Marshal(s)
-	if err != nil {
-		return
-	}
-	_ = os.WriteFile(updateStatePath(), data, 0o600)
-}
-
-func versionsEqual(a, b string) bool {
-	return strings.TrimPrefix(a, "v") == strings.TrimPrefix(b, "v")
+	return false
 }

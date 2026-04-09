@@ -90,20 +90,15 @@ var doctorCmd = &cobra.Command{
 		}
 
 		fmt.Fprintf(w, "\nUpdate:\n")
-		state := loadUpdateState()
-		if state != nil && state.LatestVersion != "" {
-			if versionsEqual(version, state.LatestVersion) {
-				printCheck(w, true, fmt.Sprintf("up to date (%s)", version))
-			} else {
-				method := state.InstallMethod
-				if method == "" {
-					method = detectInstallMethod()
-				}
-				fmt.Fprintf(w, "  - update available: %s → %s — run `%s`\n",
-					version, state.LatestVersion, upgradeCommand(method))
-			}
+		latest, err := getLatestVersion()
+		if err != nil {
+			fmt.Fprintf(w, "  - could not check for updates: %v\n", err)
+		} else if !versionNewer(latest, version) {
+			printCheck(w, true, fmt.Sprintf("up to date (%s)", version))
 		} else {
-			fmt.Fprintln(w, "  - run `alpaca update --check` to check for updates")
+			method := detectInstallMethod()
+			fmt.Fprintf(w, "  - update available: %s → %s — run `%s`\n",
+				version, latest, upgradeCommand(method))
 		}
 
 		return doctorResult(w, allOK)

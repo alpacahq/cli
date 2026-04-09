@@ -36,14 +36,8 @@ Queries GitHub for the latest release, detects your install method
 		}
 
 		method := detectInstallMethod()
-		saveUpdateState(&updateState{
-			LatestVersion: latest,
-			CheckedAt:     time.Now(),
-			InstallMethod: method,
-		})
-
 		current := version
-		upToDate := versionsEqual(current, latest)
+		upToDate := !versionNewer(latest, current)
 
 		if checkOnly {
 			m := map[string]any{
