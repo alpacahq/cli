@@ -256,6 +256,7 @@ Credentials are stored in `~/.config/alpaca/profiles/`.
 
 | Variable | Description |
 |----------|-------------|
+| `ALPACA_ACCESS_TOKEN` | OAuth access token (overrides profile) |
 | `ALPACA_API_KEY` | API key (overrides profile) |
 | `ALPACA_SECRET_KEY` | Secret key (overrides profile) |
 | `ALPACA_BASE_URL` | Trading API base URL |
@@ -334,11 +335,17 @@ Enum-valued flags auto-complete with valid values (e.g. `--side` → `buy`/`sell
 
 Designed for scripting, CI pipelines, and AI agent integration. For AI agents, see the [`alpaca-cli` Agent Skill](skills/alpaca-cli/SKILL.md) for structured install, auth, and usage guidance in [Agent Skills](https://agentskills.io) format.
 
-### Auth (no disk, no prompts)
+### Auth for unattended workflows
 
 ```bash
 export ALPACA_API_KEY=PK...
 export ALPACA_SECRET_KEY=...
+```
+
+Or use an OAuth token directly:
+
+```bash
+export ALPACA_ACCESS_TOKEN=...
 ```
 
 ### Clean Output
@@ -361,7 +368,9 @@ Errors are always JSON on stderr:
 
 ### Unattended Operations
 
-The CLI is fully non-interactive — no TTY detection, no interactive prompts.
+API commands are non-interactive once credentials are configured.
+
+Auth and setup commands may still prompt or open a browser. For unattended runs, prefer environment variables over `alpaca profile login`.
 
 ### Exit Codes
 

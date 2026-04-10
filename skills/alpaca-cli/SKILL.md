@@ -77,7 +77,13 @@ Exit code `0` = success, `2` = auth error.
 
 ## Agent and automation usage
 
-The CLI is fully non-interactive — no TTY detection, no prompts.
+API commands are non-interactive once credentials are configured.
+
+Auth and setup commands may still prompt or open a browser:
+
+- `alpaca profile login` opens a browser for OAuth and may prompt for scopes on a TTY.
+- `alpaca profile login --api-key` prompts for missing credentials unless `--key` and `--secret` are provided.
+- For unattended workflows, prefer environment variables over `alpaca profile login`.
 
 ### Always use `--quiet`
 
@@ -170,6 +176,7 @@ alpaca order list --jq '[.[] | {id, symbol, side, qty}]'
 
 | Variable | Description |
 |----------|-------------|
+| `ALPACA_ACCESS_TOKEN` | OAuth access token (overrides profile) |
 | `ALPACA_API_KEY` | API key (overrides profile) |
 | `ALPACA_SECRET_KEY` | Secret key (overrides profile) |
 | `ALPACA_BASE_URL` | Trading API base URL |
