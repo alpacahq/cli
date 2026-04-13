@@ -1,7 +1,7 @@
 ---
 name: alpaca-cli
 description: >
-  Install, configure, and use the Alpaca CLI — a command-line tool for the
+  Install, configure, and use the Alpaca CLI - a command-line tool for the
   Alpaca Trading API. Covers installation (Go), API key
   authentication, profile management, and agent/automation integration.
   Use when the user asks to install the Alpaca CLI, set up Alpaca API
@@ -223,7 +223,7 @@ alpaca order list --schema           # show response fields for a command
 alpaca doctor                        # check config and API connectivity
 ```
 
-Use `--help-all` to find the right command. Use `<command> --help` for flag details. Use `<command> --schema` to see API response fields generated from the spec. These are always current — never rely on stale documentation when the CLI is installed.
+Use `--help-all` to find the right command. Use `<command> --help` for flag details. Use `<command> --schema` to see API response fields generated from the spec. These are always current - never rely on stale documentation when the CLI is installed.
 
 ## Pagination
 
@@ -238,26 +238,20 @@ The response includes a `next_page_token` field when more data is available.
 
 ## Troubleshooting
 
-**`command not found: alpaca`** — Ensure `$GOPATH/bin` (usually `~/go/bin`) is in your `PATH`.
+**`command not found: alpaca`** - Ensure `$GOPATH/bin` (usually `~/go/bin`) is in your `PATH`.
 
-**Exit code 2 on every command** — Credentials are missing or invalid. Re-run `alpaca profile login` or verify `ALPACA_API_KEY` / `ALPACA_SECRET_KEY` env vars.
+**Exit code 2 on every command** - Credentials are missing or invalid. Re-run `alpaca profile login` or verify `ALPACA_API_KEY` / `ALPACA_SECRET_KEY` env vars.
 
-**Rate limited (429)** — The CLI retries automatically, but if it persists, add delays between calls. Check `Retry-After` in `--verbose` output.
+**Rate limited (429)** - The CLI retries automatically, but if it persists, add delays between calls. Check `Retry-After` in `--verbose` output.
 
-**Completions not working** — Run `alpaca completion <shell>` to generate completions, then open a new shell. For zsh, ensure `compinit` is loaded in `.zshrc`.
+**Completions not working** - Run `alpaca completion <shell>` to generate completions, then open a new shell. For zsh, ensure `compinit` is loaded in `.zshrc`.
 
 ## Anti-patterns
 
-- **NEVER** switch to live trading without explicit user intent. `alpaca profile login` defaults to paper trading — do not pass `--live` unless the user specifically asks for it.
-- **NEVER** pass `--secret` as a CLI flag — it leaks into shell history. Use `alpaca profile login` interactively or set `ALPACA_SECRET_KEY` as an env var.
-- **NEVER** omit `--quiet` in automation or agent workflows — without it, output may include hints and warnings on stderr that break parsing.
-- **NEVER** ignore exit code `2` — it means authentication failed. Do not retry; fix credentials first.
-- **NEVER** hardcode API keys in scripts or committed files — use environment variables or profile-based auth.
+- **NEVER** switch to live trading without explicit user intent. `alpaca profile login` defaults to paper trading - do not pass `--live` unless the user specifically asks for it.
+- **NEVER** pass `--secret` as a CLI flag - it leaks into shell history. Use `alpaca profile login` interactively or set `ALPACA_SECRET_KEY` as an env var.
+- **NEVER** omit `--quiet` in automation or agent workflows - without it, output may include hints and warnings on stderr that break parsing.
+- **NEVER** ignore exit code `2` - it means authentication failed. Do not retry; fix credentials first.
+- **NEVER** hardcode API keys in scripts or committed files - use environment variables or profile-based auth.
 - **NEVER** submit live orders without confirming the user's intent - use `--dry-run` to preview first when there is any ambiguity.
 - **NEVER** submit orders without `--client-order-id` in automation - without it, retries after ambiguous failures (timeouts, network errors) risk placing duplicate orders.
-
-## Further reading
-
-- Full documentation: [README](https://github.com/alpacahq/cli/blob/main/README.md)
-- Every command supports `--help` for flag details
-- Alpaca API docs: [docs.alpaca.markets](https://docs.alpaca.markets)
