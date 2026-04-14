@@ -11,6 +11,9 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      HOMEBREW_TAP_APP_ID: ${{ secrets.HOMEBREW_TAP_APP_ID }}
+      HOMEBREW_TAP_APP_PRIVATE_KEY: ${{ secrets.HOMEBREW_TAP_APP_PRIVATE_KEY }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -20,10 +23,19 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - id: homebrew-tap-token
+        if: ${{ env.HOMEBREW_TAP_APP_ID != '' && env.HOMEBREW_TAP_APP_PRIVATE_KEY != '' }}
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ env.HOMEBREW_TAP_APP_ID }}
+          private-key: ${{ env.HOMEBREW_TAP_APP_PRIVATE_KEY }}
+          owner: alpacahq
+          repositories: homebrew-tap
+
       - uses: goreleaser/goreleaser-action@e435ccd777264be153ace6237001ef4d979d3a7a # v6
         with:
           version: "~> v2"
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          HOMEBREW_TAP_TOKEN: ${{ steps.homebrew-tap-token.outputs.token }}
