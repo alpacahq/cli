@@ -47,7 +47,7 @@ Rules:
 - **Write tests must clean up** — use `t.Cleanup()` to cancel orders, delete watchlists, close positions. Never leave side-effects.
 - **Flat tests for independent calls, sub-tests for sequential chains** — don't use `t.Run` unless steps depend on prior state (e.g., create → get → delete).
 - **Use the helpers** — `alpaca()`, `alpacaFail()`, `parseJSONMap()`, `requireFields()`, `daysAgo()`, `pollFor()`. Don't reinvent them.
-- **Some endpoints are unavailable on paper** — wallet, crypto-perp trading, forex, fixed-income, logo, treasury, and bonds return 403/404. Don't write tests that require these unless you have a compatible test account.
+- **Some endpoints are unavailable on paper** — wallet, crypto-perp trading, forex, fixed-income, logo, treasury, bonds, and tokenization return 403/404. Don't write tests that require these unless you have a compatible test account.
 - **One file per feature area** — `order_test.go`, `data_option_test.go`, `crypto_perp_data_test.go`, etc. Keep files focused.
 
 ## Keep docs in sync

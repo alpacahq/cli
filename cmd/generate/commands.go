@@ -812,17 +812,21 @@ var cmdRegistry = map[string]cmdDef{
 var cmdSkip = map[string]string{}
 
 func checkExhaustive(epByOp map[string]*endpointInfo) {
-	for goName, ep := range epByOp {
+	var errs []string
+
+	for _, goName := range sortedKeys(epByOp) {
+		ep := epByOp[goName]
 		_, inRegistry := cmdRegistry[goName]
 		_, inSkip := cmdSkip[goName]
 		if !inRegistry && !inSkip {
-			log.Fatalf("unregistered operation %q (goName=%q) — add to cmdRegistry or cmdSkip in cmd/generate/commands.go", ep.operationID, ep.goName)
+			errs = append(errs, fmt.Sprintf("unregistered operation %q (goName=%q) — add to cmdRegistry or cmdSkip in cmd/generate/commands.go", ep.operationID, ep.goName))
 		}
 	}
 
-	for opID, def := range cmdRegistry {
+	for _, opID := range sortedKeys(cmdRegistry) {
+		def := cmdRegistry[opID]
 		if def.examples == "" {
-			log.Fatalf("cmdRegistry[%q] has empty examples — every generated command must have examples", opID)
+			errs = append(errs, fmt.Sprintf("cmdRegistry[%q] has empty examples — every generated command must have examples", opID))
 		}
 		ep := epByOp[opID]
 		if ep == nil || ep.bodyRef == "" {
@@ -839,7 +843,7 @@ func checkExhaustive(epByOp map[string]*endpointInfo) {
 		for _, p := range ep.queryParams {
 			nonBodyNames[strings.ReplaceAll(p.name, "_", "-")] = true
 		}
-		for fieldName := range bodySchema.props {
+		for _, fieldName := range sortedKeys(bodySchema.props) {
 			flagName := strings.ReplaceAll(fieldName, "_", "-")
 			if !nonBodyNames[flagName] {
 				continue
@@ -847,8 +851,12 @@ func checkExhaustive(epByOp map[string]*endpointInfo) {
 			if _, aliased := def.bodyAliases[flagName]; aliased {
 				continue
 			}
-			log.Fatalf("cmdRegistry[%q]: body field %q collides with a query/path param — add bodyAliases entry to resolve", opID, flagName)
+			errs = append(errs, fmt.Sprintf("cmdRegistry[%q]: body field %q collides with a query/path param — add bodyAliases entry to resolve", opID, flagName))
 		}
+	}
+
+	if len(errs) > 0 {
+		log.Fatalf("%d error(s):\n  • %s", len(errs), strings.Join(errs, "\n  • "))
 	}
 }
 

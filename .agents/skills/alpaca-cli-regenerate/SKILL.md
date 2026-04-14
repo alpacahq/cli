@@ -146,6 +146,17 @@ For nested groups, set `parent`:
 },
 ```
 
+**Top-level parent groups also need root wiring.** If the new group is
+not nested under an existing parent, add it to `addGroup()` in
+`internal/cmd/root.go`. Pick the right group (`tradingGroup`,
+`accountGroup`, or `utilGroup`):
+
+```go
+addGroup(rootCmd, tradingGroup.ID, orderCmd, ..., myGroupCmd)
+```
+
+Without this, the command won't appear in `--help` or `--help-all`.
+
 After fixing, re-run `make generate` until it succeeds.
 
 ### Phase 4: Update golden files
@@ -182,6 +193,15 @@ Verify:
 - [ ] `internal/cmd/commands.gen.go` - command tree regenerated
 - [ ] `internal/cmd/testdata/*.golden` - golden files updated if needed
 - [ ] `cmd/generate/commands.go` - new operations registered if needed
+- [ ] `internal/cmd/root.go` - new top-level parent groups wired via `addGroup`
+- [ ] `test/integration/` - integration tests added for new commands
+
+If commands were added, add integration tests in `test/integration/`.
+Follow the rules in the "Integration tests" section of `AGENTS.md` -
+one file per feature area, `t.Parallel()` for read-only tests, cleanup
+for writes. If the endpoint is unavailable on paper (see the
+paper-unavailable list in `AGENTS.md`), write a test that accepts either
+a valid response or a structured JSON error.
 
 If commands or flags were added, removed, or renamed, follow the
 "Keep docs in sync" section in `AGENTS.md`.
@@ -206,6 +226,7 @@ If commands or flags were added, removed, or renamed, follow the
 | `cmd/generate/commands.go` | Command registry and parent groups | Yes |
 | `internal/api/*.gen.go` | Generated types and clients | No - regenerate |
 | `internal/cmd/commands.gen.go` | Generated Cobra commands | No - regenerate |
+| `internal/cmd/root.go` | Root command wiring (`addGroup` for top-level parents) | Yes |
 | `internal/cmd/testdata/*.golden` | Golden test snapshots | Update via `-update` flag |
 
 ## Anti-Patterns
