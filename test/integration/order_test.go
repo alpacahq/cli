@@ -11,7 +11,7 @@ import (
 func TestOrderLifecycle(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "order", "submit",
-		"--symbol", "AAPL",
+		"--symbol", "META",
 		"--qty", "1",
 		"--side", "buy",
 		"--type", "limit",
@@ -29,8 +29,8 @@ func TestOrderLifecycle(t *testing.T) {
 	})
 
 	t.Run("submit_fields", func(t *testing.T) {
-		if order["symbol"] != "AAPL" {
-			t.Errorf("expected symbol AAPL, got %v", order["symbol"])
+		if order["symbol"] != "META" {
+			t.Errorf("expected symbol META, got %v", order["symbol"])
 		}
 		if order["side"] != "buy" {
 			t.Errorf("expected side buy, got %v", order["side"])
@@ -132,7 +132,7 @@ func TestOrderReplace(t *testing.T) {
 func TestOrderSubmit_LimitOrder(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "order", "submit",
-		"--symbol", "AAPL",
+		"--symbol", "NVDA",
 		"--qty", "1",
 		"--side", "buy",
 		"--type", "limit",
@@ -221,7 +221,7 @@ func TestOrderSubmit_TrailingStopOrder(t *testing.T) {
 func TestOrderSubmit_BracketOrder(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "order", "submit",
-		"--symbol", "AAPL",
+		"--symbol", "TSLA",
 		"--qty", "1",
 		"--side", "buy",
 		"--type", "limit",
@@ -266,7 +266,7 @@ func TestOrderSubmit_BracketOrder(t *testing.T) {
 func TestOrderSubmit_ExtendedHours(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "order", "submit",
-		"--symbol", "AAPL",
+		"--symbol", "JPM",
 		"--qty", "1",
 		"--side", "buy",
 		"--type", "limit",
@@ -310,7 +310,7 @@ func TestOrderSubmit_ClientOrderID(t *testing.T) {
 	t.Parallel()
 	clientID := "integ-test-" + time.Now().Format("20060102150405.000")
 	out := alpaca(t, "order", "submit",
-		"--symbol", "AAPL",
+		"--symbol", "NFLX",
 		"--qty", "1",
 		"--side", "buy",
 		"--type", "limit",
@@ -424,21 +424,21 @@ func TestOrderList_StatusFilter(t *testing.T) {
 
 func TestOrderList_SymbolFilter(t *testing.T) {
 	t.Parallel()
-	_ = submitTestOrder(t)
+	_ = submitTestOrder(t, "DIS")
 
-	out := alpaca(t, "order", "list", "--status", "open", "--symbols", "AAPL")
+	out := alpaca(t, "order", "list", "--status", "open", "--symbols", "DIS")
 	orders := parseJSONArray(t, out)
 	for _, o := range orders {
-		if o["symbol"] != "AAPL" {
-			t.Errorf("symbol filter returned non-AAPL order: %v", o["symbol"])
+		if o["symbol"] != "DIS" {
+			t.Errorf("symbol filter returned non-DIS order: %v", o["symbol"])
 		}
 	}
 }
 
 func TestOrderList_Limit(t *testing.T) {
 	t.Parallel()
-	_ = submitTestOrder(t)
-	_ = submitTestOrder(t)
+	_ = submitTestOrder(t, "PG")
+	_ = submitTestOrder(t, "PG")
 
 	out := alpaca(t, "order", "list", "--status", "open", "--limit", "1")
 	orders := parseJSONArray(t, out)
@@ -464,7 +464,7 @@ func TestOrderList_Direction(t *testing.T) {
 func TestOrderList_Nested(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "order", "submit",
-		"--symbol", "AAPL",
+		"--symbol", "WMT",
 		"--qty", "1",
 		"--side", "buy",
 		"--type", "limit",
@@ -496,7 +496,7 @@ func TestOrderList_Nested(t *testing.T) {
 
 func TestOrderList_SideFilter(t *testing.T) {
 	t.Parallel()
-	_ = submitTestOrder(t) // buy side
+	_ = submitTestOrder(t, "KO") // buy side
 
 	out := alpaca(t, "order", "list", "--status", "open", "--side", "buy")
 	orders := parseJSONArray(t, out)
@@ -520,7 +520,7 @@ func TestOrderList_AfterUntil(t *testing.T) {
 func TestOrderSubmit_EquityMarketOrder(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "order", "submit",
-		"--symbol", "AAPL",
+		"--symbol", "INTC",
 		"--qty", "1",
 		"--side", "buy",
 		"--type", "market",
@@ -530,14 +530,14 @@ func TestOrderSubmit_EquityMarketOrder(t *testing.T) {
 	id := order["id"].(string)
 	t.Cleanup(func() {
 		_ = makeCmd("order", "cancel", "--order-id", id).Run()
-		_ = makeCmd("position", "close", "--symbol-or-asset-id", "AAPL").Run()
+		_ = makeCmd("position", "close", "--symbol-or-asset-id", "INTC").Run()
 	})
 
 	if order["type"] != "market" {
 		t.Errorf("expected type market, got %v", order["type"])
 	}
-	if order["symbol"] != "AAPL" {
-		t.Errorf("expected symbol AAPL, got %v", order["symbol"])
+	if order["symbol"] != "INTC" {
+		t.Errorf("expected symbol INTC, got %v", order["symbol"])
 	}
 	requireFields(t, order, "id", "qty")
 }

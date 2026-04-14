@@ -70,6 +70,44 @@ func alpaca(t *testing.T, args ...string) []byte {
 	return out
 }
 
+// alpacaRetry is like alpaca but retries up to 3 times on transient network
+// errors (EOF, connection reset). Only use for idempotent read-only calls.
+func alpacaRetry(t *testing.T, args ...string) []byte {
+	t.Helper()
+	const maxAttempts = 3
+	for attempt := range maxAttempts {
+		cmd := exec.Command(cliBinary, args...)
+		cmd.Env = cliEnv()
+
+		out, err := cmd.Output()
+		if err != nil {
+			var exitErr *exec.ExitError
+			if errors.As(err, &exitErr) {
+				stderr := string(exitErr.Stderr)
+				if attempt < maxAttempts-1 && isTransientError(stderr) {
+					t.Logf("transient error on attempt %d, retrying: %s", attempt+1, stderr)
+					time.Sleep(time.Duration(attempt+1) * 500 * time.Millisecond)
+					continue
+				}
+				t.Fatalf("alpaca %s failed (exit %d):\nstdout: %s\nstderr: %s",
+					strings.Join(args, " "), exitErr.ExitCode(), string(out), stderr)
+			}
+			t.Fatalf("alpaca %s failed: %v", strings.Join(args, " "), err)
+		}
+		return out
+	}
+	panic("unreachable")
+}
+
+func isTransientError(stderr string) bool {
+	for _, sig := range []string{": EOF", "connection reset", "connection refused", "TLS handshake timeout"} {
+		if strings.Contains(stderr, sig) {
+			return true
+		}
+	}
+	return false
+}
+
 // alpacaWithStderr runs the CLI and returns both stdout and stderr.
 // Does NOT fatal on non-zero exit — caller must check.
 func alpacaWithStderr(t *testing.T, args ...string) (stdout, stderr []byte, exitCode int) {
@@ -227,12 +265,16 @@ func pollFor(t *testing.T, timeout time.Duration, desc string, fn func() bool) {
 	}
 }
 
-// submitTestOrder places a safe GTC limit buy of AAPL at $1.00 (will never fill).
+// submitTestOrder places a safe GTC limit buy at $1.00 (will never fill).
 // Returns the order ID. Registers t.Cleanup to cancel.
-func submitTestOrder(t *testing.T) string {
+//
+// Each parallel test must pass a unique symbol to avoid wash-trade conflicts.
+// Bracket orders create sell-side child legs; if another test has a buy order
+// on the same symbol, the API rejects it as a potential wash trade.
+func submitTestOrder(t *testing.T, symbol string) string {
 	t.Helper()
 	out := alpaca(t, "order", "submit",
-		"--symbol", "AAPL",
+		"--symbol", symbol,
 		"--qty", "1",
 		"--side", "buy",
 		"--type", "limit",

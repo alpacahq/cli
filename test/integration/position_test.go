@@ -77,7 +77,7 @@ func TestPositionCloseAll(t *testing.T) {
 
 func TestPositionCloseAll_CancelOrders(t *testing.T) {
 	_ = submitCryptoFill(t)
-	_ = submitTestOrder(t)
+	_ = submitTestOrder(t, "COST")
 
 	alpaca(t, "position", "close-all", "--cancel-orders")
 

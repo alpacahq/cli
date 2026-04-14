@@ -10,7 +10,7 @@ import (
 
 func TestDataBars(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "bars", "--symbol", "AAPL",
+	out := alpacaRetry(t, "data", "bars", "--symbol", "AAPL",
 		"--start", daysAgo(100),
 		"--end", daysAgo(93),
 		"--timeframe", "1Day",
@@ -21,7 +21,7 @@ func TestDataBars(t *testing.T) {
 
 func TestDataBars_Timeframe(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "bars", "--symbol", "AAPL",
+	out := alpacaRetry(t, "data", "bars", "--symbol", "AAPL",
 		"--start", daysAgo(95),
 		"--end", daysAgo(94),
 		"--timeframe", "1Hour",
@@ -32,7 +32,7 @@ func TestDataBars_Timeframe(t *testing.T) {
 
 func TestDataBars_Adjustment(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "bars", "--symbol", "AAPL",
+	out := alpacaRetry(t, "data", "bars", "--symbol", "AAPL",
 		"--start", daysAgo(100),
 		"--end", daysAgo(93),
 		"--timeframe", "1Day",
@@ -44,7 +44,7 @@ func TestDataBars_Adjustment(t *testing.T) {
 
 func TestDataBars_Feed(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "bars", "--symbol", "AAPL",
+	out := alpacaRetry(t, "data", "bars", "--symbol", "AAPL",
 		"--start", daysAgo(100),
 		"--end", daysAgo(93),
 		"--timeframe", "1Day",
@@ -56,7 +56,7 @@ func TestDataBars_Feed(t *testing.T) {
 
 func TestDataBars_Currency(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "bars", "--symbol", "AAPL",
+	out := alpacaRetry(t, "data", "bars", "--symbol", "AAPL",
 		"--start", daysAgo(100),
 		"--end", daysAgo(93),
 		"--timeframe", "1Day",
@@ -68,13 +68,13 @@ func TestDataBars_Currency(t *testing.T) {
 
 func TestDataBars_Sort(t *testing.T) {
 	t.Parallel()
-	outAsc := alpaca(t, "data", "bars", "--symbol", "AAPL",
+	outAsc := alpacaRetry(t, "data", "bars", "--symbol", "AAPL",
 		"--start", daysAgo(100),
 		"--end", daysAgo(90),
 		"--timeframe", "1Day",
 		"--sort", "asc",
 	)
-	outDesc := alpaca(t, "data", "bars", "--symbol", "AAPL",
+	outDesc := alpacaRetry(t, "data", "bars", "--symbol", "AAPL",
 		"--start", daysAgo(100),
 		"--end", daysAgo(90),
 		"--timeframe", "1Day",
@@ -99,7 +99,7 @@ func TestDataBars_Sort(t *testing.T) {
 
 func TestDataQuotes(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "quotes", "--symbol", "AAPL",
+	out := alpacaRetry(t, "data", "quotes", "--symbol", "AAPL",
 		"--start", daysAgo(95),
 		"--end", daysAgo(94),
 		"--limit", "5",
@@ -110,7 +110,7 @@ func TestDataQuotes(t *testing.T) {
 
 func TestDataTrades(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "trades", "--symbol", "AAPL",
+	out := alpacaRetry(t, "data", "trades", "--symbol", "AAPL",
 		"--start", daysAgo(95),
 		"--end", daysAgo(94),
 		"--limit", "5",
@@ -121,35 +121,35 @@ func TestDataTrades(t *testing.T) {
 
 func TestDataLatestTrade(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "latest-trade", "--symbol", "AAPL")
+	out := alpacaRetry(t, "data", "latest-trade", "--symbol", "AAPL")
 	data := parseJSONMap(t, out)
 	requireFields(t, data, "trade")
 }
 
 func TestDataLatestQuote(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "latest-quote", "--symbol", "AAPL")
+	out := alpacaRetry(t, "data", "latest-quote", "--symbol", "AAPL")
 	data := parseJSONMap(t, out)
 	requireFields(t, data, "quote")
 }
 
 func TestDataLatestBar(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "latest-bar", "--symbol", "AAPL")
+	out := alpacaRetry(t, "data", "latest-bar", "--symbol", "AAPL")
 	data := parseJSONMap(t, out)
 	requireFields(t, data, "bar")
 }
 
 func TestDataSnapshot(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "snapshot", "--symbol", "AAPL")
+	out := alpacaRetry(t, "data", "snapshot", "--symbol", "AAPL")
 	data := parseJSONMap(t, out)
 	requireFields(t, data, "latestTrade", "latestQuote", "minuteBar", "dailyBar")
 }
 
 func TestDataAuction(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "auction", "--symbol", "AAPL",
+	out := alpacaRetry(t, "data", "auction", "--symbol", "AAPL",
 		"--start", daysAgo(100),
 		"--end", daysAgo(93),
 	)
@@ -159,7 +159,7 @@ func TestDataAuction(t *testing.T) {
 
 func TestDataAuctions(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "auctions", "--symbols", "AAPL", "--start", daysAgo(100), "--end", daysAgo(93))
+	out := alpacaRetry(t, "data", "auctions", "--symbols", "AAPL", "--start", daysAgo(100), "--end", daysAgo(93))
 	data := parseJSONMap(t, out)
 	if len(data) == 0 {
 		t.Error("expected non-empty auctions response")
@@ -170,7 +170,7 @@ func TestDataAuctions(t *testing.T) {
 
 func TestDataMultiBars(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "multi-bars",
+	out := alpacaRetry(t, "data", "multi-bars",
 		"--symbols", "AAPL,MSFT",
 		"--timeframe", "1Day",
 		"--start", daysAgo(100),
@@ -189,7 +189,7 @@ func TestDataMultiBars(t *testing.T) {
 
 func TestDataMultiQuotes(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "multi-quotes",
+	out := alpacaRetry(t, "data", "multi-quotes",
 		"--symbols", "AAPL,MSFT",
 		"--start", daysAgo(95),
 		"--end", daysAgo(94),
@@ -201,7 +201,7 @@ func TestDataMultiQuotes(t *testing.T) {
 
 func TestDataMultiTrades(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "multi-trades",
+	out := alpacaRetry(t, "data", "multi-trades",
 		"--symbols", "AAPL,MSFT",
 		"--start", daysAgo(95),
 		"--end", daysAgo(94),
@@ -213,7 +213,7 @@ func TestDataMultiTrades(t *testing.T) {
 
 func TestDataMultiSnapshots(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "multi-snapshots", "--symbols", "AAPL,MSFT")
+	out := alpacaRetry(t, "data", "multi-snapshots", "--symbols", "AAPL,MSFT")
 	data := parseJSONMap(t, out)
 	if _, ok := data["AAPL"]; !ok {
 		t.Error("expected snapshot to contain AAPL")
@@ -225,7 +225,7 @@ func TestDataMultiSnapshots(t *testing.T) {
 
 func TestDataLatestBarsMulti(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "latest-bars", "--symbols", "AAPL,MSFT")
+	out := alpacaRetry(t, "data", "latest-bars", "--symbols", "AAPL,MSFT")
 	data := parseJSONMap(t, out)
 	requireFields(t, data, "bars")
 	bars := data["bars"].(map[string]any)
@@ -236,7 +236,7 @@ func TestDataLatestBarsMulti(t *testing.T) {
 
 func TestDataLatestQuotesMulti(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "latest-quotes", "--symbols", "AAPL,MSFT")
+	out := alpacaRetry(t, "data", "latest-quotes", "--symbols", "AAPL,MSFT")
 	data := parseJSONMap(t, out)
 	requireFields(t, data, "quotes")
 	quotes := data["quotes"].(map[string]any)
@@ -247,7 +247,7 @@ func TestDataLatestQuotesMulti(t *testing.T) {
 
 func TestDataLatestTradesMulti(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "latest-trades", "--symbols", "AAPL,MSFT")
+	out := alpacaRetry(t, "data", "latest-trades", "--symbols", "AAPL,MSFT")
 	data := parseJSONMap(t, out)
 	requireFields(t, data, "trades")
 	trades := data["trades"].(map[string]any)
@@ -260,7 +260,7 @@ func TestDataLatestTradesMulti(t *testing.T) {
 
 func TestDataMultiQuotes_PageToken(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "data", "multi-quotes",
+	out := alpacaRetry(t, "data", "multi-quotes",
 		"--symbols", "AAPL",
 		"--start", daysAgo(95),
 		"--end", daysAgo(94),
@@ -272,7 +272,7 @@ func TestDataMultiQuotes_PageToken(t *testing.T) {
 		t.Skip("no next_page_token — not enough data to test pagination")
 	}
 
-	out = alpaca(t, "data", "multi-quotes",
+	out = alpacaRetry(t, "data", "multi-quotes",
 		"--symbols", "AAPL",
 		"--start", daysAgo(95),
 		"--end", daysAgo(94),
