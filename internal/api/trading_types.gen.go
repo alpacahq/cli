@@ -26,6 +26,14 @@ type PositionIntent string
 
 type TimeInForce string
 
+type TokenizationIssuer string
+
+type TokenizationNetwork string
+
+type TokenizationRequestStatus string
+
+type TokenizationRequestType string
+
 type TransferDirection string
 
 type BondStatus string
@@ -98,6 +106,38 @@ type AccountConfigurations struct {
 	TradeConfirmEmail       string `json:"trade_confirm_email,omitempty"`
 }
 
+type ActivityEventV2CommonFields struct {
+	ActivitySubtype string `json:"activity_subtype,omitempty"`
+	ActivityType    string `json:"activity_type"`
+	At              string `json:"at"`
+	Currency        string `json:"currency"`
+	EventID         string `json:"event_id"`
+	ExecutedAt      string `json:"executed_at"`
+	NetAmount       string `json:"net_amount,omitempty"`
+	PreviousID      string `json:"previous_id,omitempty"`
+	Price           string `json:"price,omitempty"`
+	Qty             string `json:"qty,omitempty"`
+	RefID           string `json:"ref_id"`
+	SettleDate      string `json:"settle_date"`
+	Status          string `json:"status"`
+	SwapFeeBps      string `json:"swap_fee_bps,omitempty"`
+	SwapRate        string `json:"swap_rate,omitempty"`
+}
+
+type ActivityV2DetailTRD struct {
+	AssetID       string `json:"asset_id"`
+	ClientOrderID string `json:"client_order_id,omitempty"`
+	Commission    string `json:"commission,omitempty"`
+	CumQty        string `json:"cum_qty"`
+	Cusip         string `json:"cusip,omitempty"`
+	ExecutionType string `json:"execution_type"`
+	LeavesQty     string `json:"leaves_qty"`
+	OrderID       string `json:"order_id"`
+	OrderStatus   string `json:"order_status"`
+	Side          string `json:"side"`
+	Symbol        string `json:"symbol"`
+}
+
 type AddAssetToWatchlistRequest struct {
 	Symbol string `json:"symbol,omitempty"`
 }
@@ -147,6 +187,80 @@ type Clock struct {
 	NextClose string `json:"next_close,omitempty"`
 	NextOpen  string `json:"next_open,omitempty"`
 	Timestamp string `json:"timestamp,omitempty"`
+}
+
+type CommonAcatActivityV2 struct {
+	ExternalID string `json:"external_id"`
+	HoldDate   string `json:"hold_date,omitempty"`
+	RequestID  string `json:"request_id"`
+}
+
+type CommonCDIVActivityV2 struct {
+	Cusip          string `json:"cusip"`
+	DueBillOffDate string `json:"due_bill_off_date,omitempty"`
+	DueBillOnDate  string `json:"due_bill_on_date,omitempty"`
+	ExDate         string `json:"ex_date,omitempty"`
+	Foreign        bool   `json:"foreign"`
+	PayableDate    string `json:"payable_date,omitempty"`
+	Rate           string `json:"rate"`
+	RecordDate     string `json:"record_date,omitempty"`
+	Special        bool   `json:"special"`
+	Symbol         string `json:"symbol"`
+}
+
+type CommonMAActivityV2 struct {
+	AcquireeCusip  string `json:"acquiree_cusip"`
+	AcquireeRate   string `json:"acquiree_rate,omitempty"`
+	AcquireeSymbol string `json:"acquiree_symbol"`
+	AcquirerCusip  string `json:"acquirer_cusip,omitempty"`
+	AcquirerRate   string `json:"acquirer_rate,omitempty"`
+	AcquirerSymbol string `json:"acquirer_symbol,omitempty"`
+	EffectiveDate  string `json:"effective_date"`
+	PayableDate    string `json:"payable_date"`
+}
+
+type CommonNCActivityV2 struct {
+	NewCusip  string `json:"new_cusip"`
+	NewSymbol string `json:"new_symbol"`
+	OldCusip  string `json:"old_cusip"`
+	OldSymbol string `json:"old_symbol"`
+}
+
+type CommonNTAActivityV2 struct {
+	GroupID    string `json:"group_id,omitempty"`
+	SystemDate string `json:"system_date"`
+}
+
+type CommonSDIVActivityV2 struct {
+	Cusip       string `json:"cusip"`
+	ExDate      string `json:"ex_date,omitempty"`
+	PayableDate string `json:"payable_date,omitempty"`
+	Rate        string `json:"rate"`
+	RecordDate  string `json:"record_date,omitempty"`
+	Symbol      string `json:"symbol"`
+}
+
+type CommonSpinoffActivityV2 struct {
+	DueBillRedemptionDate string `json:"due_bill_redemption_date,omitempty"`
+	ExDate                string `json:"ex_date,omitempty"`
+	NewCusip              string `json:"new_cusip"`
+	NewPrice              string `json:"new_price"`
+	NewRate               string `json:"new_rate"`
+	NewSymbol             string `json:"new_symbol"`
+	PayableDate           string `json:"payable_date,omitempty"`
+	RecordDate            string `json:"record_date,omitempty"`
+	SourceCusip           string `json:"source_cusip"`
+	SourcePrice           string `json:"source_price"`
+	SourceRate            string `json:"source_rate"`
+	SourceSymbol          string `json:"source_symbol"`
+}
+
+type CommonSplitActivityV2 struct {
+	NewCusip    string `json:"new_cusip"`
+	NewRate     string `json:"new_rate"`
+	OldCusip    string `json:"old_cusip"`
+	OldRate     string `json:"old_rate"`
+	PayableDate string `json:"payable_date,omitempty"`
 }
 
 type CreateCryptoTransferRequest struct {
@@ -355,6 +469,44 @@ type PositionClosedReponse struct {
 	Body   Order  `json:"body,omitempty"`
 	Status int    `json:"status"`
 	Symbol string `json:"symbol"`
+}
+
+type TokenizationMintRequest struct {
+	Issuer           TokenizationIssuer  `json:"issuer"`
+	Network          TokenizationNetwork `json:"network"`
+	Qty              string              `json:"qty"`
+	UnderlyingSymbol string              `json:"underlying_symbol"`
+	WalletAddress    string              `json:"wallet_address"`
+}
+
+type TokenizationMintResponse struct {
+	CreatedAt             string                    `json:"created_at"`
+	Issuer                TokenizationIssuer        `json:"issuer"`
+	Network               TokenizationNetwork       `json:"network"`
+	Qty                   string                    `json:"qty"`
+	Status                TokenizationRequestStatus `json:"status"`
+	TokenSymbol           string                    `json:"token_symbol"`
+	TokenizationRequestID string                    `json:"tokenization_request_id"`
+	UnderlyingSymbol      string                    `json:"underlying_symbol"`
+}
+
+type TokenizationRequest struct {
+	Account               string                    `json:"account,omitempty"`
+	CreatedAt             string                    `json:"created_at"`
+	Fees                  *string                   `json:"fees,omitempty"`
+	Issuer                TokenizationIssuer        `json:"issuer"`
+	IssuerAccount         string                    `json:"issuer_account,omitempty"`
+	IssuerRequestID       *string                   `json:"issuer_request_id,omitempty"`
+	Network               TokenizationNetwork       `json:"network"`
+	Qty                   string                    `json:"qty"`
+	Status                TokenizationRequestStatus `json:"status"`
+	TokenSymbol           string                    `json:"token_symbol"`
+	TokenizationRequestID string                    `json:"tokenization_request_id"`
+	TxHash                *string                   `json:"tx_hash,omitempty"`
+	Type                  TokenizationRequestType   `json:"type"`
+	UnderlyingSymbol      string                    `json:"underlying_symbol"`
+	UpdatedAt             *string                   `json:"updated_at,omitempty"`
+	WalletAddress         string                    `json:"wallet_address"`
 }
 
 type TradingActivities struct {

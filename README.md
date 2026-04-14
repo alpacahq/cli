@@ -213,6 +213,8 @@ alpaca position list
 | `alpaca crypto-perp data latest-orderbooks` | Latest perp orderbooks |
 | `alpaca crypto-perp data latest-quotes` | Latest perp quotes |
 | `alpaca crypto-perp data latest-trades` | Latest perp trades |
+| `alpaca tokenization list` | List tokenization requests |
+| `alpaca tokenization mint` | Mint a tokenized asset |
 
 ### Utilities
 

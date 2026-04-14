@@ -130,6 +130,12 @@ var screenerCmd = &cobra.Command{
 	Long:  "Most active stocks and top market movers by volume, trade count, or price change.",
 }
 
+var tokenizationCmd = &cobra.Command{
+	Use:   "tokenization",
+	Short: "Tokenized assets (Instant Tokenization Network)",
+	Long:  "Mint tokenized assets and track tokenization requests on the Instant Tokenization Network (ITN).",
+}
+
 var walletCmd = &cobra.Command{
 	Use:   "wallet",
 	Short: "Crypto funding wallets and transfers",
@@ -372,6 +378,10 @@ var getOrderByOrderIDCmd = fetchCmd("get", api.GetOrderByOrderIDOp, func(cmd *co
 	return tradingClient.GetOrderByOrderID(cmdutil.Str(cmd, "order-id"), queryFromFlags(cmd, api.GetOrderByOrderIDOp))
 })
 
+var getTokenizationRequestsCmd = fetchCmd("list", api.GetTokenizationRequestsOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.GetTokenizationRequests(queryFromFlags(cmd, api.GetTokenizationRequestsOp))
+})
+
 var getV2AssetsCmd = fetchCmd("list", api.GetV2AssetsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return tradingClient.GetV2Assets(queryFromFlags(cmd, api.GetV2AssetsOp))
 })
@@ -607,6 +617,17 @@ var postOrderCmd = fetchCmd("submit", api.PostOrderOp, func(cmd *cobra.Command, 
 	return tradingClient.PostOrder(body)
 }, configureOrderSubmit)
 
+var postTokenizationMintCmd = fetchCmd("mint", api.PostTokenizationMintOp, func(cmd *cobra.Command, args []string) (any, error) {
+	body := &api.TokenizationMintRequest{
+		Issuer:           api.TokenizationIssuer(cmdutil.Str(cmd, "issuer")),
+		Network:          api.TokenizationNetwork(cmdutil.Str(cmd, "network")),
+		Qty:              cmdutil.Str(cmd, "qty"),
+		UnderlyingSymbol: cmdutil.Str(cmd, "underlying-symbol"),
+		WalletAddress:    cmdutil.Str(cmd, "wallet-address"),
+	}
+	return tradingClient.PostTokenizationMint(body)
+})
+
 var postWatchlistCmd = fetchCmd("create", api.PostWatchlistOp, func(cmd *cobra.Command, args []string) (any, error) {
 	body := &api.UpdateWatchlistRequest{
 		Name: cmdutil.Str(cmd, "name"),
@@ -820,6 +841,7 @@ func init() {
 	optionCmd.AddCommand(getOptionsContractsCmd)
 	orderCmd.AddCommand(getOrderByClientOrderIDCmd)
 	orderCmd.AddCommand(getOrderByOrderIDCmd)
+	tokenizationCmd.AddCommand(getTokenizationRequestsCmd)
 	assetCmd.AddCommand(getV2AssetsCmd)
 	assetCmd.AddCommand(getV2AssetsSymbolOrAssetIDCmd)
 	corporateActionCmd.AddCommand(getV2CorporateActionsAnnouncementsCmd)
@@ -851,6 +873,7 @@ func init() {
 	accountConfigCmd.AddCommand(patchAccountConfigCmd)
 	orderCmd.AddCommand(patchOrderByOrderIDCmd)
 	orderCmd.AddCommand(postOrderCmd)
+	tokenizationCmd.AddCommand(postTokenizationMintCmd)
 	watchlistCmd.AddCommand(postWatchlistCmd)
 	dataForexCmd.AddCommand(ratesCmd)
 	watchlistCmd.AddCommand(removeAssetFromWatchlistCmd)

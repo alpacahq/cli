@@ -1038,6 +1038,23 @@ var GetOrderByOrderIDOp = Op{
 	},
 }
 
+var GetTokenizationRequestsOp = Op{
+	Name: "GetTokenizationRequests", Summary: "List tokenization requests", ReturnsArray: true,
+	Long: "An Authorized Participant can use this endpoint to list the tokenization requests performed on the Instant Tokenization Network (ITN)",
+	Example: `  alpaca tokenization list
+  alpaca tokenization list --status pending --issuer xstocks
+  alpaca tokenization list --underlying-symbol AAPL --network solana`,
+	Flags: []FlagDef{
+		{Name: "after", OASName: "after", Type: "string", Description: "response will include only requests created after this timestamp (exclusive)", Source: "query"},
+		{Name: "before", OASName: "before", Type: "string", Description: "response will include only requests created before this timestamp (exclusive)", Source: "query"},
+		{Name: "issuer", OASName: "issuer", Type: "string", Description: "issuer of the tokenization requests to be queried", Completions: []string{"xstocks"}, Source: "query"},
+		{Name: "network", OASName: "network", Type: "string", Description: "network of the tokenization requests to be queried", Completions: []string{"arbitrum", "base", "binance", "ethereum", "mantle", "solana", "ton", "tron"}, Source: "query"},
+		{Name: "status", OASName: "status", Type: "string", Description: "tokenization request status to be queried", Completions: []string{"completed", "pending", "rejected"}, Source: "query"},
+		{Name: "type", OASName: "type", Type: "string", Description: "tokenization request type to be queried", Completions: []string{"mint", "redeem"}, Source: "query"},
+		{Name: "underlying-symbol", OASName: "underlying_symbol", Type: "string", Description: "underlying symbol of the tokenization requests to be queried", Source: "query"},
+	},
+}
+
 var GetWatchlistByIDOp = Op{
 	Name: "GetWatchlistByID", Summary: "Get watchlist by ID",
 	Long:    "Returns a watchlist identified by the ID",
@@ -1165,7 +1182,7 @@ var PatchOrderByOrderIDOp = Op{
 		{Name: "client-order-id", OASName: "client_order_id", Type: "string", Description: "A unique identifier for the new order. Automatically generated if not sent. (<= 128 characters)", Source: "body"},
 		{Name: "limit-price", OASName: "limit_price", Type: "string", Description: "required if original order's type field was limit or stop_limit.", Source: "body"},
 		{Name: "order-id", OASName: "order_id", Type: "string", Description: "order id", Required: true, Source: "path"},
-		{Name: "qty", OASName: "qty", Type: "string", Description: "number of shares to trade.", Source: "body"},
+		{Name: "qty", OASName: "qty", Type: "string", Description: "number of shares to trade.\n\nYou can only patch full shares for now.\n\nQty of equity fractional orders are not allowed ...", Source: "body"},
 		{Name: "stop-price", OASName: "stop_price", Type: "string", Description: "required if original order type is limit or stop_limit", Source: "body"},
 		{Name: "time-in-force", OASName: "time_in_force", Type: "string", Description: "time-In-Force values supported by Alpaca vary based on the order's security type", Completions: []string{"cls", "day", "fok", "gtc", "ioc", "opg"}, Source: "body"},
 		{Name: "trail", OASName: "trail", Type: "string", Description: "the new value of the trail_price or trail_percent value (works only for type=“trailing_stop”)", Source: "body"},
@@ -1201,6 +1218,19 @@ var PostOrderOp = Op{
 	},
 }
 
+var PostTokenizationMintOp = Op{
+	Name: "PostTokenizationMint", Summary: "Create mint a tokenized asset",
+	Long:    "This endpoint is used by an Authorized Participant to request the minting of a tokenized asset",
+	Example: `  alpaca tokenization mint --underlying-symbol AAPL --qty 10 --issuer xstocks --network solana --wallet-address 0xabc...`,
+	Flags: []FlagDef{
+		{Name: "issuer", OASName: "issuer", Type: "string", Description: "tokenized asset's issuer", Completions: []string{"st0x", "xstocks"}, Source: "body"},
+		{Name: "network", OASName: "network", Type: "string", Description: "token's blockchain network", Completions: []string{"arbitrum", "base", "binance", "ethereum", "mantle", "solana", "ton", "tron"}, Source: "body"},
+		{Name: "qty", OASName: "qty", Type: "string", Description: "underlying quantity to convert into the tokenized asset. It can be fractional", Source: "body"},
+		{Name: "underlying-symbol", OASName: "underlying_symbol", Type: "string", Description: "underlying asset symbol", Source: "body"},
+		{Name: "wallet-address", OASName: "wallet_address", Type: "string", Description: "wallet address to receive the tokenized asset", Source: "body"},
+	},
+}
+
 var PostWatchlistOp = Op{
 	Name: "PostWatchlist", Summary: "Create watchlist",
 	Long:    "Create a new watchlist with initial set of assets",
@@ -1228,6 +1258,17 @@ var SetCryptoPerpAccountLeverageOp = Op{
 	Flags: []FlagDef{
 		{Name: "leverage", OASName: "leverage", Type: "int", Description: "leverage for the underlying asset", Source: "query"},
 		{Name: "symbol", OASName: "symbol", Type: "string", Description: "symbol of underlying asset", Source: "query"},
+	},
+}
+
+var SubscribeToActivitiesSSEOp = Op{
+	Name: "SubscribeToActivitiesSSE", Summary: "Get subscribe to activity events (SSE)",
+	Long: "The Events API sends the real-time events and provides historical queries with SSE (Server Sent Events)",
+	Flags: []FlagDef{
+		{Name: "since", OASName: "since", Type: "string", Description: "format: RFC3339 or YYYY-MM-DD", Source: "query"},
+		{Name: "since-id", OASName: "since_id", Type: "string", Description: "since id", Source: "query"},
+		{Name: "until", OASName: "until", Type: "string", Description: "format: RFC3339 or YYYY-MM-DD", Source: "query"},
+		{Name: "until-id", OASName: "until_id", Type: "string", Description: "until id", Source: "query"},
 	},
 }
 
@@ -1663,8 +1704,26 @@ func ResponseSchema(opName string) ([]ResponseField, bool) {
 			"GetOpenPosition":              positionResponseFields,
 			"GetOrderByClientOrderID":      orderResponseFields,
 			"GetOrderByOrderID":            orderResponseFields,
-			"GetWatchlistByID":             watchlistResponseFields,
-			"GetWatchlistByName":           watchlistResponseFields,
+			"GetTokenizationRequests": {
+				{Name: "account", Type: "string", Description: "alpaca account ID associated with this tokenization request"},
+				{Name: "created_at", Type: "string", Description: "created at"},
+				{Name: "fees", Type: "string", Description: "fees charged for this tokenization request"},
+				{Name: "issuer", Type: "enum", Description: "tokenized asset's issuer", EnumValues: []string{"st0x", "xstocks"}},
+				{Name: "issuer_account", Type: "string", Description: "issuer's account ID associated with this tokenization request"},
+				{Name: "issuer_request_id", Type: "string", Description: "unique identifier of the tokenization request set by the issuer"},
+				{Name: "network", Type: "enum", Description: "token's blockchain network", EnumValues: []string{"arbitrum", "base", "binance", "ethereum", "mantle", "solana", "ton", "tron"}},
+				{Name: "qty", Type: "string", Description: "quantity to convert for this tokenization request. It can be fractional"},
+				{Name: "status", Type: "enum", Description: "status of the tokenization request", EnumValues: []string{"completed", "pending", "rejected"}},
+				{Name: "token_symbol", Type: "string", Description: "tokenized asset symbol"},
+				{Name: "tokenization_request_id", Type: "string", Description: "unique identifier of the tokenization request set by Alpaca"},
+				{Name: "tx_hash", Type: "string", Description: "transaction hash of the completed request on the blockchain"},
+				{Name: "type", Type: "enum", Description: "tokenization request type", EnumValues: []string{"mint", "redeem"}},
+				{Name: "underlying_symbol", Type: "string", Description: "underlying asset symbol"},
+				{Name: "updated_at", Type: "string", Description: "updated at"},
+				{Name: "wallet_address", Type: "string", Description: "wallet address associated with this tokenization request"},
+			},
+			"GetWatchlistByID":   watchlistResponseFields,
+			"GetWatchlistByName": watchlistResponseFields,
 			"GetWatchlists": {
 				{Name: "account_id", Type: "string", Description: "account ID"},
 				{Name: "created_at", Type: "string", Description: "created at"},
@@ -1683,9 +1742,19 @@ func ResponseSchema(opName string) ([]ResponseField, bool) {
 				{Name: "currency", Type: "string", Description: "currency"},
 				{Name: "next_page_token", Type: "string", Description: "pagination token for the next page"},
 			},
-			"PatchAccountConfig":       accountConfigurationsResponseFields,
-			"PatchOrderByOrderID":      orderResponseFields,
-			"PostOrder":                orderResponseFields,
+			"PatchAccountConfig":  accountConfigurationsResponseFields,
+			"PatchOrderByOrderID": orderResponseFields,
+			"PostOrder":           orderResponseFields,
+			"PostTokenizationMint": {
+				{Name: "created_at", Type: "string", Description: "created at"},
+				{Name: "issuer", Type: "enum", Description: "tokenized asset's issuer", EnumValues: []string{"st0x", "xstocks"}},
+				{Name: "network", Type: "enum", Description: "token's blockchain network", EnumValues: []string{"arbitrum", "base", "binance", "ethereum", "mantle", "solana", "ton", "tron"}},
+				{Name: "qty", Type: "string", Description: "quantity to convert for this tokenization request. It can be fractional"},
+				{Name: "status", Type: "enum", Description: "status of the tokenization request", EnumValues: []string{"completed", "pending", "rejected"}},
+				{Name: "token_symbol", Type: "string", Description: "tokenized asset symbol"},
+				{Name: "tokenization_request_id", Type: "string", Description: "unique identifier of the tokenization request set by Alpaca"},
+				{Name: "underlying_symbol", Type: "string", Description: "underlying asset symbol"},
+			},
 			"PostWatchlist":            watchlistResponseFields,
 			"RemoveAssetFromWatchlist": watchlistResponseFields,
 			"UpdateWatchlistByID":      watchlistResponseFields,
@@ -1786,6 +1855,7 @@ var AllOps = []Op{
 	GetOpenPositionOp,
 	GetOrderByClientOrderIDOp,
 	GetOrderByOrderIDOp,
+	GetTokenizationRequestsOp,
 	GetWatchlistByIDOp,
 	GetWatchlistByNameOp,
 	GetWatchlistsOp,
@@ -1801,9 +1871,11 @@ var AllOps = []Op{
 	PatchAccountConfigOp,
 	PatchOrderByOrderIDOp,
 	PostOrderOp,
+	PostTokenizationMintOp,
 	PostWatchlistOp,
 	RemoveAssetFromWatchlistOp,
 	SetCryptoPerpAccountLeverageOp,
+	SubscribeToActivitiesSSEOp,
 	UpdateWatchlistByIDOp,
 	UpdateWatchlistByNameOp,
 }

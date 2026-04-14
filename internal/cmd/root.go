@@ -195,7 +195,7 @@ func init() {
 
 	rootCmd.AddGroup(tradingGroup, accountGroup, utilGroup)
 
-	addGroup(rootCmd, tradingGroup.ID, orderCmd, positionCmd, optionCmd, clockCmd, calendarCmd, dataCmd, cryptoPerpCmd)
+	addGroup(rootCmd, tradingGroup.ID, orderCmd, positionCmd, optionCmd, clockCmd, calendarCmd, dataCmd, cryptoPerpCmd, tokenizationCmd)
 	addGroup(rootCmd, accountGroup.ID, accountCmd, assetCmd, corporateActionCmd, watchlistCmd, walletCmd)
 	addGroup(rootCmd, utilGroup.ID, profileCmd, apiCmd, updateCmd, versionCmd, doctorCmd)
 }

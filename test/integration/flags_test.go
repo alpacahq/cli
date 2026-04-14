@@ -84,7 +84,7 @@ func TestHelpAll(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "--help-all")
 	s := string(out)
-	for _, cmd := range []string{"order", "position", "account", "data", "watchlist"} {
+	for _, cmd := range []string{"order", "position", "account", "data", "watchlist", "tokenization"} {
 		if !strings.Contains(s, cmd) {
 			t.Errorf("--help-all should contain %q command", cmd)
 		}

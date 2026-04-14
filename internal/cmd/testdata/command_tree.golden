@@ -470,6 +470,20 @@ alpaca profile login
   --secret (string)
 alpaca profile logout
 alpaca profile switch
+alpaca tokenization list
+  --after (string)
+  --before (string)
+  --issuer (string)
+  --network (string)
+  --status (string)
+  --type (string)
+  --underlying-symbol (string)
+alpaca tokenization mint
+  --issuer (string)
+  --network (string)
+  --qty (string)
+  --underlying-symbol (string)
+  --wallet-address (string)
 alpaca update
   --check (bool)
 alpaca version

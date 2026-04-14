@@ -66,6 +66,13 @@
         },
         {
             "name": "Crypto Perpetuals Leverage (Beta)"
+        },
+        {
+            "name": "Tokenization",
+            "description": "Request minting of tokenized assets and list tokenization requests on the Instant Tokenization Network (ITN)."
+        },
+        {
+            "name": "Events"
         }
     ],
     "paths": {
@@ -628,7 +635,7 @@
                     "Orders"
                 ],
                 "summary": "Replace Order by ID",
-                "description": "Replaces a single order with updated parameters. Each parameter overrides the corresponding attribute of the existing order. The other attributes remain the same as the existing order.\n\nA success return code from a replaced order does NOT guarantee the existing open order has been replaced. If the existing open order is filled before the replacing (new) order reaches the execution venue, the replacing (new) order is rejected, and these events are sent in the trade_updates stream channel.\n\nWhile an order is being replaced, buying power is reduced by the larger of the two orders that have been placed (the old order being replaced, and the newly placed order to replace it). If you are replacing a buy entry order with a higher limit price than the original order, the buying power is calculated based on the newly placed order. If you are replacing it with a lower limit price, the buying power is calculated based on the old order.\n\nNote: Order cannot be replaced when the status is `accepted`, `pending_new`, `pending_cancel` or `pending_replace`.\n",
+                "description": "Replaces a single order with updated parameters. Each parameter overrides the corresponding attribute of the existing order. The other attributes remain the same as the existing order.\n\nA success return code from a replaced order does NOT guarantee the existing open order has been replaced. If the existing open order is filled before the replacing (new) order reaches the execution venue, the replacing (new) order is rejected, and these events are sent in the trade_updates stream channel.\n\nWhile an order is being replaced, buying power is reduced by the larger of the two orders that have been placed (the old order being replaced, and the newly placed order to replace it). If you are replacing a buy entry order with a higher limit price than the original order, the buying power is calculated based on the newly placed order. If you are replacing it with a lower limit price, the buying power is calculated based on the old order.\n\nNote: Order cannot be replaced when the status is `accepted`, `pending_new`, `pending_cancel` or `pending_replace`.\n\nNote: Notional orders cannot be replaced. Any attempt to modify a notional order via this endpoint will be rejected. To change a notional order, cancel it and submit a new one.\n",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -1047,7 +1054,19 @@
                         },
                         "in": "query",
                         "name": "cashflow_types",
-                        "description": "The cashflow activities to include in the report. One of 'ALL', 'NONE', or a comma-separated list of activity types."
+                        "description": "The cashflow activities to include in the report. One of 'ALL', 'NONE', or a comma-separated list of activity types.",
+                        "examples": {
+                            "all": {
+                                "value": "ALL"
+                            },
+                            "none": {
+                                "value": "NONE"
+                            },
+                            "cash_transfers": {
+                                "value": "CSD,CSW,FEE",
+                                "summary": "Include cash deposits, withdraws, and transaction fees"
+                            }
+                        }
                     }
                 ],
                 "responses": {
@@ -1727,6 +1746,69 @@
                 ]
             }
         },
+        "/v2alpha1/events/activities": {
+            "get": {
+                "summary": "Subscribe to Activity Events (SSE)",
+                "x-internal": "true,",
+                "tags": [
+                    "Events"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Connected. Events will now start streaming as long as you keep the connection open.",
+                        "content": {
+                            "text/event-stream": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ActivityEventV2"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "since",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        },
+                        "description": "Format: RFC3339 or YYYY-MM-DD"
+                    },
+                    {
+                        "name": "until",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        },
+                        "description": "Format: RFC3339 or YYYY-MM-DD"
+                    },
+                    {
+                        "name": "since_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "ulid"
+                        }
+                    },
+                    {
+                        "name": "until_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "ulid"
+                        }
+                    }
+                ],
+                "operationId": "subscribeToActivitiesSSE",
+                "description": "The Events API sends the real-time events and provides historical queries with SSE (Server Sent Events).\n\nThis endpoint streams events on account activities.\n\nHistorical events are streamed immediately if queried, and updates are pushed as events occur.\n\nQuery parameter rules:\n- If `until` is specified, `since` is required.\n- If `until_id` is specified, `since_id` is required.\n- You cannot use `since` and `since_id` together.\nBehavior:\n- If `since` or `since_id` is not specified, this will not return any historic data.\n- If `until` or `until_id` is specified, stream will end at the specified point with status 200.\n\n---\n\nWarning: Currently, OAS-3 does not fully support responses from an SSE API.\n\nIn case the client code is generated from this OAS spec, please do not specify `since` and `until`, as the generated client may hang forever waiting for the response to end.\n\nIf you require the streaming capabilities, we recommend not using the generated clients for this specific endpoint until the OAS-3 standards define how to represent this behavior.\n\n---\n\n###  Comment messages\nAccording to the SSE specification, any line that starts with a colon is a comment which does not contain data.  It is typically a free text that does not follow any data schema. A few examples mentioned below for comment messages.\n\n#####  Slow client\n\nThe server sends a comment when the client is not consuming messages fast enough. Example: `: you are reading too slowly, dropped 10000 messages`\n\n##### Internal server error\n\nAn error message is sent as a comment when the server closes the connection on an internal server error (only sent by the v2 and v2beta1 endpoints). Example: `: internal server error`\n\n---"
+            },
+            "parameters": []
+        },
         "/v2/calendar": {
             "get": {
                 "summary": "Get US Market Calendar",
@@ -1997,7 +2079,7 @@
                         },
                         "in": "query",
                         "name": "attributes",
-                        "description": "Comma separated values to query for more than one attribute. Assets which have any of the given attributes will be included.\n\nSupported values:\n- `ptp_no_exception`: Asset is a Publicly Traded Partnership (PTP) without a qualified notice; non-U.S. customers may incur 10% withholding on gross proceeds as per IRS guidance, and are blocked from being purchased by default.\n- `ptp_with_exception`: Users can open positions in these PTPs without general restrictions.\n- `ipo`: Accepting limit orders only before the stock begins trading on the secondary market.\n- `has_options`: The underlying equity has listed options available on the platform. Note: if the equity had inactive/expired contracts in the past, this will still show up.\n- `options_late_close`: Indicates the underlying asset's options contracts close at 4:15pm ET instead of the standard 4:00pm ET.\n- `fractional_eh_enabled`: Indicates the asset accepts fractional orders during extended hours sessions (pre-market, post-market, and overnight if enabled).\n- `overnight_tradable`: Asset is eligible for overnight (24x5) trading in supported venues on the platform.\n- `overnight_halted`: Asset is not eligible for overnight trading but is currently halted/blocked for overnight sessions due to risk, corporate action, compliance, or venue constraints.",
+                        "description": "Comma separated values to query for more than one attribute. Assets which have any of the given attributes will be included.\n\nSupported values:\n- `ptp_no_exception`: Asset is a Publicly Traded Partnership (PTP) without a qualified notice; non-U.S. customers may incur 10% withholding on gross proceeds as per IRS guidance, and are blocked from being purchased by default.\n- `ptp_with_exception`: Users can open positions in these PTPs without general restrictions.\n- `ipo`: Accepting limit orders only before the stock begins trading on the secondary market.\n- `has_options`: The underlying equity has listed options available on the platform. Note: if the equity had inactive/expired contracts in the past, this will still show up.\n- `options_late_close`: Indicates the underlying asset's options contracts close at 4:15pm ET instead of the standard 4:00pm ET.\n- `fractional_eh_enabled`: Indicates the asset accepts fractional orders during extended hours sessions (pre-market, post-market, and overnight if enabled).\n- `overnight_tradable`: Asset is eligible for overnight (24x5) trading in supported venues on the platform.\n- `overnight_halted`: Asset is eligible for overnight trading but is currently halted/blocked for overnight sessions due to risk, corporate action, compliance, or venue constraints.",
                         "explode": false
                     }
                 ]
@@ -3358,6 +3440,238 @@
                     }
                 }
             }
+        },
+        "/v2/tokenization/mint": {
+            "post": {
+                "tags": [
+                    "Tokenization"
+                ],
+                "summary": "Mint a Tokenized Asset",
+                "operationId": "postTokenizationMint",
+                "description": "This endpoint is used by an Authorized Participant to request the minting of a tokenized asset.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TokenizationMintRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully requested minting of a tokenized asset.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TokenizationMintResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request (e.g. malformed input, insufficient position, or account not authorized to mint).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                },
+                                "example": {
+                                    "code": 40010000,
+                                    "message": "failed to decode request body"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication credentials are missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                },
+                                "example": {
+                                    "code": 40110000,
+                                    "message": "unauthorized"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Caller is not authorized to perform this operation.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                },
+                                "example": {
+                                    "code": 40310000,
+                                    "message": "forbidden"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "One or more request parameters are missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                },
+                                "example": {
+                                    "code": 40010001,
+                                    "message": "issuer is required, network is required"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v2/tokenization/requests": {
+            "get": {
+                "tags": [
+                    "Tokenization"
+                ],
+                "summary": "List Tokenization Requests",
+                "operationId": "getTokenizationRequests",
+                "description": "An Authorized Participant can use this endpoint to list the tokenization requests performed on the Instant Tokenization Network (ITN).",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "mint",
+                                "redeem"
+                            ],
+                            "example": "mint"
+                        },
+                        "description": "Tokenization request type to be queried"
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "pending",
+                                "rejected",
+                                "completed"
+                            ],
+                            "example": "pending"
+                        },
+                        "description": "Tokenization request status to be queried"
+                    },
+                    {
+                        "name": "underlying_symbol",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Underlying symbol of the tokenization requests to be queried"
+                    },
+                    {
+                        "name": "issuer",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "xstocks"
+                            ],
+                            "example": "xstocks"
+                        },
+                        "description": "Issuer of the tokenization requests to be queried"
+                    },
+                    {
+                        "name": "network",
+                        "in": "query",
+                        "schema": {
+                            "$ref": "#/components/schemas/TokenizationNetwork"
+                        },
+                        "description": "Network of the tokenization requests to be queried"
+                    },
+                    {
+                        "name": "after",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2025-09-30T18:38:01.942282Z"
+                        },
+                        "description": "The response will include only requests created after this timestamp (exclusive)"
+                    },
+                    {
+                        "name": "before",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2025-09-30T18:38:01.942282Z"
+                        },
+                        "description": "The response will include only requests created before this timestamp (exclusive)"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response\n\nA list of tokenization requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/TokenizationRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication credentials are missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                },
+                                "example": {
+                                    "code": 40110000,
+                                    "message": "unauthorized"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Caller is not authorized to perform this operation.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                },
+                                "example": {
+                                    "code": 40310000,
+                                    "message": "forbidden"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "One or more request parameters are missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                },
+                                "example": {
+                                    "code": 40010001,
+                                    "message": "failed to parse after"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -4609,7 +4923,7 @@
                         "x-stoplight": {
                             "id": "40mjg4fj0ykl8"
                         },
-                        "description": "Unique characteristics of the asset. Supported values:\n- `ptp_no_exception`: Asset is a Publicly Traded Partnership (PTP) without a qualified notice; non-U.S. customers may incur 10% withholding on gross proceeds as per IRS guidance, and are blocked from being purchased by default.\n- `ptp_with_exception`: Users can open positions in these PTPs without general restrictions.\n- `ipo`: Accepting limit orders only before the stock begins trading on the secondary market.\n- `has_options`: The underlying equity has listed options available on the platform. Note: if the equity had inactive/expired contracts in the past, this will still show up.\n- `options_late_close`: Indicates the underlying asset's options contracts close at 4:15pm ET instead of the standard 4:00pm ET.\n- `fractional_eh_enabled`: Indicates the asset accepts fractional orders during extended hours sessions (pre-market, post-market, and overnight if enabled).\n- `overnight_tradable`: Asset is eligible for overnight (24x5) trading in supported venues on the platform.\n- `overnight_halted`: Asset is not eligible for overnight trading but is currently halted/blocked for overnight sessions due to risk, corporate action, compliance, or venue constraints.",
+                        "description": "Unique characteristics of the asset. Supported values:\n- `ptp_no_exception`: Asset is a Publicly Traded Partnership (PTP) without a qualified notice; non-U.S. customers may incur 10% withholding on gross proceeds as per IRS guidance, and are blocked from being purchased by default.\n- `ptp_with_exception`: Users can open positions in these PTPs without general restrictions.\n- `ipo`: Accepting limit orders only before the stock begins trading on the secondary market.\n- `has_options`: The underlying equity has listed options available on the platform. Note: if the equity had inactive/expired contracts in the past, this will still show up.\n- `options_late_close`: Indicates the underlying asset's options contracts close at 4:15pm ET instead of the standard 4:00pm ET.\n- `fractional_eh_enabled`: Indicates the asset accepts fractional orders during extended hours sessions (pre-market, post-market, and overnight if enabled).\n- `overnight_tradable`: Asset is eligible for overnight (24x5) trading in supported venues on the platform.\n- `overnight_halted`: Asset is eligible for overnight trading but is currently halted/blocked for overnight sessions due to risk, corporate action, compliance, or venue constraints.",
                         "items": {
                             "type": "string",
                             "enum": [
@@ -5420,6 +5734,49 @@
                         ],
                         "base_value": 2784.79,
                         "timeframe": "1D"
+                    },
+                    "example-cashflows": {
+                        "timestamp": [
+                            1775606400,
+                            1775692800,
+                            1775779200,
+                            1775865600
+                        ],
+                        "equity": [
+                            8425.21,
+                            8639.77,
+                            8766.1,
+                            8835.31
+                        ],
+                        "profit_loss": [
+                            12.17,
+                            214.56,
+                            126.33,
+                            69.21
+                        ],
+                        "profit_loss_pct": [
+                            0.0014,
+                            0.0255,
+                            0.0146,
+                            0.0079
+                        ],
+                        "base_value": 8413.04,
+                        "base_value_asof": "2026-04-06",
+                        "cashflow": {
+                            "DIV": [
+                                0,
+                                0,
+                                0.63,
+                                0
+                            ],
+                            "CSD": [
+                                9.93,
+                                10.13,
+                                10.16,
+                                0
+                            ]
+                        },
+                        "timeframe": "1D"
                     }
                 }
             },
@@ -5485,7 +5842,7 @@
                     "qty": {
                         "type": "string",
                         "example": "4",
-                        "description": "number of shares to trade.\n\nYou can only patch full shares for now.\n\nQty of equity fractional/notional orders are not allowed to change."
+                        "description": "number of shares to trade.\n\nYou can only patch full shares for now.\n\nQty of equity fractional orders are not allowed to change. Notional orders cannot be replaced at all \u2014 no fields (qty, limit_price, stop_price, etc.) can be modified."
                     },
                     "time_in_force": {
                         "$ref": "#/components/schemas/TimeInForce"
@@ -5759,6 +6116,211 @@
                     "INCOMING",
                     "OUTGOING"
                 ]
+            },
+            "TokenizationMintRequest": {
+                "title": "TokenizationMintRequest",
+                "type": "object",
+                "properties": {
+                    "underlying_symbol": {
+                        "type": "string",
+                        "description": "The underlying asset symbol"
+                    },
+                    "qty": {
+                        "type": "string",
+                        "description": "The underlying quantity to convert into the tokenized asset. It can be fractional."
+                    },
+                    "issuer": {
+                        "$ref": "#/components/schemas/TokenizationIssuer"
+                    },
+                    "network": {
+                        "$ref": "#/components/schemas/TokenizationNetwork"
+                    },
+                    "wallet_address": {
+                        "type": "string",
+                        "description": "The wallet address to receive the tokenized asset"
+                    }
+                },
+                "required": [
+                    "underlying_symbol",
+                    "qty",
+                    "issuer",
+                    "network",
+                    "wallet_address"
+                ]
+            },
+            "TokenizationMintResponse": {
+                "title": "TokenizationMintResponse",
+                "type": "object",
+                "properties": {
+                    "tokenization_request_id": {
+                        "type": "string",
+                        "description": "Unique identifier of the tokenization request set by Alpaca"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/TokenizationRequestStatus"
+                    },
+                    "underlying_symbol": {
+                        "type": "string",
+                        "description": "The underlying asset symbol"
+                    },
+                    "token_symbol": {
+                        "type": "string",
+                        "description": "The tokenized asset symbol"
+                    },
+                    "qty": {
+                        "type": "string",
+                        "description": "The quantity to convert for this tokenization request. It can be fractional."
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "issuer": {
+                        "$ref": "#/components/schemas/TokenizationIssuer"
+                    },
+                    "network": {
+                        "$ref": "#/components/schemas/TokenizationNetwork"
+                    }
+                },
+                "required": [
+                    "tokenization_request_id",
+                    "status",
+                    "underlying_symbol",
+                    "token_symbol",
+                    "qty",
+                    "created_at",
+                    "issuer",
+                    "network"
+                ]
+            },
+            "TokenizationRequest": {
+                "title": "TokenizationRequest",
+                "type": "object",
+                "properties": {
+                    "tokenization_request_id": {
+                        "type": "string",
+                        "description": "Unique identifier of the tokenization request set by Alpaca"
+                    },
+                    "issuer_request_id": {
+                        "type": "string",
+                        "description": "Unique identifier of the tokenization request set by the issuer",
+                        "nullable": true
+                    },
+                    "account": {
+                        "type": "string",
+                        "description": "Alpaca account ID associated with this tokenization request"
+                    },
+                    "issuer_account": {
+                        "type": "string",
+                        "description": "Issuer's account ID associated with this tokenization request"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "type": {
+                        "$ref": "#/components/schemas/TokenizationRequestType"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/TokenizationRequestStatus"
+                    },
+                    "underlying_symbol": {
+                        "type": "string",
+                        "description": "The underlying asset symbol"
+                    },
+                    "token_symbol": {
+                        "type": "string",
+                        "description": "The tokenized asset symbol"
+                    },
+                    "qty": {
+                        "type": "string",
+                        "description": "The quantity to convert for this tokenization request. It can be fractional."
+                    },
+                    "issuer": {
+                        "$ref": "#/components/schemas/TokenizationIssuer"
+                    },
+                    "network": {
+                        "$ref": "#/components/schemas/TokenizationNetwork"
+                    },
+                    "wallet_address": {
+                        "type": "string",
+                        "description": "The wallet address associated with this tokenization request"
+                    },
+                    "tx_hash": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Transaction hash of the completed request on the blockchain"
+                    },
+                    "fees": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Fees charged for this tokenization request"
+                    }
+                },
+                "required": [
+                    "tokenization_request_id",
+                    "created_at",
+                    "type",
+                    "status",
+                    "underlying_symbol",
+                    "token_symbol",
+                    "qty",
+                    "issuer",
+                    "network",
+                    "wallet_address"
+                ]
+            },
+            "TokenizationIssuer": {
+                "type": "string",
+                "enum": [
+                    "xstocks",
+                    "st0x"
+                ],
+                "example": "xstocks",
+                "description": "The tokenized asset's issuer",
+                "title": "TokenizationIssuer"
+            },
+            "TokenizationNetwork": {
+                "type": "string",
+                "enum": [
+                    "solana",
+                    "arbitrum",
+                    "ethereum",
+                    "binance",
+                    "base",
+                    "ton",
+                    "tron",
+                    "mantle"
+                ],
+                "example": "solana",
+                "description": "The token's blockchain network",
+                "title": "TokenizationNetwork"
+            },
+            "TokenizationRequestType": {
+                "type": "string",
+                "enum": [
+                    "mint",
+                    "redeem"
+                ],
+                "example": "mint",
+                "description": "Tokenization request type",
+                "title": "TokenizationRequestType"
+            },
+            "TokenizationRequestStatus": {
+                "type": "string",
+                "enum": [
+                    "pending",
+                    "rejected",
+                    "completed"
+                ],
+                "example": "completed",
+                "description": "Status of the tokenization request",
+                "title": "TokenizationRequestStatus"
             },
             "Error": {
                 "title": "Error",
@@ -6660,6 +7222,1626 @@
                 "x-go-name": "ClockResp",
                 "required": [
                     "clocks"
+                ]
+            },
+            "ActivityEventV2": {
+                "type": "object",
+                "description": "Represents an account activity, sent over the Event Streaming API.",
+                "title": "ActivityEventV2",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ActivityEventV2CommonFields"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "details"
+                        ],
+                        "properties": {
+                            "details": {
+                                "oneOf": [
+                                    {
+                                        "$ref": "#/components/schemas/ActivityV2DetailTRD"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/ActivityV2DetailNTA"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ]
+            },
+            "ActivityEventV2CommonFields": {
+                "type": "object",
+                "description": "Represents the common fields for all Activity V2 Events",
+                "required": [
+                    "at",
+                    "event_id",
+                    "activity_type",
+                    "executed_at",
+                    "status",
+                    "settle_date",
+                    "currency",
+                    "ref_id"
+                ],
+                "properties": {
+                    "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "minLength": 1,
+                        "description": "Timestamp of event"
+                    },
+                    "event_id": {
+                        "type": "string",
+                        "format": "ulid",
+                        "description": "Lexically sortable, monotonically increasing character string"
+                    },
+                    "activity_type": {
+                        "type": "string",
+                        "description": "The type of the activity, which can be trade or any of the non trade activities"
+                    },
+                    "activity_subtype": {
+                        "type": "string",
+                        "description": "Sub category for activity type, if any"
+                    },
+                    "executed_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "minLength": 1,
+                        "description": "Execution time for the activity event"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "Status of the activity"
+                    },
+                    "settle_date": {
+                        "type": "string",
+                        "format": "date",
+                        "minLength": 1,
+                        "description": "Date when the activity settled"
+                    },
+                    "price": {
+                        "type": "string",
+                        "format": "decimal",
+                        "description": "The price of the security involved with the activity"
+                    },
+                    "qty": {
+                        "type": "string",
+                        "format": "decimal",
+                        "description": "The quantity of the security involved with the activity"
+                    },
+                    "net_amount": {
+                        "type": "string",
+                        "format": "decimal",
+                        "description": "The net amount of money (positive or negative) associated with the activity"
+                    },
+                    "swap_rate": {
+                        "type": "string",
+                        "format": "decimal",
+                        "description": "Conversion rate for local currency activities"
+                    },
+                    "swap_fee_bps": {
+                        "type": "string",
+                        "format": "decimal",
+                        "description": "Currency conversion fee rate base-point in case of local currency activity"
+                    },
+                    "currency": {
+                        "type": "string",
+                        "description": "Currency code in ISO format"
+                    },
+                    "ref_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "The unique identifier for the activity. For trades, the execution_id is used, for other activities the trns_id is used."
+                    },
+                    "previous_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Previous ID is presented if this activity corrects or cancels a previous trade or non trade activity. It contains execution_id or trns_id respectively"
+                    }
+                }
+            },
+            "ActivityV2DetailTRD": {
+                "type": "object",
+                "description": "Activity details for a fill or partial_fill event",
+                "required": [
+                    "order_id",
+                    "side",
+                    "symbol",
+                    "asset_id",
+                    "leaves_qty",
+                    "cum_qty",
+                    "order_status",
+                    "execution_type"
+                ],
+                "properties": {
+                    "order_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Order ID generated by Alpaca"
+                    },
+                    "client_order_id": {
+                        "type": "string",
+                        "description": "Order ID provided by the customer"
+                    },
+                    "side": {
+                        "type": "string",
+                        "description": "Represents what side of the transaction an order was on",
+                        "enum": [
+                            "buy",
+                            "sell"
+                        ]
+                    },
+                    "symbol": {
+                        "type": "string",
+                        "description": "The symbol of the security involved with the activity"
+                    },
+                    "cusip": {
+                        "type": "string",
+                        "description": "CUSIP of the security involved with the activity"
+                    },
+                    "asset_id": {
+                        "type": "string",
+                        "description": "Asset ID (For options this represents the option contract ID)",
+                        "format": "uuid"
+                    },
+                    "leaves_qty": {
+                        "type": "string",
+                        "format": "decimal",
+                        "description": "Unfilled quantity on the order, when order is filled value could be 0"
+                    },
+                    "cum_qty": {
+                        "type": "string",
+                        "format": "decimal",
+                        "description": "Total filled quantity on the order"
+                    },
+                    "order_status": {
+                        "type": "string",
+                        "description": "Identifies the current status of the order"
+                    },
+                    "execution_type": {
+                        "type": "string",
+                        "description": "The execution type",
+                        "enum": [
+                            "fill",
+                            "trade_correct",
+                            "trade_bust"
+                        ]
+                    },
+                    "commission": {
+                        "type": "string",
+                        "format": "decimal",
+                        "description": "Commission to collect from the account holder"
+                    }
+                }
+            },
+            "ActivityV2DetailNTA": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/DIVSPDActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/CDIVActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/SDIVActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/ForwardSplitActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/ReverseSplitActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/UnitSplitActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/SpinoffActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/MAActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/NCActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/FixedIncomeRedemptionActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/RightsDistributionActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/WRMActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/OpcaCDIVActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/OpcaSDIVActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/OpcaMAActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/OpcaNCActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/OpcaSPINActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/OpcaFSPLITActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/OpcaUSPLITActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/OpcaRSPLITActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/OPASNActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/OPEXCActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/OPEXPActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/OPTRDActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/AcatsActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/AcatcActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/FOPTActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/JNLSActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/JNLCActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/CSWActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/FEEActivityV2"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "CommonNTAActivityV2": {
+                "type": "object",
+                "required": [
+                    "system_date"
+                ],
+                "properties": {
+                    "system_date": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "The date when the activity was booked",
+                        "format": "date"
+                    },
+                    "group_id": {
+                        "type": "string",
+                        "description": "Optional group ID which can help grouping together related activities",
+                        "format": "uuid"
+                    }
+                }
+            },
+            "CommonCaActivityV2": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonNTAActivityV2"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "ca_id",
+                            "position_date"
+                        ],
+                        "properties": {
+                            "ca_id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "description": "The unique identifier for this corporate action"
+                            },
+                            "reorg_id": {
+                                "type": "string",
+                                "description": "The reorg identifier, if present in the source corporate action definition"
+                            },
+                            "position_date": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The position_date for this corporate action",
+                                "format": "date"
+                            }
+                        }
+                    }
+                ]
+            },
+            "DIVSPDActivityV2": {
+                "type": "object",
+                "description": "Substitute payment in lieu of dividend",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonCaActivityV2"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "entitled_qty",
+                            "cash_payout",
+                            "symbol",
+                            "cusip",
+                            "rate",
+                            "foreign",
+                            "special"
+                        ],
+                        "properties": {
+                            "entitled_qty": {
+                                "type": "string",
+                                "description": "Quantity of shares entitled to receive cash in lieu"
+                            },
+                            "cash_payout": {
+                                "type": "string",
+                                "description": "Total cash amount paid"
+                            },
+                            "symbol": {
+                                "type": "string",
+                                "description": "The symbol of the security involved with the activity"
+                            },
+                            "cusip": {
+                                "type": "string",
+                                "description": "The CUSIP of the security involved with the activity"
+                            },
+                            "rate": {
+                                "type": "string",
+                                "description": "Cash payout per share"
+                            },
+                            "foreign": {
+                                "type": "boolean",
+                                "description": "Indicates if related to a non-US security"
+                            },
+                            "special": {
+                                "type": "boolean",
+                                "description": "Indicates if this is a special dividend"
+                            },
+                            "due_bill_on_date": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "When due bills begin to apply for this event",
+                                "format": "date"
+                            },
+                            "due_bill_off_date": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "When due bills stop applying for this event",
+                                "format": "date"
+                            },
+                            "ex_date": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The ex_date for this corporate action",
+                                "format": "date"
+                            },
+                            "record_date": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The record_date for this corporate action",
+                                "format": "date"
+                            },
+                            "payable_date": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The payable_date for this corporate action",
+                                "format": "date"
+                            }
+                        }
+                    }
+                ]
+            },
+            "CommonCDIVActivityV2": {
+                "type": "object",
+                "required": [
+                    "symbol",
+                    "cusip",
+                    "rate",
+                    "foreign",
+                    "special"
+                ],
+                "properties": {
+                    "symbol": {
+                        "type": "string",
+                        "description": "The symbol of the security involved with the activity"
+                    },
+                    "cusip": {
+                        "type": "string",
+                        "description": "The CUSIP of the security involved with the activity"
+                    },
+                    "rate": {
+                        "type": "string",
+                        "description": "Dividend rate per share"
+                    },
+                    "foreign": {
+                        "type": "boolean",
+                        "description": "Indicates if related to a non-US security"
+                    },
+                    "special": {
+                        "type": "boolean",
+                        "description": "Indicates if this is a special dividend"
+                    },
+                    "due_bill_on_date": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "When due bills begin to apply for this event",
+                        "format": "date"
+                    },
+                    "due_bill_off_date": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "When due bills stop applying for this event",
+                        "format": "date"
+                    },
+                    "ex_date": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "The ex_date for this corporate action",
+                        "format": "date"
+                    },
+                    "record_date": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "The record_date for this corporate action",
+                        "format": "date"
+                    },
+                    "payable_date": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "The payable_date for this corporate action",
+                        "format": "date"
+                    }
+                }
+            },
+            "CDIVActivityV2": {
+                "type": "object",
+                "description": "Cash dividend",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonCaActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CommonCDIVActivityV2"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "entitled_qty",
+                            "cash_payout"
+                        ],
+                        "properties": {
+                            "entitled_qty": {
+                                "type": "string",
+                                "description": "Quantity of shares entitled to receive the dividend"
+                            },
+                            "cash_payout": {
+                                "type": "string",
+                                "description": "Total cash amount paid"
+                            }
+                        }
+                    }
+                ]
+            },
+            "CommonSDIVActivityV2": {
+                "type": "object",
+                "required": [
+                    "symbol",
+                    "cusip",
+                    "rate"
+                ],
+                "properties": {
+                    "symbol": {
+                        "type": "string",
+                        "description": "The symbol of the security involved with the activity"
+                    },
+                    "cusip": {
+                        "type": "string",
+                        "description": "The CUSIP of the security involved with the activity"
+                    },
+                    "rate": {
+                        "type": "string",
+                        "description": "Dividend rate per share"
+                    },
+                    "ex_date": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "The ex_date for this corporate action",
+                        "format": "date"
+                    },
+                    "record_date": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "The record_date for this corporate action",
+                        "format": "date"
+                    },
+                    "payable_date": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "The payable_date for this corporate action",
+                        "format": "date"
+                    }
+                }
+            },
+            "SDIVActivityV2": {
+                "type": "object",
+                "description": "Stock dividend",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonCaActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CommonSDIVActivityV2"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "entitled_qty",
+                            "paid_qty",
+                            "new_qty"
+                        ],
+                        "properties": {
+                            "entitled_qty": {
+                                "type": "string",
+                                "description": "Quantity of shares entitled to receive the dividend"
+                            },
+                            "paid_qty": {
+                                "type": "string",
+                                "description": "The paid quantity"
+                            },
+                            "new_qty": {
+                                "type": "string",
+                                "description": "The total number of shares after the dividend"
+                            }
+                        }
+                    }
+                ]
+            },
+            "CommonSplitActivityV2": {
+                "type": "object",
+                "required": [
+                    "old_cusip",
+                    "new_cusip",
+                    "old_rate",
+                    "new_rate"
+                ],
+                "properties": {
+                    "old_cusip": {
+                        "type": "string",
+                        "description": "CUSIP of the old security before the split"
+                    },
+                    "new_cusip": {
+                        "type": "string",
+                        "description": "CUSIP of the new security after the split"
+                    },
+                    "old_rate": {
+                        "type": "string",
+                        "description": "Ratio of old shares exchanged"
+                    },
+                    "new_rate": {
+                        "type": "string",
+                        "description": "Ratio of new shares received"
+                    },
+                    "payable_date": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "The payable_date for this corporate action",
+                        "format": "date"
+                    }
+                }
+            },
+            "CommonSplitStockActivityV2": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonCaActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CommonSplitActivityV2"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "old_qty",
+                            "new_qty"
+                        ],
+                        "properties": {
+                            "old_qty": {
+                                "type": "string",
+                                "description": "The old quantity before the split"
+                            },
+                            "new_qty": {
+                                "type": "string",
+                                "description": "The new quantity after the split"
+                            }
+                        }
+                    }
+                ]
+            },
+            "ForwardSplitActivityV2": {
+                "type": "object",
+                "description": "Forward stock split",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonSplitStockActivityV2"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "symbol"
+                        ],
+                        "properties": {
+                            "symbol": {
+                                "type": "string",
+                                "description": "The symbol of the security being split"
+                            },
+                            "due_bill_redemption_date": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "When due bills related to the split are redeemed",
+                                "format": "date"
+                            },
+                            "ex_date": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The ex_date for this corporate action",
+                                "format": "date"
+                            },
+                            "record_date": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The record_date for this corporate action",
+                                "format": "date"
+                            }
+                        }
+                    }
+                ]
+            },
+            "ReverseSplitActivityV2": {
+                "type": "object",
+                "description": "Reverse stock split",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonSplitStockActivityV2"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "symbol"
+                        ],
+                        "properties": {
+                            "symbol": {
+                                "type": "string",
+                                "description": "The symbol of the security involved with the activity"
+                            },
+                            "new_symbol": {
+                                "type": "string",
+                                "description": "Symbol of the new security after the split"
+                            },
+                            "ex_date": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The ex_date for this corporate action",
+                                "format": "date"
+                            },
+                            "record_date": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The record_date for this corporate action",
+                                "format": "date"
+                            }
+                        }
+                    }
+                ]
+            },
+            "UnitSplitActivityV2": {
+                "type": "object",
+                "description": "Unit split",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonSplitStockActivityV2"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "old_symbol",
+                            "new_symbol",
+                            "alternate_cusip",
+                            "alternate_symbol",
+                            "alternate_rate",
+                            "alternate_qty",
+                            "effective_date"
+                        ],
+                        "properties": {
+                            "old_symbol": {
+                                "type": "string",
+                                "description": "Symbol of the old security before the split"
+                            },
+                            "new_symbol": {
+                                "type": "string",
+                                "description": "Symbol of the new security after the split"
+                            },
+                            "alternate_cusip": {
+                                "type": "string",
+                                "description": "CUSIP for the alternate security after the split"
+                            },
+                            "alternate_symbol": {
+                                "type": "string",
+                                "description": "Symbol for the alternate security after the split"
+                            },
+                            "alternate_rate": {
+                                "type": "string",
+                                "description": "Ratio of alternate shares received"
+                            },
+                            "alternate_qty": {
+                                "type": "string",
+                                "description": "Quantity of alternate shares received"
+                            },
+                            "effective_date": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "When the unit split becomes effective",
+                                "format": "date"
+                            }
+                        }
+                    }
+                ]
+            },
+            "CommonSpinoffActivityV2": {
+                "type": "object",
+                "required": [
+                    "source_cusip",
+                    "source_symbol",
+                    "source_rate",
+                    "source_price",
+                    "new_cusip",
+                    "new_symbol",
+                    "new_rate",
+                    "new_price"
+                ],
+                "properties": {
+                    "source_cusip": {
+                        "type": "string",
+                        "description": "CUSIP of the parent security"
+                    },
+                    "source_symbol": {
+                        "type": "string",
+                        "description": "Symbol of the parent security"
+                    },
+                    "source_rate": {
+                        "type": "string",
+                        "description": "Ratio of parent shares"
+                    },
+                    "source_price": {
+                        "type": "string",
+                        "description": "Market price of parent shares before the spinoff"
+                    },
+                    "new_cusip": {
+                        "type": "string",
+                        "description": "CUSIP of the new security"
+                    },
+                    "new_symbol": {
+                        "type": "string",
+                        "description": "Symbol of the new security"
+                    },
+                    "new_rate": {
+                        "type": "string",
+                        "description": "Ratio of new shares received"
+                    },
+                    "new_price": {
+                        "type": "string",
+                        "description": "Market price of new shares after the spinoff"
+                    },
+                    "due_bill_redemption_date": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "When due bills related to the spinoff are redeemed",
+                        "format": "date"
+                    },
+                    "ex_date": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "The ex_date for this corporate action",
+                        "format": "date"
+                    },
+                    "record_date": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "The record_date for this corporate action",
+                        "format": "date"
+                    },
+                    "payable_date": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "The payable_date for this corporate action",
+                        "format": "date"
+                    }
+                }
+            },
+            "SpinoffActivityV2": {
+                "type": "object",
+                "description": "Spinoff",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonCaActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CommonSpinoffActivityV2"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "source_qty",
+                            "new_qty"
+                        ],
+                        "properties": {
+                            "source_qty": {
+                                "type": "string",
+                                "description": "The source quantity"
+                            },
+                            "new_qty": {
+                                "type": "string",
+                                "description": "The new quantity"
+                            }
+                        }
+                    }
+                ]
+            },
+            "CommonMAActivityV2": {
+                "type": "object",
+                "required": [
+                    "acquiree_cusip",
+                    "acquiree_symbol",
+                    "effective_date",
+                    "payable_date"
+                ],
+                "properties": {
+                    "acquiree_cusip": {
+                        "type": "string",
+                        "description": "CUSIP of the acquiree"
+                    },
+                    "acquiree_symbol": {
+                        "type": "string",
+                        "description": "Symbol of the acquiree"
+                    },
+                    "acquiree_rate": {
+                        "type": "string",
+                        "description": "Rate of the acquiree"
+                    },
+                    "effective_date": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "When the merger/acquisition becomes effective",
+                        "format": "date"
+                    },
+                    "payable_date": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "The payable date",
+                        "format": "date"
+                    },
+                    "acquirer_cusip": {
+                        "type": "string",
+                        "description": "CUSIP of the acquirer"
+                    },
+                    "acquirer_symbol": {
+                        "type": "string",
+                        "description": "Symbol of the acquirer"
+                    },
+                    "acquirer_rate": {
+                        "type": "string",
+                        "description": "Rate of the acquirer"
+                    }
+                }
+            },
+            "MAActivityV2": {
+                "type": "object",
+                "description": "Merger and acquisition",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonCaActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CommonMAActivityV2"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "acquiree_qty"
+                        ],
+                        "properties": {
+                            "acquiree_qty": {
+                                "type": "string",
+                                "description": "Quantity of the acquiree"
+                            },
+                            "acquirer_qty": {
+                                "type": "string",
+                                "description": "Quantity of the acquirer"
+                            },
+                            "cash_rate": {
+                                "type": "string",
+                                "description": "The cash rate"
+                            },
+                            "cash_payout": {
+                                "type": "string",
+                                "description": "The cash payout"
+                            }
+                        }
+                    }
+                ]
+            },
+            "CommonNCActivityV2": {
+                "type": "object",
+                "required": [
+                    "old_cusip",
+                    "old_symbol",
+                    "new_cusip",
+                    "new_symbol"
+                ],
+                "properties": {
+                    "old_cusip": {
+                        "type": "string",
+                        "description": "Old CUSIP for the name change"
+                    },
+                    "old_symbol": {
+                        "type": "string",
+                        "description": "Old symbol for the name change"
+                    },
+                    "new_cusip": {
+                        "type": "string",
+                        "description": "New CUSIP for the name change"
+                    },
+                    "new_symbol": {
+                        "type": "string",
+                        "description": "New symbol for the name change"
+                    }
+                }
+            },
+            "NCActivityV2": {
+                "type": "object",
+                "description": "Name change",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonCaActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CommonNCActivityV2"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "position_qty"
+                        ],
+                        "properties": {
+                            "position_qty": {
+                                "type": "string",
+                                "description": "The position quantity"
+                            }
+                        }
+                    }
+                ]
+            },
+            "FixedIncomeRedemptionActivityV2": {
+                "type": "object",
+                "description": "Redemption",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonNTAActivityV2"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "ca_id",
+                            "payment_date",
+                            "cusip",
+                            "qty",
+                            "cash_payout"
+                        ],
+                        "properties": {
+                            "ca_id": {
+                                "type": "string",
+                                "description": "The unique identifier for this corporate action"
+                            },
+                            "payment_date": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The payment date",
+                                "format": "date"
+                            },
+                            "cusip": {
+                                "type": "string",
+                                "description": "The CUSIP of the security involved with the activity"
+                            },
+                            "qty": {
+                                "type": "string",
+                                "description": "Quantity for the redemption"
+                            },
+                            "cash_payout": {
+                                "type": "string",
+                                "description": "The cash payout"
+                            }
+                        }
+                    }
+                ]
+            },
+            "RightsDistributionActivityV2": {
+                "type": "object",
+                "description": "Rights distribution",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonCaActivityV2"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "source_cusip",
+                            "source_symbol",
+                            "source_qty",
+                            "new_cusip",
+                            "new_symbol",
+                            "new_qty",
+                            "rate"
+                        ],
+                        "properties": {
+                            "source_cusip": {
+                                "type": "string",
+                                "description": "The source CUSIP"
+                            },
+                            "source_symbol": {
+                                "type": "string",
+                                "description": "The source symbol"
+                            },
+                            "source_qty": {
+                                "type": "string",
+                                "description": "The source quantity"
+                            },
+                            "new_cusip": {
+                                "type": "string",
+                                "description": "The new CUSIP"
+                            },
+                            "new_symbol": {
+                                "type": "string",
+                                "description": "The new symbol"
+                            },
+                            "new_qty": {
+                                "type": "string",
+                                "description": "The new quantity"
+                            },
+                            "rate": {
+                                "type": "string",
+                                "description": "The rate for the rights distribution"
+                            },
+                            "expiration_date": {
+                                "type": "string",
+                                "description": "The expiration date for the rights distribution",
+                                "format": "date"
+                            },
+                            "ex_date": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The ex_date for this corporate action",
+                                "format": "date"
+                            },
+                            "record_date": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The record_date for this corporate action",
+                                "format": "date"
+                            },
+                            "payable_date": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The payable_date for this corporate action",
+                                "format": "date"
+                            }
+                        }
+                    }
+                ]
+            },
+            "WRMActivityV2": {
+                "type": "object",
+                "description": "Worthless Removal",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonCaActivityV2"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "cusip",
+                            "symbol",
+                            "removed_qty"
+                        ],
+                        "properties": {
+                            "cusip": {
+                                "type": "string",
+                                "description": "The CUSIP of the security involved with the activity"
+                            },
+                            "symbol": {
+                                "type": "string",
+                                "description": "The symbol of the security involved with the activity"
+                            },
+                            "removed_qty": {
+                                "type": "string",
+                                "description": "The removed quantity"
+                            }
+                        }
+                    }
+                ]
+            },
+            "CommonOptionsActivityV2": {
+                "type": "object",
+                "required": [
+                    "group_id"
+                ],
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonNTAActivityV2"
+                    }
+                ]
+            },
+            "OPASNActivityV2": {
+                "type": "object",
+                "description": "Option assignment",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonOptionsActivityV2"
+                    }
+                ]
+            },
+            "OPEXCActivityV2": {
+                "type": "object",
+                "description": "Option exercise",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonOptionsActivityV2"
+                    }
+                ]
+            },
+            "OPEXPActivityV2": {
+                "type": "object",
+                "description": "Option expiry",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonOptionsActivityV2"
+                    }
+                ]
+            },
+            "OPTRDActivityV2": {
+                "type": "object",
+                "description": "Trading activity that is paired with the assignment/exercise",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonOptionsActivityV2"
+                    }
+                ]
+            },
+            "CommonOPCAActivityV2": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonCaActivityV2"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "old_contract_symbol",
+                            "new_contract_symbol"
+                        ],
+                        "properties": {
+                            "old_contract_symbol": {
+                                "type": "string",
+                                "description": "The old contract symbol"
+                            },
+                            "new_contract_symbol": {
+                                "type": "string",
+                                "description": "The new contract symbol"
+                            },
+                            "qty": {
+                                "type": "string",
+                                "description": "used when the old contract's quantity is equal to the new contract's quantity. Mutually exclusive with 'old_qty' and 'new_qty'"
+                            },
+                            "old_qty": {
+                                "type": "string",
+                                "description": "used when the old contract's quantity is not equal to the new contract's quantity. Mutually exclusive with 'qty'."
+                            },
+                            "new_qty": {
+                                "type": "string",
+                                "description": "used when the old contract's quantity is not equal to the new contract's quantity. Mutually exclusive with 'qty'."
+                            }
+                        }
+                    }
+                ]
+            },
+            "OpcaCDIVActivityV2": {
+                "type": "object",
+                "description": "Options corporate action of Cash dividend",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonOPCAActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CommonCDIVActivityV2"
+                    }
+                ]
+            },
+            "OpcaSDIVActivityV2": {
+                "type": "object",
+                "description": "Options corporate action of stock dividend",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonOPCAActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CommonSDIVActivityV2"
+                    }
+                ]
+            },
+            "OpcaMAActivityV2": {
+                "type": "object",
+                "description": "Options corporate action of Mergers & Acquisitions",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonOPCAActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CommonMAActivityV2"
+                    }
+                ]
+            },
+            "OpcaNCActivityV2": {
+                "type": "object",
+                "description": "Options corporate action of name changes",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonOPCAActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CommonNCActivityV2"
+                    }
+                ]
+            },
+            "OpcaSPINActivityV2": {
+                "type": "object",
+                "description": "Options corporate action of spin-offs",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonOPCAActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CommonSpinoffActivityV2"
+                    }
+                ]
+            },
+            "OpcaFSPLITActivityV2": {
+                "type": "object",
+                "description": "Options corporate action of forward-splits",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonOPCAActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CommonSplitActivityV2"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "symbol"
+                        ],
+                        "properties": {
+                            "symbol": {
+                                "type": "string",
+                                "description": "The symbol of the security involved with the activity"
+                            },
+                            "due_bill_redemption_date": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "When due bills related to the split are redeemed",
+                                "format": "date"
+                            },
+                            "ex_date": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The ex_date for this corporate action",
+                                "format": "date"
+                            },
+                            "record_date": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The record_date for this corporate action",
+                                "format": "date"
+                            }
+                        }
+                    }
+                ]
+            },
+            "OpcaRSPLITActivityV2": {
+                "type": "object",
+                "description": "Options corporate action of reverse-splits",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonOPCAActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CommonSplitActivityV2"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "symbol"
+                        ],
+                        "properties": {
+                            "symbol": {
+                                "type": "string",
+                                "description": "The symbol of the security involved with the activity"
+                            },
+                            "new_symbol": {
+                                "type": "string",
+                                "description": "Symbol of the new security after the split"
+                            },
+                            "ex_date": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The ex_date for this corporate action",
+                                "format": "date"
+                            },
+                            "record_date": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The record_date for this corporate action",
+                                "format": "date"
+                            }
+                        }
+                    }
+                ]
+            },
+            "OpcaUSPLITActivityV2": {
+                "type": "object",
+                "description": "Options corporate action of unit-splits",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonOPCAActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CommonSplitActivityV2"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "old_symbol",
+                            "new_symbol",
+                            "alternate_cusip",
+                            "alternate_symbol",
+                            "alternate_rate",
+                            "effective_date"
+                        ],
+                        "properties": {
+                            "old_symbol": {
+                                "type": "string",
+                                "description": "The old symbol of the security involved with the activity"
+                            },
+                            "new_symbol": {
+                                "type": "string",
+                                "description": "Symbol of the new security after the unit split"
+                            },
+                            "alternate_cusip": {
+                                "type": "string",
+                                "description": "CUSIP for the alternate security after the split"
+                            },
+                            "alternate_symbol": {
+                                "type": "string",
+                                "description": "Symbol for the alternate security after the split"
+                            },
+                            "alternate_rate": {
+                                "type": "string",
+                                "description": "Ratio of alternate shares received"
+                            },
+                            "effective_date": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "When the unit split becomes effective",
+                                "format": "date"
+                            }
+                        }
+                    }
+                ]
+            },
+            "CommonAcatActivityV2": {
+                "type": "object",
+                "required": [
+                    "external_id",
+                    "request_id"
+                ],
+                "properties": {
+                    "hold_date": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Hold date when the transfers settle",
+                        "format": "date"
+                    },
+                    "external_id": {
+                        "type": "string",
+                        "description": "The ID that DTCC assigned to this transfer"
+                    },
+                    "request_id": {
+                        "type": "string",
+                        "description": "The ID for original ACATS request",
+                        "format": "uuid"
+                    }
+                }
+            },
+            "AcatsActivityV2": {
+                "type": "object",
+                "description": "Automated customer account transfer service (stock)",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonNTAActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CommonAcatActivityV2"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "symbol"
+                        ],
+                        "properties": {
+                            "symbol": {
+                                "type": "string",
+                                "description": "The symbol of the security involved with the activity"
+                            }
+                        }
+                    }
+                ]
+            },
+            "AcatcActivityV2": {
+                "type": "object",
+                "description": "Automated customer account transfer service (cash)",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonNTAActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CommonAcatActivityV2"
+                    }
+                ]
+            },
+            "FOPTActivityV2": {
+                "type": "object",
+                "description": "Free-of-payment (FOP) transfers",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonNTAActivityV2"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "external_id",
+                            "contra",
+                            "symbol"
+                        ],
+                        "properties": {
+                            "external_id": {
+                                "type": "string",
+                                "description": "External ID of the transfer"
+                            },
+                            "contra": {
+                                "type": "string",
+                                "description": "Contra for the transfer"
+                            },
+                            "symbol": {
+                                "type": "string",
+                                "description": "The symbol of the security involved with the activity"
+                            }
+                        }
+                    }
+                ]
+            },
+            "CommonJournalActivityV2": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonNTAActivityV2"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "journal_id": {
+                                "type": "string",
+                                "description": "The journal's ID",
+                                "format": "uuid"
+                            }
+                        }
+                    }
+                ]
+            },
+            "JNLSActivityV2": {
+                "type": "object",
+                "description": "Journal entry (stock)",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonJournalActivityV2"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "symbol"
+                        ],
+                        "properties": {
+                            "symbol": {
+                                "type": "string",
+                                "description": "The symbol of the security involved with the activity"
+                            }
+                        }
+                    }
+                ]
+            },
+            "JNLCActivityV2": {
+                "type": "object",
+                "description": "Journal entry (cash)",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonJournalActivityV2"
+                    }
+                ]
+            },
+            "CSWActivityV2": {
+                "type": "object",
+                "description": "Cash withdrawal",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonNTAActivityV2"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "bank_transaction_id": {
+                                "type": "string",
+                                "description": "The bank transaction's ID",
+                                "format": "uuid"
+                            }
+                        }
+                    }
+                ]
+            },
+            "FEEActivityV2": {
+                "type": "object",
+                "description": "Fee",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonNTAActivityV2"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "parent_id"
+                        ],
+                        "properties": {
+                            "parent_id": {
+                                "type": "string",
+                                "description": "The parent transaction's ID",
+                                "format": "uuid"
+                            }
+                        }
+                    }
                 ]
             }
         },

@@ -111,6 +111,11 @@ var cmdParents = map[string]parentDef{
 		use: "crypto", short: "Crypto market data", parent: "data",
 		long: "Bars, quotes, trades, snapshots, and orderbooks for crypto pairs.",
 	},
+	"tokenization": {
+		use:   "tokenization",
+		short: "Tokenized assets (Instant Tokenization Network)",
+		long:  "Mint tokenized assets and track tokenization requests on the Instant Tokenization Network (ITN).",
+	},
 }
 
 var cmdRegistry = map[string]cmdDef{
@@ -479,6 +484,20 @@ var cmdRegistry = map[string]cmdDef{
 		examples: `  alpaca watchlist add-by-name --name "Tech Stocks" --symbol NVDA`,
 	},
 
+	// --- tokenization ---
+	"GetTokenizationRequests": {
+		parent: "tokenization",
+		use:    "list",
+		examples: `  alpaca tokenization list
+  alpaca tokenization list --status pending --issuer xstocks
+  alpaca tokenization list --underlying-symbol AAPL --network solana`,
+	},
+	"PostTokenizationMint": {
+		parent:   "tokenization",
+		use:      "mint",
+		examples: `  alpaca tokenization mint --underlying-symbol AAPL --qty 10 --issuer xstocks --network solana --wallet-address 0xabc...`,
+	},
+
 	// --- data: single-symbol stock ---
 	"StockBarSingle": {
 		parent: "data",
@@ -809,7 +828,9 @@ var cmdRegistry = map[string]cmdDef{
 	},
 }
 
-var cmdSkip = map[string]string{}
+var cmdSkip = map[string]string{
+	"SubscribeToActivitiesSSE": "SSE streaming endpoint; generated fetch commands cannot handle text/event-stream responses",
+}
 
 func checkExhaustive(epByOp map[string]*endpointInfo) {
 	var errs []string

@@ -247,6 +247,16 @@ func (c *TradingClient) OptionExercise(SymbolOrContractID string) (json.RawMessa
 	return c.Raw.Do("POST", c.baseURL, fmt.Sprintf("/v2/positions/%s/exercise", url.PathEscape(SymbolOrContractID)), nil, nil)
 }
 
+// PostTokenizationMint — Mint a Tokenized Asset
+func (c *TradingClient) PostTokenizationMint(body *TokenizationMintRequest) (*TokenizationMintResponse, error) {
+	return unmarshal[TokenizationMintResponse](c.Raw.Do("POST", c.baseURL, "/v2/tokenization/mint", nil, body))
+}
+
+// GetTokenizationRequests — List Tokenization Requests
+func (c *TradingClient) GetTokenizationRequests(params url.Values) ([]TokenizationRequest, error) {
+	return unmarshalSlice[TokenizationRequest](c.Raw.Do("GET", c.baseURL, "/v2/tokenization/requests", params, nil))
+}
+
 // ListCryptoFundingWallets — Retrieve Crypto Funding Wallets
 func (c *TradingClient) ListCryptoFundingWallets(params url.Values) (*CryptoWallet, error) {
 	return unmarshal[CryptoWallet](c.Raw.Do("GET", c.baseURL, "/v2/wallets", params, nil))
@@ -351,6 +361,11 @@ func (c *TradingClient) DeleteWatchlistByName(params url.Values) (json.RawMessag
 	return c.Raw.Do("DELETE", c.baseURL, "/v2/watchlists:by_name", params, nil)
 }
 
+// SubscribeToActivitiesSSE — Subscribe to Activity Events (SSE)
+func (c *TradingClient) SubscribeToActivitiesSSE(params url.Values) (json.RawMessage, error) {
+	return c.Raw.Do("GET", c.baseURL, "/v2alpha1/events/activities", params, nil)
+}
+
 // Calendar — Get Market Calendar
 func (c *TradingClient) Calendar(Market string, params url.Values) (*PublicCalendarResp, error) {
 	return unmarshal[PublicCalendarResp](c.Raw.Do("GET", c.baseURL, fmt.Sprintf("/v3/calendar/%s", url.PathEscape(Market)), params, nil))
@@ -371,6 +386,23 @@ func (r *CreateCryptoTransferRequest) Validate() error {
 	}
 	if r.Asset == "" {
 		missing = append(missing, "asset")
+	}
+	if len(missing) > 0 {
+		return fmt.Errorf("missing required fields: %s", strings.Join(missing, ", "))
+	}
+	return nil
+}
+
+func (r *TokenizationMintRequest) Validate() error {
+	var missing []string
+	if r.Qty == "" {
+		missing = append(missing, "qty")
+	}
+	if r.UnderlyingSymbol == "" {
+		missing = append(missing, "underlying_symbol")
+	}
+	if r.WalletAddress == "" {
+		missing = append(missing, "wallet_address")
 	}
 	if len(missing) > 0 {
 		return fmt.Errorf("missing required fields: %s", strings.Join(missing, ", "))
