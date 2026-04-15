@@ -21,15 +21,25 @@ func discoverOptionSymbol(t *testing.T) string {
 			return
 		}
 		var resp struct {
-			Snapshots map[string]any `json:"snapshots"`
+			Snapshots map[string]json.RawMessage `json:"snapshots"`
 		}
 		if err := json.Unmarshal(out, &resp); err != nil {
 			return
 		}
-		for sym := range resp.Snapshots {
-			resolvedOptionSymbol = sym
-			return
+		var fallback string
+		for sym, raw := range resp.Snapshots {
+			if fallback == "" {
+				fallback = sym
+			}
+			var snap struct {
+				LatestTrade *struct{} `json:"latestTrade"`
+			}
+			if json.Unmarshal(raw, &snap) == nil && snap.LatestTrade != nil {
+				resolvedOptionSymbol = sym
+				return
+			}
 		}
+		resolvedOptionSymbol = fallback
 	})
 	if resolvedOptionSymbol == "" {
 		t.Skip("no option contracts available for AAPL")
@@ -86,16 +96,33 @@ func TestDataOptionConditions(t *testing.T) {
 	}
 }
 
-func TestDataOptionBars(t *testing.T) {
+func TestDataOptionSnapshot_Fields(t *testing.T) {
 	t.Parallel()
 	sym := discoverOptionSymbol(t)
-	// Option contracts may not have historical bar data — just verify the command runs
-	stdout, _, code := alpacaWithStderr(t, "data", "option", "bars", "--symbols", sym, "--start", daysAgo(90))
-	if code != 0 {
-		t.Skip("option bars not available for this contract")
+	out := alpacaRetry(t, "data", "option", "snapshot", "--symbols", sym)
+	data := parseJSONMap(t, out)
+	snapshots, _ := data["snapshots"].(map[string]any)
+	if len(snapshots) == 0 {
+		t.Fatal("expected non-empty snapshots")
 	}
-	data := parseJSONMap(t, stdout)
-	requireFields(t, data, "bars")
+	snap, _ := snapshots[sym].(map[string]any)
+	if snap == nil {
+		t.Fatalf("expected snapshot for %s", sym)
+	}
+
+	if greeks, ok := snap["greeks"].(map[string]any); ok {
+		for _, field := range []string{"delta", "gamma", "theta", "vega"} {
+			if _, has := greeks[field]; !has {
+				t.Errorf("greeks missing %q", field)
+			}
+		}
+	}
+	if quote, ok := snap["latestQuote"].(map[string]any); ok {
+		requireFields(t, quote, "ap", "bp", "as", "bs", "t")
+	}
+	if trade, ok := snap["latestTrade"].(map[string]any); ok {
+		requireFields(t, trade, "p", "s", "t", "x")
+	}
 }
 
 func TestDataOptionTrades(t *testing.T) {
