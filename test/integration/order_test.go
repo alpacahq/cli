@@ -63,9 +63,16 @@ func TestOrderLifecycle(t *testing.T) {
 }
 
 func TestOrderCancelAll(t *testing.T) {
-	for range 2 {
+	// Clean slate: cancel any leftover orders from prior tests.
+	_ = makeCmd("order", "cancel-all").Run()
+	pollFor(t, 10*time.Second, "pre-existing orders to clear", func() bool {
+		out := alpaca(t, "order", "list", "--status", "open")
+		return len(parseJSONArray(t, out)) == 0
+	})
+
+	for _, sym := range []string{"VZ", "V"} {
 		alpaca(t, "order", "submit",
-			"--symbol", "AAPL",
+			"--symbol", sym,
 			"--qty", "1",
 			"--side", "buy",
 			"--type", "limit",
@@ -363,6 +370,22 @@ func TestOrderSubmit_DryRun(t *testing.T) {
 	}
 }
 
+func TestOrderSubmit_DryRun_PositionIntent(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "order", "submit",
+		"--symbol", "AAPL",
+		"--qty", "1",
+		"--side", "buy",
+		"--type", "market",
+		"--position-intent", "buy_to_open",
+		"--dry-run",
+	)
+	body := parseJSONMap(t, out)
+	if body["position_intent"] != "buy_to_open" {
+		t.Errorf("expected position_intent buy_to_open, got %v", body["position_intent"])
+	}
+}
+
 func TestOrderSubmit_DryRun_CryptoDefaultsToGTC(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "order", "submit",
@@ -518,7 +541,13 @@ func TestOrderList_AfterUntil(t *testing.T) {
 		"--until", daysAgo(0),
 		"--limit", "5",
 	)
-	_ = parseJSONArray(t, out)
+	orders := parseJSONArray(t, out)
+	if len(orders) == 0 {
+		t.Skip("no orders in the last 30 days to validate date filtering")
+	}
+	for _, o := range orders {
+		requireFields(t, o, "id", "symbol", "created_at", "status")
+	}
 }
 
 func TestOrderSubmit_EquityMarketOrder(t *testing.T) {

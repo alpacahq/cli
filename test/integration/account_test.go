@@ -49,13 +49,27 @@ func TestAccountActivityList_WithType(t *testing.T) {
 func TestAccountActivityListByType(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "account", "activity", "list-by-type", "--activity-type", "FILL", "--page-size", "5")
-	_ = parseJSONArray(t, out)
+	activities := parseJSONArray(t, out)
+	if len(activities) == 0 {
+		t.Skip("no FILL activities available")
+	}
+	requireFields(t, activities[0], "id", "activity_type")
+	if activities[0]["activity_type"] != "FILL" {
+		t.Errorf("expected activity_type FILL, got %v", activities[0]["activity_type"])
+	}
 }
 
 func TestAccountActivityList_Pagination(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "account", "activity", "list", "--page-size", "2", "--direction", "asc")
-	_ = parseJSONArray(t, out)
+	activities := parseJSONArray(t, out)
+	if len(activities) == 0 {
+		t.Skip("no activities available to test pagination")
+	}
+	if len(activities) > 2 {
+		t.Errorf("--page-size 2 returned %d activities", len(activities))
+	}
+	requireFields(t, activities[0], "id", "activity_type")
 }
 
 func TestAccountActivityList_PageToken(t *testing.T) {

@@ -35,7 +35,22 @@ func TestSmoke_Account(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "account", "get")
 	acct := parseJSONMap(t, out)
-	requireFields(t, acct, "id", "status", "equity", "buying_power", "cash")
+	requireFields(t, acct, "id", "status", "equity", "buying_power", "cash", "currency", "account_number")
+
+	status, _ := acct["status"].(string)
+	if status != "ACTIVE" {
+		t.Errorf("expected account status ACTIVE, got %q", status)
+	}
+	for _, field := range []string{"equity", "buying_power", "cash"} {
+		val, ok := acct[field].(string)
+		if !ok {
+			t.Errorf("expected %s to be a string, got %T", field, acct[field])
+			continue
+		}
+		if val == "" {
+			t.Errorf("expected non-empty %s value", field)
+		}
+	}
 }
 
 func TestSmoke_Clock(t *testing.T) {
@@ -96,4 +111,22 @@ func TestSmoke_ScreenerMostActives(t *testing.T) {
 	out := alpaca(t, "data", "screener", "most-actives", "--top", "5")
 	data := parseJSONMap(t, out)
 	requireFields(t, data, "most_actives", "last_updated")
+}
+
+func TestSmoke_ErrorContract(t *testing.T) {
+	t.Parallel()
+	_, stderr, code := alpacaFail(t,
+		"order", "get", "--order-id", "00000000-0000-0000-0000-000000000000",
+	)
+	if code != 1 {
+		t.Errorf("expected exit code 1 for API error, got %d", code)
+	}
+	errMap := parseJSONMap(t, stderr)
+	requireFields(t, errMap, "error", "status")
+	if errMsg, ok := errMap["error"].(string); !ok || errMsg == "" {
+		t.Errorf("expected non-empty error message, got %v", errMap["error"])
+	}
+	if status, ok := errMap["status"].(float64); !ok || status < 400 {
+		t.Errorf("expected HTTP status >= 400, got %v", errMap["status"])
+	}
 }

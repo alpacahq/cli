@@ -10,19 +10,9 @@ import (
 func TestPositionList(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "position", "list")
-	_ = parseJSONArray(t, out)
-}
-
-func TestPositionGetNotFound(t *testing.T) {
-	t.Parallel()
-	_, stderr, code := alpacaFail(t, "position", "get", "--symbol-or-asset-id", "ZZZZZZ")
-	if code == 0 {
-		t.Fatal("expected non-zero exit code for invalid symbol")
-	}
-
-	errMap := parseJSONMap(t, stderr)
-	if errMap["error"] == nil || errMap["error"] == "" {
-		t.Error("expected error message in JSON error output")
+	positions := parseJSONArray(t, out)
+	for _, p := range positions {
+		requireFields(t, p, "symbol", "qty", "market_value", "avg_entry_price")
 	}
 }
 
@@ -65,6 +55,13 @@ func TestPositionClose_Percentage(t *testing.T) {
 }
 
 func TestPositionCloseAll(t *testing.T) {
+	// Clean slate: close any leftover positions from prior tests.
+	_ = makeCmd("position", "close-all").Run()
+	pollFor(t, 15*time.Second, "pre-existing positions to clear", func() bool {
+		out := alpaca(t, "position", "list")
+		return len(parseJSONArray(t, out)) == 0
+	})
+
 	_ = submitCryptoFill(t, "BCH/USD")
 
 	alpaca(t, "position", "close-all")
@@ -76,6 +73,17 @@ func TestPositionCloseAll(t *testing.T) {
 }
 
 func TestPositionCloseAll_CancelOrders(t *testing.T) {
+	// Clean slate: close positions and cancel orders from prior tests.
+	_ = makeCmd("position", "close-all", "--cancel-orders").Run()
+	pollFor(t, 15*time.Second, "pre-existing positions to clear", func() bool {
+		out := alpaca(t, "position", "list")
+		return len(parseJSONArray(t, out)) == 0
+	})
+	pollFor(t, 10*time.Second, "pre-existing orders to clear", func() bool {
+		out := alpaca(t, "order", "list", "--status", "open")
+		return len(parseJSONArray(t, out)) == 0
+	})
+
 	_ = submitCryptoFill(t, "DOGE/USD")
 	_ = submitTestOrder(t, "COST")
 

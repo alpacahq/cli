@@ -32,7 +32,12 @@ func TestDataBars_Timeframe(t *testing.T) {
 		"--timeframe", "1Hour",
 	)
 	data := parseJSONMap(t, out)
-	requireFields(t, data, "bars")
+	bars, ok := data["bars"].([]any)
+	if !ok || len(bars) == 0 {
+		t.Fatal("expected non-empty bars array for 1Hour timeframe")
+	}
+	first, _ := bars[0].(map[string]any)
+	requireFields(t, first, "t", "o", "h", "l", "c", "v")
 }
 
 func TestDataBars_Adjustment(t *testing.T) {
@@ -44,7 +49,12 @@ func TestDataBars_Adjustment(t *testing.T) {
 		"--adjustment", "split",
 	)
 	data := parseJSONMap(t, out)
-	requireFields(t, data, "bars")
+	bars, ok := data["bars"].([]any)
+	if !ok || len(bars) == 0 {
+		t.Fatal("expected non-empty bars array with split adjustment")
+	}
+	first, _ := bars[0].(map[string]any)
+	requireFields(t, first, "t", "o", "h", "l", "c", "v")
 }
 
 func TestDataBars_Feed(t *testing.T) {
@@ -56,7 +66,12 @@ func TestDataBars_Feed(t *testing.T) {
 		"--feed", "iex",
 	)
 	data := parseJSONMap(t, out)
-	requireFields(t, data, "bars")
+	bars, ok := data["bars"].([]any)
+	if !ok || len(bars) == 0 {
+		t.Fatal("expected non-empty bars array with iex feed")
+	}
+	first, _ := bars[0].(map[string]any)
+	requireFields(t, first, "t", "o", "h", "l", "c", "v")
 }
 
 func TestDataBars_Currency(t *testing.T) {
@@ -68,7 +83,12 @@ func TestDataBars_Currency(t *testing.T) {
 		"--currency", "USD",
 	)
 	data := parseJSONMap(t, out)
-	requireFields(t, data, "bars")
+	bars, ok := data["bars"].([]any)
+	if !ok || len(bars) == 0 {
+		t.Fatal("expected non-empty bars array with USD currency")
+	}
+	first, _ := bars[0].(map[string]any)
+	requireFields(t, first, "t", "o", "h", "l", "c", "v")
 }
 
 func TestDataBars_Sort(t *testing.T) {
