@@ -27,7 +27,7 @@ func TestPositionGetNotFound(t *testing.T) {
 }
 
 func TestPositionOps(t *testing.T) {
-	symbol := submitCryptoFill(t)
+	symbol := submitCryptoFill(t, "BTC/USD")
 
 	t.Run("get", func(t *testing.T) {
 		out := alpaca(t, "position", "get", "--symbol-or-asset-id", symbol)
@@ -48,7 +48,7 @@ func TestPositionOps(t *testing.T) {
 }
 
 func TestPositionClose_Percentage(t *testing.T) {
-	symbol := submitCryptoFill(t)
+	symbol := submitCryptoFill(t, "LTC/USD")
 
 	out := alpaca(t, "position", "close", "--symbol-or-asset-id", symbol, "--percentage", "50")
 	closed := parseJSONMap(t, out)
@@ -65,7 +65,7 @@ func TestPositionClose_Percentage(t *testing.T) {
 }
 
 func TestPositionCloseAll(t *testing.T) {
-	_ = submitCryptoFill(t)
+	_ = submitCryptoFill(t, "BCH/USD")
 
 	alpaca(t, "position", "close-all")
 
@@ -76,7 +76,7 @@ func TestPositionCloseAll(t *testing.T) {
 }
 
 func TestPositionCloseAll_CancelOrders(t *testing.T) {
-	_ = submitCryptoFill(t)
+	_ = submitCryptoFill(t, "DOGE/USD")
 	_ = submitTestOrder(t, "COST")
 
 	alpaca(t, "position", "close-all", "--cancel-orders")

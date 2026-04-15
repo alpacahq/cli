@@ -288,7 +288,7 @@ func TestOrderSubmit_ExtendedHours(t *testing.T) {
 func TestOrderSubmit_Notional(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "order", "submit",
-		"--symbol", "BTC/USD",
+		"--symbol", "LINK/USD",
 		"--notional", "10",
 		"--side", "buy",
 		"--type", "market",
@@ -298,11 +298,11 @@ func TestOrderSubmit_Notional(t *testing.T) {
 	requireFields(t, order, "id", "notional")
 
 	t.Cleanup(func() {
-		pollFor(t, 10*time.Second, "BTC/USD position to appear for cleanup", func() bool {
-			_, _, code := alpacaWithStderr(t, "position", "get", "--symbol-or-asset-id", "BTC/USD")
+		pollFor(t, 10*time.Second, "LINK/USD position to appear for cleanup", func() bool {
+			_, _, code := alpacaWithStderr(t, "position", "get", "--symbol-or-asset-id", "LINK/USD")
 			return code == 0
 		})
-		_ = makeCmd("position", "close", "--symbol-or-asset-id", "BTC/USD").Run()
+		_ = makeCmd("position", "close", "--symbol-or-asset-id", "LINK/USD").Run()
 	})
 }
 

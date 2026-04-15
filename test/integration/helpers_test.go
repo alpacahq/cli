@@ -298,26 +298,29 @@ func submitTestOrder(t *testing.T, symbol string) string {
 	return id
 }
 
-// submitCryptoFill places a BTC/USD market buy for $1 notional and polls
+// submitCryptoFill places a crypto market buy for $10 notional and polls
 // until a position appears. Crypto trades 24/7 so this works regardless of
 // equity market hours. Registers t.Cleanup to close the position.
-func submitCryptoFill(t *testing.T) string {
+//
+// Each test must pass a unique crypto symbol to avoid wash-trade conflicts.
+// Closing a position creates a sell order; if the next test tries to buy
+// the same symbol before that sell fills, the API rejects it.
+func submitCryptoFill(t *testing.T, symbol string) string {
 	t.Helper()
 	alpaca(t, "order", "submit",
-		"--symbol", "BTC/USD",
+		"--symbol", symbol,
 		"--notional", "10",
 		"--side", "buy",
 		"--type", "market",
 		"--time-in-force", "gtc",
 	)
 
-	symbol := "BTC/USD"
 	t.Cleanup(func() {
 		cmd := exec.Command(cliBinary, "position", "close", "--symbol-or-asset-id", symbol)
 		cmd.Env = cliEnv()
 		_ = cmd.Run()
 	})
-	pollFor(t, 15*time.Second, "BTC/USD position to appear", func() bool {
+	pollFor(t, 15*time.Second, symbol+" position to appear", func() bool {
 		_, _, code := alpacaWithStderr(t, "position", "get", "--symbol-or-asset-id", symbol)
 		return code == 0
 	})
