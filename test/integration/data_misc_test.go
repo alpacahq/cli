@@ -10,7 +10,12 @@ func TestDataNews(t *testing.T) {
 	t.Parallel()
 	out := alpacaRetry(t, "data", "news", "--symbols", "AAPL", "--limit", "5")
 	data := parseJSONMap(t, out)
-	requireFields(t, data, "news")
+	news, ok := data["news"].([]any)
+	if !ok || len(news) == 0 {
+		t.Fatal("expected non-empty news array")
+	}
+	first, _ := news[0].(map[string]any)
+	requireFields(t, first, "id", "headline", "source", "created_at")
 }
 
 func TestDataCorporateActions(t *testing.T) {

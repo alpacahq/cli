@@ -76,7 +76,7 @@ func alpacaRetry(t *testing.T, args ...string) []byte {
 	t.Helper()
 	const maxAttempts = 3
 	for attempt := range maxAttempts {
-		cmd := exec.Command(cliBinary, args...)
+		cmd := exec.Command(cliBinary, append(args, "--timeout", "5")...)
 		cmd.Env = cliEnv()
 
 		out, err := cmd.Output()
@@ -100,7 +100,7 @@ func alpacaRetry(t *testing.T, args ...string) []byte {
 }
 
 func isTransientError(stderr string) bool {
-	for _, sig := range []string{": EOF", "connection reset", "connection refused", "TLS handshake timeout"} {
+	for _, sig := range []string{": EOF", "connection reset", "connection refused", "TLS handshake timeout", "context deadline exceeded"} {
 		if strings.Contains(stderr, sig) {
 			return true
 		}

@@ -41,8 +41,10 @@ func TestDataOptionChain(t *testing.T) {
 	t.Parallel()
 	out := alpacaRetry(t, "data", "option", "chain", "--underlying-symbol", "AAPL")
 	chain := parseJSONMap(t, out)
-	if len(chain) == 0 {
-		t.Fatal("expected non-empty option chain")
+	requireFields(t, chain, "snapshots")
+	snapshots, _ := chain["snapshots"].(map[string]any)
+	if len(snapshots) == 0 {
+		t.Fatal("expected non-empty snapshots in option chain")
 	}
 }
 
@@ -93,7 +95,7 @@ func TestDataOptionBars(t *testing.T) {
 		t.Skip("option bars not available for this contract")
 	}
 	data := parseJSONMap(t, stdout)
-	_ = data // may be empty but command succeeded
+	requireFields(t, data, "bars")
 }
 
 func TestDataOptionTrades(t *testing.T) {
@@ -104,7 +106,7 @@ func TestDataOptionTrades(t *testing.T) {
 		t.Skip("option trades not available for this contract")
 	}
 	data := parseJSONMap(t, stdout)
-	_ = data
+	requireFields(t, data, "trades")
 }
 
 func TestDataOptionLatestTrades(t *testing.T) {
@@ -115,5 +117,5 @@ func TestDataOptionLatestTrades(t *testing.T) {
 		t.Skip("option latest trades not available for this contract")
 	}
 	data := parseJSONMap(t, stdout)
-	_ = data
+	requireFields(t, data, "trades")
 }

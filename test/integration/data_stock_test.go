@@ -16,7 +16,12 @@ func TestDataBars(t *testing.T) {
 		"--timeframe", "1Day",
 	)
 	data := parseJSONMap(t, out)
-	requireFields(t, data, "bars")
+	bars, ok := data["bars"].([]any)
+	if !ok || len(bars) == 0 {
+		t.Fatal("expected non-empty bars array")
+	}
+	first, _ := bars[0].(map[string]any)
+	requireFields(t, first, "t", "o", "h", "l", "c", "v")
 }
 
 func TestDataBars_Timeframe(t *testing.T) {
@@ -105,7 +110,12 @@ func TestDataQuotes(t *testing.T) {
 		"--limit", "5",
 	)
 	data := parseJSONMap(t, out)
-	requireFields(t, data, "quotes")
+	quotes, ok := data["quotes"].([]any)
+	if !ok || len(quotes) == 0 {
+		t.Fatal("expected non-empty quotes array")
+	}
+	first, _ := quotes[0].(map[string]any)
+	requireFields(t, first, "t", "bp", "ap", "bs", "as")
 }
 
 func TestDataTrades(t *testing.T) {
@@ -116,28 +126,45 @@ func TestDataTrades(t *testing.T) {
 		"--limit", "5",
 	)
 	data := parseJSONMap(t, out)
-	requireFields(t, data, "trades")
+	trades, ok := data["trades"].([]any)
+	if !ok || len(trades) == 0 {
+		t.Fatal("expected non-empty trades array")
+	}
+	first, _ := trades[0].(map[string]any)
+	requireFields(t, first, "t", "p", "s")
 }
 
 func TestDataLatestTrade(t *testing.T) {
 	t.Parallel()
 	out := alpacaRetry(t, "data", "latest-trade", "--symbol", "AAPL")
 	data := parseJSONMap(t, out)
-	requireFields(t, data, "trade")
+	trade, ok := data["trade"].(map[string]any)
+	if !ok {
+		t.Fatal("expected trade object")
+	}
+	requireFields(t, trade, "t", "p", "s")
 }
 
 func TestDataLatestQuote(t *testing.T) {
 	t.Parallel()
 	out := alpacaRetry(t, "data", "latest-quote", "--symbol", "AAPL")
 	data := parseJSONMap(t, out)
-	requireFields(t, data, "quote")
+	quote, ok := data["quote"].(map[string]any)
+	if !ok {
+		t.Fatal("expected quote object")
+	}
+	requireFields(t, quote, "t", "bp", "ap", "bs", "as")
 }
 
 func TestDataLatestBar(t *testing.T) {
 	t.Parallel()
 	out := alpacaRetry(t, "data", "latest-bar", "--symbol", "AAPL")
 	data := parseJSONMap(t, out)
-	requireFields(t, data, "bar")
+	bar, ok := data["bar"].(map[string]any)
+	if !ok {
+		t.Fatal("expected bar object")
+	}
+	requireFields(t, bar, "t", "o", "h", "l", "c", "v")
 }
 
 func TestDataSnapshot(t *testing.T) {
@@ -145,6 +172,13 @@ func TestDataSnapshot(t *testing.T) {
 	out := alpacaRetry(t, "data", "snapshot", "--symbol", "AAPL")
 	data := parseJSONMap(t, out)
 	requireFields(t, data, "latestTrade", "latestQuote", "minuteBar", "dailyBar")
+
+	trade, _ := data["latestTrade"].(map[string]any)
+	requireFields(t, trade, "t", "p", "s")
+	quote, _ := data["latestQuote"].(map[string]any)
+	requireFields(t, quote, "t", "bp", "ap")
+	bar, _ := data["dailyBar"].(map[string]any)
+	requireFields(t, bar, "t", "o", "h", "l", "c", "v")
 }
 
 func TestDataAuction(t *testing.T) {
@@ -193,10 +227,24 @@ func TestDataMultiQuotes(t *testing.T) {
 		"--symbols", "AAPL,MSFT",
 		"--start", daysAgo(95),
 		"--end", daysAgo(94),
-		"--limit", "2",
+		"--limit", "5",
 	)
 	data := parseJSONMap(t, out)
 	requireFields(t, data, "quotes")
+	quotes := data["quotes"].(map[string]any)
+	if len(quotes) == 0 {
+		t.Fatal("expected at least one symbol in quotes")
+	}
+	for sym, v := range quotes {
+		items, ok := v.([]any)
+		if !ok || len(items) == 0 {
+			t.Errorf("expected non-empty quotes for %s", sym)
+			continue
+		}
+		first, _ := items[0].(map[string]any)
+		requireFields(t, first, "t", "bp", "ap", "bs", "as")
+		break
+	}
 }
 
 func TestDataMultiTrades(t *testing.T) {
@@ -205,10 +253,24 @@ func TestDataMultiTrades(t *testing.T) {
 		"--symbols", "AAPL,MSFT",
 		"--start", daysAgo(95),
 		"--end", daysAgo(94),
-		"--limit", "2",
+		"--limit", "5",
 	)
 	data := parseJSONMap(t, out)
 	requireFields(t, data, "trades")
+	trades := data["trades"].(map[string]any)
+	if len(trades) == 0 {
+		t.Fatal("expected at least one symbol in trades")
+	}
+	for sym, v := range trades {
+		items, ok := v.([]any)
+		if !ok || len(items) == 0 {
+			t.Errorf("expected non-empty trades for %s", sym)
+			continue
+		}
+		first, _ := items[0].(map[string]any)
+		requireFields(t, first, "t", "p", "s")
+		break
+	}
 }
 
 func TestDataMultiSnapshots(t *testing.T) {

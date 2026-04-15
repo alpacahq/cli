@@ -415,11 +415,15 @@ func TestOrderSubmit_DryRun_ParsesComplexObjects(t *testing.T) {
 
 func TestOrderList_StatusFilter(t *testing.T) {
 	t.Parallel()
-	out := alpaca(t, "order", "list", "--status", "all", "--limit", "5")
-	_ = parseJSONArray(t, out)
-
-	out = alpaca(t, "order", "list", "--status", "closed", "--limit", "5")
-	_ = parseJSONArray(t, out)
+	out := alpaca(t, "order", "list", "--status", "closed", "--limit", "5")
+	orders := parseJSONArray(t, out)
+	for _, o := range orders {
+		status, _ := o["status"].(string)
+		if status != "filled" && status != "canceled" && status != "cancelled" &&
+			status != "expired" && status != "replaced" && status != "done_for_day" {
+			t.Errorf("--status closed returned order with unexpected status %q", status)
+		}
+	}
 }
 
 func TestOrderList_SymbolFilter(t *testing.T) {

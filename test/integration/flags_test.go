@@ -80,6 +80,34 @@ func TestQuietEnvVar(t *testing.T) {
 	}
 }
 
+func TestSchemaFlag(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "order", "submit", "--schema")
+	s := string(out)
+	if s == "" {
+		t.Fatal("--schema output should not be empty")
+	}
+	for _, field := range []string{"symbol", "qty", "side", "type", "time_in_force"} {
+		if !strings.Contains(s, field) {
+			t.Errorf("--schema output should contain %q field", field)
+		}
+	}
+}
+
+func TestSchemaFlag_DataCommand(t *testing.T) {
+	t.Parallel()
+	out := alpaca(t, "data", "bars", "--schema")
+	s := string(out)
+	if s == "" {
+		t.Fatal("--schema output should not be empty")
+	}
+	for _, field := range []string{"bars", "symbol", "next_page_token"} {
+		if !strings.Contains(s, field) {
+			t.Errorf("--schema output should contain %q field", field)
+		}
+	}
+}
+
 func TestHelpAll(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "--help-all")

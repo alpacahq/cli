@@ -37,7 +37,13 @@ func TestAccountConfigSet(t *testing.T) {
 func TestAccountActivityList_WithType(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "account", "activity", "list", "--activity-types", "FILL", "--page-size", "5")
-	_ = parseJSONArray(t, out)
+	activities := parseJSONArray(t, out)
+	for _, a := range activities {
+		actType, _ := a["activity_type"].(string)
+		if actType != "FILL" {
+			t.Errorf("--activity-types FILL returned activity with type %q", actType)
+		}
+	}
 }
 
 func TestAccountActivityListByType(t *testing.T) {
