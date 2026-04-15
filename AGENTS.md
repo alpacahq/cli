@@ -43,13 +43,14 @@ The one exception is `update --check`, which emits JSON because agents need to p
 Gated by `//go:build integration` and require `ALPACA_TEST_API_KEY`+`ALPACA_TEST_SECRET_KEY` or `ALPACA_TEST_ACCESS_TOKEN`. Default target is `paper-api.alpaca.markets`.
 
 Rules:
-- **Read-only tests must call `t.Parallel()`** — every test that only fetches data should run concurrently.
-- **Write tests must clean up** — use `t.Cleanup()` to cancel orders, delete watchlists, close positions. Never leave side-effects.
-- **Flat tests for independent calls, sub-tests for sequential chains** — don't use `t.Run` unless steps depend on prior state (e.g., create → get → delete).
-- **Use the helpers** — `alpaca()`, `alpacaFail()`, `parseJSONMap()`, `requireFields()`, `daysAgo()`, `pollFor()`. Don't reinvent them.
-- **Each parallel test must use a unique symbol** — the Alpaca API rejects orders as "potential wash trade" when buy and sell orders coexist on the same symbol. Bracket orders create sell-side child legs (take-profit, stop-loss), so a bracket on TSLA plus a plain buy on TSLA from another parallel test will fail. Use `submitTestOrder(t, "SYMBOL")` and pick a symbol no other parallel test uses. Check existing tests before choosing.
-- **Some endpoints are unavailable on paper** — wallet, crypto-perp trading, forex, fixed-income, logo, treasury, bonds, and tokenization return 403/404. Don't write tests that require these unless you have a compatible test account.
-- **One file per feature area** — `order_test.go`, `data_option_test.go`, `crypto_perp_data_test.go`, etc. Keep files focused.
+- **Always run `make test-integration` after editing** - `make check` only runs unit tests. Integration tests hit the live paper API and are the only way to verify your changes work. Never skip this step.
+- **Read-only tests must call `t.Parallel()`** - every test that only fetches data should run concurrently.
+- **Write tests must clean up** - use `t.Cleanup()` to cancel orders, delete watchlists, close positions. Never leave side-effects.
+- **Flat tests for independent calls, sub-tests for sequential chains** - don't use `t.Run` unless steps depend on prior state (e.g., create -> get -> delete).
+- **Use the helpers** - `alpaca()`, `alpacaFail()`, `parseJSONMap()`, `requireFields()`, `daysAgo()`, `pollFor()`. Don't reinvent them.
+- **Each parallel test must use a unique symbol** - the Alpaca API rejects orders as "potential wash trade" when buy and sell orders coexist on the same symbol. Bracket orders create sell-side child legs (take-profit, stop-loss), so a bracket on TSLA plus a plain buy on TSLA from another parallel test will fail. Use `submitTestOrder(t, "SYMBOL")` and pick a symbol no other parallel test uses. Check existing tests before choosing.
+- **Some endpoints are unavailable on paper** - wallet, crypto-perp trading, forex, fixed-income, logo, treasury, bonds, and tokenization return 403/404. Don't write tests that require these unless you have a compatible test account.
+- **One file per feature area** - `order_test.go`, `data_option_test.go`, `crypto_perp_data_test.go`, etc. Cross-cutting E2E flows go in `e2e_test.go`.
 
 ## Keep docs in sync
 
