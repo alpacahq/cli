@@ -25,12 +25,13 @@ jobs:
 
       - id: homebrew-tap-token
         if: ${{ env.HOMEBREW_TAP_APP_ID != '' && env.HOMEBREW_TAP_APP_PRIVATE_KEY != '' }}
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1
         with:
           app-id: ${{ env.HOMEBREW_TAP_APP_ID }}
           private-key: ${{ env.HOMEBREW_TAP_APP_PRIVATE_KEY }}
           owner: alpacahq
           repositories: homebrew-tap
+          permission-contents: write
 
       - uses: goreleaser/goreleaser-action@e435ccd777264be153ace6237001ef4d979d3a7a # v6
         with:
