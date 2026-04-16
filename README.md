@@ -245,9 +245,8 @@ alpaca position list --jq '.[0].symbol'       # Filter JSON with jq expressions
 alpaca profile login                                 # OAuth via browser, paper (default)
 alpaca profile login --api-key                       # API key/secret, paper
 alpaca profile login --api-key --live                # API key/secret, live trading
-alpaca profile login --api-key --name live --live    # API key for live with custom name
-alpaca profile login --name staging --base-url https://staging-api.example.com
-alpaca profile switch live                           # Switch default profile
+alpaca profile login --api-key --name prod --live    # API key for live with custom name
+alpaca profile switch prod                           # Switch default profile
 ```
 
 Credentials are stored in `~/.config/alpaca/profiles/`.
@@ -256,11 +255,9 @@ Credentials are stored in `~/.config/alpaca/profiles/`.
 
 | Variable | Description |
 |----------|-------------|
-| `ALPACA_ACCESS_TOKEN` | OAuth access token (overrides profile) |
-| `ALPACA_API_KEY` | API key (overrides profile) |
-| `ALPACA_SECRET_KEY` | Secret key (overrides profile) |
-| `ALPACA_BASE_URL` | Trading API base URL |
-| `ALPACA_DATA_URL` | Market data API base URL |
+| `ALPACA_API_KEY` | API key. Must be set together with `ALPACA_SECRET_KEY`. |
+| `ALPACA_SECRET_KEY` | Secret key. Must be set together with `ALPACA_API_KEY`. |
+| `ALPACA_PAPER_TRADE` | `true` (default) routes to paper; any other value routes to live |
 | `ALPACA_PROFILE` | Profile name to use |
 | `ALPACA_OUTPUT` | Default output format (`json`, `csv`) |
 | `ALPACA_CONFIG_DIR` | Config directory (default: `~/.config/alpaca`) |
@@ -270,7 +267,25 @@ Credentials are stored in `~/.config/alpaca/profiles/`.
 | `ALPACA_TRACE` | Show HTTP timing breakdown on stderr - DNS, TLS, TTFB (any non-empty value) |
 Global flags: `--csv`, `--jq`, `--profile`, `--verbose`, `--debug`, `--trace`, `--quiet`, `--schema`, `--timeout`.
 
-Precedence: flags > env vars > profile config > defaults.
+### Credential precedence
+
+Credentials resolve as an **atomic bundle** - the first complete source wins, and fields are never mixed across sources:
+
+1. `ALPACA_API_KEY` + `ALPACA_SECRET_KEY` (both required) - env API key bundle
+2. Profile `access_token` - OAuth from the active profile
+3. Profile `api_key` + `secret_key` - API key from the active profile
+
+A partial env bundle (e.g., only `ALPACA_API_KEY`) falls through to the profile rather than silently mixing in a profile secret.
+
+**OAuth tokens are not readable from the environment.** Obtain them via `alpaca profile login`; they're stored in your profile YAML.
+
+**Paper vs live** resolves independently of credentials:
+
+1. `ALPACA_PAPER_TRADE` - `true` (default) -> paper, anything else -> live
+2. Profile `paper_trade` - set by `alpaca profile login --live` vs `--paper`
+3. Paper trading (safe default when nothing else specifies)
+
+The paper default is deliberate: scripts and agents that forget to opt into live hit paper, not live.
 
 ## Shell Completions
 
@@ -342,11 +357,13 @@ export ALPACA_API_KEY=PK...
 export ALPACA_SECRET_KEY=...
 ```
 
-Or use an OAuth token directly:
+Env API keys default to paper trading. To opt into live:
 
 ```bash
-export ALPACA_ACCESS_TOKEN=...
+export ALPACA_PAPER_TRADE=false
 ```
+
+OAuth tokens cannot be supplied via environment variables - use `alpaca profile login` to store them in a profile.
 
 ### Clean Output
 

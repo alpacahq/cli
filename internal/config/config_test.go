@@ -43,25 +43,44 @@ func TestResolve(t *testing.T) {
 }
 
 func TestResolved_HasCredentials(t *testing.T) {
-	r := &Resolved{APIKey: "key", SecretKey: "secret"}
-	if !r.HasCredentials() {
-		t.Error("expected HasCredentials() = true")
+	cases := []struct {
+		name   string
+		source Source
+		want   bool
+	}{
+		{"env-apikey", SourceEnvAPIKey, true},
+		{"profile-oauth", SourceProfileOAuth, true},
+		{"profile-apikey", SourceProfileAPIKey, true},
+		{"none", SourceNone, false},
 	}
-
-	r2 := &Resolved{APIKey: "", SecretKey: "secret"}
-	if r2.HasCredentials() {
-		t.Error("expected HasCredentials() = false without APIKey")
+	for _, tc := range cases {
+		r := &Resolved{Source: tc.source}
+		if got := r.HasCredentials(); got != tc.want {
+			t.Errorf("Source=%q HasCredentials()=%v, want %v", tc.source, got, tc.want)
+		}
 	}
 }
 
 func TestResolved_Validate(t *testing.T) {
-	r := &Resolved{APIKey: "key", SecretKey: "secret"}
+	r := &Resolved{Source: SourceEnvAPIKey}
 	if err := r.Validate(); err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
 
-	r2 := &Resolved{}
+	r2 := &Resolved{Source: SourceNone}
 	if err := r2.Validate(); err == nil {
 		t.Error("expected error for empty credentials")
+	}
+}
+
+func TestResolved_IsOAuth(t *testing.T) {
+	if !(&Resolved{Source: SourceProfileOAuth}).IsOAuth() {
+		t.Error("profile-oauth should be IsOAuth")
+	}
+	if (&Resolved{Source: SourceEnvAPIKey}).IsOAuth() {
+		t.Error("env-apikey should not be IsOAuth")
+	}
+	if (&Resolved{Source: SourceProfileAPIKey}).IsOAuth() {
+		t.Error("profile-apikey should not be IsOAuth")
 	}
 }

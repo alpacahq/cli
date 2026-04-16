@@ -16,7 +16,16 @@ import (
 	"time"
 )
 
-var cliBinary string
+var (
+	cliBinary     string
+	testConfigDir string
+	testProfile   string
+)
+
+// testProfileName is used when routing an OAuth token via a profile file.
+// ALPACA_ACCESS_TOKEN is no longer a supported env var; the token must live
+// in a profile YAML and be selected with ALPACA_PROFILE.
+const testProfileName = "integration-test"
 
 func TestMain(m *testing.M) {
 	hasAPIKey := os.Getenv("ALPACA_TEST_API_KEY") != "" && os.Getenv("ALPACA_TEST_SECRET_KEY") != ""
@@ -49,7 +58,44 @@ func TestMain(m *testing.M) {
 	}
 
 	cliBinary = binary
+
+	testConfigDir = filepath.Join(os.TempDir(), "alpaca-cli-test-config")
+	if err := writeTestProfile(hasToken); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to write test profile: %v\n", err)
+		os.Exit(1)
+	}
+
 	os.Exit(m.Run())
+}
+
+// writeTestProfile stashes the access token in a profile YAML when tests run
+// with ALPACA_TEST_ACCESS_TOKEN. For API-key runs no profile is written; the
+// env vars flow through atomic-bundle resolution directly.
+func writeTestProfile(hasToken bool) error {
+	if !hasToken {
+		return nil
+	}
+
+	profilesDir := filepath.Join(testConfigDir, "profiles")
+	if err := os.MkdirAll(profilesDir, 0o700); err != nil {
+		return err
+	}
+
+	yaml := fmt.Sprintf(
+		"api_key: \"\"\nsecret_key: \"\"\naccess_token: %q\npaper_trade: true\n",
+		os.Getenv("ALPACA_TEST_ACCESS_TOKEN"),
+	)
+	if err := os.WriteFile(filepath.Join(profilesDir, testProfileName+".yaml"), []byte(yaml), 0o600); err != nil {
+		return err
+	}
+
+	gcfg := fmt.Sprintf("default_profile: %s\noutput: json\n", testProfileName)
+	if err := os.WriteFile(filepath.Join(testConfigDir, "config.yaml"), []byte(gcfg), 0o600); err != nil {
+		return err
+	}
+
+	testProfile = testProfileName
+	return nil
 }
 
 // alpaca runs the CLI and returns stdout. Fatals on non-zero exit.
@@ -182,23 +228,22 @@ func requireArrayNonEmpty(t *testing.T, data []byte) []map[string]any {
 }
 
 func cliEnv() []string {
-	baseURL := os.Getenv("ALPACA_TEST_BASE_URL")
-	if baseURL == "" {
-		baseURL = "https://paper-api.alpaca.markets"
-	}
-	dataURL := os.Getenv("ALPACA_TEST_DATA_URL")
-	if dataURL == "" {
-		dataURL = "https://data.alpaca.markets"
-	}
-
+	// Integration tests always run against the real paper API. No URL
+	// override mechanism - ALPACA_PAPER_TRADE=true (the default) is all
+	// the routing we need.
 	env := append(os.Environ(),
-		"ALPACA_BASE_URL="+baseURL,
-		"ALPACA_DATA_URL="+dataURL,
-		"ALPACA_CONFIG_DIR="+os.TempDir()+"/alpaca-cli-test-config",
+		"ALPACA_CONFIG_DIR="+testConfigDir,
 	)
 
-	if token := os.Getenv("ALPACA_TEST_ACCESS_TOKEN"); token != "" {
-		env = append(env, "ALPACA_ACCESS_TOKEN="+token)
+	if testProfile != "" {
+		// OAuth runs: env API keys would shadow the profile token under
+		// atomic-bundle resolution, so blank them out and point at the
+		// profile written in TestMain.
+		env = append(env,
+			"ALPACA_PROFILE="+testProfile,
+			"ALPACA_API_KEY=",
+			"ALPACA_SECRET_KEY=",
+		)
 	} else {
 		env = append(env,
 			"ALPACA_API_KEY="+os.Getenv("ALPACA_TEST_API_KEY"),

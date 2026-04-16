@@ -49,7 +49,9 @@ export ALPACA_API_KEY=PK...
 export ALPACA_SECRET_KEY=...
 ```
 
-Env vars override profile credentials.
+Env API keys default to paper trading. For live, set `ALPACA_PAPER_TRADE=false`.
+
+When env API keys are set, they are the authoritative credentials - any profile on disk is ignored. OAuth tokens cannot be set via env var; use `alpaca profile login` to store them in a profile.
 
 ### Multiple profiles
 
@@ -176,11 +178,9 @@ alpaca order list --jq '[.[] | {id, symbol, side, qty}]'
 
 | Variable | Description |
 |----------|-------------|
-| `ALPACA_ACCESS_TOKEN` | OAuth access token (overrides profile) |
-| `ALPACA_API_KEY` | API key (overrides profile) |
-| `ALPACA_SECRET_KEY` | Secret key (overrides profile) |
-| `ALPACA_BASE_URL` | Trading API base URL |
-| `ALPACA_DATA_URL` | Market data API base URL |
+| `ALPACA_API_KEY` | API key. Must be set together with `ALPACA_SECRET_KEY`. |
+| `ALPACA_SECRET_KEY` | Secret key. Must be set together with `ALPACA_API_KEY`. |
+| `ALPACA_PAPER_TRADE` | `true` (default) routes to paper; any other value routes to live |
 | `ALPACA_PROFILE` | Profile name to use |
 | `ALPACA_OUTPUT` | Default output format (`json`, `csv`) |
 | `ALPACA_CONFIG_DIR` | Config directory (default: `~/.config/alpaca`) |
@@ -188,7 +188,18 @@ alpaca order list --jq '[.[] | {id, symbol, side, qty}]'
 | `ALPACA_VERBOSE` | Show HTTP request summaries on stderr |
 | `ALPACA_DEBUG` | Show HTTP request/response headers and bodies on stderr |
 | `ALPACA_TRACE` | Show HTTP timing breakdown on stderr (DNS, TLS, TTFB) |
-Precedence: flags > env vars > profile config > defaults.
+
+### Credential precedence
+
+Credentials resolve as an atomic bundle (no field-level mixing). First complete source wins:
+
+1. `ALPACA_API_KEY` + `ALPACA_SECRET_KEY` together -> env API keys
+2. Profile `access_token` -> OAuth from active profile
+3. Profile `api_key` + `secret_key` -> API keys from active profile
+
+A partial env bundle (only one of the two) falls through to the profile. Env API keys always beat anything in a profile. OAuth tokens are not readable from env - use `alpaca profile login`.
+
+Paper vs live resolves independently: `ALPACA_PAPER_TRADE` > profile `paper_trade` > paper default. Env-sourced credentials ignore the profile's `paper_trade` field and default to paper unless `ALPACA_PAPER_TRADE` opts into live. Agents should set `ALPACA_PAPER_TRADE=false` explicitly when live trading is intended.
 
 ## Self-update
 

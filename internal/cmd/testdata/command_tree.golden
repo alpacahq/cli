@@ -459,8 +459,6 @@ alpaca position list
 alpaca profile list
 alpaca profile login
   --api-key (bool)
-  --base-url (string)
-  --data-url (string)
   --key (string)
   --live (bool)
   --name (string)

@@ -10,7 +10,6 @@ import (
 
 	"github.com/alpacahq/cli/internal/api"
 	"github.com/alpacahq/cli/internal/client"
-	"github.com/alpacahq/cli/internal/config"
 )
 
 func setupMockClients(t *testing.T, handler http.HandlerFunc) func() {
@@ -24,27 +23,25 @@ func setupMockClients(t *testing.T, handler http.HandlerFunc) func() {
 		Secret:    "SKTEST",
 		UserAgent: "alpaca-cli/test",
 	}
+	// Pre-inject clients; PersistentPreRunE leaves non-nil clients alone.
+	// That's how the mock HTTP server URL gets into the CLI without any
+	// test-only env var.
+	oldAPI := apiClient
 	oldTrading := tradingClient
 	oldData := dataClient
-	oldCfg := cfg
+	apiClient = c
 	tradingClient = api.NewTradingClient(c)
 	dataClient = api.NewMarketDataClient(c)
-	cfg = &config.Resolved{Output: "json"}
-	oldBaseURL := os.Getenv("ALPACA_BASE_URL")
-	oldDataURL := os.Getenv("ALPACA_DATA_URL")
+
 	oldAPIKey := os.Getenv("ALPACA_API_KEY")
 	oldSecret := os.Getenv("ALPACA_SECRET_KEY")
-	os.Setenv("ALPACA_BASE_URL", srv.URL)
-	os.Setenv("ALPACA_DATA_URL", srv.URL)
 	os.Setenv("ALPACA_API_KEY", "PKTEST")
 	os.Setenv("ALPACA_SECRET_KEY", "SKTEST")
 	return func() {
+		apiClient = oldAPI
 		tradingClient = oldTrading
 		dataClient = oldData
-		cfg = oldCfg
 		srv.Close()
-		os.Setenv("ALPACA_BASE_URL", oldBaseURL)
-		os.Setenv("ALPACA_DATA_URL", oldDataURL)
 		os.Setenv("ALPACA_API_KEY", oldAPIKey)
 		os.Setenv("ALPACA_SECRET_KEY", oldSecret)
 	}

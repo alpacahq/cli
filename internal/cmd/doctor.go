@@ -21,8 +21,7 @@ var doctorCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		w := cmd.OutOrStdout()
 		allOK := true
-		usingEnvCredentials := os.Getenv("ALPACA_ACCESS_TOKEN") != "" ||
-			(os.Getenv("ALPACA_API_KEY") != "" && os.Getenv("ALPACA_SECRET_KEY") != "")
+		usingEnvCredentials := os.Getenv("ALPACA_API_KEY") != "" && os.Getenv("ALPACA_SECRET_KEY") != ""
 
 		fmt.Fprintf(w, "Alpaca CLI %s\n", version)
 		fmt.Fprintf(w, "  Go:       %s\n", runtime.Version())
@@ -62,13 +61,12 @@ var doctorCmd = &cobra.Command{
 			allOK = printCheck(w, false, "no credentials — run `alpaca profile login`")
 			return doctorResult(w, allOK)
 		}
-		if resolved.IsOAuth() {
-			printCheck(w, true, "OAuth token configured")
-			if resolved.Scopes != "" {
-				fmt.Fprintf(w, "  Scopes:   %s\n", resolved.Scopes)
-			}
-		} else {
-			printCheck(w, true, "API key credentials configured")
+		printCheck(w, true, credentialSourceDescription(resolved))
+		if resolved.IsOAuth() && resolved.Scopes != "" {
+			fmt.Fprintf(w, "  Scopes:   %s\n", resolved.Scopes)
+		}
+		if shadowed := detectShadowedEnvVars(resolved); shadowed != "" {
+			fmt.Fprintf(w, "  Note:     %s\n", shadowed)
 		}
 
 		fmt.Fprintf(w, "\nConnectivity:\n")
@@ -131,4 +129,30 @@ func joinMax(items []string, max int) string {
 	}
 	shown := items[:max]
 	return fmt.Sprintf("%v (+%d more)", shown, len(items)-max)
+}
+
+func credentialSourceDescription(r *config.Resolved) string {
+	switch r.Source {
+	case config.SourceEnvAPIKey:
+		return "API key credentials from env (ALPACA_API_KEY)"
+	case config.SourceProfileOAuth:
+		return fmt.Sprintf("OAuth token from profile %q", r.ProfileName)
+	case config.SourceProfileAPIKey:
+		return fmt.Sprintf("API key credentials from profile %q", r.ProfileName)
+	default:
+		return "credentials configured"
+	}
+}
+
+// detectShadowedEnvVars flags config that exists but is ignored because a
+// higher-priority source supplied credentials. Common cause: env API keys
+// shadowing a profile the user thinks is active.
+func detectShadowedEnvVars(r *config.Resolved) string {
+	if r.Source == config.SourceEnvAPIKey {
+		p := config.LoadProfileByName(r.ProfileName)
+		if p.AccessToken != "" || (p.APIKey != "" && p.SecretKey != "") {
+			return fmt.Sprintf("profile %q has credentials but env ALPACA_API_KEY is active", r.ProfileName)
+		}
+	}
+	return ""
 }

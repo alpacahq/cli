@@ -10,16 +10,32 @@ func withTempDir(t *testing.T) {
 	t.Helper()
 	dir := t.TempDir()
 	t.Setenv("ALPACA_CONFIG_DIR", dir)
+	t.Setenv("ALPACA_API_KEY", "")
+	t.Setenv("ALPACA_SECRET_KEY", "")
+	t.Setenv("ALPACA_PAPER_TRADE", "")
+	t.Setenv("ALPACA_PROFILE", "")
+}
+
+// setenvOrUnset calls t.Setenv(k, v) when v is non-empty; otherwise ensures
+// the var is unset for the test. Needed because ALPACA_PAPER_TRADE has
+// different semantics when unset vs set to empty string.
+func setenvOrUnset(t *testing.T, k, v string) {
+	t.Helper()
+	if v == "" {
+		_ = os.Unsetenv(k)
+		return
+	}
+	t.Setenv(k, v)
 }
 
 func TestSaveAndLoadProfile(t *testing.T) {
 	withTempDir(t)
 
+	paper := true
 	p := &Profile{
-		APIKey:    "PK123",
-		SecretKey: "SK456",
-		BaseURL:   "https://paper-api.alpaca.markets",
-		DataURL:   "https://data.alpaca.markets",
+		APIKey:     "PK123",
+		SecretKey:  "SK456",
+		PaperTrade: &paper,
 	}
 
 	if err := SaveProfile("test", p); err != nil {
@@ -33,8 +49,8 @@ func TestSaveAndLoadProfile(t *testing.T) {
 	if loaded.SecretKey != "SK456" {
 		t.Errorf("SecretKey = %q, want SK456", loaded.SecretKey)
 	}
-	if loaded.BaseURL != "https://paper-api.alpaca.markets" {
-		t.Errorf("BaseURL = %q", loaded.BaseURL)
+	if loaded.PaperTrade == nil || !*loaded.PaperTrade {
+		t.Errorf("PaperTrade = %v, want &true", loaded.PaperTrade)
 	}
 }
 
@@ -136,13 +152,17 @@ func TestSaveAndLoadGlobalConfig(t *testing.T) {
 	}
 }
 
-func TestLoad_EnvVarsOverrideProfile(t *testing.T) {
+// TestLoad_EnvAPIKeysBeatProfileOAuth guards the core behavior change:
+// env API keys now win over a profile's OAuth token. Before atomic bundles,
+// the profile OAuth token silently took precedence, which was the footgun
+// we set out to fix.
+func TestLoad_EnvAPIKeysBeatProfileOAuth(t *testing.T) {
 	withTempDir(t)
 
+	paper := true
 	_ = SaveProfile("test", &Profile{
-		APIKey:    "profile-key",
-		SecretKey: "profile-secret",
-		BaseURL:   "https://paper-api.alpaca.markets",
+		AccessToken: "oauth-from-profile",
+		PaperTrade:  &paper,
 	})
 	_ = SaveGlobalConfig(&Config{DefaultProfile: "test"})
 
@@ -153,19 +173,273 @@ func TestLoad_EnvVarsOverrideProfile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
-	if r.APIKey != "env-key" {
-		t.Errorf("APIKey = %q, want env-key (env should override profile)", r.APIKey)
+	if r.Source != SourceEnvAPIKey {
+		t.Errorf("Source = %q, want %q", r.Source, SourceEnvAPIKey)
 	}
-	if r.SecretKey != "env-secret" {
-		t.Errorf("SecretKey = %q, want env-secret", r.SecretKey)
+	if r.APIKey != "env-key" || r.SecretKey != "env-secret" {
+		t.Errorf("got APIKey=%q Secret=%q", r.APIKey, r.SecretKey)
+	}
+	if r.AccessToken != "" {
+		t.Errorf("AccessToken should be empty when env API keys win, got %q", r.AccessToken)
+	}
+}
+
+// TestLoad_PartialEnvFallsThroughToProfile verifies that a half-bundle
+// (just ALPACA_API_KEY without its secret) is treated as absent, not merged.
+// This prevents silent field-level mixing across sources.
+func TestLoad_PartialEnvFallsThroughToProfile(t *testing.T) {
+	withTempDir(t)
+
+	_ = SaveProfile("test", &Profile{
+		APIKey:    "profile-key",
+		SecretKey: "profile-secret",
+	})
+	_ = SaveGlobalConfig(&Config{DefaultProfile: "test"})
+
+	t.Setenv("ALPACA_API_KEY", "env-key")
+
+	r, err := Load("", "")
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if r.Source != SourceProfileAPIKey {
+		t.Errorf("Source = %q, want %q", r.Source, SourceProfileAPIKey)
+	}
+	if r.APIKey != "profile-key" {
+		t.Errorf("APIKey = %q, want profile-key (no field mixing)", r.APIKey)
+	}
+}
+
+// TestLoad_EnvCredsDefaultToPaper verifies the safe default: env-sourced
+// credentials without an explicit URL go to paper, regardless of what the
+// default profile's paper_trade flag says (we ignore profile URL state
+// entirely when env creds win).
+func TestLoad_EnvCredsDefaultToPaper(t *testing.T) {
+	withTempDir(t)
+
+	live := false
+	_ = SaveProfile("test", &Profile{
+		APIKey:     "profile-key",
+		SecretKey:  "profile-secret",
+		PaperTrade: &live,
+	})
+	_ = SaveGlobalConfig(&Config{DefaultProfile: "test"})
+
+	t.Setenv("ALPACA_API_KEY", "env-key")
+	t.Setenv("ALPACA_SECRET_KEY", "env-secret")
+
+	r, err := Load("", "")
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if r.BaseURL != "https://paper-api.alpaca.markets" {
+		t.Errorf("BaseURL = %q, want paper default", r.BaseURL)
+	}
+}
+
+func TestLoad_ProfileLiveGoesLive(t *testing.T) {
+	withTempDir(t)
+
+	live := false
+	_ = SaveProfile("test", &Profile{
+		APIKey:     "profile-key",
+		SecretKey:  "profile-secret",
+		PaperTrade: &live,
+	})
+	_ = SaveGlobalConfig(&Config{DefaultProfile: "test"})
+
+	r, err := Load("", "")
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if r.BaseURL != "https://api.alpaca.markets" {
+		t.Errorf("BaseURL = %q, want live URL", r.BaseURL)
+	}
+	if r.Source != SourceProfileAPIKey {
+		t.Errorf("Source = %q, want %q", r.Source, SourceProfileAPIKey)
+	}
+}
+
+func TestLoad_ProfilePaperGoesPaper(t *testing.T) {
+	withTempDir(t)
+
+	paper := true
+	_ = SaveProfile("test", &Profile{
+		APIKey:     "profile-key",
+		SecretKey:  "profile-secret",
+		PaperTrade: &paper,
+	})
+	_ = SaveGlobalConfig(&Config{DefaultProfile: "test"})
+
+	r, err := Load("", "")
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if r.BaseURL != "https://paper-api.alpaca.markets" {
+		t.Errorf("BaseURL = %q, want paper URL", r.BaseURL)
+	}
+}
+
+// TestLoad_ProfileWithoutPaperTradeDefaultsToPaper covers legacy profiles
+// that predate the paper_trade field (or any that were saved with it missing).
+// Missing is a safe default - paper, never live.
+func TestLoad_ProfileWithoutPaperTradeDefaultsToPaper(t *testing.T) {
+	withTempDir(t)
+
+	_ = SaveProfile("test", &Profile{
+		APIKey:    "profile-key",
+		SecretKey: "profile-secret",
+	})
+	_ = SaveGlobalConfig(&Config{DefaultProfile: "test"})
+
+	r, err := Load("", "")
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if r.BaseURL != "https://paper-api.alpaca.markets" {
+		t.Errorf("BaseURL = %q, want paper default", r.BaseURL)
+	}
+}
+
+// TestLoad_PaperTradeEnvOverridesProfile verifies ALPACA_PAPER_TRADE beats
+// whatever the profile says - the env var is the top rung of URL resolution.
+func TestLoad_PaperTradeEnvOverridesProfile(t *testing.T) {
+	withTempDir(t)
+
+	live := false
+	_ = SaveProfile("test", &Profile{
+		APIKey:     "profile-key",
+		SecretKey:  "profile-secret",
+		PaperTrade: &live,
+	})
+	_ = SaveGlobalConfig(&Config{DefaultProfile: "test"})
+
+	t.Setenv("ALPACA_PAPER_TRADE", "true")
+
+	r, err := Load("", "")
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if r.BaseURL != "https://paper-api.alpaca.markets" {
+		t.Errorf("BaseURL = %q, want paper (env overrides live profile)", r.BaseURL)
+	}
+}
+
+// TestLoad_PaperTradeFalseSwitchesToLive exercises the MCP-aligned boolean
+// env var. Only case-insensitive "true" means paper; anything else - "False",
+// "no", "0", "anything" - means live.
+func TestLoad_PaperTradeFalseSwitchesToLive(t *testing.T) {
+	for _, tc := range []struct {
+		value string
+		want  string
+	}{
+		{"true", "https://paper-api.alpaca.markets"},
+		{"True", "https://paper-api.alpaca.markets"},
+		{"TRUE", "https://paper-api.alpaca.markets"},
+		{"false", "https://api.alpaca.markets"},
+		{"False", "https://api.alpaca.markets"},
+		{"0", "https://api.alpaca.markets"},
+		{"no", "https://api.alpaca.markets"},
+	} {
+		t.Run(tc.value, func(t *testing.T) {
+			withTempDir(t)
+			t.Setenv("ALPACA_API_KEY", "env-key")
+			t.Setenv("ALPACA_SECRET_KEY", "env-secret")
+			t.Setenv("ALPACA_PAPER_TRADE", tc.value)
+
+			r, err := Load("", "")
+			if err != nil {
+				t.Fatalf("Load: %v", err)
+			}
+			if r.BaseURL != tc.want {
+				t.Errorf("ALPACA_PAPER_TRADE=%q -> BaseURL=%q, want %q", tc.value, r.BaseURL, tc.want)
+			}
+		})
+	}
+}
+
+func TestLoad_PaperTradeUnsetKeepsPaperDefault(t *testing.T) {
+	withTempDir(t)
+	setenvOrUnset(t, "ALPACA_PAPER_TRADE", "")
+	t.Setenv("ALPACA_API_KEY", "env-key")
+	t.Setenv("ALPACA_SECRET_KEY", "env-secret")
+
+	r, err := Load("", "")
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if r.BaseURL != "https://paper-api.alpaca.markets" {
+		t.Errorf("unset ALPACA_PAPER_TRADE -> BaseURL=%q, want paper", r.BaseURL)
+	}
+}
+
+// TestLoad_AccessTokenEnvIgnored guards against the removed ALPACA_ACCESS_TOKEN
+// env var being resurrected. OAuth tokens only come from profile files.
+func TestLoad_AccessTokenEnvIgnored(t *testing.T) {
+	withTempDir(t)
+	t.Setenv("ALPACA_ACCESS_TOKEN", "should-be-ignored")
+	_ = SaveGlobalConfig(&Config{DefaultProfile: "paper"})
+
+	r, err := Load("", "")
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if r.AccessToken != "" {
+		t.Errorf("ALPACA_ACCESS_TOKEN should not be read, got %q", r.AccessToken)
+	}
+	if r.Source != SourceNone {
+		t.Errorf("Source = %q, want %q (env access token must not populate credentials)", r.Source, SourceNone)
+	}
+}
+
+func TestLoad_NoCredentialsReturnsSourceNone(t *testing.T) {
+	withTempDir(t)
+
+	r, err := Load("", "")
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if r.Source != SourceNone {
+		t.Errorf("Source = %q, want %q", r.Source, SourceNone)
+	}
+	if r.HasCredentials() {
+		t.Error("HasCredentials should be false with no creds configured")
+	}
+	if err := r.Validate(); err == nil {
+		t.Error("Validate should error with no credentials")
+	}
+}
+
+func TestLoad_ProfileOAuthSource(t *testing.T) {
+	withTempDir(t)
+	paper := true
+	_ = SaveProfile("test", &Profile{
+		AccessToken: "oauth-token",
+		Scopes:      "trading data",
+		PaperTrade:  &paper,
+	})
+	_ = SaveGlobalConfig(&Config{DefaultProfile: "test"})
+
+	r, err := Load("", "")
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if r.Source != SourceProfileOAuth {
+		t.Errorf("Source = %q, want %q", r.Source, SourceProfileOAuth)
+	}
+	if !r.IsOAuth() {
+		t.Error("IsOAuth should be true")
+	}
+	if r.Scopes != "trading data" {
+		t.Errorf("Scopes = %q", r.Scopes)
 	}
 }
 
 func TestLoad_ProfileFlagOverridesDefault(t *testing.T) {
 	withTempDir(t)
 
-	_ = SaveProfile("paper", &Profile{APIKey: "paper-key"})
-	_ = SaveProfile("live", &Profile{APIKey: "live-key"})
+	_ = SaveProfile("paper", &Profile{APIKey: "paper-key", SecretKey: "paper-secret"})
+	_ = SaveProfile("live", &Profile{APIKey: "live-key", SecretKey: "live-secret"})
 	_ = SaveGlobalConfig(&Config{DefaultProfile: "paper"})
 
 	r, err := Load("live", "")
@@ -223,42 +497,11 @@ func TestLoadProfile_CorruptedYAML(t *testing.T) {
 	}
 }
 
-func TestLoad_EnvOverridesEverything(t *testing.T) {
-	withTempDir(t)
-
-	_ = SaveProfile("envtest", &Profile{
-		APIKey:    "profile-key",
-		SecretKey: "profile-secret",
-		BaseURL:   "https://profile-url.example.com",
-		DataURL:   "https://profile-data.example.com",
-	})
-	_ = SaveGlobalConfig(&Config{DefaultProfile: "envtest"})
-
-	t.Setenv("ALPACA_API_KEY", "env-key")
-	t.Setenv("ALPACA_SECRET_KEY", "env-secret")
-	t.Setenv("ALPACA_BASE_URL", "https://env-url.example.com")
-	t.Setenv("ALPACA_DATA_URL", "https://env-data.example.com")
-
-	r, err := Load("", "")
-	if err != nil {
-		t.Fatalf("Load: %v", err)
-	}
-	if r.APIKey != "env-key" {
-		t.Errorf("APIKey = %q, want env-key", r.APIKey)
-	}
-	if r.SecretKey != "env-secret" {
-		t.Errorf("SecretKey = %q, want env-secret", r.SecretKey)
-	}
-	if r.BaseURL != "https://env-url.example.com" {
-		t.Errorf("BaseURL = %q, want env URL", r.BaseURL)
-	}
-	if r.DataURL != "https://env-data.example.com" {
-		t.Errorf("DataURL = %q, want env URL", r.DataURL)
-	}
-}
-
 func TestLoad_MissingConfigDir(t *testing.T) {
 	t.Setenv("ALPACA_CONFIG_DIR", "/nonexistent/path/that/doesnt/exist")
+	t.Setenv("ALPACA_API_KEY", "")
+	t.Setenv("ALPACA_SECRET_KEY", "")
+	setenvOrUnset(t, "ALPACA_PAPER_TRADE", "")
 
 	r, err := Load("", "")
 	if err != nil {

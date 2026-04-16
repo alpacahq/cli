@@ -34,7 +34,7 @@ var profileLoginCmd = &cobra.Command{
   alpaca profile login --api-key          # API key/secret login
   alpaca profile login --api-key --live   # API keys for live trading
   alpaca profile login --api-key --key PKXXXXXXXX --secret XXXXXXXX
-  alpaca profile login --name dev --base-url https://custom-api.example.com`,
+  alpaca profile login --api-key --live --name prod`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		useAPIKey := cmdutil.Bool(cmd, "api-key")
 		if useAPIKey {
@@ -50,7 +50,6 @@ func loginWithOAuth(cmd *cobra.Command) error {
 	}
 
 	name := cmdutil.Str(cmd, "name")
-	dataURL := cmdutil.Str(cmd, "data-url")
 	noValidate := cmdutil.Bool(cmd, "no-validate")
 	scopeFlag := cmdutil.Str(cmd, "scope")
 
@@ -58,11 +57,8 @@ func loginWithOAuth(cmd *cobra.Command) error {
 		name = defaultProfileName
 	}
 
-	baseURL, err := resolveBaseURLFlags(cmd)
-	if err != nil {
-		return err
-	}
-
+	paperTrade := true
+	baseURL := config.ResolveBaseURL(config.EnvPaper)
 	env := defaultProfileName
 
 	scope := oauth.DefaultScopes
@@ -94,8 +90,7 @@ func loginWithOAuth(cmd *cobra.Command) error {
 	p := &config.Profile{
 		AccessToken: token.AccessToken,
 		Scopes:      token.Scope,
-		BaseURL:     baseURL,
-		DataURL:     dataURL,
+		PaperTrade:  &paperTrade,
 	}
 	if err := config.SaveProfile(name, p); err != nil {
 		return fmt.Errorf("saving profile: %w", err)
@@ -112,6 +107,7 @@ func loginWithOAuth(cmd *cobra.Command) error {
 		fmt.Fprintf(os.Stderr, "  Scopes: %s\n", token.Scope)
 	}
 	fmt.Fprintf(os.Stderr, "  Credentials stored in %s/profiles/\n", config.Dir())
+	warnEnvShadowsProfile()
 	return nil
 }
 
@@ -153,17 +149,18 @@ func loginWithAPIKey(cmd *cobra.Command) error {
 	key := cmdutil.Str(cmd, "key")
 	secret := cmdutil.Str(cmd, "secret")
 	name := cmdutil.Str(cmd, "name")
-	dataURL := cmdutil.Str(cmd, "data-url")
 	noValidate := cmdutil.Bool(cmd, "no-validate")
 
 	if name == "" {
 		name = defaultProfileName
 	}
 
-	baseURL, err := resolveBaseURLFlags(cmd)
-	if err != nil {
-		return err
+	paperTrade := !cmdutil.Bool(cmd, "live")
+	envName := config.EnvPaper
+	if !paperTrade {
+		envName = config.EnvLive
 	}
+	baseURL := config.ResolveBaseURL(envName)
 
 	if cmdutil.Changed(cmd, "secret") {
 		fmt.Fprintln(os.Stderr, "Warning: passing secrets via flags may expose them in shell history.")
@@ -204,10 +201,9 @@ func loginWithAPIKey(cmd *cobra.Command) error {
 	}
 
 	p := &config.Profile{
-		APIKey:    key,
-		SecretKey: secret,
-		BaseURL:   baseURL,
-		DataURL:   dataURL,
+		APIKey:     key,
+		SecretKey:  secret,
+		PaperTrade: &paperTrade,
 	}
 	if err := config.SaveProfile(name, p); err != nil {
 		return fmt.Errorf("saving profile: %w", err)
@@ -222,7 +218,19 @@ func loginWithAPIKey(cmd *cobra.Command) error {
 	color.Green("✓ Logged in to %s (%s)", name, baseURL)
 	fmt.Fprintf(os.Stderr, "  Credentials stored in %s/profiles/\n", config.Dir())
 	fmt.Fprintln(os.Stderr, "  For CI/automation, use ALPACA_API_KEY and ALPACA_SECRET_KEY env vars instead.")
+	warnEnvShadowsProfile()
 	return nil
+}
+
+// warnEnvShadowsProfile warns when ALPACA_API_KEY + ALPACA_SECRET_KEY are set
+// in the environment, because those env vars beat any stored profile. Without
+// this warning, users who just logged in would not realize their env vars -
+// possibly pointing at a different account - are what commands actually use.
+func warnEnvShadowsProfile() {
+	if os.Getenv("ALPACA_API_KEY") != "" && os.Getenv("ALPACA_SECRET_KEY") != "" {
+		color.Yellow("  ! ALPACA_API_KEY is set in your environment; it will override this profile on every command.")
+		fmt.Fprintln(os.Stderr, "    Unset it (`unset ALPACA_API_KEY ALPACA_SECRET_KEY`) to use the profile you just saved.")
+	}
 }
 
 var profileLogoutCmd = &cobra.Command{
@@ -312,11 +320,9 @@ func init() {
 	profileLoginCmd.Flags().String("secret", "", "Secret key (requires --api-key)")
 	profileLoginCmd.Flags().String("scope", "", "OAuth scopes, comma-separated (default: all)")
 	profileLoginCmd.Flags().String("name", "", "Profile name (default: paper)")
-	profileLoginCmd.Flags().Bool("paper", false, "Use paper trading URL (default)")
-	profileLoginCmd.Flags().Bool("live", false, "Use live trading URL")
-	profileLoginCmd.Flags().String("base-url", "", "Custom API base URL")
-	profileLoginCmd.MarkFlagsMutuallyExclusive("paper", "live", "base-url")
-	profileLoginCmd.Flags().String("data-url", "", "Custom market data API URL")
+	profileLoginCmd.Flags().Bool("paper", false, "Target paper trading (default)")
+	profileLoginCmd.Flags().Bool("live", false, "Target live trading")
+	profileLoginCmd.MarkFlagsMutuallyExclusive("paper", "live")
 	profileLoginCmd.Flags().Bool("no-validate", false, "Skip credential validation")
 
 	profileCmd.AddCommand(profileLoginCmd)
@@ -338,22 +344,12 @@ func validateCredentials(baseURL string, headers map[string]string) error {
 	_ = resp.Body.Close()
 
 	if resp.StatusCode == 401 || resp.StatusCode == 403 {
-		return fmt.Errorf("invalid credentials (validated against %s)\nHint: use --base-url to specify the correct API endpoint, or --no-validate to skip", baseURL)
+		return fmt.Errorf("invalid credentials (validated against %s)\nHint: confirm --paper/--live matches the account, or use --no-validate to skip", baseURL)
 	}
 	if resp.StatusCode >= 400 {
 		return fmt.Errorf("unexpected response: HTTP %d from %s", resp.StatusCode, baseURL)
 	}
 	return nil
-}
-
-func resolveBaseURLFlags(cmd *cobra.Command) (string, error) {
-	if cmdutil.Bool(cmd, "live") {
-		return config.ResolveBaseURL(config.EnvLive), nil
-	}
-	if u := cmdutil.Str(cmd, "base-url"); u != "" {
-		return config.ResolveBaseURL(u), nil
-	}
-	return config.ResolveBaseURL(defaultProfileName), nil
 }
 
 func loadOrCreateGlobal() *config.Config {

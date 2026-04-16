@@ -12,6 +12,22 @@ import (
 const (
 	EnvLive  = "live"
 	EnvPaper = "paper"
+
+	paperTradingURL = "https://paper-api.alpaca.markets"
+	liveTradingURL  = "https://api.alpaca.markets"
+	marketDataURL   = "https://data.alpaca.markets"
+)
+
+// Source identifies where the resolved credentials came from.
+// Credentials resolve as an atomic bundle - never mixed across sources -
+// so the winning source fully determines which auth headers are sent.
+type Source string
+
+const (
+	SourceNone          Source = ""
+	SourceEnvAPIKey     Source = "env-apikey"
+	SourceProfileOAuth  Source = "profile-oauth"
+	SourceProfileAPIKey Source = "profile-apikey"
 )
 
 type Config struct {
@@ -25,11 +41,10 @@ type Profile struct {
 	SecretKey   string `yaml:"secret_key"`
 	AccessToken string `yaml:"access_token,omitempty"`
 	Scopes      string `yaml:"scopes,omitempty"`
-	BaseURL     string `yaml:"base_url"`
-	DataURL     string `yaml:"data_url"`
-	// Deprecated: kept for backwards compat with existing profile files.
-	// New profiles store base_url directly.
-	Environment string `yaml:"environment,omitempty"`
+	// PaperTrade records whether this profile targets paper or live trading.
+	// Pointer so we can distinguish "not specified" (nil -> safe paper default)
+	// from "explicitly live" (false).
+	PaperTrade *bool `yaml:"paper_trade,omitempty"`
 }
 
 type Resolved struct {
@@ -42,6 +57,7 @@ type Resolved struct {
 	Output      string
 	Color       string
 	ProfileName string
+	Source      Source
 }
 
 func Dir() string {
@@ -52,6 +68,21 @@ func Dir() string {
 	return filepath.Join(home, ".config", "alpaca")
 }
 
+// Load resolves credentials and URLs from env vars and the named profile.
+//
+// Credentials resolve as an atomic bundle - the first complete source wins,
+// and field-level mixing across sources is not allowed. Order:
+//  1. env ALPACA_API_KEY + ALPACA_SECRET_KEY (both required)
+//  2. profile access_token
+//  3. profile api_key + secret_key (both required)
+//
+// Paper-vs-live resolves independently:
+//  1. ALPACA_PAPER_TRADE boolean (matches the MCP server's env var)
+//  2. profile.paper_trade (only when credentials came from the profile)
+//  3. paper default
+//
+// The paper default is deliberate: scripts and agents that forget to opt
+// into live should hit paper, not live.
 func Load(profileFlag, outputFlag string) (*Resolved, error) {
 	cfg := loadGlobalConfig()
 	profileName := resolve(profileFlag, os.Getenv("ALPACA_PROFILE"), cfg.DefaultProfile, EnvPaper)
@@ -59,43 +90,74 @@ func Load(profileFlag, outputFlag string) (*Resolved, error) {
 
 	r := &Resolved{
 		ProfileName: profileName,
-		APIKey:      resolve(os.Getenv("ALPACA_API_KEY"), profile.APIKey),
-		SecretKey:   resolve(os.Getenv("ALPACA_SECRET_KEY"), profile.SecretKey),
-		AccessToken: resolve(os.Getenv("ALPACA_ACCESS_TOKEN"), profile.AccessToken),
-		Scopes:      profile.Scopes,
-		BaseURL:     resolve(os.Getenv("ALPACA_BASE_URL"), profile.BaseURL),
-		DataURL:     resolve(os.Getenv("ALPACA_DATA_URL"), profile.DataURL),
+		DataURL:     marketDataURL,
 		Output:      resolve(outputFlag, os.Getenv("ALPACA_OUTPUT"), cfg.Output, "json"),
 		Color:       resolve(cfg.Color, "auto"),
 	}
 
-	// Backwards compat: old profiles may have environment instead of base_url
-	if r.BaseURL == "" {
-		env := resolve(os.Getenv("ALPACA_ENVIRONMENT"), profile.Environment)
-		r.BaseURL = ResolveBaseURL(env)
-	}
-	if r.DataURL == "" {
-		r.DataURL = "https://data.alpaca.markets"
-	}
+	resolveCredentials(r, &profile)
+	resolveBaseURL(r, &profile)
 
 	return r, nil
 }
 
+// resolveCredentials picks an atomic credential bundle - env or profile,
+// never a mix. Sets Source to record which bundle won.
+func resolveCredentials(r *Resolved, profile *Profile) {
+	envKey := os.Getenv("ALPACA_API_KEY")
+	envSecret := os.Getenv("ALPACA_SECRET_KEY")
+
+	switch {
+	case envKey != "" && envSecret != "":
+		r.APIKey = envKey
+		r.SecretKey = envSecret
+		r.Source = SourceEnvAPIKey
+	case profile.AccessToken != "":
+		r.AccessToken = profile.AccessToken
+		r.Scopes = profile.Scopes
+		r.Source = SourceProfileOAuth
+	case profile.APIKey != "" && profile.SecretKey != "":
+		r.APIKey = profile.APIKey
+		r.SecretKey = profile.SecretKey
+		r.Source = SourceProfileAPIKey
+	default:
+		r.Source = SourceNone
+	}
+}
+
+// resolveBaseURL determines the trading API URL. Defaults to paper unless
+// something explicitly asks for live. Profile credentials honor the profile's
+// paper_trade field.
+func resolveBaseURL(r *Resolved, profile *Profile) {
+	if pt := os.Getenv("ALPACA_PAPER_TRADE"); pt != "" {
+		if isPaper(pt) {
+			r.BaseURL = ResolveBaseURL(EnvPaper)
+		} else {
+			r.BaseURL = ResolveBaseURL(EnvLive)
+		}
+		return
+	}
+	profileIsLive := (r.Source == SourceProfileOAuth || r.Source == SourceProfileAPIKey) &&
+		profile.PaperTrade != nil && !*profile.PaperTrade
+	if profileIsLive {
+		r.BaseURL = ResolveBaseURL(EnvLive)
+		return
+	}
+	r.BaseURL = ResolveBaseURL(EnvPaper)
+}
+
+// isPaper interprets ALPACA_PAPER_TRADE. Matches MCP server semantics:
+// case-insensitive "true" = paper, anything else = live.
+func isPaper(v string) bool {
+	return strings.EqualFold(strings.TrimSpace(v), "true")
+}
+
 func (r *Resolved) HasCredentials() bool {
-	return (r.APIKey != "" && r.SecretKey != "") || r.AccessToken != ""
+	return r.Source != SourceNone
 }
 
 func (r *Resolved) IsOAuth() bool {
-	return r.AccessToken != ""
-}
-
-func (r *Resolved) HasScope(s string) bool {
-	for _, scope := range strings.Fields(r.Scopes) {
-		if scope == s {
-			return true
-		}
-	}
-	return false
+	return r.Source == SourceProfileOAuth
 }
 
 func (r *Resolved) Validate() error {
@@ -111,9 +173,9 @@ func (r *Resolved) Validate() error {
 func ResolveBaseURL(value string) string {
 	switch strings.ToLower(strings.TrimSpace(value)) {
 	case EnvLive:
-		return "https://api.alpaca.markets"
+		return liveTradingURL
 	case "", EnvPaper:
-		return "https://paper-api.alpaca.markets"
+		return paperTradingURL
 	default:
 		return strings.TrimRight(value, "/")
 	}
