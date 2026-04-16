@@ -224,7 +224,7 @@ alpaca position list
 | `alpaca profile switch <name>` | Switch between profiles |
 | `alpaca api [METHOD] <path>` | Raw API request (GET, POST, PATCH, DELETE) |
 | `alpaca doctor` | Check config and API connectivity |
-| `alpaca update` | Check for updates and show upgrade instructions |
+| `alpaca update` | Check for updates and prompt to install (`--check` for JSON, `--yes` to skip prompt) |
 | `alpaca version` | Print version (`alpaca --version` also works) |
 
 Every command supports `--help` for full flag documentation.
@@ -536,8 +536,9 @@ Check for updates explicitly when you want upgrade guidance. The upgrade command
 | Homebrew | `brew upgrade alpacahq/tap/cli` |
 
 ```bash
-alpaca update          # Check for updates and show upgrade command
-alpaca update --check  # Machine-readable update check (JSON)
+alpaca update          # Check for updates; prompt to install if available
+alpaca update --yes    # Check and install without prompting
+alpaca update --check  # Machine-readable update check (JSON, no prompt)
 ```
 
 ## License

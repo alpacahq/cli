@@ -46,7 +46,7 @@ func detectInstallMethod() string {
 func upgradeCommand(method string) string {
 	switch method {
 	case installHomebrew:
-		return "brew upgrade alpaca"
+		return "brew upgrade alpacahq/tap/cli"
 	default:
 		return "go install github.com/alpacahq/cli/cmd/alpaca@latest"
 	}

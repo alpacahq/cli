@@ -98,7 +98,7 @@ var rootCmd = &cobra.Command{
 	Short: "CLI for Alpaca Trading API",
 	Long: `Trade stocks & crypto, access market data, and manage your Alpaca account from the command line.
 
-To check for updates:  alpaca update --check`,
+To update:  alpaca update`,
 	SilenceUsage:  true,
 	SilenceErrors: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -122,6 +122,7 @@ To check for updates:  alpaca update --check`,
 			fmt.Fprintln(cmd.OutOrStdout())
 			warnEnvShadowsProfile(cfg.ProfileName, "")
 		}
+		printUpdateNoticeIfAvailable(cmd.OutOrStdout(), 2*time.Second)
 		return nil
 	},
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {

@@ -86,14 +86,14 @@ var doctorCmd = &cobra.Command{
 		}
 
 		fmt.Fprintf(w, "\nUpdate:\n")
-		latest, err := getLatestVersion()
+		latest, err := getLatestVersion(10 * time.Second)
 		if err != nil {
 			fmt.Fprintf(w, "  - could not check for updates: %v\n", err)
 		} else if !versionNewer(latest, version) {
 			printCheck(w, true, fmt.Sprintf("up to date (%s)", version))
 		} else {
 			method := detectInstallMethod()
-			fmt.Fprintf(w, "  - update available: %s → %s — run `%s`\n",
+			fmt.Fprintf(w, "  - update available: %s -> %s, run `%s`\n",
 				version, latest, upgradeCommand(method))
 		}
 

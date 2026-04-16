@@ -470,6 +470,7 @@ alpaca profile logout
 alpaca profile switch
 alpaca update
   --check (bool)
+  --yes (bool)
 alpaca version
 alpaca wallet list
   --asset (string)

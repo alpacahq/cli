@@ -215,13 +215,14 @@ This returns structured output:
 {"current":"0.0.1","latest":"0.0.2","update_available":true,"install_method":"goinstall","update_command":"go install github.com/alpacahq/cli/cmd/alpaca@latest"}
 ```
 
-If `update_available` is `true`, run the `update_command` value to upgrade.
+If `update_available` is `true`, run the `update_command` value to upgrade. Or invoke `alpaca update --yes` to run the upgrade non-interactively.
 
 Manual commands:
 
 ```bash
-alpaca update              # check for updates and show upgrade command
-alpaca update --check      # machine-readable update check (JSON)
+alpaca update              # check, prompt, then run the upgrade
+alpaca update --yes        # check and upgrade without prompting
+alpaca update --check      # machine-readable update check (JSON, no prompt)
 ```
 
 ## Discovering commands
