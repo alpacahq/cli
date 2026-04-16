@@ -257,7 +257,7 @@ Credentials are stored in `~/.config/alpaca/profiles/`.
 |----------|-------------|
 | `ALPACA_API_KEY` | API key. Must be set together with `ALPACA_SECRET_KEY`. |
 | `ALPACA_SECRET_KEY` | Secret key. Must be set together with `ALPACA_API_KEY`. |
-| `ALPACA_PAPER_TRADE` | `true` (default) routes to paper; any other value routes to live |
+| `ALPACA_LIVE_TRADE` | `true` routes to live; anything else (unset, empty, `false`) routes to paper |
 | `ALPACA_PROFILE` | Profile name to use |
 | `ALPACA_OUTPUT` | Default output format (`json`, `csv`) |
 | `ALPACA_CONFIG_DIR` | Config directory (default: `~/.config/alpaca`) |
@@ -279,13 +279,13 @@ A partial env bundle (e.g., only `ALPACA_API_KEY`) falls through to the profile 
 
 **OAuth tokens are not readable from the environment.** Obtain them via `alpaca profile login`; they're stored in your profile YAML.
 
-**Paper vs live** resolves independently of credentials:
+**Paper vs live** resolves independently of credentials, and live is strictly opt-in:
 
-1. `ALPACA_PAPER_TRADE` - `true` (default) -> paper, anything else -> live
-2. Profile `paper_trade` - set by `alpaca profile login --live` vs `--paper`
+1. `ALPACA_LIVE_TRADE` - `true` -> live; anything else (including `false`) -> paper
+2. Profile `live_trade` - set to `true` by `alpaca profile login --live`; omitted for paper
 3. Paper trading (safe default when nothing else specifies)
 
-The paper default is deliberate: scripts and agents that forget to opt into live hit paper, not live.
+The paper default is deliberate: scripts and agents that forget to opt into live hit paper, not live. Both the env var and the profile field use the same polarity so the unsafe path always requires an explicit truthy opt-in.
 
 ## Shell Completions
 
@@ -360,7 +360,7 @@ export ALPACA_SECRET_KEY=...
 Env API keys default to paper trading. To opt into live:
 
 ```bash
-export ALPACA_PAPER_TRADE=false
+export ALPACA_LIVE_TRADE=true
 ```
 
 OAuth tokens cannot be supplied via environment variables - use `alpaca profile login` to store them in a profile.

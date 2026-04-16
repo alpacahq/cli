@@ -82,7 +82,7 @@ func writeTestProfile(hasToken bool) error {
 	}
 
 	yaml := fmt.Sprintf(
-		"api_key: \"\"\nsecret_key: \"\"\naccess_token: %q\npaper_trade: true\n",
+		"api_key: \"\"\nsecret_key: \"\"\naccess_token: %q\n",
 		os.Getenv("ALPACA_TEST_ACCESS_TOKEN"),
 	)
 	if err := os.WriteFile(filepath.Join(profilesDir, testProfileName+".yaml"), []byte(yaml), 0o600); err != nil {
@@ -228,11 +228,12 @@ func requireArrayNonEmpty(t *testing.T, data []byte) []map[string]any {
 }
 
 func cliEnv() []string {
-	// Integration tests always run against the real paper API. No URL
-	// override mechanism - ALPACA_PAPER_TRADE=true (the default) is all
-	// the routing we need.
+	// Integration tests always run against the real paper API. Unsetting
+	// ALPACA_LIVE_TRADE (the default) is all the routing we need - live is
+	// strictly opt-in.
 	env := append(os.Environ(),
 		"ALPACA_CONFIG_DIR="+testConfigDir,
+		"ALPACA_LIVE_TRADE=",
 	)
 
 	if testProfile != "" {

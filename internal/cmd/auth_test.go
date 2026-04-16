@@ -49,7 +49,7 @@ func TestLogin_WarnsWhenEnvShadows(t *testing.T) {
 	t.Setenv("ALPACA_CONFIG_DIR", dir)
 	t.Setenv("ALPACA_API_KEY", "env-key")
 	t.Setenv("ALPACA_SECRET_KEY", "env-secret")
-	t.Setenv("ALPACA_PAPER_TRADE", "")
+	t.Setenv("ALPACA_LIVE_TRADE", "")
 	t.Setenv("ALPACA_PROFILE", "")
 
 	buf, cleanup := captureColorOutput(t)
@@ -80,7 +80,7 @@ func TestLogin_NoWarnWhenEnvUnset(t *testing.T) {
 	t.Setenv("ALPACA_CONFIG_DIR", dir)
 	t.Setenv("ALPACA_API_KEY", "")
 	t.Setenv("ALPACA_SECRET_KEY", "")
-	t.Setenv("ALPACA_PAPER_TRADE", "")
+	t.Setenv("ALPACA_LIVE_TRADE", "")
 	t.Setenv("ALPACA_PROFILE", "")
 
 	buf, cleanup := captureColorOutput(t)
@@ -104,12 +104,11 @@ func TestLogin_WarnTargetsNewProfile(t *testing.T) {
 	t.Setenv("ALPACA_CONFIG_DIR", dir)
 	t.Setenv("ALPACA_API_KEY", "env-key")
 	t.Setenv("ALPACA_SECRET_KEY", "env-secret")
-	t.Setenv("ALPACA_PAPER_TRADE", "")
+	t.Setenv("ALPACA_LIVE_TRADE", "")
 	t.Setenv("ALPACA_PROFILE", "")
 
-	paper := true
 	if err := config.SaveProfile("paper", &config.Profile{
-		APIKey: "pre-existing-key", SecretKey: "pre-existing-secret", PaperTrade: &paper,
+		APIKey: "pre-existing-key", SecretKey: "pre-existing-secret",
 	}); err != nil {
 		t.Fatalf("SaveProfile: %v", err)
 	}

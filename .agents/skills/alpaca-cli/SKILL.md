@@ -49,7 +49,7 @@ export ALPACA_API_KEY=PK...
 export ALPACA_SECRET_KEY=...
 ```
 
-Env API keys default to paper trading. For live, set `ALPACA_PAPER_TRADE=false`.
+Env API keys default to paper trading. For live, set `ALPACA_LIVE_TRADE=true`.
 
 When env API keys are set, they are the authoritative credentials - any profile on disk is ignored. OAuth tokens cannot be set via env var; use `alpaca profile login` to store them in a profile.
 
@@ -180,7 +180,7 @@ alpaca order list --jq '[.[] | {id, symbol, side, qty}]'
 |----------|-------------|
 | `ALPACA_API_KEY` | API key. Must be set together with `ALPACA_SECRET_KEY`. |
 | `ALPACA_SECRET_KEY` | Secret key. Must be set together with `ALPACA_API_KEY`. |
-| `ALPACA_PAPER_TRADE` | `true` (default) routes to paper; any other value routes to live |
+| `ALPACA_LIVE_TRADE` | `true` routes to live; anything else (unset, empty, `false`) routes to paper |
 | `ALPACA_PROFILE` | Profile name to use |
 | `ALPACA_OUTPUT` | Default output format (`json`, `csv`) |
 | `ALPACA_CONFIG_DIR` | Config directory (default: `~/.config/alpaca`) |
@@ -199,7 +199,7 @@ Credentials resolve as an atomic bundle (no field-level mixing). First complete 
 
 A partial env bundle (only one of the two) falls through to the profile. Env API keys always beat anything in a profile. OAuth tokens are not readable from env - use `alpaca profile login`.
 
-Paper vs live resolves independently: `ALPACA_PAPER_TRADE` > profile `paper_trade` > paper default. Env-sourced credentials ignore the profile's `paper_trade` field and default to paper unless `ALPACA_PAPER_TRADE` opts into live. Agents should set `ALPACA_PAPER_TRADE=false` explicitly when live trading is intended.
+Paper vs live resolves independently: `ALPACA_LIVE_TRADE` > profile `live_trade` > paper default. Env-sourced credentials ignore the profile's `live_trade` field and default to paper unless `ALPACA_LIVE_TRADE=true` opts into live. Agents should set `ALPACA_LIVE_TRADE=true` explicitly when live trading is intended; any other value (including `false`) keeps you on paper.
 
 ## Self-update
 

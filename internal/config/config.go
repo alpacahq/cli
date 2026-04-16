@@ -41,10 +41,11 @@ type Profile struct {
 	SecretKey   string `yaml:"secret_key"`
 	AccessToken string `yaml:"access_token,omitempty"`
 	Scopes      string `yaml:"scopes,omitempty"`
-	// PaperTrade records whether this profile targets paper or live trading.
-	// Pointer so we can distinguish "not specified" (nil -> safe paper default)
-	// from "explicitly live" (false).
-	PaperTrade *bool `yaml:"paper_trade,omitempty"`
+	// LiveTrade records whether this profile targets live trading. Pointer
+	// so we can distinguish "not specified" (nil -> safe paper default) from
+	// "explicitly paper" (false). Paper profiles omit the field entirely to
+	// keep YAML clean; live profiles set it to true.
+	LiveTrade *bool `yaml:"live_trade,omitempty"`
 }
 
 type Resolved struct {
@@ -77,12 +78,14 @@ func Dir() string {
 //  3. profile api_key + secret_key (both required)
 //
 // Paper-vs-live resolves independently:
-//  1. ALPACA_PAPER_TRADE boolean (matches the MCP server's env var)
-//  2. profile.paper_trade (only when credentials came from the profile)
+//  1. ALPACA_LIVE_TRADE boolean (truthy -> live, otherwise paper)
+//  2. profile.live_trade (only when credentials came from the profile)
 //  3. paper default
 //
 // The paper default is deliberate: scripts and agents that forget to opt
-// into live should hit paper, not live.
+// into live should hit paper, not live. Both the env var and the profile
+// field use "live" polarity so the unsafe path always requires an explicit
+// opt-in; unset/empty/false always means paper.
 func Load(profileFlag, outputFlag string) (*Resolved, error) {
 	cfg := loadGlobalConfig()
 	profileName := resolve(profileFlag, os.Getenv("ALPACA_PROFILE"), cfg.DefaultProfile, EnvPaper)
@@ -126,19 +129,19 @@ func resolveCredentials(r *Resolved, profile *Profile) {
 }
 
 // resolveBaseURL determines the trading API URL. Defaults to paper unless
-// something explicitly asks for live. Profile credentials honor the profile's
-// paper_trade field.
+// something explicitly opts into live. Profile credentials honor the
+// profile's live_trade field.
 func resolveBaseURL(r *Resolved, profile *Profile) {
-	if pt := os.Getenv("ALPACA_PAPER_TRADE"); pt != "" {
-		if isPaper(pt) {
-			r.BaseURL = ResolveBaseURL(EnvPaper)
-		} else {
+	if v := os.Getenv("ALPACA_LIVE_TRADE"); v != "" {
+		if isTrue(v) {
 			r.BaseURL = ResolveBaseURL(EnvLive)
+		} else {
+			r.BaseURL = ResolveBaseURL(EnvPaper)
 		}
 		return
 	}
 	profileIsLive := (r.Source == SourceProfileOAuth || r.Source == SourceProfileAPIKey) &&
-		profile.PaperTrade != nil && !*profile.PaperTrade
+		profile.LiveTrade != nil && *profile.LiveTrade
 	if profileIsLive {
 		r.BaseURL = ResolveBaseURL(EnvLive)
 		return
@@ -146,9 +149,11 @@ func resolveBaseURL(r *Resolved, profile *Profile) {
 	r.BaseURL = ResolveBaseURL(EnvPaper)
 }
 
-// isPaper interprets ALPACA_PAPER_TRADE. Matches MCP server semantics:
-// case-insensitive "true" = paper, anything else = live.
-func isPaper(v string) bool {
+// isTrue interprets ALPACA_LIVE_TRADE. Case-insensitive "true" means live;
+// any other value (including empty, "false", "yes", "1") means paper. The
+// strict "true" check mirrors common boolean env var conventions and makes
+// sure typos fall back to the safe default.
+func isTrue(v string) bool {
 	return strings.EqualFold(strings.TrimSpace(v), "true")
 }
 

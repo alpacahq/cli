@@ -12,12 +12,12 @@ func withTempDir(t *testing.T) {
 	t.Setenv("ALPACA_CONFIG_DIR", dir)
 	t.Setenv("ALPACA_API_KEY", "")
 	t.Setenv("ALPACA_SECRET_KEY", "")
-	t.Setenv("ALPACA_PAPER_TRADE", "")
+	t.Setenv("ALPACA_LIVE_TRADE", "")
 	t.Setenv("ALPACA_PROFILE", "")
 }
 
 // setenvOrUnset calls t.Setenv(k, v) when v is non-empty; otherwise ensures
-// the var is unset for the test. Needed because ALPACA_PAPER_TRADE has
+// the var is unset for the test. Needed because ALPACA_LIVE_TRADE has
 // different semantics when unset vs set to empty string.
 func setenvOrUnset(t *testing.T, k, v string) {
 	t.Helper()
@@ -31,11 +31,11 @@ func setenvOrUnset(t *testing.T, k, v string) {
 func TestSaveAndLoadProfile(t *testing.T) {
 	withTempDir(t)
 
-	paper := true
+	live := true
 	p := &Profile{
-		APIKey:     "PK123",
-		SecretKey:  "SK456",
-		PaperTrade: &paper,
+		APIKey:    "PK123",
+		SecretKey: "SK456",
+		LiveTrade: &live,
 	}
 
 	if err := SaveProfile("test", p); err != nil {
@@ -49,8 +49,8 @@ func TestSaveAndLoadProfile(t *testing.T) {
 	if loaded.SecretKey != "SK456" {
 		t.Errorf("SecretKey = %q, want SK456", loaded.SecretKey)
 	}
-	if loaded.PaperTrade == nil || !*loaded.PaperTrade {
-		t.Errorf("PaperTrade = %v, want &true", loaded.PaperTrade)
+	if loaded.LiveTrade == nil || !*loaded.LiveTrade {
+		t.Errorf("LiveTrade = %v, want &true", loaded.LiveTrade)
 	}
 }
 
@@ -159,10 +159,8 @@ func TestSaveAndLoadGlobalConfig(t *testing.T) {
 func TestLoad_EnvAPIKeysBeatProfileOAuth(t *testing.T) {
 	withTempDir(t)
 
-	paper := true
 	_ = SaveProfile("test", &Profile{
 		AccessToken: "oauth-from-profile",
-		PaperTrade:  &paper,
 	})
 	_ = SaveGlobalConfig(&Config{DefaultProfile: "test"})
 
@@ -212,16 +210,16 @@ func TestLoad_PartialEnvFallsThroughToProfile(t *testing.T) {
 
 // TestLoad_EnvCredsDefaultToPaper verifies the safe default: env-sourced
 // credentials without an explicit URL go to paper, regardless of what the
-// default profile's paper_trade flag says (we ignore profile URL state
+// default profile's live_trade flag says (we ignore profile URL state
 // entirely when env creds win).
 func TestLoad_EnvCredsDefaultToPaper(t *testing.T) {
 	withTempDir(t)
 
-	live := false
+	live := true
 	_ = SaveProfile("test", &Profile{
-		APIKey:     "profile-key",
-		SecretKey:  "profile-secret",
-		PaperTrade: &live,
+		APIKey:    "profile-key",
+		SecretKey: "profile-secret",
+		LiveTrade: &live,
 	})
 	_ = SaveGlobalConfig(&Config{DefaultProfile: "test"})
 
@@ -240,11 +238,11 @@ func TestLoad_EnvCredsDefaultToPaper(t *testing.T) {
 func TestLoad_ProfileLiveGoesLive(t *testing.T) {
 	withTempDir(t)
 
-	live := false
+	live := true
 	_ = SaveProfile("test", &Profile{
-		APIKey:     "profile-key",
-		SecretKey:  "profile-secret",
-		PaperTrade: &live,
+		APIKey:    "profile-key",
+		SecretKey: "profile-secret",
+		LiveTrade: &live,
 	})
 	_ = SaveGlobalConfig(&Config{DefaultProfile: "test"})
 
@@ -263,11 +261,11 @@ func TestLoad_ProfileLiveGoesLive(t *testing.T) {
 func TestLoad_ProfilePaperGoesPaper(t *testing.T) {
 	withTempDir(t)
 
-	paper := true
+	paper := false
 	_ = SaveProfile("test", &Profile{
-		APIKey:     "profile-key",
-		SecretKey:  "profile-secret",
-		PaperTrade: &paper,
+		APIKey:    "profile-key",
+		SecretKey: "profile-secret",
+		LiveTrade: &paper,
 	})
 	_ = SaveGlobalConfig(&Config{DefaultProfile: "test"})
 
@@ -280,10 +278,10 @@ func TestLoad_ProfilePaperGoesPaper(t *testing.T) {
 	}
 }
 
-// TestLoad_ProfileWithoutPaperTradeDefaultsToPaper covers legacy profiles
-// that predate the paper_trade field (or any that were saved with it missing).
-// Missing is a safe default - paper, never live.
-func TestLoad_ProfileWithoutPaperTradeDefaultsToPaper(t *testing.T) {
+// TestLoad_ProfileWithoutLiveTradeDefaultsToPaper covers profiles that omit
+// the live_trade field (the common case for paper profiles). Missing is a
+// safe default - paper, never live.
+func TestLoad_ProfileWithoutLiveTradeDefaultsToPaper(t *testing.T) {
 	withTempDir(t)
 
 	_ = SaveProfile("test", &Profile{
@@ -301,20 +299,20 @@ func TestLoad_ProfileWithoutPaperTradeDefaultsToPaper(t *testing.T) {
 	}
 }
 
-// TestLoad_PaperTradeEnvOverridesProfile verifies ALPACA_PAPER_TRADE beats
+// TestLoad_LiveTradeEnvOverridesProfile verifies ALPACA_LIVE_TRADE beats
 // whatever the profile says - the env var is the top rung of URL resolution.
-func TestLoad_PaperTradeEnvOverridesProfile(t *testing.T) {
+func TestLoad_LiveTradeEnvOverridesProfile(t *testing.T) {
 	withTempDir(t)
 
-	live := false
+	live := true
 	_ = SaveProfile("test", &Profile{
-		APIKey:     "profile-key",
-		SecretKey:  "profile-secret",
-		PaperTrade: &live,
+		APIKey:    "profile-key",
+		SecretKey: "profile-secret",
+		LiveTrade: &live,
 	})
 	_ = SaveGlobalConfig(&Config{DefaultProfile: "test"})
 
-	t.Setenv("ALPACA_PAPER_TRADE", "true")
+	t.Setenv("ALPACA_LIVE_TRADE", "false")
 
 	r, err := Load("", "")
 	if err != nil {
@@ -325,42 +323,44 @@ func TestLoad_PaperTradeEnvOverridesProfile(t *testing.T) {
 	}
 }
 
-// TestLoad_PaperTradeFalseSwitchesToLive exercises the MCP-aligned boolean
-// env var. Only case-insensitive "true" means paper; anything else - "False",
-// "no", "0", "anything" - means live.
-func TestLoad_PaperTradeFalseSwitchesToLive(t *testing.T) {
+// TestLoad_LiveTradeEnvValues exercises the boolean env var. Only
+// case-insensitive "true" means live; anything else - "False", "no", "0",
+// "anything" - means paper. Typos fall through to the safe default.
+func TestLoad_LiveTradeEnvValues(t *testing.T) {
 	for _, tc := range []struct {
 		value string
 		want  string
 	}{
-		{"true", "https://paper-api.alpaca.markets"},
-		{"True", "https://paper-api.alpaca.markets"},
-		{"TRUE", "https://paper-api.alpaca.markets"},
-		{"false", "https://api.alpaca.markets"},
-		{"False", "https://api.alpaca.markets"},
-		{"0", "https://api.alpaca.markets"},
-		{"no", "https://api.alpaca.markets"},
+		{"true", "https://api.alpaca.markets"},
+		{"True", "https://api.alpaca.markets"},
+		{"TRUE", "https://api.alpaca.markets"},
+		{"false", "https://paper-api.alpaca.markets"},
+		{"False", "https://paper-api.alpaca.markets"},
+		{"0", "https://paper-api.alpaca.markets"},
+		{"no", "https://paper-api.alpaca.markets"},
+		{"yes", "https://paper-api.alpaca.markets"},
+		{"1", "https://paper-api.alpaca.markets"},
 	} {
 		t.Run(tc.value, func(t *testing.T) {
 			withTempDir(t)
 			t.Setenv("ALPACA_API_KEY", "env-key")
 			t.Setenv("ALPACA_SECRET_KEY", "env-secret")
-			t.Setenv("ALPACA_PAPER_TRADE", tc.value)
+			t.Setenv("ALPACA_LIVE_TRADE", tc.value)
 
 			r, err := Load("", "")
 			if err != nil {
 				t.Fatalf("Load: %v", err)
 			}
 			if r.BaseURL != tc.want {
-				t.Errorf("ALPACA_PAPER_TRADE=%q -> BaseURL=%q, want %q", tc.value, r.BaseURL, tc.want)
+				t.Errorf("ALPACA_LIVE_TRADE=%q -> BaseURL=%q, want %q", tc.value, r.BaseURL, tc.want)
 			}
 		})
 	}
 }
 
-func TestLoad_PaperTradeUnsetKeepsPaperDefault(t *testing.T) {
+func TestLoad_LiveTradeUnsetKeepsPaperDefault(t *testing.T) {
 	withTempDir(t)
-	setenvOrUnset(t, "ALPACA_PAPER_TRADE", "")
+	setenvOrUnset(t, "ALPACA_LIVE_TRADE", "")
 	t.Setenv("ALPACA_API_KEY", "env-key")
 	t.Setenv("ALPACA_SECRET_KEY", "env-secret")
 
@@ -369,7 +369,7 @@ func TestLoad_PaperTradeUnsetKeepsPaperDefault(t *testing.T) {
 		t.Fatalf("Load: %v", err)
 	}
 	if r.BaseURL != "https://paper-api.alpaca.markets" {
-		t.Errorf("unset ALPACA_PAPER_TRADE -> BaseURL=%q, want paper", r.BaseURL)
+		t.Errorf("unset ALPACA_LIVE_TRADE -> BaseURL=%q, want paper", r.BaseURL)
 	}
 }
 
@@ -412,11 +412,9 @@ func TestLoad_NoCredentialsReturnsSourceNone(t *testing.T) {
 
 func TestLoad_ProfileOAuthSource(t *testing.T) {
 	withTempDir(t)
-	paper := true
 	_ = SaveProfile("test", &Profile{
 		AccessToken: "oauth-token",
 		Scopes:      "trading data",
-		PaperTrade:  &paper,
 	})
 	_ = SaveGlobalConfig(&Config{DefaultProfile: "test"})
 
@@ -501,7 +499,7 @@ func TestLoad_MissingConfigDir(t *testing.T) {
 	t.Setenv("ALPACA_CONFIG_DIR", "/nonexistent/path/that/doesnt/exist")
 	t.Setenv("ALPACA_API_KEY", "")
 	t.Setenv("ALPACA_SECRET_KEY", "")
-	setenvOrUnset(t, "ALPACA_PAPER_TRADE", "")
+	setenvOrUnset(t, "ALPACA_LIVE_TRADE", "")
 
 	r, err := Load("", "")
 	if err != nil {

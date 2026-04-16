@@ -57,7 +57,6 @@ func loginWithOAuth(cmd *cobra.Command) error {
 		name = defaultProfileName
 	}
 
-	paperTrade := true
 	baseURL := config.ResolveBaseURL(config.EnvPaper)
 	env := defaultProfileName
 
@@ -90,7 +89,6 @@ func loginWithOAuth(cmd *cobra.Command) error {
 	p := &config.Profile{
 		AccessToken: token.AccessToken,
 		Scopes:      token.Scope,
-		PaperTrade:  &paperTrade,
 	}
 	if err := config.SaveProfile(name, p); err != nil {
 		return fmt.Errorf("saving profile: %w", err)
@@ -155,9 +153,9 @@ func loginWithAPIKey(cmd *cobra.Command) error {
 		name = defaultProfileName
 	}
 
-	paperTrade := !cmdutil.Bool(cmd, "live")
+	liveTrade := cmdutil.Bool(cmd, "live")
 	envName := config.EnvPaper
-	if !paperTrade {
+	if liveTrade {
 		envName = config.EnvLive
 	}
 	baseURL := config.ResolveBaseURL(envName)
@@ -201,9 +199,11 @@ func loginWithAPIKey(cmd *cobra.Command) error {
 	}
 
 	p := &config.Profile{
-		APIKey:     key,
-		SecretKey:  secret,
-		PaperTrade: &paperTrade,
+		APIKey:    key,
+		SecretKey: secret,
+	}
+	if liveTrade {
+		p.LiveTrade = &liveTrade
 	}
 	if err := config.SaveProfile(name, p); err != nil {
 		return fmt.Errorf("saving profile: %w", err)
