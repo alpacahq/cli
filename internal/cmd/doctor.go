@@ -132,7 +132,7 @@ func joinMax(items []string, max int) string {
 func credentialSourceDescription(r *config.Resolved) string {
 	switch r.Source {
 	case config.SourceEnvAPIKey:
-		return "API key credentials from env (ALPACA_API_KEY)"
+		return "API key credentials from env (ALPACA_API_KEY + ALPACA_SECRET_KEY)"
 	case config.SourceProfileOAuth:
 		return fmt.Sprintf("OAuth token from profile %q", r.ProfileName)
 	case config.SourceProfileAPIKey:

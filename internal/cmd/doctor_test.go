@@ -16,7 +16,7 @@ func TestCredentialSourceDescription(t *testing.T) {
 		{
 			name:     "env api key",
 			resolved: &config.Resolved{Source: config.SourceEnvAPIKey},
-			contains: []string{"env", "ALPACA_API_KEY"},
+			contains: []string{"env", "ALPACA_API_KEY", "ALPACA_SECRET_KEY"},
 		},
 		{
 			name:     "profile oauth",

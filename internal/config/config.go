@@ -133,7 +133,7 @@ func resolveCredentials(r *Resolved, profile *Profile) {
 // profile's live_trade field.
 func resolveBaseURL(r *Resolved, profile *Profile) {
 	if v := os.Getenv("ALPACA_LIVE_TRADE"); v != "" {
-		if isTrue(v) {
+		if envIsLive(v) {
 			r.BaseURL = ResolveBaseURL(EnvLive)
 		} else {
 			r.BaseURL = ResolveBaseURL(EnvPaper)
@@ -149,11 +149,12 @@ func resolveBaseURL(r *Resolved, profile *Profile) {
 	r.BaseURL = ResolveBaseURL(EnvPaper)
 }
 
-// isTrue interprets ALPACA_LIVE_TRADE. Case-insensitive "true" means live;
-// any other value (including empty, "false", "yes", "1") means paper. The
-// strict "true" check mirrors common boolean env var conventions and makes
-// sure typos fall back to the safe default.
-func isTrue(v string) bool {
+// envIsLive interprets ALPACA_LIVE_TRADE. Only case-insensitive "true"
+// means live; any other value (including empty, "false", "yes", "1")
+// means paper. The strict check is deliberate: typos like "treu" or "yse"
+// must fall back to the safe default rather than accidentally route to
+// the live API.
+func envIsLive(v string) bool {
 	return strings.EqualFold(strings.TrimSpace(v), "true")
 }
 

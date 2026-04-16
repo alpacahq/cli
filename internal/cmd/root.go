@@ -171,19 +171,22 @@ To check for updates:  alpaca update --check`,
 			if err := cfg.Validate(); err != nil {
 				return err
 			}
-			// Tests can pre-inject apiClient/tradingClient/dataClient to
-			// redirect traffic at a mock server; don't clobber that.
+			// Tests can pre-inject apiClient (and trading/dataClient) to
+			// redirect traffic at a mock server; only build a fresh client
+			// when nothing's been injected. CLI flags are applied either
+			// way so --debug/--verbose/--quiet/--trace/--timeout work the
+			// same under tests as in production.
 			if apiClient == nil {
 				apiClient = client.New(cfg)
-				apiClient.Verbose = verboseFlag
-				apiClient.Debug = debugFlag
-				apiClient.Quiet = quietFlag
-				apiClient.Trace = traceFlag
-				if timeoutFlag != 30 {
-					apiClient.SetTimeout(time.Duration(timeoutFlag) * time.Second)
-				}
 				tradingClient = api.NewTradingClient(apiClient)
 				dataClient = api.NewMarketDataClient(apiClient)
+			}
+			apiClient.Verbose = verboseFlag
+			apiClient.Debug = debugFlag
+			apiClient.Quiet = quietFlag
+			apiClient.Trace = traceFlag
+			if timeoutFlag != 30 {
+				apiClient.SetTimeout(time.Duration(timeoutFlag) * time.Second)
 			}
 		}
 

@@ -236,15 +236,13 @@ func envShadowsProfile(profileName string) bool {
 // warnEnvShadowsProfile prints the shadowing warning when envShadowsProfile
 // returns true. Users who don't see it would wonder why "their profile"
 // doesn't match their actual account. indent is the leading whitespace for
-// the first line; the continuation line is indented two spaces further to
-// align under the message. Pass "  " when rendering inside a nested block
-// (profile login, doctor) and "" when rendering flush (bare alpaca help).
+// the line - pass "  " when rendering inside a nested block (profile login,
+// doctor) and "" when rendering flush (bare alpaca help).
 func warnEnvShadowsProfile(profileName, indent string) {
 	if !envShadowsProfile(profileName) {
 		return
 	}
 	color.Yellow(indent+"! ALPACA_API_KEY is set in your environment; it will override profile %q on every command.", profileName)
-	fmt.Fprintln(os.Stderr, indent+"  Unset it (`unset ALPACA_API_KEY ALPACA_SECRET_KEY`) to use the profile.")
 }
 
 var profileLogoutCmd = &cobra.Command{
