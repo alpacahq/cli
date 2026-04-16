@@ -110,7 +110,19 @@ To check for updates:  alpaca update --check`,
 			printCommandTree(cmd.OutOrStdout(), cmd, 0)
 			return nil
 		}
-		return cmd.Help()
+		shouldWarn := cfg != nil && envShadowsProfile(cfg.ProfileName)
+		if shouldWarn {
+			warnEnvShadowsProfile(cfg.ProfileName, "")
+			fmt.Fprintln(cmd.OutOrStdout())
+		}
+		if err := cmd.Help(); err != nil {
+			return err
+		}
+		if shouldWarn {
+			fmt.Fprintln(cmd.OutOrStdout())
+			warnEnvShadowsProfile(cfg.ProfileName, "")
+		}
+		return nil
 	},
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if cmd.Name() == "help" {

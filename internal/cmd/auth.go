@@ -107,7 +107,7 @@ func loginWithOAuth(cmd *cobra.Command) error {
 		fmt.Fprintf(os.Stderr, "  Scopes: %s\n", token.Scope)
 	}
 	fmt.Fprintf(os.Stderr, "  Credentials stored in %s/profiles/\n", config.Dir())
-	warnEnvShadowsProfile()
+	warnEnvShadowsProfile(name, "  ")
 	return nil
 }
 
@@ -218,19 +218,33 @@ func loginWithAPIKey(cmd *cobra.Command) error {
 	color.Green("✓ Logged in to %s (%s)", name, baseURL)
 	fmt.Fprintf(os.Stderr, "  Credentials stored in %s/profiles/\n", config.Dir())
 	fmt.Fprintln(os.Stderr, "  For CI/automation, use ALPACA_API_KEY and ALPACA_SECRET_KEY env vars instead.")
-	warnEnvShadowsProfile()
+	warnEnvShadowsProfile(name, "  ")
 	return nil
 }
 
-// warnEnvShadowsProfile warns when ALPACA_API_KEY + ALPACA_SECRET_KEY are set
-// in the environment, because those env vars beat any stored profile. Without
-// this warning, users who just logged in would not realize their env vars -
-// possibly pointing at a different account - are what commands actually use.
-func warnEnvShadowsProfile() {
-	if os.Getenv("ALPACA_API_KEY") != "" && os.Getenv("ALPACA_SECRET_KEY") != "" {
-		color.Yellow("  ! ALPACA_API_KEY is set in your environment; it will override this profile on every command.")
-		fmt.Fprintln(os.Stderr, "    Unset it (`unset ALPACA_API_KEY ALPACA_SECRET_KEY`) to use the profile you just saved.")
+// envShadowsProfile reports whether env API keys will shadow the named
+// profile. Env API keys beat any stored profile, so if env is set AND the
+// profile has credentials, the profile is effectively dormant.
+func envShadowsProfile(profileName string) bool {
+	if os.Getenv("ALPACA_API_KEY") == "" || os.Getenv("ALPACA_SECRET_KEY") == "" {
+		return false
 	}
+	p := config.LoadProfileByName(profileName)
+	return p.AccessToken != "" || (p.APIKey != "" && p.SecretKey != "")
+}
+
+// warnEnvShadowsProfile prints the shadowing warning when envShadowsProfile
+// returns true. Users who don't see it would wonder why "their profile"
+// doesn't match their actual account. indent is the leading whitespace for
+// the first line; the continuation line is indented two spaces further to
+// align under the message. Pass "  " when rendering inside a nested block
+// (profile login, doctor) and "" when rendering flush (bare alpaca help).
+func warnEnvShadowsProfile(profileName, indent string) {
+	if !envShadowsProfile(profileName) {
+		return
+	}
+	color.Yellow(indent+"! ALPACA_API_KEY is set in your environment; it will override profile %q on every command.", profileName)
+	fmt.Fprintln(os.Stderr, indent+"  Unset it (`unset ALPACA_API_KEY ALPACA_SECRET_KEY`) to use the profile.")
 }
 
 var profileLogoutCmd = &cobra.Command{

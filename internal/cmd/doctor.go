@@ -65,9 +65,7 @@ var doctorCmd = &cobra.Command{
 		if resolved.IsOAuth() && resolved.Scopes != "" {
 			fmt.Fprintf(w, "  Scopes:   %s\n", resolved.Scopes)
 		}
-		if shadowed := detectShadowedEnvVars(resolved); shadowed != "" {
-			fmt.Fprintf(w, "  Note:     %s\n", shadowed)
-		}
+		warnEnvShadowsProfile(resolved.ProfileName, "  ")
 
 		fmt.Fprintf(w, "\nConnectivity:\n")
 		c := client.New(resolved)
@@ -142,17 +140,4 @@ func credentialSourceDescription(r *config.Resolved) string {
 	default:
 		return "credentials configured"
 	}
-}
-
-// detectShadowedEnvVars flags config that exists but is ignored because a
-// higher-priority source supplied credentials. Common cause: env API keys
-// shadowing a profile the user thinks is active.
-func detectShadowedEnvVars(r *config.Resolved) string {
-	if r.Source == config.SourceEnvAPIKey {
-		p := config.LoadProfileByName(r.ProfileName)
-		if p.AccessToken != "" || (p.APIKey != "" && p.SecretKey != "") {
-			return fmt.Sprintf("profile %q has credentials but env ALPACA_API_KEY is active", r.ProfileName)
-		}
-	}
-	return ""
 }

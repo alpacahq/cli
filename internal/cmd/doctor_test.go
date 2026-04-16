@@ -41,45 +41,48 @@ func TestCredentialSourceDescription(t *testing.T) {
 	}
 }
 
-// TestDetectShadowedEnvVars ensures doctor flags the case where env API
-// keys are active but a profile also has credentials - the user's profile
-// login is effectively invisible in that state.
-func TestDetectShadowedEnvVars(t *testing.T) {
+// TestEnvShadowsProfile ensures we detect when env API keys are active and a
+// profile also has credentials - the user's profile login is effectively
+// invisible in that state.
+func TestEnvShadowsProfile(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("ALPACA_CONFIG_DIR", dir)
+	t.Setenv("ALPACA_API_KEY", "env-key")
+	t.Setenv("ALPACA_SECRET_KEY", "env-secret")
 
 	_ = config.SaveProfile("paper", &config.Profile{
 		APIKey:    "profile-key",
 		SecretKey: "profile-secret",
 	})
 
-	r := &config.Resolved{
-		Source:      config.SourceEnvAPIKey,
-		ProfileName: "paper",
-	}
-	got := detectShadowedEnvVars(r)
-	if !strings.Contains(got, "paper") || !strings.Contains(got, "ALPACA_API_KEY") {
-		t.Errorf("expected shadow warning mentioning profile name + env var, got: %q", got)
-	}
-
-	rProfile := &config.Resolved{
-		Source:      config.SourceProfileAPIKey,
-		ProfileName: "paper",
-	}
-	if got := detectShadowedEnvVars(rProfile); got != "" {
-		t.Errorf("no shadow expected when source is profile, got: %q", got)
+	if !envShadowsProfile("paper") {
+		t.Error("expected shadowing when env keys set and profile has creds")
 	}
 }
 
-func TestDetectShadowedEnvVars_NoProfile(t *testing.T) {
+func TestEnvShadowsProfile_NoEnv(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("ALPACA_CONFIG_DIR", dir)
+	t.Setenv("ALPACA_API_KEY", "")
+	t.Setenv("ALPACA_SECRET_KEY", "")
 
-	r := &config.Resolved{
-		Source:      config.SourceEnvAPIKey,
-		ProfileName: "paper",
+	_ = config.SaveProfile("paper", &config.Profile{
+		APIKey:    "profile-key",
+		SecretKey: "profile-secret",
+	})
+
+	if envShadowsProfile("paper") {
+		t.Error("no shadow expected when env vars are unset")
 	}
-	if got := detectShadowedEnvVars(r); got != "" {
-		t.Errorf("no shadow expected when profile file is absent, got: %q", got)
+}
+
+func TestEnvShadowsProfile_NoProfile(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("ALPACA_CONFIG_DIR", dir)
+	t.Setenv("ALPACA_API_KEY", "env-key")
+	t.Setenv("ALPACA_SECRET_KEY", "env-secret")
+
+	if envShadowsProfile("paper") {
+		t.Error("no shadow expected when profile file is absent")
 	}
 }
