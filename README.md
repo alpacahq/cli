@@ -348,7 +348,7 @@ Enum-valued flags auto-complete with valid values (e.g. `--side` → `buy`/`sell
 
 ## Agent & Automation
 
-Designed for scripting, CI pipelines, and AI agent integration. For AI agents, see the [`alpaca-cli` Agent Skill](skills/alpaca-cli/SKILL.md) for structured install, auth, and usage guidance in [Agent Skills](https://agentskills.io) format.
+Designed for scripting, CI pipelines, and AI agent integration. For AI agents, see the [`alpaca-cli` Agent Skill](.agents/skills/alpaca-cli/SKILL.md) for structured install, auth, and usage guidance in [Agent Skills](https://agentskills.io) format.
 
 ### Auth for unattended workflows
 
