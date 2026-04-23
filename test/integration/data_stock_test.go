@@ -27,8 +27,8 @@ func TestDataBars(t *testing.T) {
 func TestDataBars_Timeframe(t *testing.T) {
 	t.Parallel()
 	out := alpacaRetry(t, "data", "bars", "--symbol", "AAPL",
-		"--start", daysAgo(95),
-		"--end", daysAgo(94),
+		"--start", daysAgo(100),
+		"--end", daysAgo(93),
 		"--timeframe", "1Hour",
 	)
 	data := parseJSONMap(t, out)
@@ -125,8 +125,8 @@ func TestDataBars_Sort(t *testing.T) {
 func TestDataQuotes(t *testing.T) {
 	t.Parallel()
 	out := alpacaRetry(t, "data", "quotes", "--symbol", "AAPL",
-		"--start", daysAgo(95),
-		"--end", daysAgo(94),
+		"--start", daysAgo(100),
+		"--end", daysAgo(93),
 		"--limit", "5",
 	)
 	data := parseJSONMap(t, out)
@@ -141,8 +141,8 @@ func TestDataQuotes(t *testing.T) {
 func TestDataTrades(t *testing.T) {
 	t.Parallel()
 	out := alpacaRetry(t, "data", "trades", "--symbol", "AAPL",
-		"--start", daysAgo(95),
-		"--end", daysAgo(94),
+		"--start", daysAgo(100),
+		"--end", daysAgo(93),
 		"--limit", "5",
 	)
 	data := parseJSONMap(t, out)
@@ -245,8 +245,8 @@ func TestDataMultiQuotes(t *testing.T) {
 	t.Parallel()
 	out := alpacaRetry(t, "data", "multi-quotes",
 		"--symbols", "AAPL,MSFT",
-		"--start", daysAgo(95),
-		"--end", daysAgo(94),
+		"--start", daysAgo(100),
+		"--end", daysAgo(93),
 		"--limit", "5",
 	)
 	data := parseJSONMap(t, out)
@@ -271,8 +271,8 @@ func TestDataMultiTrades(t *testing.T) {
 	t.Parallel()
 	out := alpacaRetry(t, "data", "multi-trades",
 		"--symbols", "AAPL,MSFT",
-		"--start", daysAgo(95),
-		"--end", daysAgo(94),
+		"--start", daysAgo(100),
+		"--end", daysAgo(93),
 		"--limit", "5",
 	)
 	data := parseJSONMap(t, out)
@@ -344,20 +344,20 @@ func TestDataMultiQuotes_PageToken(t *testing.T) {
 	t.Parallel()
 	out := alpacaRetry(t, "data", "multi-quotes",
 		"--symbols", "AAPL",
-		"--start", daysAgo(95),
-		"--end", daysAgo(94),
+		"--start", daysAgo(100),
+		"--end", daysAgo(93),
 		"--limit", "2",
 	)
 	page1 := parseJSONMap(t, out)
 	token, ok := page1["next_page_token"].(string)
 	if !ok || token == "" {
-		t.Skip("no next_page_token — not enough data to test pagination")
+		t.Skip("no next_page_token - not enough data to test pagination")
 	}
 
 	out = alpacaRetry(t, "data", "multi-quotes",
 		"--symbols", "AAPL",
-		"--start", daysAgo(95),
-		"--end", daysAgo(94),
+		"--start", daysAgo(100),
+		"--end", daysAgo(93),
 		"--limit", "2",
 		"--page-token", token,
 	)
