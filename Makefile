@@ -2,7 +2,11 @@ VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev
 LDFLAGS := -ldflags "-s -w -X main.version=$(VERSION)"
 BINARY := alpaca
 
-.PHONY: build install test test-integration lint check clean generate spec-update release
+SPECS_URL := https://docs.alpaca.markets/openapi
+SPEC_TRADING := api/specs/trading-api.json
+SPEC_MARKETDATA := api/specs/market-data-api.json
+
+.PHONY: build install test test-integration lint check clean generate spec-update spec-check release
 
 build:
 	go build $(LDFLAGS) -o bin/$(BINARY) ./cmd/alpaca
@@ -29,9 +33,21 @@ generate:
 
 spec-update:
 	@echo "Fetching latest OpenAPI specs..."
-	curl -sSfL "https://docs.alpaca.markets/openapi/trading-api.json" | python3 -m json.tool > api/specs/trading-api.json
-	curl -sSfL "https://docs.alpaca.markets/openapi/market-data-api.json" | python3 -m json.tool > api/specs/market-data-api.json
+	curl -sSfL "$(SPECS_URL)/trading-api.json" | python3 -m json.tool > $(SPEC_TRADING)
+	curl -sSfL "$(SPECS_URL)/market-data-api.json" | python3 -m json.tool > $(SPEC_MARKETDATA)
 	@echo "Specs updated. Run 'make generate' to regenerate client code."
+
+spec-check:
+	@command -v oasdiff >/dev/null 2>&1 || { \
+		echo "error: oasdiff not installed" >&2; \
+		echo "install: go install github.com/oasdiff/oasdiff@latest" >&2; \
+		exit 1; \
+	}
+	@printf '\n=== Trading API ===\n'
+	@oasdiff changelog $(SPEC_TRADING) $(SPECS_URL)/trading-api.json
+	@printf '\n=== Market Data API ===\n'
+	@oasdiff changelog $(SPEC_MARKETDATA) $(SPECS_URL)/market-data-api.json
+	@printf '\nRun `make spec-update && make generate` to apply any changes above.\n'
 
 release:
 	@if [ -n "$$(git status --porcelain)" ]; then echo "error: working tree is dirty" >&2; exit 1; fi
