@@ -494,6 +494,15 @@ GetOrderByOrderID: "Get order by ID"
   nested (query, bool) -> nested
   order-id (path, string, required) -> order_id
 
+GetTokenizationRequests: "List tokenization requests"
+  after (query, string) -> after
+  before (query, string) -> before
+  issuer (query, string) -> issuer
+  network (query, string) -> network
+  status (query, string) -> status
+  type (query, string) -> type
+  underlying-symbol (query, string) -> underlying_symbol
+
 GetWatchlistByID: "Get watchlist by ID"
   watchlist-id (path, string, required) -> watchlist_id
 
@@ -574,6 +583,13 @@ PostOrder: "Create an order"
   trail-price (body, string) -> trail_price
   type (body, string, default=market) -> type
 
+PostTokenizationMint: "Create mint a tokenized asset"
+  issuer (body, string) -> issuer
+  network (body, string) -> network
+  qty (body, string) -> qty
+  underlying-symbol (body, string) -> underlying_symbol
+  wallet-address (body, string) -> wallet_address
+
 PostWatchlist: "Create watchlist"
   name (body, string) -> name
   symbols (body, string) -> symbols
@@ -585,6 +601,12 @@ RemoveAssetFromWatchlist: "Delete symbol from watchlist"
 SetCryptoPerpAccountLeverage: "Set account leverage for an asset"
   leverage (query, int) -> leverage
   symbol (query, string) -> symbol
+
+SubscribeToActivitiesSSE: "Get subscribe to activity events (SSE)"
+  since (query, string) -> since
+  since-id (query, string) -> since_id
+  until (query, string) -> until
+  until-id (query, string) -> until_id
 
 UpdateWatchlistByID: "Update watchlist by id"
   name (body, string) -> name
