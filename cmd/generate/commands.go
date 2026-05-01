@@ -809,7 +809,11 @@ var cmdRegistry = map[string]cmdDef{
 	},
 }
 
-var cmdSkip = map[string]string{}
+var cmdSkip = map[string]string{
+	"GetTokenizationRequests":  "tokenization is restricted to Authorized Participants on the Instant Tokenization Network and not exposed via the CLI",
+	"PostTokenizationMint":     "tokenization is restricted to Authorized Participants on the Instant Tokenization Network and not exposed via the CLI",
+	"SubscribeToActivitiesSSE": "Server-Sent Events streaming endpoint; the CLI's fetch/JSON model does not support long-lived streams",
+}
 
 func checkExhaustive(epByOp map[string]*endpointInfo) {
 	var errs []string
