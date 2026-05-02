@@ -11,6 +11,7 @@ type cmdDef struct {
 	parent         string
 	use            string
 	self           bool
+	stream         bool
 	examples       string
 	long           string
 	defaults       map[string]string
@@ -61,6 +62,10 @@ var cmdParents = map[string]parentDef{
 	},
 	"walletTransfer":  {use: "transfer", short: "Manage crypto transfers", parent: "wallet"},
 	"walletWhitelist": {use: "whitelist", short: "Manage whitelisted crypto addresses", parent: "wallet"},
+	"events": {
+		use: "events", short: "Stream real-time account events (SSE)",
+		long: "Subscribe to real-time account activity events via Server-Sent Events.",
+	},
 	"clock": {
 		use: "clock", short: "Market clock",
 		long: "Check whether markets are currently open and when they next open or close.",
@@ -191,6 +196,16 @@ var cmdRegistry = map[string]cmdDef{
 		parent:   "corporateAction",
 		use:      "get",
 		examples: "  alpaca corporate-action get --id <announcement-id>",
+	},
+
+	// --- events (SSE) ---
+	"SubscribeToActivitiesSSE": {
+		parent: "events",
+		use:    "activities",
+		stream: true,
+		examples: `  alpaca events activities
+  alpaca events activities --since 2025-04-01 --until 2025-04-30
+  alpaca events activities --jq 'select(.activity_type == "FILL")'`,
 	},
 
 	// --- order ---
@@ -810,9 +825,8 @@ var cmdRegistry = map[string]cmdDef{
 }
 
 var cmdSkip = map[string]string{
-	"GetTokenizationRequests":  "tokenization is restricted to Authorized Participants on the Instant Tokenization Network and not exposed via the CLI",
-	"PostTokenizationMint":     "tokenization is restricted to Authorized Participants on the Instant Tokenization Network and not exposed via the CLI",
-	"SubscribeToActivitiesSSE": "Server-Sent Events streaming endpoint; the CLI's fetch/JSON model does not support long-lived streams",
+	"GetTokenizationRequests": "tokenization is restricted to Authorized Participants on the Instant Tokenization Network and not exposed via the CLI",
+	"PostTokenizationMint":    "tokenization is restricted to Authorized Participants on the Instant Tokenization Network and not exposed via the CLI",
 }
 
 func checkExhaustive(epByOp map[string]*endpointInfo) {
@@ -915,6 +929,9 @@ func genCommands(epByOp map[string]*endpointInfo) string {
 		fmt.Fprintf(&buf, "\t\"encoding/json\"\n")
 	}
 	fmt.Fprintf(&buf, "\t\"fmt\"\n")
+	if strings.Contains(bodyStr, "io.ReadCloser") {
+		fmt.Fprintf(&buf, "\t\"io\"\n")
+	}
 	if strings.Contains(bodyStr, "strings.") {
 		fmt.Fprintf(&buf, "\t\"strings\"\n")
 	}
@@ -932,6 +949,23 @@ func emitCommand(buf, attachBuf *bytes.Buffer, opID string, def cmdDef, ep *endp
 	opVar := opID + "Op"
 	parentVar := def.parent + "Cmd"
 	clientVar := ep.clientVar
+
+	// Stream commands use streamCmd instead of fetchCmd.
+	if def.stream {
+		varName := cmdVarName(opID, def)
+		baseURLExpr := "apiClient.BaseURL"
+		if clientVar == "dataClient" {
+			baseURLExpr = "apiClient.DataURL"
+		}
+		paramsExpr := "nil"
+		if len(ep.queryParams) > 0 {
+			paramsExpr = queryFromFlagsExpr(ep)
+		}
+		fmt.Fprintf(buf, "var %s = streamCmd(%q, api.%s, func(cmd *cobra.Command, args []string) (io.ReadCloser, error) {\n", varName, def.use, opVar)
+		fmt.Fprintf(buf, "\treturn apiClient.DoStream(%q, %s, %q, %s)\n", ep.method, baseURLExpr, ep.path, paramsExpr)
+		fmt.Fprintf(buf, "})\n\n")
+		return
+	}
 
 	// Build configure closures for bodyAliases (Long/Example/Defaults are
 	// embedded in the Op struct).

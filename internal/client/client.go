@@ -147,6 +147,61 @@ func (c *Client) RawRequest(method, fullURL string, body any) (json.RawMessage, 
 	return c.doWithRetry(method, fullURL, body)
 }
 
+// DoStream opens a long-lived HTTP connection and returns the raw response
+// body without reading it into memory. The caller owns the returned
+// io.ReadCloser and must close it when done. No timeout is applied.
+func (c *Client) DoStream(method, baseURL, path string, params url.Values) (io.ReadCloser, error) {
+	u := baseURL + path
+	if len(params) > 0 {
+		u += "?" + params.Encode()
+	}
+
+	req, err := http.NewRequest(method, u, nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating request: %w", err)
+	}
+
+	if c.AccessToken != "" {
+		req.Header.Set("Authorization", "Bearer "+c.AccessToken)
+	} else {
+		req.Header.Set("APCA-API-KEY-ID", c.APIKey)
+		req.Header.Set("APCA-API-SECRET-KEY", c.Secret)
+	}
+	req.Header.Set("Accept", "text/event-stream")
+	req.Header.Set("User-Agent", c.UserAgent)
+
+	if c.Debug {
+		fmt.Fprintf(os.Stderr, "→ %s %s\n", method, c.scrub(u))
+		c.debugHeaders("→", req.Header)
+	} else if c.Verbose {
+		fmt.Fprintf(os.Stderr, "%s %s (streaming)\n", method, c.scrub(u))
+	}
+
+	streamHTTP := &http.Client{}
+	resp, err := streamHTTP.Do(req)
+	if err != nil {
+		return nil, &APIError{
+			Message: fmt.Sprintf("could not reach %s: %v", c.scrub(u), c.scrubErr(err)),
+			hint:    "check your internet connection and base URL. Run `alpaca doctor` to verify configuration",
+		}
+	}
+
+	if resp.StatusCode >= 400 {
+		defer func() { _ = resp.Body.Close() }()
+		respBody, _ := io.ReadAll(resp.Body)
+		apiErr := &APIError{StatusCode: resp.StatusCode, Method: method, Path: u, RequestID: resp.Header.Get("X-Request-Id")}
+		if json.Unmarshal(respBody, apiErr) != nil || apiErr.Message == "" {
+			apiErr.Message = strings.TrimSpace(string(respBody))
+			if apiErr.Message == "" {
+				apiErr.Message = http.StatusText(resp.StatusCode)
+			}
+		}
+		return nil, apiErr
+	}
+
+	return resp.Body, nil
+}
+
 func (c *Client) doWithRetry(method, reqURL string, body any) (json.RawMessage, error) {
 	var lastErr error
 	for attempt := range maxRetries {

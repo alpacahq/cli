@@ -5,6 +5,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/alpacahq/cli/internal/api"
@@ -104,6 +105,12 @@ var dataOptionCmd = &cobra.Command{
 	Use:   "option",
 	Short: "Options market data",
 	Long:  "Bars, trades, snapshots, chains, latest quotes, and exchange/condition reference data for options.",
+}
+
+var eventsCmd = &cobra.Command{
+	Use:   "events",
+	Short: "Stream real-time account events (SSE)",
+	Long:  "Subscribe to real-time account activity events via Server-Sent Events.",
 }
 
 var optionCmd = &cobra.Command{
@@ -701,6 +708,10 @@ var stockTradesCmd = fetchCmd("multi-trades", api.StockTradesOp, func(cmd *cobra
 	return dataClient.StockTrades(queryFromFlags(cmd, api.StockTradesOp))
 })
 
+var subscribeToActivitiesSSECmd = streamCmd("activities", api.SubscribeToActivitiesSSEOp, func(cmd *cobra.Command, args []string) (io.ReadCloser, error) {
+	return apiClient.DoStream("GET", apiClient.BaseURL, "/v2beta1/events/activities", queryFromFlags(cmd, api.SubscribeToActivitiesSSEOp))
+})
+
 var updateWatchlistByIDCmd = fetchCmd("update", api.UpdateWatchlistByIDOp, func(cmd *cobra.Command, args []string) (any, error) {
 	body := &api.UpdateWatchlistRequest{}
 	var changed bool
@@ -873,6 +884,7 @@ func init() {
 	dataCmd.AddCommand(stockSnapshotsCmd)
 	dataCmd.AddCommand(stockTradeSingleCmd)
 	dataCmd.AddCommand(stockTradesCmd)
+	eventsCmd.AddCommand(subscribeToActivitiesSSECmd)
 	watchlistCmd.AddCommand(updateWatchlistByIDCmd)
 	watchlistCmd.AddCommand(updateWatchlistByNameCmd)
 	assetCmd.AddCommand(usCorporatesCmd)

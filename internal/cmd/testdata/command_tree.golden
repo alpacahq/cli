@@ -377,6 +377,11 @@ alpaca data trades
   --start (string)
   --symbol (string)
 alpaca doctor
+alpaca events activities
+  --since (string)
+  --since-id (string)
+  --until (string)
+  --until-id (string)
 alpaca option contracts
   --expiration-date (string)
   --expiration-date-gte (string)

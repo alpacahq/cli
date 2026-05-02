@@ -1260,6 +1260,9 @@ var SetCryptoPerpAccountLeverageOp = Op{
 var SubscribeToActivitiesSSEOp = Op{
 	Name: "SubscribeToActivitiesSSE", Summary: "Get subscribe to activity events (SSE)",
 	Long: "The Events API sends the real-time events and provides historical queries with SSE (Server Sent Events)",
+	Example: `  alpaca events activities
+  alpaca events activities --since 2025-04-01 --until 2025-04-30
+  alpaca events activities --jq 'select(.activity_type == "FILL")'`,
 	Flags: []FlagDef{
 		{Name: "since", OASName: "since", Type: "string", Description: "format: RFC3339 or YYYY-MM-DD", Source: "query"},
 		{Name: "since-id", OASName: "since_id", Type: "string", Description: "since id", Source: "query"},
