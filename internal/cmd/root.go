@@ -79,6 +79,7 @@ func printJSONError(apiErr *client.APIError) {
 		m["request_id"] = apiErr.RequestID
 	}
 	enc := json.NewEncoder(os.Stderr)
+	enc.SetIndent("", "  ")
 	_ = enc.Encode(m)
 }
 
