@@ -86,11 +86,10 @@ func streamSSE(ctx context.Context, cmd *cobra.Command, scanner *bufio.Scanner) 
 				if err != nil {
 					return err
 				}
-				if filtered == nil {
+				if skipJQResult(filtered) {
 					continue
 				}
-				raw, err = json.Marshal(filtered)
-				if err != nil {
+				if raw, err = json.Marshal(filtered); err != nil {
 					return err
 				}
 			}
@@ -110,4 +109,17 @@ func streamSSE(ctx context.Context, cmd *cobra.Command, scanner *bufio.Scanner) 
 		}
 	}
 	return nil
+}
+
+// skipJQResult returns true for jq outputs that should be suppressed:
+// nil (no match), false, and Go values that marshal to JSON null.
+func skipJQResult(v any) bool {
+	if v == nil {
+		return true
+	}
+	if b, ok := v.(bool); ok && !b {
+		return true
+	}
+	raw, err := json.Marshal(v)
+	return err == nil && string(raw) == "null"
 }

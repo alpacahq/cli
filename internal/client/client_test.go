@@ -647,3 +647,59 @@ func TestVerboseOutputScrubsSecrets(t *testing.T) {
 		t.Errorf("verbose output leaks secret:\n%s", output)
 	}
 }
+
+func TestDoStreamReturnsBody(t *testing.T) {
+	c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Accept") != "text/event-stream" {
+			t.Errorf("expected Accept text/event-stream, got %q", r.Header.Get("Accept"))
+		}
+		w.WriteHeader(200)
+		_, _ = w.Write([]byte("data: {\"id\":\"1\"}\n\n"))
+	})
+
+	body, err := c.DoStream("GET", c.BaseURL, "/v2beta1/events/activities", nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer func() { _ = body.Close() }()
+
+	data, _ := io.ReadAll(body)
+	if !strings.Contains(string(data), `{"id":"1"}`) {
+		t.Errorf("body missing event: %s", string(data))
+	}
+}
+
+func TestDoStreamQueryParams(t *testing.T) {
+	var gotQuery string
+	c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
+		gotQuery = r.URL.RawQuery
+		w.WriteHeader(200)
+	})
+
+	params := url.Values{"since": {"2025-01-01"}, "until": {"2025-01-31"}}
+	body, err := c.DoStream("GET", c.BaseURL, "/path", params)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	_ = body.Close()
+
+	if !strings.Contains(gotQuery, "since=2025-01-01") || !strings.Contains(gotQuery, "until=2025-01-31") {
+		t.Errorf("query params wrong: %s", gotQuery)
+	}
+}
+
+func TestDoStreamError(t *testing.T) {
+	c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(401)
+		_, _ = w.Write([]byte(`{"message":"unauthorized"}`))
+	})
+
+	_, err := c.DoStream("GET", c.BaseURL, "/path", nil)
+	apiErr, ok := err.(*APIError)
+	if !ok {
+		t.Fatalf("expected *APIError, got %T", err)
+	}
+	if apiErr.StatusCode != 401 || apiErr.Message != "unauthorized" {
+		t.Errorf("got status=%d msg=%q, want 401/unauthorized", apiErr.StatusCode, apiErr.Message)
+	}
+}
