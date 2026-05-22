@@ -550,6 +550,10 @@ var patchOrderByOrderIDCmd = fetchCmd("replace", api.PatchOrderByOrderIDOp, func
 		body.LimitPrice = cmdutil.Str(cmd, "limit-price")
 		changed = true
 	}
+	if cmdutil.Changed(cmd, "notional") {
+		body.Notional = cmdutil.Str(cmd, "notional")
+		changed = true
+	}
 	if cmdutil.Changed(cmd, "qty") {
 		body.Qty = cmdutil.Str(cmd, "qty")
 		changed = true

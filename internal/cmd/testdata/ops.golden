@@ -557,6 +557,7 @@ PatchOrderByOrderID: "Replace order by ID"
   advanced-instructions (body, string) -> advanced_instructions
   client-order-id (body, string) -> client_order_id
   limit-price (body, string) -> limit_price
+  notional (body, string) -> notional
   order-id (path, string, required) -> order_id
   qty (body, string) -> qty
   stop-price (body, string) -> stop_price

@@ -138,10 +138,6 @@ type ActivityV2DetailTRD struct {
 	Symbol        string `json:"symbol"`
 }
 
-type AddAssetToWatchlistRequest struct {
-	Symbol string `json:"symbol,omitempty"`
-}
-
 type AdvancedInstructions struct {
 	Algorithm     string `json:"algorithm,omitempty"`
 	Destination   string `json:"destination,omitempty"`
@@ -170,23 +166,9 @@ type Assets struct {
 	Tradable                     bool       `json:"tradable"`
 }
 
-type Calendar struct {
-	Close          string `json:"close"`
-	Date           string `json:"date"`
-	Open           string `json:"open"`
-	SettlementDate string `json:"settlement_date"`
-}
-
 type CanceledOrderResponse struct {
 	ID     string `json:"id,omitempty"`
 	Status int    `json:"status,omitempty"`
-}
-
-type Clock struct {
-	IsOpen    bool   `json:"is_open,omitempty"`
-	NextClose string `json:"next_close,omitempty"`
-	NextOpen  string `json:"next_open,omitempty"`
-	Timestamp string `json:"timestamp,omitempty"`
 }
 
 type CommonAcatActivityV2 struct {
@@ -261,6 +243,13 @@ type CommonSplitActivityV2 struct {
 	OldCusip    string `json:"old_cusip"`
 	OldRate     string `json:"old_rate"`
 	PayableDate string `json:"payable_date,omitempty"`
+}
+
+type CommonVOFSubtypeActivityV2 struct {
+	NewCusip     string `json:"new_cusip,omitempty"`
+	NewSymbol    string `json:"new_symbol,omitempty"`
+	SourceCusip  string `json:"source_cusip"`
+	SourceSymbol string `json:"source_symbol"`
 }
 
 type CreateCryptoTransferRequest struct {
@@ -427,6 +416,7 @@ type PatchOrderRequest struct {
 	AdvancedInstructions AdvancedInstructions `json:"advanced_instructions,omitempty"`
 	ClientOrderID        string               `json:"client_order_id,omitempty"`
 	LimitPrice           string               `json:"limit_price,omitempty"`
+	Notional             string               `json:"notional,omitempty"`
 	Qty                  string               `json:"qty,omitempty"`
 	StopPrice            string               `json:"stop_price,omitempty"`
 	TimeInForce          TimeInForce          `json:"time_in_force,omitempty"`
@@ -568,7 +558,7 @@ type CalendarDay struct {
 	SettlementDate string `json:"settlement_date,omitempty"`
 }
 
-type ClockV3 struct {
+type Clock struct {
 	IsMarketDay     bool         `json:"is_market_day"`
 	Market          PublicMarket `json:"market"`
 	NextMarketClose string       `json:"next_market_close"`
@@ -579,7 +569,7 @@ type ClockV3 struct {
 }
 
 type ClockResp struct {
-	Clocks []ClockV3 `json:"clocks"`
+	Clocks []Clock `json:"clocks"`
 }
 
 type LegacyCalendarDay struct {

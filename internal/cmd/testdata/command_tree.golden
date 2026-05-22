@@ -422,6 +422,7 @@ alpaca order replace
   --advanced-instructions (string)
   --client-order-id (string)
   --limit-price (string)
+  --notional (string)
   --order-id (string)
   --qty (string)
   --stop-price (string)
