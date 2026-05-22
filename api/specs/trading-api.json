@@ -159,23 +159,14 @@
                                 "properties": {
                                     "symbol": {
                                         "type": "string",
-                                        "x-stoplight": {
-                                            "id": "ss5ik56n2ju1s"
-                                        },
                                         "description": "symbol, asset ID, or currency pair to identify the asset to trade, required for all order classes except for `mleg`."
                                     },
                                     "qty": {
                                         "type": "string",
-                                        "x-stoplight": {
-                                            "id": "o73n1g4sdbylf"
-                                        },
                                         "description": "number of shares to trade. Can be fractionable for only market and day order types. Required for `mleg` order class, represents the number of units to trade of this strategy."
                                     },
                                     "notional": {
                                         "type": "string",
-                                        "x-stoplight": {
-                                            "id": "0pqrvqmmsladt"
-                                        },
                                         "description": "dollar amount to trade. Cannot work with `qty`. Can only work for market order types and day for time in force."
                                     },
                                     "side": {
@@ -189,44 +180,26 @@
                                     },
                                     "limit_price": {
                                         "type": "string",
-                                        "x-stoplight": {
-                                            "id": "0pz01a130upwd"
-                                        },
                                         "description": "Required if type is `limit` or `stop_limit`.\nIn case of `mleg`, the limit_price parameter is expressed with the following notation:\n- A positive value indicates a debit, representing a cost or payment to be made.\n- A negative value signifies a credit, reflecting an amount to be received."
                                     },
                                     "stop_price": {
                                         "type": "string",
-                                        "x-stoplight": {
-                                            "id": "ctaacyol2uvib"
-                                        },
                                         "description": "required if type is `stop` or `stop_limit`"
                                     },
                                     "trail_price": {
                                         "type": "string",
-                                        "x-stoplight": {
-                                            "id": "eje00dcpg2s0c"
-                                        },
                                         "description": "this or `trail_percent` is required if type is `trailing_stop`"
                                     },
                                     "trail_percent": {
                                         "type": "string",
-                                        "x-stoplight": {
-                                            "id": "l72my4e1qz36r"
-                                        },
                                         "description": "this or `trail_price` is required if type is `trailing_stop`"
                                     },
                                     "extended_hours": {
                                         "type": "boolean",
-                                        "x-stoplight": {
-                                            "id": "gqhf6gxwkrzr8"
-                                        },
                                         "description": "(default) false. If true, order will be eligible for execution in the pre-market, after-hours, and overnight sessions. Only works with type `limit` and time_in_force set to either `day` or `gtc`"
                                     },
                                     "client_order_id": {
                                         "type": "string",
-                                        "x-stoplight": {
-                                            "id": "duyztdwi66wfk"
-                                        },
                                         "description": "A unique identifier for the order. Automatically generated if not sent. (<= 128 characters)",
                                         "maxLength": 128
                                     },
@@ -239,7 +212,7 @@
                                         "items": {
                                             "$ref": "#/components/schemas/MLegOrderLeg"
                                         },
-                                        "maxLength": 4
+                                        "maxItems": 4
                                     },
                                     "take_profit": {
                                         "type": "object",
@@ -337,6 +310,16 @@
                                         "limit_price": "2100",
                                         "time_in_force": "gtc"
                                     }
+                                },
+                                "IPO": {
+                                    "summary": "Submit an IPO indication of interest",
+                                    "value": {
+                                        "symbol": "FI111225",
+                                        "notional": "500",
+                                        "side": "buy",
+                                        "type": "market",
+                                        "time_in_force": "gtc"
+                                    }
                                 }
                             }
                         }
@@ -364,6 +347,9 @@
                                     },
                                     "MultilegOptions": {
                                         "$ref": "#/components/examples/MultilegOptionsOrderResponse"
+                                    },
+                                    "IPO": {
+                                        "$ref": "#/components/examples/IPOOrderResponse"
                                     }
                                 }
                             }
@@ -514,6 +500,9 @@
                                     },
                                     "MultilegOptions": {
                                         "$ref": "#/components/examples/MultilegOptionsOrderResponse"
+                                    },
+                                    "IPO": {
+                                        "$ref": "#/components/examples/IPOOrderResponse"
                                     }
                                 }
                             }
@@ -521,8 +510,7 @@
                     }
                 },
                 "operationId": "getAllOrders",
-                "description": "Retrieves a list of orders for the account, filtered by the supplied query parameters.",
-                "x-internal": false
+                "description": "Retrieves a list of orders for the account, filtered by the supplied query parameters."
             },
             "delete": {
                 "tags": [
@@ -621,6 +609,9 @@
                                     },
                                     "MultilegOptions": {
                                         "$ref": "#/components/examples/MultilegOptionsOrderResponse"
+                                    },
+                                    "IPO": {
+                                        "$ref": "#/components/examples/IPOOrderResponse"
                                     }
                                 }
                             }
@@ -635,13 +626,36 @@
                     "Orders"
                 ],
                 "summary": "Replace Order by ID",
-                "description": "Replaces a single order with updated parameters. Each parameter overrides the corresponding attribute of the existing order. The other attributes remain the same as the existing order.\n\nA success return code from a replaced order does NOT guarantee the existing open order has been replaced. If the existing open order is filled before the replacing (new) order reaches the execution venue, the replacing (new) order is rejected, and these events are sent in the trade_updates stream channel.\n\nWhile an order is being replaced, buying power is reduced by the larger of the two orders that have been placed (the old order being replaced, and the newly placed order to replace it). If you are replacing a buy entry order with a higher limit price than the original order, the buying power is calculated based on the newly placed order. If you are replacing it with a lower limit price, the buying power is calculated based on the old order.\n\nNote: Order cannot be replaced when the status is `accepted`, `pending_new`, `pending_cancel` or `pending_replace`.\n\nNote: Notional orders cannot be replaced. Any attempt to modify a notional order via this endpoint will be rejected. To change a notional order, cancel it and submit a new one.\n",
+                "description": "Replaces a single order with updated parameters. Each parameter overrides the corresponding attribute of the existing order. The other attributes remain the same as the existing order.\n\nA success return code from a replaced order does NOT guarantee the existing open order has been replaced. If the existing open order is filled before the replacing (new) order reaches the execution venue, the replacing (new) order is rejected, and these events are sent in the trade_updates stream channel.\n\nWhile an order is being replaced, buying power is reduced by the larger of the two orders that have been placed (the old order being replaced, and the newly placed order to replace it). If you are replacing a buy entry order with a higher limit price than the original order, the buying power is calculated based on the newly placed order. If you are replacing it with a lower limit price, the buying power is calculated based on the old order.\n\nNote: Order cannot be replaced when the status is `accepted`, `pending_new`, `pending_cancel` or `pending_replace`.\n\nNote: Notional orders for non-IPO asset classes cannot be replaced. Any attempt to modify a non-IPO notional order via this endpoint will be rejected; cancel it and submit a new one instead.\n\nNote: IPO indications of interest (`asset_class: \"ipo\"`) **are** notional and **can** be replaced via this endpoint by providing a new `notional` value. `qty` and `notional` are mutually exclusive on a single replace request.\n",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/PatchOrderRequest"
+                            },
+                            "examples": {
+                                "Equity": {
+                                    "summary": "Increase qty and limit price on an equity order",
+                                    "value": {
+                                        "qty": "4",
+                                        "limit_price": "155",
+                                        "time_in_force": "gtc"
+                                    }
+                                },
+                                "Options": {
+                                    "summary": "Adjust an option order's limit price",
+                                    "value": {
+                                        "limit_price": "11.25",
+                                        "time_in_force": "day"
+                                    }
+                                },
+                                "IPO": {
+                                    "summary": "Update notional on an IPO indication of interest",
+                                    "value": {
+                                        "notional": "750"
+                                    }
+                                }
                             }
                         }
                     }
@@ -653,6 +667,17 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/Order"
+                                },
+                                "examples": {
+                                    "Equity": {
+                                        "$ref": "#/components/examples/EquityOrderResponse"
+                                    },
+                                    "Options": {
+                                        "$ref": "#/components/examples/OptionOrderResponse"
+                                    },
+                                    "IPO": {
+                                        "$ref": "#/components/examples/IPOOrderResponse"
+                                    }
                                 }
                             }
                         }
@@ -1212,9 +1237,6 @@
                                 "properties": {
                                     "symbol": {
                                         "type": "string",
-                                        "x-stoplight": {
-                                            "id": "wb0v0f7q0ms5e"
-                                        },
                                         "description": "the symbol name to add to the watchlist"
                                     }
                                 }
@@ -1353,9 +1375,6 @@
                                 "properties": {
                                     "symbol": {
                                         "type": "string",
-                                        "x-stoplight": {
-                                            "id": "w4vw4ifmq7o9e"
-                                        },
                                         "description": "the symbol name to add to the watchlist"
                                     }
                                 }
@@ -1741,7 +1760,6 @@
         "/v2beta1/events/activities": {
             "get": {
                 "summary": "Subscribe to Activity Events (SSE)",
-                "x-internal": "true,",
                 "tags": [
                     "Events"
                 ],
@@ -2254,7 +2272,7 @@
                         "schema": {
                             "type": "boolean"
                         },
-                        "example": "true",
+                        "example": true,
                         "description": "The ppind(Penny Program Indicator) field indicates whether an option contract is eligible for penny price increments,\nwith `true` meaning it is part of the Penny Program and `false` meaning it is not."
                     }
                 ],
@@ -2905,6 +2923,7 @@
                     "Crypto Funding"
                 ],
                 "summary": "An array of whitelisted addresses",
+                "description": "Returns the list of whitelisted withdrawal addresses for your account.",
                 "operationId": "listWhitelistedAddress",
                 "responses": {
                     "200": {
@@ -2924,6 +2943,7 @@
                     "Crypto Funding"
                 ],
                 "summary": "Request a new whitelisted address",
+                "description": "Submits a new whitelisted withdrawal address for your account. The chain is derived from the supplied asset symbol and address, and the same address cannot be whitelisted twice on the same chain.\n\nWhere travel rule reporting applies to your account, address details are validated against the travel rule provider before being persisted.\n\nNote that whitelisted addresses must wait at least 24 hours before they can be used as a withdrawal destination.",
                 "operationId": "createWhitelistedAddress",
                 "requestBody": {
                     "required": true,
@@ -2976,6 +2996,7 @@
                     "Crypto Funding"
                 ],
                 "summary": "Delete a whitelisted address",
+                "description": "Deletes a whitelisted withdrawal address by ID. Subsequent withdrawals targeting the deleted address will be rejected.",
                 "operationId": "deleteWhitelistedAddress",
                 "responses": {
                     "200": {
@@ -2990,6 +3011,7 @@
                     "Crypto Funding"
                 ],
                 "summary": "Returns the estimated gas fee for a proposed transaction.",
+                "description": "Returns the estimated on-chain network (gas) fee for a proposed crypto withdrawal at current chain conditions. Pass the `asset`, `from_address`, `to_address`, and `amount` you intend to send; the response reports the network fee that would be charged for the corresponding transaction.",
                 "operationId": "getCryptoTransferEstimate",
                 "parameters": [
                     {
@@ -3166,6 +3188,7 @@
                     "Crypto Perpetuals Funding (Beta)"
                 ],
                 "summary": "An array of whitelisted addresses",
+                "description": "Returns the list of whitelisted withdrawal addresses for your perpetuals wallets.",
                 "operationId": "listWhitelistedPerpAddress",
                 "responses": {
                     "200": {
@@ -3185,6 +3208,7 @@
                     "Crypto Perpetuals Funding (Beta)"
                 ],
                 "summary": "Request a new whitelisted address",
+                "description": "Submits a new whitelisted withdrawal address for your perpetuals wallets. The chain is derived from the supplied asset symbol and address, and the same address cannot be whitelisted twice on the same chain.\n\nWhere travel rule reporting applies to your account, address details are validated against the travel rule provider before being persisted.\n\nNote that whitelisted addresses must wait at least 24 hours before they can be used as a withdrawal destination.",
                 "operationId": "createWhitelistedPerpAddress",
                 "requestBody": {
                     "required": true,
@@ -3237,6 +3261,7 @@
                     "Crypto Perpetuals Funding (Beta)"
                 ],
                 "summary": "Delete a whitelisted address",
+                "description": "Deletes a whitelisted withdrawal address from your perpetuals wallets by ID. Subsequent withdrawals targeting the deleted address will be rejected.",
                 "operationId": "deleteWhitelistedPerpAddress",
                 "responses": {
                     "200": {
@@ -3251,6 +3276,7 @@
                     "Crypto Perpetuals Funding (Beta)"
                 ],
                 "summary": "Returns the estimated gas fee for a proposed transaction",
+                "description": "Returns the estimated on-chain network (gas) fee for a proposed withdrawal from a perpetuals wallet at current chain conditions. Pass the `asset`, `from_address`, `to_address`, and `amount` you intend to send; the response reports the network fee that would be charged for the corresponding transaction.",
                 "operationId": "getCryptoPerpTransferEstimate",
                 "parameters": [
                     {
@@ -3855,31 +3881,19 @@
                     },
                     "non_marginable_buying_power": {
                         "description": "Current available non-margin dollar buying power",
-                        "type": "string",
-                        "x-stoplight": {
-                            "id": "z0ydzt6yqegll"
-                        }
+                        "type": "string"
                     },
                     "accrued_fees": {
                         "description": "The fees collected.",
-                        "type": "string",
-                        "x-stoplight": {
-                            "id": "b1gospbwoz961"
-                        }
+                        "type": "string"
                     },
                     "pending_transfer_in": {
                         "description": "Cash pending transfer in.",
-                        "type": "string",
-                        "x-stoplight": {
-                            "id": "83ckvzqu3jewp"
-                        }
+                        "type": "string"
                     },
                     "pending_transfer_out": {
                         "description": "Cash pending transfer out.",
-                        "type": "string",
-                        "x-stoplight": {
-                            "id": "gkxijaueofvdg"
-                        }
+                        "type": "string"
                     },
                     "pattern_day_trader": {
                         "type": "boolean",
@@ -4089,9 +4103,6 @@
                     },
                     "ptp_no_exception_entry": {
                         "type": "boolean",
-                        "x-stoplight": {
-                            "id": "8qvrtnzouzp80"
-                        },
                         "description": "If set to true then Alpaca will accept orders for PTP symbols with no exception. Default is false."
                     },
                     "disable_overnight_trading": {
@@ -4899,9 +4910,6 @@
                     },
                     "maintenance_margin_requirement": {
                         "type": "number",
-                        "x-stoplight": {
-                            "id": "kujwjd2dcq9bn"
-                        },
                         "deprecated": true,
                         "description": "**deprecated**: Please use margin_requirement_long or margin_requirement_short instead. Note that these fields are of type string.\nShows the margin requirement percentage for the asset (equities only).\n"
                     },
@@ -4915,9 +4923,6 @@
                     },
                     "attributes": {
                         "type": "array",
-                        "x-stoplight": {
-                            "id": "40mjg4fj0ykl8"
-                        },
                         "description": "Unique characteristics of the asset. Supported values:\n- `ptp_no_exception`: Asset is a Publicly Traded Partnership (PTP) without a qualified notice; non-U.S. customers may incur 10% withholding on gross proceeds as per IRS guidance, and are blocked from being purchased by default.\n- `ptp_with_exception`: Users can open positions in these PTPs without general restrictions.\n- `ipo`: Accepting limit orders only before the stock begins trading on the secondary market.\n- `has_options`: The underlying equity has listed options available on the platform. Note: if the equity had inactive/expired contracts in the past, this will still show up.\n- `options_late_close`: Indicates the underlying asset's options contracts close at 4:15pm ET instead of the standard 4:00pm ET.\n- `fractional_eh_enabled`: Indicates the asset accepts fractional orders during extended hours sessions (pre-market, post-market, and overnight if enabled).\n- `overnight_tradable`: Asset is eligible for overnight (24x5) trading in supported venues on the platform.\n- `overnight_halted`: Asset is eligible for overnight trading but is currently halted/blocked for overnight sessions due to risk, corporate action, compliance, or venue constraints.",
                         "items": {
                             "type": "string",
@@ -4958,10 +4963,11 @@
                 "enum": [
                     "us_equity",
                     "us_option",
-                    "crypto"
+                    "crypto",
+                    "ipo"
                 ],
                 "example": "us_equity",
-                "description": "This represents the category to which the asset belongs to. It serves to identify the nature of the financial instrument, with options including \"us_equity\" for U.S. equities, \"us_option\" for U.S. options, and \"crypto\" for cryptocurrencies.",
+                "description": "This represents the category to which the asset belongs to. It serves to identify the nature of the financial instrument, with options including \"us_equity\" for U.S. equities, \"us_option\" for U.S. options, \"crypto\" for cryptocurrencies, and \"ipo\" for IPO indications of interest/orders. This `asset_class: ipo` value is distinct from the assets API `attributes: [\"ipo\"]` flag.",
                 "x-examples": {
                     "example-1": "us_equity"
                 }
@@ -5435,82 +5441,6 @@
                     "name"
                 ]
             },
-            "Calendar": {
-                "type": "object",
-                "x-examples": {
-                    "example-1": {
-                        "date": "2022-02-01",
-                        "open": "09:30",
-                        "close": "16:00",
-                        "session_open": "0700",
-                        "session_close": "1900"
-                    }
-                },
-                "title": "Calendar",
-                "properties": {
-                    "date": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "Date string in \u201c%Y-%m-%d\u201d format"
-                    },
-                    "open": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "The time the market opens at on this date in \u201c%H:%M\u201d format"
-                    },
-                    "close": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "The time the market closes at on this date in \u201c%H:%M\u201d format"
-                    },
-                    "settlement_date": {
-                        "type": "string",
-                        "x-stoplight": {
-                            "id": "e0st09dxvsjt5"
-                        },
-                        "description": "Date string in \u201c%Y-%m-%d\u201d format. representing the settlement date for the trade date."
-                    }
-                },
-                "required": [
-                    "date",
-                    "open",
-                    "close",
-                    "settlement_date"
-                ]
-            },
-            "Clock": {
-                "title": "Clock",
-                "type": "object",
-                "properties": {
-                    "timestamp": {
-                        "type": "string",
-                        "description": "Current timestamp\n",
-                        "format": "date-time"
-                    },
-                    "is_open": {
-                        "type": "boolean",
-                        "description": "Whether or not the market is open\n"
-                    },
-                    "next_open": {
-                        "type": "string",
-                        "description": "Next Market open timestamp",
-                        "format": "date-time"
-                    },
-                    "next_close": {
-                        "type": "string",
-                        "description": "Next market close timestamp",
-                        "format": "date-time"
-                    }
-                },
-                "x-examples": {
-                    "example-1": {
-                        "timestamp": "2019-08-24T14:15:22Z",
-                        "is_open": true,
-                        "next_open": "2019-08-24T14:15:22Z",
-                        "next_close": "2019-08-24T14:15:22Z"
-                    }
-                }
-            },
             "PortfolioHistory": {
                 "title": "PortfolioHistory",
                 "description": "Timeseries data for equity and profit loss information of the account.",
@@ -5802,7 +5732,7 @@
                     "NASDAQ",
                     "NYSEARCA",
                     "OTC",
-                    null
+                    ""
                 ],
                 "example": "NYSE"
             },
@@ -5832,12 +5762,17 @@
             "PatchOrderRequest": {
                 "title": "PatchOrderRequest",
                 "type": "object",
-                "description": "Represents a request to patch an order.",
+                "description": "Represents a request to patch an order.\n\nNote: `qty` and `notional` are mutually exclusive on a single replace request. `notional` is only valid for IPO indications of interest (`asset_class: \"ipo\"`); non-IPO notional orders cannot be replaced at all.",
                 "properties": {
                     "qty": {
                         "type": "string",
                         "example": "4",
-                        "description": "number of shares to trade.\n\nYou can only patch full shares for now.\n\nQty of equity fractional orders are not allowed to change. Notional orders cannot be replaced at all \u2014 no fields (qty, limit_price, stop_price, etc.) can be modified."
+                        "description": "number of shares to trade.\n\nYou can only patch full shares for now.\n\nQty of equity fractional orders are not allowed to change. Non-IPO notional orders cannot be replaced at all \u2014 no fields (qty, limit_price, stop_price, etc.) can be modified; cancel and resubmit instead."
+                    },
+                    "notional": {
+                        "type": "string",
+                        "example": "750",
+                        "description": "New notional (dollar amount) for the order. Only valid for IPO indications of interest (`asset_class: \"ipo\"`); will be rejected for any other asset class.\nMutually exclusive with `qty` on the same replace request."
                     },
                     "time_in_force": {
                         "$ref": "#/components/schemas/TimeInForce"
@@ -5951,18 +5886,6 @@
                     "name"
                 ]
             },
-            "AddAssetToWatchlistRequest": {
-                "title": "AddAssetToWatchlistRequest",
-                "type": "object",
-                "description": "Append an asset for the symbol to the end of watchlist asset list",
-                "properties": {
-                    "symbol": {
-                        "type": "string",
-                        "example": "AAPL",
-                        "description": "symbol name to append to watchlist"
-                    }
-                }
-            },
             "CryptoWallet": {
                 "type": "object",
                 "properties": {
@@ -6033,9 +5956,6 @@
                         "format": "date-time",
                         "description": "Timestamp when transfer was created"
                     }
-                },
-                "x-stoplight": {
-                    "id": "f986mttnx5c4n"
                 }
             },
             "CryptoTransferStatus": {
@@ -6068,7 +5988,7 @@
                     },
                     "status": {
                         "type": "string",
-                        "description": "Status of whitelisted address which is either ACTIVE or PENDING. Whitelisted addresses will be subjected to a 24 waiting period. After the waiting period is over the status will become ACTIVE.",
+                        "description": "Status of whitelisted address which is either APPROVED or PENDING. Whitelisted addresses will be subjected to a 24 waiting period. After the waiting period is over the status will become APPROVED.",
                         "enum": [
                             "APPROVED",
                             "PENDING"
@@ -7450,6 +7370,18 @@
                                 "$ref": "#/components/schemas/RightsDistributionActivityV2"
                             },
                             {
+                                "$ref": "#/components/schemas/RightsSubscriptionElectionActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/TenderOfferActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/ExchangeOfferActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/WarrantExerciseElectionActivityV2"
+                            },
+                            {
                                 "$ref": "#/components/schemas/WRMActivityV2"
                             },
                             {
@@ -7498,6 +7430,9 @@
                                 "$ref": "#/components/schemas/FOPTActivityV2"
                             },
                             {
+                                "$ref": "#/components/schemas/DIVNRAActivityV2"
+                            },
+                            {
                                 "$ref": "#/components/schemas/JNLSActivityV2"
                             },
                             {
@@ -7541,7 +7476,6 @@
                     {
                         "type": "object",
                         "required": [
-                            "ca_id",
                             "position_date"
                         ],
                         "properties": {
@@ -8351,6 +8285,75 @@
                     }
                 ]
             },
+            "CommonVOFSubtypeActivityV2": {
+                "type": "object",
+                "required": [
+                    "source_cusip",
+                    "source_symbol"
+                ],
+                "properties": {
+                    "source_cusip": {
+                        "type": "string",
+                        "description": "CUSIP of the parent security"
+                    },
+                    "source_symbol": {
+                        "type": "string",
+                        "description": "Symbol of the parent security"
+                    },
+                    "new_cusip": {
+                        "type": "string",
+                        "description": "CUSIP of the new security"
+                    },
+                    "new_symbol": {
+                        "type": "string",
+                        "description": "Symbol of the new security"
+                    }
+                }
+            },
+            "RightsSubscriptionElectionActivityV2": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonNTAActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CommonVOFSubtypeActivityV2"
+                    }
+                ]
+            },
+            "TenderOfferActivityV2": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonNTAActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CommonVOFSubtypeActivityV2"
+                    }
+                ]
+            },
+            "ExchangeOfferActivityV2": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonNTAActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CommonVOFSubtypeActivityV2"
+                    }
+                ]
+            },
+            "WarrantExerciseElectionActivityV2": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonNTAActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CommonVOFSubtypeActivityV2"
+                    }
+                ]
+            },
             "WRMActivityV2": {
                 "type": "object",
                 "description": "Worthless Removal",
@@ -8750,6 +8753,37 @@
                     }
                 ]
             },
+            "DIVNRAActivityV2": {
+                "type": "object",
+                "description": "Dividend withholding for non resident aliens",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonNTAActivityV2"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "cusip",
+                            "symbol",
+                            "parent_id"
+                        ],
+                        "properties": {
+                            "cusip": {
+                                "type": "string",
+                                "description": "The CUSIP of the security involved with the activity"
+                            },
+                            "symbol": {
+                                "type": "string",
+                                "description": "The symbol of the security involved with the activity"
+                            },
+                            "parent_id": {
+                                "type": "string",
+                                "description": "The ref_id of the parent dividend"
+                            }
+                        }
+                    }
+                ]
+            },
             "CommonJournalActivityV2": {
                 "type": "object",
                 "allOf": [
@@ -9127,6 +9161,44 @@
                             "ratio_qty": "1"
                         }
                     ],
+                    "trail_percent": null,
+                    "trail_price": null,
+                    "hwm": null,
+                    "subtag": null,
+                    "source": null
+                }
+            },
+            "IPOOrderResponse": {
+                "value": {
+                    "id": "5e2a8f1a-9c10-4d3a-8c64-7f59c1d18c11",
+                    "client_order_id": "0b3a90b6-6b5c-4d83-8c0e-9b3eaf4a8d11",
+                    "created_at": "2025-09-15T13:30:42.117344821Z",
+                    "updated_at": "2025-09-15T13:30:42.117344821Z",
+                    "submitted_at": "2025-09-15T13:30:42.094518219Z",
+                    "filled_at": null,
+                    "expired_at": null,
+                    "canceled_at": null,
+                    "failed_at": null,
+                    "replaced_at": null,
+                    "replaced_by": null,
+                    "replaces": null,
+                    "asset_id": "9b6c7c1a-9eb2-4d4a-8a3a-1bf4c1d5cbaa",
+                    "symbol": "FI111225",
+                    "asset_class": "ipo",
+                    "notional": "500",
+                    "qty": null,
+                    "filled_qty": "0",
+                    "filled_avg_price": null,
+                    "order_class": "",
+                    "order_type": "market",
+                    "type": "market",
+                    "side": "buy",
+                    "time_in_force": "gtc",
+                    "limit_price": null,
+                    "stop_price": null,
+                    "status": "accepted",
+                    "extended_hours": false,
+                    "legs": null,
                     "trail_percent": null,
                     "trail_price": null,
                     "hwm": null,

@@ -317,6 +317,10 @@ func (c *TradingClient) GetWatchlistByID(WatchlistID string) (*Watchlist, error)
 	return unmarshal[Watchlist](c.Raw.Do("GET", c.baseURL, fmt.Sprintf("/v2/watchlists/%s", url.PathEscape(WatchlistID)), nil, nil))
 }
 
+type AddAssetToWatchlistRequest struct {
+	Symbol string `json:"symbol,omitempty"`
+}
+
 // AddAssetToWatchlist — Add Asset to Watchlist
 func (c *TradingClient) AddAssetToWatchlist(WatchlistID string, body *AddAssetToWatchlistRequest) (*Watchlist, error) {
 	return unmarshal[Watchlist](c.Raw.Do("POST", c.baseURL, fmt.Sprintf("/v2/watchlists/%s", url.PathEscape(WatchlistID)), nil, body))

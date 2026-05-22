@@ -694,6 +694,7 @@ var CreateCryptoTransferForAccountOp = Op{
 
 var CreateWhitelistedAddressOp = Op{
 	Name: "CreateWhitelistedAddress", Summary: "Request a new whitelisted address",
+	Long:    "Submits a new whitelisted withdrawal address for your account. The chain is derived from the supplied asset symbol and address, and the same address cannot be whitelisted twice on the same chain",
 	Example: `  alpaca wallet whitelist add --address 0xabc... --asset ETH`,
 	Flags: []FlagDef{
 		{Name: "address", OASName: "address", Type: "string", Description: "address to be whitelisted", Source: "body"},
@@ -703,6 +704,7 @@ var CreateWhitelistedAddressOp = Op{
 
 var CreateWhitelistedPerpAddressOp = Op{
 	Name: "CreateWhitelistedPerpAddress", Summary: "Request a new whitelisted address",
+	Long:    "Submits a new whitelisted withdrawal address for your perpetuals wallets. The chain is derived from the supplied asset symbol and address, and the same address cannot be whitelisted twice on the same chain",
 	Example: `  alpaca crypto-perp wallet whitelist add --address 0xabc... --asset ETH`,
 	Flags: []FlagDef{
 		{Name: "address", OASName: "address", Type: "string", Description: "address to be whitelisted", Source: "body"},
@@ -767,6 +769,7 @@ var DeleteWatchlistByNameOp = Op{
 
 var DeleteWhitelistedAddressOp = Op{
 	Name: "DeleteWhitelistedAddress", Summary: "Delete a whitelisted address",
+	Long:    "Deletes a whitelisted withdrawal address by ID. Subsequent withdrawals targeting the deleted address will be rejected",
 	Example: `  alpaca wallet whitelist delete --whitelisted-address-id <id>`,
 	Flags: []FlagDef{
 		{Name: "whitelisted-address-id", OASName: "whitelisted_address_id", Type: "string", Description: "whitelisted address to delete", Required: true, Source: "path"},
@@ -775,6 +778,7 @@ var DeleteWhitelistedAddressOp = Op{
 
 var DeleteWhitelistedPerpAddressOp = Op{
 	Name: "DeleteWhitelistedPerpAddress", Summary: "Delete a whitelisted address",
+	Long:    "Deletes a whitelisted withdrawal address from your perpetuals wallets by ID. Subsequent withdrawals targeting the deleted address will be rejected",
 	Example: `  alpaca crypto-perp wallet whitelist delete --whitelisted-address-id <id>`,
 	Flags: []FlagDef{
 		{Name: "whitelisted-address-id", OASName: "whitelisted_address_id", Type: "string", Description: "whitelisted address to delete", Required: true, Source: "path"},
@@ -988,6 +992,7 @@ var GetCryptoPerpFundingTransferOp = Op{
 
 var GetCryptoPerpTransferEstimateOp = Op{
 	Name: "GetCryptoPerpTransferEstimate", Summary: "Returns the estimated gas fee for a proposed transaction",
+	Long:    "Returns the estimated on-chain network (gas) fee for a proposed withdrawal from a perpetuals wallet at current chain conditions",
 	Example: `  alpaca crypto-perp wallet transfer estimate --asset BTC --amount 0.5`,
 	Flags: []FlagDef{
 		{Name: "amount", OASName: "amount", Type: "string", Description: "amount, denoted in the specified asset, of the proposed transaction", Source: "query"},
@@ -999,6 +1004,7 @@ var GetCryptoPerpTransferEstimateOp = Op{
 
 var GetCryptoTransferEstimateOp = Op{
 	Name: "GetCryptoTransferEstimate", Summary: "Returns the estimated gas fee for a proposed transaction",
+	Long: "Returns the estimated on-chain network (gas) fee for a proposed crypto withdrawal at current chain conditions. Pass the `asset`, `from_address`, `to_address`, and `amount` you intend to send; the response reports the network fee that would be charged for the corresponding transaction",
 	Example: `  alpaca wallet transfer estimate --asset BTC --amount 0.5 \
     --from-address 0xabc... --to-address 0xdef...`,
 	Flags: []FlagDef{
@@ -1109,11 +1115,13 @@ var ListCryptoPerpFundingWalletsOp = Op{
 
 var ListWhitelistedAddressOp = Op{
 	Name: "ListWhitelistedAddress", Summary: "Get an array of whitelisted addresses",
+	Long:    "Returns the list of whitelisted withdrawal addresses for your account",
 	Example: `  alpaca wallet whitelist list`,
 }
 
 var ListWhitelistedPerpAddressOp = Op{
 	Name: "ListWhitelistedPerpAddress", Summary: "Get an array of whitelisted addresses",
+	Long:    "Returns the list of whitelisted withdrawal addresses for your perpetuals wallets",
 	Example: `  alpaca crypto-perp wallet whitelist list`,
 }
 
@@ -1178,6 +1186,7 @@ var PatchOrderByOrderIDOp = Op{
 		{Name: "advanced-instructions", OASName: "advanced_instructions", Type: "string", Description: "advanced instructions for Elite Smart Router: https://docs.alpaca.markets/docs/alpaca-elite-smart-router", Source: "body"},
 		{Name: "client-order-id", OASName: "client_order_id", Type: "string", Description: "A unique identifier for the new order. Automatically generated if not sent. (<= 128 characters)", Source: "body"},
 		{Name: "limit-price", OASName: "limit_price", Type: "string", Description: "required if original order's type field was limit or stop_limit.", Source: "body"},
+		{Name: "notional", OASName: "notional", Type: "string", Description: "new notional (dollar amount) for the order", Source: "body"},
 		{Name: "order-id", OASName: "order_id", Type: "string", Description: "order id", Required: true, Source: "path"},
 		{Name: "qty", OASName: "qty", Type: "string", Description: "number of shares to trade.\n\nYou can only patch full shares for now.\n\nQty of equity fractional orders are not allowed ...", Source: "body"},
 		{Name: "stop-price", OASName: "stop_price", Type: "string", Description: "required if original order type is limit or stop_limit", Source: "body"},
@@ -1304,7 +1313,7 @@ var accountConfigurationsResponseFields = []ResponseField{
 
 var assetsResponseFields = []ResponseField{
 	{Name: "attributes", Type: "[]enum", Description: "unique characteristics of the asset", EnumValues: []string{"fractional_eh_enabled", "has_options", "ipo", "options_late_close", "overnight_halted", "overnight_tradable", "ptp_no_exception", "ptp_with_exception"}},
-	{Name: "class", Type: "enum", Description: "this represents the category to which the asset belongs to", EnumValues: []string{"crypto", "us_equity", "us_option"}},
+	{Name: "class", Type: "enum", Description: "this represents the category to which the asset belongs to", EnumValues: []string{"crypto", "ipo", "us_equity", "us_option"}},
 	{Name: "cusip", Type: "string", Description: "CUSIP identifier for the asset (US Equities only).\nTo request a specific CUSIP, please reach out to Alpaca support"},
 	{Name: "easy_to_borrow", Type: "boolean", Description: "asset is easy-to-borrow or not (filtering for easy_to_borrow = True is the best way to check whether the name is curr..."},
 	{Name: "exchange", Type: "enum", Description: "represents the current exchanges Alpaca supports", EnumValues: []string{"AMEX", "ARCA", "BATS", "NASDAQ", "NYSE", "NYSEARCA", "OTC"}},
@@ -1365,7 +1374,7 @@ var optionSnapshotsRespResponseFields = []ResponseField{
 }
 
 var orderResponseFields = []ResponseField{
-	{Name: "asset_class", Type: "enum", Description: "this represents the category to which the asset belongs to", EnumValues: []string{"crypto", "us_equity", "us_option"}},
+	{Name: "asset_class", Type: "enum", Description: "this represents the category to which the asset belongs to", EnumValues: []string{"crypto", "ipo", "us_equity", "us_option"}},
 	{Name: "asset_id", Type: "string", Description: "asset ID (For options this represents the option contract ID)"},
 	{Name: "canceled_at", Type: "string", Description: "canceled at"},
 	{Name: "client_order_id", Type: "string", Description: "client unique order ID"},
@@ -1401,7 +1410,7 @@ var orderResponseFields = []ResponseField{
 }
 
 var positionResponseFields = []ResponseField{
-	{Name: "asset_class", Type: "enum", Description: "this represents the category to which the asset belongs to", EnumValues: []string{"crypto", "us_equity", "us_option"}},
+	{Name: "asset_class", Type: "enum", Description: "this represents the category to which the asset belongs to", EnumValues: []string{"crypto", "ipo", "us_equity", "us_option"}},
 	{Name: "asset_id", Type: "string", Description: "asset ID (For options this represents the option contract ID)"},
 	{Name: "asset_marginable", Type: "boolean", Description: "asset marginable"},
 	{Name: "avg_entry_price", Type: "string", Description: "average entry price of the position"},
@@ -1436,7 +1445,7 @@ var whitelistedAddressResponseFields = []ResponseField{
 	{Name: "chain", Type: "string", Description: "underlying network this address represents"},
 	{Name: "created_at", Type: "string", Description: "timestamp (RFC3339) of account creation"},
 	{Name: "id", Type: "string", Description: "unique ID for whitelisted address"},
-	{Name: "status", Type: "enum", Description: "status of whitelisted address which is either ACTIVE or PENDING", EnumValues: []string{"APPROVED", "PENDING"}},
+	{Name: "status", Type: "enum", Description: "status of whitelisted address which is either APPROVED or PENDING", EnumValues: []string{"APPROVED", "PENDING"}},
 }
 
 var (

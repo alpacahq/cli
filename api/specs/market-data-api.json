@@ -4544,7 +4544,7 @@
                     "type": "string"
                 },
                 "example": "forward_split,reverse_split",
-                "description": "A comma-separated list of types. If not provided, search all types.\n\nThe following types are supported:\n  - reverse_split\n  - forward_split\n  - unit_split\n  - cash_dividend\n  - stock_dividend\n  - spin_off\n  - cash_merger\n  - stock_merger\n  - stock_and_cash_merger\n  - redemption\n  - name_change\n  - worthless_removal\n  - rights_distribution\n"
+                "description": "A comma-separated list of types. If not provided, search all types.\n\nThe following types are supported:\n  - reverse_split\n  - forward_split\n  - unit_split\n  - cash_dividend\n  - stock_dividend\n  - spin_off\n  - cash_merger\n  - stock_merger\n  - stock_and_cash_merger\n  - redemption\n  - name_change\n  - worthless_removal\n  - rights_distribution\n  - partial_call\n  - reorganization\n"
             },
             "cas_start": {
                 "name": "start",
@@ -5266,6 +5266,14 @@
                     "foreign": {
                         "type": "boolean"
                     },
+                    "sub_type": {
+                        "type": "string",
+                        "description": "Sub-type of the cash dividend.",
+                        "enum": [
+                            "interest",
+                            "return_of_capital"
+                        ]
+                    },
                     "process_date": {
                         "$ref": "#/components/schemas/process_date"
                     },
@@ -5734,6 +5742,132 @@
                     "source_symbol": "IFN"
                 }
             },
+            "partial_call": {
+                "type": "object",
+                "description": "Partial call.",
+                "properties": {
+                    "id": {
+                        "$ref": "#/components/schemas/ca_id"
+                    },
+                    "symbol": {
+                        "type": "string"
+                    },
+                    "cusip": {
+                        "type": "string"
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "process_date": {
+                        "$ref": "#/components/schemas/process_date"
+                    },
+                    "payable_date": {
+                        "$ref": "#/components/schemas/payable_date"
+                    },
+                    "record_date": {
+                        "$ref": "#/components/schemas/record_date"
+                    },
+                    "lottery_date": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "results_publication_date": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "dividend_rate": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "lottery_type": {
+                        "type": "string",
+                        "description": "The type of lottery for the partial call.",
+                        "enum": [
+                            "original",
+                            "supplemental"
+                        ]
+                    }
+                },
+                "required": [
+                    "id",
+                    "symbol",
+                    "process_date"
+                ]
+            },
+            "reorganization_stock_movement": {
+                "type": "object",
+                "description": "A stock allocation leg in a reorganization.",
+                "properties": {
+                    "symbol": {
+                        "type": "string"
+                    },
+                    "cusip": {
+                        "type": "string"
+                    },
+                    "isin": {
+                        "type": "string"
+                    },
+                    "new_rate": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "source_rate": {
+                        "type": "number",
+                        "format": "double"
+                    }
+                },
+                "required": [
+                    "symbol",
+                    "cusip",
+                    "new_rate",
+                    "source_rate"
+                ]
+            },
+            "reorganization": {
+                "type": "object",
+                "description": "Reorganization (cash and/or multiple stock allocations).",
+                "properties": {
+                    "id": {
+                        "$ref": "#/components/schemas/ca_id"
+                    },
+                    "symbol": {
+                        "type": "string"
+                    },
+                    "cusip": {
+                        "type": "string"
+                    },
+                    "isin": {
+                        "type": "string"
+                    },
+                    "cash_rate": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "process_date": {
+                        "$ref": "#/components/schemas/process_date"
+                    },
+                    "effective_date": {
+                        "$ref": "#/components/schemas/effective_date"
+                    },
+                    "payable_date": {
+                        "$ref": "#/components/schemas/payable_date"
+                    },
+                    "stock_movements": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/reorganization_stock_movement"
+                        }
+                    }
+                },
+                "required": [
+                    "id",
+                    "symbol",
+                    "cusip",
+                    "process_date",
+                    "effective_date"
+                ]
+            },
             "corporate_actions": {
                 "type": "object",
                 "properties": {
@@ -5826,6 +5960,20 @@
                         "x-go-type-skip-optional-pointer": true,
                         "items": {
                             "$ref": "#/components/schemas/rights_distribution"
+                        }
+                    },
+                    "partial_calls": {
+                        "type": "array",
+                        "x-go-type-skip-optional-pointer": true,
+                        "items": {
+                            "$ref": "#/components/schemas/partial_call"
+                        }
+                    },
+                    "reorganizations": {
+                        "type": "array",
+                        "x-go-type-skip-optional-pointer": true,
+                        "items": {
+                            "$ref": "#/components/schemas/reorganization"
                         }
                     }
                 }

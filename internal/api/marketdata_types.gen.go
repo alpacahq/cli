@@ -32,6 +32,7 @@ type CashDividend struct {
 	Rate           float64 `json:"rate"`
 	RecordDate     string  `json:"record_date,omitempty"`
 	Special        bool    `json:"special"`
+	SubType        string  `json:"sub_type,omitempty"`
 	Symbol         string  `json:"symbol"`
 }
 
@@ -52,7 +53,9 @@ type CorporateActions struct {
 	CashMergers         []CashMerger         `json:"cash_mergers,omitempty"`
 	ForwardSplits       []ForwardSplit       `json:"forward_splits,omitempty"`
 	NameChanges         []NameChange         `json:"name_changes,omitempty"`
+	PartialCalls        []PartialCall        `json:"partial_calls,omitempty"`
 	Redemptions         []Redemption         `json:"redemptions,omitempty"`
+	Reorganizations     []Reorganization     `json:"reorganizations,omitempty"`
 	ReverseSplits       []ReverseSplit       `json:"reverse_splits,omitempty"`
 	RightsDistributions []RightsDistribution `json:"rights_distributions,omitempty"`
 	SpinOffs            []SpinOff            `json:"spin_offs,omitempty"`
@@ -333,6 +336,20 @@ type OptionTradesResp struct {
 	Trades        map[string][]OptionTrade `json:"trades"`
 }
 
+type PartialCall struct {
+	Cusip                  string  `json:"cusip,omitempty"`
+	DividendRate           float64 `json:"dividend_rate,omitempty"`
+	ID                     string  `json:"id"`
+	LotteryDate            string  `json:"lottery_date,omitempty"`
+	LotteryType            string  `json:"lottery_type,omitempty"`
+	PayableDate            string  `json:"payable_date,omitempty"`
+	Price                  float64 `json:"price,omitempty"`
+	ProcessDate            string  `json:"process_date"`
+	RecordDate             string  `json:"record_date,omitempty"`
+	ResultsPublicationDate string  `json:"results_publication_date,omitempty"`
+	Symbol                 string  `json:"symbol"`
+}
+
 type Redemption struct {
 	Cusip       string  `json:"cusip"`
 	ID          string  `json:"id"`
@@ -340,6 +357,26 @@ type Redemption struct {
 	ProcessDate string  `json:"process_date"`
 	Rate        float64 `json:"rate"`
 	Symbol      string  `json:"symbol"`
+}
+
+type Reorganization struct {
+	CashRate       float64                       `json:"cash_rate,omitempty"`
+	Cusip          string                        `json:"cusip"`
+	EffectiveDate  string                        `json:"effective_date"`
+	ID             string                        `json:"id"`
+	Isin           string                        `json:"isin,omitempty"`
+	PayableDate    string                        `json:"payable_date,omitempty"`
+	ProcessDate    string                        `json:"process_date"`
+	StockMovements []ReorganizationStockMovement `json:"stock_movements,omitempty"`
+	Symbol         string                        `json:"symbol"`
+}
+
+type ReorganizationStockMovement struct {
+	Cusip      string  `json:"cusip"`
+	Isin       string  `json:"isin,omitempty"`
+	NewRate    float64 `json:"new_rate"`
+	SourceRate float64 `json:"source_rate"`
+	Symbol     string  `json:"symbol"`
 }
 
 type ReverseSplit struct {
