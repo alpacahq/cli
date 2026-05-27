@@ -1,0 +1,252 @@
+-- allium: 3
+-- hand-authored-commands.allium
+
+-- Scope: Hand-authored CLI command logic for the Alpaca CLI
+-- Includes: bracket-order leg construction with time-in-force defaulting,
+--           watchlist by-name asset removal, self-update discovery and upgrade,
+--           doctor diagnostics, credential profile management
+-- Excludes: generated Cobra command tree (internal/cmd/commands.gen.go),
+--           raw API passthrough (api.go), factory helpers (factory.go),
+--           help-all rendering (help_all.go)
+
+------------------------------------------------------------
+-- External Entities
+------------------------------------------------------------
+
+external entity Asset {
+    symbol: String
+    asset_class: equity | crypto
+}
+
+external entity BrokerWatchlist {
+    name: String
+    assets: Set<Asset>
+}
+
+------------------------------------------------------------
+-- Value Types
+------------------------------------------------------------
+
+value TakeProfitLeg {
+    limit_price: Decimal
+}
+
+value StopLossLeg {
+    stop_price: Decimal
+    limit_price: Decimal?
+}
+
+------------------------------------------------------------
+-- Enumerations
+------------------------------------------------------------
+
+enum InstallMethod { homebrew | go_install }
+
+enum TradingMode { paper | live }
+
+enum CredentialSource { env_api_key | oauth | profile_api_key }
+
+------------------------------------------------------------
+-- Entities and Variants
+------------------------------------------------------------
+
+entity Profile {
+    name: String
+    trading_mode: TradingMode
+    credential_source: oauth | profile_api_key
+}
+
+entity Order {
+    symbol: String
+    side: buy | sell
+    order_class: simple | bracket
+    time_in_force: day | gtc | ioc | fok | opg | cls
+    take_profit: TakeProfitLeg?
+    stop_loss: StopLossLeg?
+
+    invariant BracketHasLegs {
+        order_class = bracket implies (take_profit != null or stop_loss != null)
+    }
+}
+
+entity DiagnosticReport {
+    cli_version: String
+    credential_source: CredentialSource
+    config_accessible: Boolean
+    trading_api_reachable: Boolean
+    data_api_reachable: Boolean
+    update_available: Boolean
+}
+
+------------------------------------------------------------
+-- Rules
+------------------------------------------------------------
+
+-- Bracket Order Construction
+
+rule ConstructBracketOrder {
+    when: PlaceOrder(symbol, side, qty, take_profit?, stop_loss?)
+
+    requires: take_profit != null or stop_loss != null
+
+    let asset = Asset{symbol}
+    let default_tif = if asset.asset_class = crypto: gtc else: day
+
+    ensures: Order.created(
+        symbol: symbol,
+        side: side,
+        order_class: bracket,
+        time_in_force: default_tif,
+        take_profit: take_profit,
+        stop_loss: stop_loss
+    )
+}
+
+rule ConstructSimpleOrder {
+    when: PlaceOrder(symbol, side, qty, take_profit?, stop_loss?)
+
+    requires: take_profit = null and stop_loss = null
+
+    let asset = Asset{symbol}
+    let default_tif = if asset.asset_class = crypto: gtc else: day
+
+    ensures: Order.created(
+        symbol: symbol,
+        side: side,
+        order_class: simple,
+        time_in_force: default_tif
+    )
+}
+
+rule PreviewOrder {
+    when: PreviewOrder(symbol, side, qty, take_profit?, stop_loss?)
+
+    ensures: OrderPreviewDisplayed(
+        symbol: symbol,
+        order_class: if (take_profit != null or stop_loss != null): bracket else: simple,
+        take_profit: take_profit,
+        stop_loss: stop_loss
+    )
+
+    @guidance
+        -- No order is submitted. The constructed request body is displayed to the user.
+        -- Triggered when the user requests a dry run before committing to submission.
+}
+
+-- Watchlist Management
+
+rule RemoveWatchlistAssetByName {
+    when: RemoveWatchlistAssetByName(watchlist_name, symbol)
+
+    let watchlist = BrokerWatchlist{name: watchlist_name}
+
+    requires: exists watchlist
+
+    ensures: watchlist.assets.remove(Asset{symbol})
+}
+
+-- Update Discovery and Self-Upgrade
+
+rule CheckForUpdate {
+    when: CheckForUpdate()
+
+    ensures: UpdateStatusReported(
+        install_method: detect_install_method(),
+        update_available: version_newer(latest_published_version(), current_version())
+    )
+}
+
+rule UpgradeCli {
+    when: UpgradeCli(install_method, confirmed)
+
+    requires: confirmed
+
+    ensures: CliUpgraded(install_method: install_method)
+
+    @guidance
+        -- Homebrew installs upgrade via brew. Go installs upgrade via go install.
+        -- In interactive terminals the user is prompted unless --yes is passed.
+        -- Install method is inferred from the executable's resolved path and environment.
+}
+
+-- Doctor Diagnostics
+
+rule RunDiagnostics {
+    when: RunDiagnostics()
+
+    ensures: DiagnosticReport.created(
+        cli_version: current_version(),
+        credential_source: active_credential_source(),
+        config_accessible: config_accessible(),
+        trading_api_reachable: trading_api_reachable(),
+        data_api_reachable: data_api_reachable(),
+        update_available: version_newer(latest_published_version(), current_version())
+    )
+
+    @guidance
+        -- Exits non-zero if any check fails.
+        -- Environment variable shadowing of profile credentials is reported as a warning,
+        -- not as a check failure.
+}
+
+-- Credential Profile Management
+
+rule LoginWithOAuth {
+    when: LoginWithOAuth(profile_name, scopes)
+
+    ensures: Profile.created(
+        name: profile_name,
+        trading_mode: paper,
+        credential_source: oauth
+    )
+
+    @guidance
+        -- OAuth login is restricted to paper trading accounts.
+        -- Available scopes: account:write, trading, data.
+        -- Credentials are validated against the trading API before the profile is saved.
+}
+
+rule LoginWithApiKey {
+    when: LoginWithApiKey(profile_name, api_key, secret_key, trading_mode)
+
+    ensures: Profile.created(
+        name: profile_name,
+        trading_mode: trading_mode,
+        credential_source: profile_api_key
+    )
+
+    @guidance
+        -- Supports both paper and live trading modes.
+        -- Credentials are validated against the trading API before the profile is saved.
+}
+
+rule LogoutProfile {
+    when: LogoutProfile(profile)
+
+    ensures: not exists profile
+}
+
+rule SwitchActiveProfile {
+    when: SwitchActiveProfile(profile_name)
+
+    let profile = Profile{name: profile_name}
+
+    requires: exists profile
+
+    ensures: ActiveProfileChanged(profile: profile)
+}
+
+-- Environment Credential Shadowing
+
+rule WarnOnEnvCredentialShadowing {
+    when: profile: Profile.created
+
+    requires: env_credentials_present()
+
+    ensures: EnvShadowingWarning(profile: profile)
+
+    @guidance
+        -- Fires when ALPACA_API_KEY / ALPACA_SECRET_KEY environment variables are set
+        -- at the time a profile is saved. The profile is persisted regardless;
+        -- the warning informs the user that env vars will take precedence at runtime.
+}

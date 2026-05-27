@@ -1,0 +1,152 @@
+-- allium: 3
+-- http-client.allium
+
+------------------------------------------------------------
+-- Value Types
+------------------------------------------------------------
+
+value RequestError {
+    code: String?
+    message: String
+    request_id: String?
+    hint: String?
+}
+
+------------------------------------------------------------
+-- Enumerations
+------------------------------------------------------------
+
+enum HttpMethod { get | post | put | patch | delete }
+
+------------------------------------------------------------
+-- Entities and Variants
+------------------------------------------------------------
+
+entity HttpClient {
+    api_key: String?
+    secret: String?
+    access_token: String?
+    base_url: String
+    data_url: String
+    timeout: Duration
+}
+
+entity OutboundRequest {
+    client: HttpClient
+    method: HttpMethod
+    path: String
+    attempt: Integer
+    status: in_flight | awaiting_retry | succeeded | failed
+
+    transitions status {
+        in_flight -> awaiting_retry
+        in_flight -> succeeded
+        in_flight -> failed
+        awaiting_retry -> in_flight
+        terminal: succeeded, failed
+    }
+}
+
+------------------------------------------------------------
+-- Config
+------------------------------------------------------------
+
+config {
+    max_attempts: Integer = 3
+    backoff_base: Duration = 1.seconds
+}
+
+------------------------------------------------------------
+-- Rules
+------------------------------------------------------------
+
+rule AuthWithAccessToken {
+    when: SendRequest(client, method, path, body?)
+    requires: client.access_token != null
+    ensures: OutboundRequest.created(
+        client: client,
+        method: method,
+        path: path,
+        attempt: 1,
+        status: in_flight
+    )
+
+    @guidance
+        -- Access token authentication takes priority over API key and secret
+        -- authentication when both are configured.
+}
+
+rule AuthWithApiKeyAndSecret {
+    when: SendRequest(client, method, path, body?)
+    requires: client.access_token = null
+    ensures: OutboundRequest.created(
+        client: client,
+        method: method,
+        path: path,
+        attempt: 1,
+        status: in_flight
+    )
+}
+
+rule SucceedOnOkResponse {
+    when: ReceiveOkResponse(request)
+    requires: request.status = in_flight
+    ensures: request.status = succeeded
+}
+
+rule RetryOnRateLimitResponse {
+    when: ReceiveRateLimitResponse(request, retry_after?)
+    requires: request.status = in_flight
+    requires: request.attempt < config.max_attempts
+    ensures: request.status = awaiting_retry
+
+    @guidance
+        -- A rate-limit response indicates the server is temporarily rejecting
+        -- further requests. Wait for the delay stated in the Retry-After
+        -- response field before re-sending; apply exponential backoff if
+        -- no delay is stated.
+}
+
+rule RetryOnServerErrorResponse {
+    when: ReceiveServerErrorResponse(request)
+    requires: request.status = in_flight
+    requires: request.attempt < config.max_attempts
+    ensures: request.status = awaiting_retry
+
+    @guidance
+        -- A server error response indicates a transient server-side failure.
+        -- Apply exponential backoff with random jitter before re-sending.
+        -- Delay grows as backoff_base * 2^attempt.
+}
+
+rule ResumeAfterRetryDelay {
+    when: RetryDelayElapsed(request)
+    requires: request.status = awaiting_retry
+    ensures:
+        request.attempt = request.attempt + 1
+        request.status = in_flight
+}
+
+rule FailOnRateLimitMaxAttempts {
+    when: ReceiveRateLimitResponse(request, _)
+    requires: request.status = in_flight
+    requires: request.attempt >= config.max_attempts
+    ensures: request.status = failed
+}
+
+rule FailOnServerErrorMaxAttempts {
+    when: ReceiveServerErrorResponse(request)
+    requires: request.status = in_flight
+    requires: request.attempt >= config.max_attempts
+    ensures: request.status = failed
+}
+
+rule ScrubCredentialsFromDiagnosticOutput {
+    when: EmitDiagnosticOutput(content)
+    ensures: DiagnosticEmitted(content: scrub_credentials(content))
+
+    @guidance
+        -- Replace all occurrences of the API key, secret, and access token
+        -- with a redaction marker before writing to verbose, debug, or trace
+        -- output.
+}

@@ -1,0 +1,150 @@
+-- allium: 3
+-- code-generator.allium
+
+-- Scope: OAS-driven code generation pipeline in cmd/generate/
+-- Includes: command registry (CommandMapping), generation pipeline, coverage validation
+-- Excludes:
+--   - Output files: internal/api/*.gen.go, internal/cmd/commands.gen.go
+--   - Hand-written extension points: bodyHook and configureFunc implementations
+--   - OAS specification source files (api/specs/)
+
+------------------------------------------------------------
+-- External Entities
+------------------------------------------------------------
+
+external entity OASSpec {
+    -- A configured OpenAPI 3.0 specification input
+    prefix: String           -- output file prefix ("trading" or "marketdata")
+    client_name: String      -- name of the generated client struct
+    base_url_field: String   -- root config field pointing to the API base URL
+}
+
+------------------------------------------------------------
+-- Enumerations
+------------------------------------------------------------
+
+enum ArtifactKind { type_definitions | client_methods | operation_descriptions | cli_commands }
+
+------------------------------------------------------------
+-- Entities
+------------------------------------------------------------
+
+entity CommandMapping {
+    -- Developer-maintained registry entry classifying one OAS operation
+    operation_id: String
+    disposition: mapped | excluded
+    parent_command: String?
+    command_use: String?
+    examples: String?            -- required when mapped; documents CLI usage
+    exclusion_reason: String?    -- required when excluded; explains why
+    flag_aliases: Set<String>    -- renames body fields that collide with path/query params
+    skip_fields: Set<String>     -- body fields handled by a hand-written hook
+
+    invariant MappedMustHaveExamples {
+        disposition = mapped implies examples != null
+    }
+
+    invariant ExcludedMustHaveReason {
+        disposition = excluded implies exclusion_reason != null
+    }
+}
+
+entity GeneratedArtifact {
+    -- A file produced and written by the generator during a run
+    spec: OASSpec?          -- null for combined (cross-spec) artifacts
+    kind: ArtifactKind
+    output_path: String
+    is_gofmt_applied: Boolean
+}
+
+------------------------------------------------------------
+-- Surfaces
+------------------------------------------------------------
+
+surface CodeGeneratorCLI {
+    provides:
+        RunCodeGenerator()
+}
+
+------------------------------------------------------------
+-- Rules
+------------------------------------------------------------
+
+rule RunGenerator {
+    when: RunCodeGenerator()
+
+    requires: all_endpoints_registered()
+
+    ensures:
+        for spec in OASSpecs:
+            GeneratedArtifact.created(
+                spec: spec,
+                kind: type_definitions,
+                output_path: type_output_path(spec.prefix),
+                is_gofmt_applied: true
+            )
+    ensures:
+        for spec in OASSpecs:
+            GeneratedArtifact.created(
+                spec: spec,
+                kind: client_methods,
+                output_path: client_output_path(spec.prefix, spec.client_name),
+                is_gofmt_applied: true
+            )
+    ensures: GeneratedArtifact.created(
+        spec: null,
+        kind: operation_descriptions,
+        output_path: "internal/api/descriptions.gen.go",
+        is_gofmt_applied: true
+    )
+    ensures: GeneratedArtifact.created(
+        spec: null,
+        kind: cli_commands,
+        output_path: "internal/cmd/commands.gen.go",
+        is_gofmt_applied: true
+    )
+
+    @guidance
+        -- all_endpoints_registered() verifies every operation_id found in the
+        -- OAS specs has a corresponding CommandMapping entry; missing entries
+        -- are hard errors and abort generation before any file is written.
+        --
+        -- Type generation: one *_types.gen.go per spec. Schema name collisions
+        -- across specs are resolved by appending a disambiguation suffix;
+        -- capitalised names take precedence over lowercase variants.
+        --
+        -- Client generation: one *_client.gen.go per spec. Each operation
+        -- becomes a typed method with path injection, query-parameter building,
+        -- and JSON marshaling. Generic unmarshal helpers handle typed and array
+        -- responses; operations with no response schema use a raw message
+        -- pass-through.
+        --
+        -- Descriptions file: one combined descriptions.gen.go across all specs.
+        -- Contains one Op variable per operation (Name, Summary, Long, Example,
+        -- ReturnsArray, Flags), an AllOps slice, and an OpByName lookup used
+        -- by the CLI at runtime for flag registration and help text.
+        --
+        -- Commands file: one combined commands.gen.go across all specs.
+        -- Generates parent command group variables, a fetchCmd closure per
+        -- mapped operation, POST body constructors, PATCH body constructors
+        -- (change-tracking: rejects when no flag is set), and an init()
+        -- function that wires commands into the Cobra tree. Body fields
+        -- colliding with path or query parameter names are resolved via
+        -- flag_aliases; fields handled by hand-written hooks are listed in
+        -- skip_fields.
+}
+
+------------------------------------------------------------
+-- Invariants
+------------------------------------------------------------
+
+invariant AllArtifactsFormatted {
+    for a in GeneratedArtifacts:
+        a.is_gofmt_applied = true
+}
+
+invariant UniqueCommandMappings {
+    for a in CommandMappings:
+        for b in CommandMappings:
+            a != b implies a.operation_id != b.operation_id
+}

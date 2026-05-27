@@ -1,0 +1,95 @@
+-- allium: 3
+-- oauth-flow.allium
+-- Authorization-code OAuth2 flow for CLI user authentication.
+-- Currently restricted to paper trading; live trading requires API keys until PKCE is added.
+
+------------------------------------------------------------
+-- Value Types
+------------------------------------------------------------
+
+value AccessToken {
+    access_token: String
+    token_type: String
+    scope: String
+}
+
+------------------------------------------------------------
+-- Entities and Variants
+------------------------------------------------------------
+
+entity AuthorizationRequest {
+    scope: String
+    environment: String?
+    initiated_at: Timestamp
+    status: pending | completed | denied | timed_out
+
+    transitions status {
+        pending -> completed
+        pending -> denied
+        pending -> timed_out
+        terminal: completed, denied, timed_out
+    }
+
+    token: AccessToken when status = completed
+}
+
+------------------------------------------------------------
+-- Config
+------------------------------------------------------------
+
+config {
+    authorization_timeout: Duration = 2.minutes
+    token_exchange_timeout: Duration = 15.seconds
+}
+
+------------------------------------------------------------
+-- Rules
+------------------------------------------------------------
+
+rule UserInitiatesAuthorization {
+    when: UserInitiatesAuthorization(scope, environment?)
+    ensures: AuthorizationRequest.created(
+        scope: scope,
+        environment: environment,
+        initiated_at: now,
+        status: pending
+    )
+
+    @guidance
+        -- Implementation opens the user's browser to the Alpaca authorization endpoint.
+        -- A local callback server binds to a pre-registered localhost port.
+        -- A random state value is generated per request and embedded in the authorization URL
+        -- so that CSRF validation is possible when the callback arrives.
+}
+
+rule AuthorizationGranted {
+    when: AuthorizationCodeReceived(request, code)
+    requires: request.status = pending
+    ensures:
+        request.status = completed
+        request.token = exchange_code(code)
+
+    @guidance
+        -- The state parameter in the callback must exactly match the value generated at
+        -- initiation; a mismatch must be rejected as a potential CSRF attack.
+        -- exchange_code posts the code to Alpaca's token endpoint using the registered
+        -- client credentials and the exact redirect URI from the initiation request.
+}
+
+rule AuthorizationDenied {
+    when: AuthorizationCallbackError(request, reason)
+    requires: request.status = pending
+    ensures: request.status = denied
+}
+
+rule AuthorizationTimedOut {
+    when: request: AuthorizationRequest.initiated_at + config.authorization_timeout <= now
+    requires: request.status = pending
+    ensures: request.status = timed_out
+}
+
+------------------------------------------------------------
+-- Open Questions
+------------------------------------------------------------
+
+open question "PKCE — when will PKCE or Device Authorization Grant (RFC 8628) be added to enable live trading authorization?"

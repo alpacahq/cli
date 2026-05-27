@@ -1,0 +1,108 @@
+-- allium: 3
+-- output-contract.allium
+--
+-- Two-tier output model: API commands emit structured data (JSON or CSV)
+-- to stdout with JSON errors on stderr; operational commands emit plain
+-- text. Covers jq-filter transformation and CSV formatting support.
+
+------------------------------------------------------------
+-- Enumerations
+------------------------------------------------------------
+
+enum OutputFormat { json | csv }
+
+------------------------------------------------------------
+-- Value Types
+------------------------------------------------------------
+
+value CommandError {
+    error: String
+    code: String?
+    status: Integer?
+    hint: String
+    request_id: String?
+    method: String?
+    path: String?
+}
+
+------------------------------------------------------------
+-- Config
+------------------------------------------------------------
+
+config {
+    default_format: OutputFormat = json
+}
+
+------------------------------------------------------------
+-- Contracts
+------------------------------------------------------------
+
+contract RenderingPipeline {
+    render: (data: Any, format: OutputFormat, jq_filter: String?) -> String
+
+    @invariant JqBeforeFormat
+        -- When a jq filter is present, it is applied to the raw data
+        -- before the output format serialiser runs. The serialiser
+        -- receives the transformed data, not the original.
+
+    @invariant NilCollectionAsEmptyArray
+        -- A nil or absent collection renders as an empty JSON array ([]),
+        -- never as null. Downstream scripts need no null-checks on list
+        -- results.
+
+    @invariant CsvColumnsAlphabetical
+        -- CSV columns are ordered alphabetically by field name when
+        -- column order is not otherwise specified by a schema.
+
+    @invariant CsvHeadersFromSchema
+        -- When no jq filter is active and the command declares a response
+        -- schema, CSV headers follow the schema field list. When the data
+        -- set is empty but headers are declared, the header row is still
+        -- emitted.
+
+    @invariant DefaultFormatIsJson
+        -- When no output format is explicitly selected, the pipeline
+        -- defaults to JSON.
+}
+
+contract ErrorChannel {
+    emit_error: (error: CommandError) -> String
+
+    @invariant ErrorOnStderr
+        -- Error documents are serialised as JSON and written to stderr,
+        -- independent of the configured output format or any jq filter.
+
+    @invariant ErrorStructure
+        -- Every error document carries at minimum the error message and
+        -- a hint. Optional fields (code, status, method, path,
+        -- request_id) are included only when the upstream API response
+        -- supplies them.
+}
+
+------------------------------------------------------------
+-- Surfaces
+------------------------------------------------------------
+
+surface ApiCommandOutput {
+    contracts:
+        fulfils RenderingPipeline
+        fulfils ErrorChannel
+
+    @guarantee StructuredStdout
+        -- Successful API commands write structured data (JSON or CSV) to
+        -- stdout. Human-readable prose is not emitted to stdout by API
+        -- commands.
+
+    @guarantee MachineReadableErrors
+        -- Errors from API commands appear on stderr as a JSON document.
+        -- Callers can separate structured results (stdout) from failure
+        -- signals (stderr) without parsing output text.
+}
+
+surface OperationalCommandOutput {
+    @guarantee PlainTextStdout
+        -- Operational commands (version, update, doctor) emit
+        -- human-readable plain text to stdout. They do not use the
+        -- structured rendering pipeline and are not subject to
+        -- --jq or --csv flags.
+}
