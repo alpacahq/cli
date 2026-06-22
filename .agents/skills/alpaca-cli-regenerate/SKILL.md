@@ -206,6 +206,12 @@ a valid response or a structured JSON error.
 If commands or flags were added, removed, or renamed, follow the
 "Keep docs in sync" section in `AGENTS.md`.
 
+Keep `README.md` concise. It should describe command areas and point to
+`alpaca --help-all`, `<command> --help`, and `<command> --schema` instead
+of listing generated command tables. Add README detail only when user-facing
+behavior, safety guidance, authentication, output, or install/update flow
+changes.
+
 ## Quick reference
 
 | Task | Command |
