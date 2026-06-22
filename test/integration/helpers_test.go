@@ -173,6 +173,20 @@ func alpacaWithStderr(t *testing.T, args ...string) (stdout, stderr []byte, exit
 	return stdout, stderrBuf.Bytes(), 0
 }
 
+func alpacaJSONOrStructuredError(t *testing.T, args ...string) (map[string]any, bool) {
+	t.Helper()
+	stdout, stderr, exitCode := alpacaWithStderr(t, args...)
+	if exitCode == 0 {
+		return parseJSONMap(t, stdout), true
+	}
+	if len(stdout) != 0 {
+		t.Fatalf("alpaca %s wrote stdout on error: %s", strings.Join(args, " "), string(stdout))
+	}
+	data := parseJSONMap(t, stderr)
+	requireFields(t, data, "error", "status")
+	return data, false
+}
+
 // alpacaFail runs the CLI and expects non-zero exit. Fatals if it succeeds.
 func alpacaFail(t *testing.T, args ...string) (stdout, stderr []byte, exitCode int) {
 	t.Helper()

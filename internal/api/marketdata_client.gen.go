@@ -55,6 +55,11 @@ func (c *MarketDataClient) FixedIncomeLatestPrices(params url.Values) (*FixedInc
 	return unmarshal[FixedIncomeLatestPricesResp](c.Raw.Do("GET", c.baseURL, "/v1beta1/fixed_income/latest/prices", params, nil))
 }
 
+// FixedIncomeLatestQuotes — Latest quotes
+func (c *MarketDataClient) FixedIncomeLatestQuotes(params url.Values) (*FixedIncomeLatestQuotesResp, error) {
+	return unmarshal[FixedIncomeLatestQuotesResp](c.Raw.Do("GET", c.baseURL, "/v1beta1/fixed_income/latest/quotes", params, nil))
+}
+
 // LatestRates — Latest rates for currency pairs
 func (c *MarketDataClient) LatestRates(params url.Values) (*ForexLatestRatesResp, error) {
 	return unmarshal[ForexLatestRatesResp](c.Raw.Do("GET", c.baseURL, "/v1beta1/forex/latest/rates", params, nil))
@@ -63,6 +68,16 @@ func (c *MarketDataClient) LatestRates(params url.Values) (*ForexLatestRatesResp
 // Rates — Historical rates for currency pairs
 func (c *MarketDataClient) Rates(params url.Values) (*ForexRatesResp, error) {
 	return unmarshal[ForexRatesResp](c.Raw.Do("GET", c.baseURL, "/v1beta1/forex/rates", params, nil))
+}
+
+// IndexLatestValues — Latest values for indices
+func (c *MarketDataClient) IndexLatestValues(params url.Values) (*IndexLatestValuesResp, error) {
+	return unmarshal[IndexLatestValuesResp](c.Raw.Do("GET", c.baseURL, "/v1beta1/indices/latest/values", params, nil))
+}
+
+// IndexValues — Historical values for indices
+func (c *MarketDataClient) IndexValues(params url.Values) (*IndexValuesResp, error) {
+	return unmarshal[IndexValuesResp](c.Raw.Do("GET", c.baseURL, "/v1beta1/indices/values", params, nil))
 }
 
 // Logos — Logos
