@@ -14,6 +14,7 @@ CorporateActions: "Get corporate actions"
   ids (query, string) -> ids
   limit (query, int, default=100) -> limit
   page-token (query, string) -> page_token
+  region (query, string, default=us) -> region
   sort (query, string, default=asc) -> sort
   start (query, string) -> start
   symbols (query, string) -> symbols
@@ -89,6 +90,21 @@ CryptoTrades: "Get historical trades"
 
 FixedIncomeLatestPrices: "Get latest prices"
   isins (query, string, required) -> isins
+
+FixedIncomeLatestQuotes: "Get latest quotes"
+  isins (query, string, required) -> isins
+  trade-size (query, int) -> trade_size
+
+IndexLatestValues: "Get latest values for indices"
+  symbols (query, string, required) -> symbols
+
+IndexValues: "Get historical values for indices"
+  end (query, string) -> end
+  limit (query, int, default=1000) -> limit
+  page-token (query, string) -> page_token
+  sort (query, string, default=asc) -> sort
+  start (query, string) -> start
+  symbols (query, string, required) -> symbols
 
 LatestRates: "Get latest rates for currency pairs"
   currency-pairs (query, string, required) -> currency_pairs
@@ -335,15 +351,24 @@ CreateCryptoPerpTransferForAccount: "Request a new withdrawal"
   address (body, string) -> address
   amount (body, string) -> amount
   asset (body, string) -> asset
+  chain (body, string) -> chain
 
 CreateCryptoTransferForAccount: "Request a new withdrawal"
   address (body, string) -> address
   amount (body, string) -> amount
   asset (body, string) -> asset
+  chain (body, string) -> chain
+
+CreateLocates: "Create locate"
+  all-or-none (body, bool) -> all_or_none
+  limit-price (body, string) -> limit_price
+  qty (body, int) -> qty
+  symbol (body, string) -> symbol
 
 CreateWhitelistedAddress: "Request a new whitelisted address"
   address (body, string) -> address
   asset (body, string) -> asset
+  chain (body, string) -> chain
 
 CreateWhitelistedPerpAddress: "Request a new whitelisted address"
   address (body, string) -> address
@@ -484,6 +509,9 @@ GetCryptoTransferEstimate: "Returns the estimated gas fee for a proposed transac
   from-address (query, string) -> from_address
   to-address (query, string) -> to_address
 
+GetLocate: "Get locate"
+  locate-id (path, string, required) -> locate_id
+
 GetOpenPosition: "Get an open position"
   symbol-or-asset-id (path, string, required) -> symbol_or_asset_id
 
@@ -515,12 +543,24 @@ ListCryptoFundingTransfers: "Retrieve crypto funding transfers"
 
 ListCryptoFundingWallets: "Retrieve crypto funding wallets"
   asset (query, string) -> asset
+  chain (query, string) -> chain
   network (query, string) -> network
 
 ListCryptoPerpFundingTransfers: "Retrieve crypto funding transfers"
 
 ListCryptoPerpFundingWallets: "Retrieve crypto funding wallets"
   asset (query, string) -> asset
+
+ListLocateQuotes: "Get locate quotes"
+  symbols (query, string, required) -> symbols
+
+ListLocates: "List locates"
+  end (query, string) -> end
+  limit (query, int, default=1000) -> limit
+  page-token (query, string) -> page_token
+  start (query, string) -> start
+  status (query, string) -> status
+  symbol (query, string) -> symbol
 
 ListWhitelistedAddress: "Get an array of whitelisted addresses"
 

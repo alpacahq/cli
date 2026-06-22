@@ -12,6 +12,8 @@ type MarketType string
 
 type OptionFeed string
 
+type Region string
+
 type Sort string
 
 type StockHistoricalFeed string
@@ -21,12 +23,14 @@ type StockLatestFeed string
 type StockTape string
 
 type CashDividend struct {
+	Currency       string  `json:"currency,omitempty"`
 	Cusip          string  `json:"cusip"`
 	DueBillOffDate string  `json:"due_bill_off_date,omitempty"`
 	DueBillOnDate  string  `json:"due_bill_on_date,omitempty"`
 	ExDate         string  `json:"ex_date"`
 	Foreign        bool    `json:"foreign"`
 	ID             string  `json:"id"`
+	Isin           string  `json:"isin,omitempty"`
 	PayableDate    string  `json:"payable_date,omitempty"`
 	ProcessDate    string  `json:"process_date"`
 	Rate           float64 `json:"rate"`
@@ -38,9 +42,12 @@ type CashDividend struct {
 
 type CashMerger struct {
 	AcquireeCusip  string  `json:"acquiree_cusip"`
+	AcquireeIsin   string  `json:"acquiree_isin,omitempty"`
 	AcquireeSymbol string  `json:"acquiree_symbol"`
 	AcquirerCusip  string  `json:"acquirer_cusip,omitempty"`
+	AcquirerIsin   string  `json:"acquirer_isin,omitempty"`
 	AcquirerSymbol string  `json:"acquirer_symbol,omitempty"`
+	Currency       string  `json:"currency,omitempty"`
 	EffectiveDate  string  `json:"effective_date"`
 	ID             string  `json:"id"`
 	PayableDate    string  `json:"payable_date,omitempty"`
@@ -169,11 +176,29 @@ type FixedIncomeLatestPricesResp struct {
 	Prices map[string]FixedIncomePrice `json:"prices"`
 }
 
+type FixedIncomeLatestQuotesResp struct {
+	Quotes map[string]FixedIncomeQuote `json:"quotes"`
+}
+
 type FixedIncomePrice struct {
 	P   float64 `json:"p"`
 	T   string  `json:"t"`
 	Ytm float64 `json:"ytm,omitempty"`
 	Ytw float64 `json:"ytw,omitempty"`
+}
+
+type FixedIncomeQuote struct {
+	Ams  int     `json:"ams"`
+	Ap   float64 `json:"ap"`
+	As   int     `json:"as"`
+	Aytm float64 `json:"aytm"`
+	Aytw float64 `json:"aytw"`
+	Bms  int     `json:"bms"`
+	Bp   float64 `json:"bp"`
+	Bs   int     `json:"bs"`
+	Bytm float64 `json:"bytm"`
+	Bytw float64 `json:"bytw"`
+	T    string  `json:"t"`
 }
 
 type ForexLatestRatesResp struct {
@@ -193,16 +218,32 @@ type ForexRatesResp struct {
 }
 
 type ForwardSplit struct {
+	Currency              string  `json:"currency,omitempty"`
 	Cusip                 string  `json:"cusip"`
 	DueBillRedemptionDate string  `json:"due_bill_redemption_date,omitempty"`
 	ExDate                string  `json:"ex_date"`
 	ID                    string  `json:"id"`
+	Isin                  string  `json:"isin,omitempty"`
 	NewRate               float64 `json:"new_rate"`
 	OldRate               float64 `json:"old_rate"`
 	PayableDate           string  `json:"payable_date,omitempty"`
 	ProcessDate           string  `json:"process_date"`
 	RecordDate            string  `json:"record_date,omitempty"`
 	Symbol                string  `json:"symbol"`
+}
+
+type IndexLatestValuesResp struct {
+	Values map[string]IndexValue `json:"values"`
+}
+
+type IndexValue struct {
+	T string  `json:"t"`
+	V float64 `json:"v"`
+}
+
+type IndexValuesResp struct {
+	NextPageToken string                  `json:"next_page_token"`
+	Values        map[string][]IndexValue `json:"values"`
 }
 
 type MostActive struct {
@@ -231,10 +272,13 @@ type MoversResp struct {
 }
 
 type NameChange struct {
+	Currency    string `json:"currency,omitempty"`
 	ID          string `json:"id"`
 	NewCusip    string `json:"new_cusip"`
+	NewIsin     string `json:"new_isin,omitempty"`
 	NewSymbol   string `json:"new_symbol"`
 	OldCusip    string `json:"old_cusip"`
+	OldIsin     string `json:"old_isin,omitempty"`
 	OldSymbol   string `json:"old_symbol"`
 	ProcessDate string `json:"process_date"`
 }
@@ -337,9 +381,11 @@ type OptionTradesResp struct {
 }
 
 type PartialCall struct {
+	Currency               string  `json:"currency,omitempty"`
 	Cusip                  string  `json:"cusip,omitempty"`
 	DividendRate           float64 `json:"dividend_rate,omitempty"`
 	ID                     string  `json:"id"`
+	Isin                   string  `json:"isin,omitempty"`
 	LotteryDate            string  `json:"lottery_date,omitempty"`
 	LotteryType            string  `json:"lottery_type,omitempty"`
 	PayableDate            string  `json:"payable_date,omitempty"`
@@ -351,8 +397,10 @@ type PartialCall struct {
 }
 
 type Redemption struct {
+	Currency    string  `json:"currency,omitempty"`
 	Cusip       string  `json:"cusip"`
 	ID          string  `json:"id"`
+	Isin        string  `json:"isin,omitempty"`
 	PayableDate string  `json:"payable_date,omitempty"`
 	ProcessDate string  `json:"process_date"`
 	Rate        float64 `json:"rate"`
@@ -361,6 +409,7 @@ type Redemption struct {
 
 type Reorganization struct {
 	CashRate       float64                       `json:"cash_rate,omitempty"`
+	Currency       string                        `json:"currency,omitempty"`
 	Cusip          string                        `json:"cusip"`
 	EffectiveDate  string                        `json:"effective_date"`
 	ID             string                        `json:"id"`
@@ -380,11 +429,14 @@ type ReorganizationStockMovement struct {
 }
 
 type ReverseSplit struct {
+	Currency    string  `json:"currency,omitempty"`
 	ExDate      string  `json:"ex_date"`
 	ID          string  `json:"id"`
 	NewCusip    string  `json:"new_cusip"`
+	NewIsin     string  `json:"new_isin,omitempty"`
 	NewRate     float64 `json:"new_rate"`
 	OldCusip    string  `json:"old_cusip"`
+	OldIsin     string  `json:"old_isin,omitempty"`
 	OldRate     float64 `json:"old_rate"`
 	PayableDate string  `json:"payable_date,omitempty"`
 	ProcessDate string  `json:"process_date"`
@@ -393,42 +445,51 @@ type ReverseSplit struct {
 }
 
 type RightsDistribution struct {
+	Currency       string  `json:"currency,omitempty"`
 	ExDate         string  `json:"ex_date"`
 	ExpirationDate string  `json:"expiration_date,omitempty"`
 	ID             string  `json:"id"`
 	NewCusip       string  `json:"new_cusip"`
+	NewIsin        string  `json:"new_isin,omitempty"`
 	NewSymbol      string  `json:"new_symbol"`
 	PayableDate    string  `json:"payable_date"`
 	ProcessDate    string  `json:"process_date"`
 	Rate           float64 `json:"rate"`
 	RecordDate     string  `json:"record_date,omitempty"`
 	SourceCusip    string  `json:"source_cusip"`
+	SourceIsin     string  `json:"source_isin,omitempty"`
 	SourceSymbol   string  `json:"source_symbol"`
 }
 
 type SpinOff struct {
+	Currency              string  `json:"currency,omitempty"`
 	DueBillRedemptionDate string  `json:"due_bill_redemption_date,omitempty"`
 	ExDate                string  `json:"ex_date"`
 	ID                    string  `json:"id"`
 	NewCusip              string  `json:"new_cusip"`
+	NewIsin               string  `json:"new_isin,omitempty"`
 	NewRate               float64 `json:"new_rate"`
 	NewSymbol             string  `json:"new_symbol"`
 	PayableDate           string  `json:"payable_date,omitempty"`
 	ProcessDate           string  `json:"process_date"`
 	RecordDate            string  `json:"record_date,omitempty"`
 	SourceCusip           string  `json:"source_cusip"`
+	SourceIsin            string  `json:"source_isin,omitempty"`
 	SourceRate            float64 `json:"source_rate"`
 	SourceSymbol          string  `json:"source_symbol"`
 }
 
 type StockAndCashMerger struct {
 	AcquireeCusip  string  `json:"acquiree_cusip"`
+	AcquireeIsin   string  `json:"acquiree_isin,omitempty"`
 	AcquireeRate   float64 `json:"acquiree_rate"`
 	AcquireeSymbol string  `json:"acquiree_symbol"`
 	AcquirerCusip  string  `json:"acquirer_cusip"`
+	AcquirerIsin   string  `json:"acquirer_isin,omitempty"`
 	AcquirerRate   float64 `json:"acquirer_rate"`
 	AcquirerSymbol string  `json:"acquirer_symbol"`
 	CashRate       float64 `json:"cash_rate"`
+	Currency       string  `json:"currency,omitempty"`
 	EffectiveDate  string  `json:"effective_date"`
 	ID             string  `json:"id"`
 	PayableDate    string  `json:"payable_date,omitempty"`
@@ -487,9 +548,11 @@ type StockDailyAuctions struct {
 }
 
 type StockDividend struct {
+	Currency    string  `json:"currency,omitempty"`
 	Cusip       string  `json:"cusip"`
 	ExDate      string  `json:"ex_date"`
 	ID          string  `json:"id"`
+	Isin        string  `json:"isin,omitempty"`
 	PayableDate string  `json:"payable_date,omitempty"`
 	ProcessDate string  `json:"process_date"`
 	Rate        float64 `json:"rate"`
@@ -532,11 +595,14 @@ type StockLatestTradesRespSingle struct {
 
 type StockMerger struct {
 	AcquireeCusip  string  `json:"acquiree_cusip"`
+	AcquireeIsin   string  `json:"acquiree_isin,omitempty"`
 	AcquireeRate   float64 `json:"acquiree_rate"`
 	AcquireeSymbol string  `json:"acquiree_symbol"`
 	AcquirerCusip  string  `json:"acquirer_cusip"`
+	AcquirerIsin   string  `json:"acquirer_isin,omitempty"`
 	AcquirerRate   float64 `json:"acquirer_rate"`
 	AcquirerSymbol string  `json:"acquirer_symbol"`
+	Currency       string  `json:"currency,omitempty"`
 	EffectiveDate  string  `json:"effective_date"`
 	ID             string  `json:"id"`
 	PayableDate    string  `json:"payable_date,omitempty"`
@@ -602,14 +668,18 @@ type StockTradesRespSingle struct {
 
 type UnitSplit struct {
 	AlternateCusip  string  `json:"alternate_cusip"`
+	AlternateIsin   string  `json:"alternate_isin,omitempty"`
 	AlternateRate   float64 `json:"alternate_rate"`
 	AlternateSymbol string  `json:"alternate_symbol"`
+	Currency        string  `json:"currency,omitempty"`
 	EffectiveDate   string  `json:"effective_date"`
 	ID              string  `json:"id"`
 	NewCusip        string  `json:"new_cusip"`
+	NewIsin         string  `json:"new_isin,omitempty"`
 	NewRate         float64 `json:"new_rate"`
 	NewSymbol       string  `json:"new_symbol"`
 	OldCusip        string  `json:"old_cusip"`
+	OldIsin         string  `json:"old_isin,omitempty"`
 	OldRate         float64 `json:"old_rate"`
 	OldSymbol       string  `json:"old_symbol"`
 	PayableDate     string  `json:"payable_date,omitempty"`
@@ -617,8 +687,10 @@ type UnitSplit struct {
 }
 
 type WorthlessRemoval struct {
+	Currency    string `json:"currency,omitempty"`
 	Cusip       string `json:"cusip"`
 	ID          string `json:"id"`
+	Isin        string `json:"isin,omitempty"`
 	ProcessDate string `json:"process_date"`
 	Symbol      string `json:"symbol"`
 }

@@ -13,6 +13,7 @@ This CLI is designed primarily as a tool for AI agents and automation pipelines,
 
 - `alpaca position close-all` will liquidate your entire portfolio instantly
 - `alpaca order cancel-all` will cancel every open order without listing them first
+- `alpaca locate create` will request shares for a short sale and may incur locate fees
 
 There are no guardrails — the CLI trusts that the caller (human or agent) knows what it's asking for. If you're using this with live trading credentials, understand that a single mistyped command can have real financial consequences.
 
@@ -104,6 +105,10 @@ alpaca position list
 | `alpaca option get` | Option contract details |
 | `alpaca option exercise` | Exercise an option |
 | `alpaca option do-not-exercise` | Mark option as do-not-exercise |
+| `alpaca locate list` | List locate requests |
+| `alpaca locate create` | Create a locate request |
+| `alpaca locate get` | Get locate request details |
+| `alpaca locate quotes` | Quote locate availability and pricing |
 | `alpaca clock` | US market clock |
 | `alpaca clock markets` | Multi-market clock |
 | `alpaca calendar` | US trading calendar |
@@ -149,6 +154,9 @@ alpaca position list
 | `alpaca data forex latest` | Latest forex rates |
 | `alpaca data corporate-actions` | Corporate actions (market data) |
 | `alpaca data fixed-income` | Fixed income prices |
+| `alpaca data fixed-income-quotes` | Fixed income quotes |
+| `alpaca data index latest-values` | Latest index values |
+| `alpaca data index values` | Historical index values |
 | `alpaca data logo` | Company logo URL |
 | `alpaca data meta exchanges` | Exchange code reference |
 | `alpaca data meta conditions` | Trade/quote condition codes |
