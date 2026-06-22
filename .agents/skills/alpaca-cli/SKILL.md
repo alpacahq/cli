@@ -40,6 +40,8 @@ alpaca profile login
 
 Credentials are stored in `~/.config/alpaca/profiles/` with 0600 permissions.
 
+The embedded OAuth client ID and secret are public native-app identifiers, not security credentials. OAuth access is gated by browser consent plus redirect/state validation, and remains paper-only until the flow is hardened with PKCE or Device Authorization Grant.
+
 ### Environment variables (for scripts, CI, agents)
 
 No secrets touch disk. Preferred for automation:
