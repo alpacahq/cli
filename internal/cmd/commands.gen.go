@@ -380,7 +380,7 @@ var getCryptoPerpTransferEstimateCmd = fetchCmd("estimate", api.GetCryptoPerpTra
 })
 
 var getCryptoTransferEstimateCmd = fetchCmd("estimate", api.GetCryptoTransferEstimateOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return voidResponse(tradingClient.GetCryptoTransferEstimate(queryFromFlags(cmd, api.GetCryptoTransferEstimateOp)))
+	return tradingClient.GetCryptoTransferEstimate(queryFromFlags(cmd, api.GetCryptoTransferEstimateOp))
 })
 
 var getLocateCmd = fetchCmd("get", api.GetLocateOp, func(cmd *cobra.Command, args []string) (any, error) {

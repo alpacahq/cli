@@ -283,8 +283,8 @@ func (c *TradingClient) ListCryptoFundingWallets(params url.Values) (*CryptoWall
 }
 
 // GetCryptoTransferEstimate — Returns the estimated gas fee for a proposed transaction.
-func (c *TradingClient) GetCryptoTransferEstimate(params url.Values) (json.RawMessage, error) {
-	return c.Raw.Do("GET", c.baseURL, "/v2/wallets/fees/estimate", params, nil)
+func (c *TradingClient) GetCryptoTransferEstimate(params url.Values) (*WalletFeeEstimateResponse, error) {
+	return unmarshal[WalletFeeEstimateResponse](c.Raw.Do("GET", c.baseURL, "/v2/wallets/fees/estimate", params, nil))
 }
 
 // ListCryptoFundingTransfers — Retrieve Crypto Funding Transfers

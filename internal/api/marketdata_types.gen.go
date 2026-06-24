@@ -435,6 +435,7 @@ type ReverseSplit struct {
 	NewCusip    string  `json:"new_cusip"`
 	NewIsin     string  `json:"new_isin,omitempty"`
 	NewRate     float64 `json:"new_rate"`
+	NewSymbol   string  `json:"new_symbol,omitempty"`
 	OldCusip    string  `json:"old_cusip"`
 	OldIsin     string  `json:"old_isin,omitempty"`
 	OldRate     float64 `json:"old_rate"`
