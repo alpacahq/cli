@@ -509,6 +509,9 @@
                         "format": "date-time",
                         "type": "string"
                     },
+                    "crypto_status": {
+                        "$ref": "#/components/schemas/AccountStatus"
+                    },
                     "currency": {
                         "description": "USD\n",
                         "example": "USD",
@@ -789,13 +792,20 @@
             "AccountStatus": {
                 "description": "An enum representing the various possible account status values.\n\nMost likely, the account status is ACTIVE unless there is any problem. The account status may get in ACCOUNT_UPDATED when personal information is being updated from the dashboard, in which case you may not be allowed trading for a short period of time until the change is approved.\n\n- ONBOARDING\n  The account is onboarding.\n- SUBMISSION_FAILED\n  The account application submission failed for some reason.\n- SUBMITTED\n  The account application has been submitted for review.\n- ACCOUNT_UPDATED\n  The account information is being updated.\n- APPROVAL_PENDING\n  The final account approval is pending.\n- ACTIVE\n  The account is active for trading.\n- REJECTED\n  The account application has been rejected.",
                 "enum": [
+                    "INACTIVE",
+                    "PAPER_ONLY",
                     "ONBOARDING",
                     "SUBMISSION_FAILED",
                     "SUBMITTED",
                     "ACCOUNT_UPDATED",
                     "APPROVAL_PENDING",
                     "ACTIVE",
-                    "REJECTED"
+                    "REJECTED",
+                    "ACCOUNT_CLOSED",
+                    "APPROVED",
+                    "ACCOUNT_CLOSED_PENDING",
+                    "ACTION_REQUIRED",
+                    "LIMITED"
                 ],
                 "example": "ACTIVE",
                 "title": "AccountStatus",
@@ -1333,9 +1343,24 @@
                         "description": "Asset is marginable or not",
                         "type": "boolean"
                     },
+                    "min_order_size": {
+                        "description": "Minimum order size. Field available for crypto only.",
+                        "format": "decimal",
+                        "type": "string"
+                    },
+                    "min_trade_increment": {
+                        "description": "Amount a trade quantity can be incremented by. Field available for crypto only.",
+                        "format": "decimal",
+                        "type": "string"
+                    },
                     "name": {
                         "description": "The official name of the asset",
                         "minLength": 1,
+                        "type": "string"
+                    },
+                    "price_increment": {
+                        "description": "Amount the price can be incremented by. Field available for crypto only.",
+                        "format": "decimal",
                         "type": "string"
                     },
                     "shortable": {
@@ -2334,6 +2359,7 @@
                         "properties": {
                             "ca_id": {
                                 "description": "The unique identifier for this corporate action",
+                                "format": "uuid",
                                 "type": "string"
                             },
                             "cash_payout": {
@@ -3154,11 +3180,13 @@
                     "id": {
                         "description": "The unique identifier of the option contract.",
                         "example": "98359ef7-5124-49f3-85ea-5cf02df6defa",
+                        "format": "uuid",
                         "type": "string"
                     },
                     "multiplier": {
                         "description": "The multiplier of the option contract is crucial for calculating both the trade premium and the extended strike price. In standard contracts, the multiplier is always set to 100.\nFor instance, if a contract is traded at $1.50 and the multiplier is 100, the total amount debited when buying the contract would be $150.00.\nSimilarly, when exercising a call contract, the total cost will be equal to the strike price times the multiplier.",
                         "example": "100",
+                        "format": "decimal",
                         "type": "string"
                     },
                     "name": {
@@ -3199,6 +3227,7 @@
                     "strike_price": {
                         "description": "The strike price of the option contract.",
                         "example": "100",
+                        "format": "decimal",
                         "type": "string"
                     },
                     "style": {
@@ -3232,6 +3261,7 @@
                     "underlying_asset_id": {
                         "description": "The unique identifier of the underlying asset.",
                         "example": "b0b6dd9d-8b9b-48a9-ba46-b9d54906e415",
+                        "format": "uuid",
                         "type": "string"
                     },
                     "underlying_symbol": {
@@ -3272,6 +3302,7 @@
                     "asset_id": {
                         "description": "Unique identifier of the deliverable asset. For standard contracts, this is equivalent to underlying_asset_id of the contracts.\nThis field is not returned for cash deliverables.\n",
                         "example": "b0b6dd9d-8b9b-48a9-ba46-b9d54906e415",
+                        "format": "uuid",
                         "type": "string"
                     },
                     "delayed_settlement": {
@@ -3359,6 +3390,10 @@
                         "nullable": true,
                         "type": "string"
                     },
+                    "expires_at": {
+                        "format": "date-time",
+                        "type": "string"
+                    },
                     "extended_hours": {
                         "description": "If true, eligible for execution outside regular trading hours.",
                         "type": "boolean"
@@ -3390,6 +3425,7 @@
                     },
                     "id": {
                         "description": "Order ID",
+                        "format": "uuid",
                         "type": "string"
                     },
                     "legs": {
@@ -3425,6 +3461,12 @@
                     "qty": {
                         "description": "Ordered quantity. If entered, notional will be null. Can take up to 9 decimal points. Required if order class is `mleg`.",
                         "minLength": 1,
+                        "nullable": true,
+                        "type": "string"
+                    },
+                    "ratio_qty": {
+                        "description": "The proportional quantity of this leg in relation to the overall multi-leg order quantity.",
+                        "format": "decimal",
                         "nullable": true,
                         "type": "string"
                     },
@@ -3571,6 +3613,7 @@
                     },
                     "id": {
                         "description": "Order ID",
+                        "format": "uuid",
                         "type": "string"
                     },
                     "legs": {
@@ -3672,11 +3715,11 @@
                 },
                 "required": [
                     "symbol",
+                    "type",
+                    "time_in_force",
                     "notional",
                     "qty",
-                    "type",
-                    "side",
-                    "time_in_force"
+                    "side"
                 ],
                 "title": "Order",
                 "type": "object"
@@ -3709,7 +3752,8 @@
                     "stopped",
                     "rejected",
                     "suspended",
-                    "calculated"
+                    "calculated",
+                    "held"
                 ],
                 "example": "new",
                 "title": "OrderStatus",
@@ -4054,6 +4098,11 @@
                         "minLength": 1,
                         "type": "string"
                     },
+                    "avg_entry_swap_rate": {
+                        "description": "The weighted-average exchange rate at the time the position was entered.",
+                        "format": "decimal",
+                        "type": "string"
+                    },
                     "change_today": {
                         "description": "Percent change from last day price (by a factor of 1)",
                         "minLength": 1,
@@ -4082,6 +4131,11 @@
                         "minLength": 1,
                         "type": "string"
                     },
+                    "prev_swap_rate": {
+                        "description": "The exchange rate as of the previous close (i.e. yesterday's rate)",
+                        "format": "decimal",
+                        "type": "string"
+                    },
                     "qty": {
                         "description": "The number of shares",
                         "minLength": 1,
@@ -4094,7 +4148,15 @@
                     },
                     "side": {
                         "description": "long",
-                        "minLength": 1,
+                        "enum": [
+                            "long",
+                            "short"
+                        ],
+                        "type": "string"
+                    },
+                    "swap_rate": {
+                        "description": "The current exchange rate (without mark-up) used to convert local-currency position values into USD. Present only for LCT (Local Currency Trading) accounts",
+                        "format": "decimal",
                         "type": "string"
                     },
                     "symbol": {
@@ -4121,6 +4183,9 @@
                         "description": "Unrealized profit/loss percent (by a factor of 1)",
                         "minLength": 1,
                         "type": "string"
+                    },
+                    "usd": {
+                        "$ref": "#/components/schemas/USDPositionValues"
                     }
                 },
                 "required": [
@@ -4759,6 +4824,77 @@
                 "example": "INCOMING",
                 "type": "string"
             },
+            "USDPositionValues": {
+                "description": "Position values in USD. This is returned for LCT (non-USD) accounts only.",
+                "properties": {
+                    "avg_entry_price": {
+                        "description": "Average entry price of the position in USD",
+                        "example": "71.43",
+                        "format": "decimal",
+                        "type": "string"
+                    },
+                    "change_today": {
+                        "description": "Percent change from last day price (by a factor of 1)",
+                        "example": "0.67",
+                        "format": "decimal",
+                        "type": "string"
+                    },
+                    "cost_basis": {
+                        "description": "Total cost basis in USD",
+                        "example": "333.33",
+                        "format": "decimal",
+                        "type": "string"
+                    },
+                    "current_price": {
+                        "description": "Current asset price per share in USD",
+                        "example": "80.0",
+                        "format": "decimal",
+                        "type": "string"
+                    },
+                    "lastday_price": {
+                        "description": "Last day's asset price per share based on the closing value of the last trading day in USD",
+                        "example": "79.33",
+                        "format": "decimal",
+                        "type": "string"
+                    },
+                    "market_value": {
+                        "description": "Total market value of the position in USD",
+                        "example": "400.00",
+                        "format": "decimal",
+                        "type": "string"
+                    },
+                    "unrealized_intraday_pl": {
+                        "description": "Unrealized profit/loss in USD for the day",
+                        "example": "6.67",
+                        "format": "decimal",
+                        "type": "string"
+                    },
+                    "unrealized_intraday_plpc": {
+                        "description": "Unrealized intraday profit/loss percent (by a factor of 1)",
+                        "example": "0.0084",
+                        "format": "decimal",
+                        "type": "string"
+                    },
+                    "unrealized_pl": {
+                        "description": "Unrealized profit/loss in USD",
+                        "example": "66.67",
+                        "format": "decimal",
+                        "type": "string"
+                    },
+                    "unrealized_plpc": {
+                        "description": "Unrealized profit/loss percent (by a factor of 1)",
+                        "example": "0.2",
+                        "format": "decimal",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "avg_entry_price",
+                    "cost_basis"
+                ],
+                "title": "USDPositionValues",
+                "type": "object"
+            },
             "UnitSplitActivityV2": {
                 "allOf": [
                     {
@@ -4863,6 +4999,22 @@
                     }
                 ],
                 "description": "Worthless Removal",
+                "type": "object"
+            },
+            "WalletFeeEstimateResponse": {
+                "description": "Estimated on-chain fee breakdown for a proposed crypto withdrawal, including the total fee and the underlying network (gas) fee.",
+                "properties": {
+                    "fee": {
+                        "example": "0.0505",
+                        "format": "decimal",
+                        "type": "string"
+                    },
+                    "network_fee": {
+                        "example": "0.0825",
+                        "format": "decimal",
+                        "type": "string"
+                    }
+                },
                 "type": "object"
             },
             "WarrantExerciseElectionActivityV2": {
@@ -7289,7 +7441,7 @@
                 },
                 "summary": "Get US Market Clock",
                 "tags": [
-                    "Calendar"
+                    "Clock"
                 ]
             }
         },
@@ -7902,6 +8054,13 @@
                                     "us_equity",
                                     "us_option",
                                     "crypto",
+                                    "crypto_perp",
+                                    "treasury",
+                                    "corporate",
+                                    "global_equity",
+                                    "us_index",
+                                    "us_equity_chain",
+                                    "ipo",
                                     "all"
                                 ],
                                 "type": "string"
@@ -9355,12 +9514,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "fee": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "type": "object"
+                                    "$ref": "#/components/schemas/WalletFeeEstimateResponse"
                                 }
                             }
                         },
@@ -10027,7 +10181,7 @@
                 },
                 "summary": "Get Market Clock",
                 "tags": [
-                    "Calendar"
+                    "Clock"
                 ]
             }
         }
