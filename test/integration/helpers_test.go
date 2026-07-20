@@ -184,6 +184,15 @@ func alpacaJSONOrStructuredError(t *testing.T, args ...string) (map[string]any, 
 	}
 	data := parseJSONMap(t, stderr)
 	requireFields(t, data, "error", "status")
+	// Only tolerate 403: the test account may lack entitlement for a data feed.
+	// Anything else (400 malformed query, 401 auth, 404 wrong path, 5xx) means
+	// the endpoint is broken and must fail rather than silently pass.
+	if status, _ := data["status"].(float64); int(status) != 403 {
+		t.Fatalf("alpaca %s failed unexpectedly (HTTP %v): %v",
+			strings.Join(args, " "), data["status"], data["error"])
+	}
+	t.Skipf("skipping %s: account not entitled (HTTP 403): %v",
+		strings.Join(args, " "), data["error"])
 	return data, false
 }
 
