@@ -2,11 +2,17 @@
 
 package api
 
+type CorporateActionEventAction string
+
+type CorporateActionEventRegion string
+
+type CorporateActionEventType string
+
 type CryptoHistoricalLoc string
 
 type CryptoLatestLoc string
 
-type CryptoPerpLoc string
+type EventContractExchange string
 
 type MarketType string
 
@@ -21,6 +27,19 @@ type StockHistoricalFeed string
 type StockLatestFeed string
 
 type StockTape string
+
+type CaEventBase struct {
+	ID          string `json:"id"`
+	ProcessDate string `json:"process_date"`
+}
+
+type CaEventReorganizationStockMovement struct {
+	Cusip      string `json:"cusip"`
+	Isin       string `json:"isin,omitempty"`
+	NewRate    string `json:"new_rate"`
+	SourceRate string `json:"source_rate"`
+	Symbol     string `json:"symbol"`
+}
 
 type CashDividend struct {
 	Currency       string  `json:"currency,omitempty"`
@@ -53,6 +72,13 @@ type CashMerger struct {
 	PayableDate    string  `json:"payable_date,omitempty"`
 	ProcessDate    string  `json:"process_date"`
 	Rate           float64 `json:"rate"`
+}
+
+type CorporateActionEventBase struct {
+	Action  CorporateActionEventAction `json:"action"`
+	At      string                     `json:"at"`
+	EventID string                     `json:"event_id"`
+	Region  CorporateActionEventRegion `json:"region"`
 }
 
 type CorporateActions struct {
@@ -121,19 +147,6 @@ type CryptoOrderbookEntry struct {
 	S float64 `json:"s"`
 }
 
-type CryptoPerpFuturesPricing struct {
-	Fr float64 `json:"fr"`
-	Ft string  `json:"ft"`
-	IP float64 `json:"ip"`
-	Mp float64 `json:"mp"`
-	Oi float64 `json:"oi"`
-	T  string  `json:"t"`
-}
-
-type CryptoPerpLatestFuturesPricingResp struct {
-	Pricing map[string]CryptoPerpFuturesPricing `json:"pricing"`
-}
-
 type CryptoQuote struct {
 	Ap float64 `json:"ap"`
 	As float64 `json:"as"`
@@ -170,6 +183,70 @@ type CryptoTrade struct {
 type CryptoTradesResp struct {
 	NextPageToken string                   `json:"next_page_token"`
 	Trades        map[string][]CryptoTrade `json:"trades"`
+}
+
+type EventContractContract struct {
+	CanCloseEarly        bool                  `json:"can_close_early"`
+	Categories           []string              `json:"categories"`
+	CloseTs              string                `json:"close_ts,omitempty"`
+	ContractType         string                `json:"contract_type"`
+	Currency             string                `json:"currency"`
+	EventSymbol          string                `json:"event_symbol"`
+	Exchange             EventContractExchange `json:"exchange"`
+	ExchangeStatus       string                `json:"exchange_status,omitempty"`
+	ExpectedResolutionTs string                `json:"expected_resolution_ts,omitempty"`
+	LatestResolutionTs   string                `json:"latest_resolution_ts,omitempty"`
+	OpenTs               string                `json:"open_ts,omitempty"`
+	Result               string                `json:"result,omitempty"`
+	RulesPrimary         string                `json:"rules_primary,omitempty"`
+	RulesSecondary       string                `json:"rules_secondary,omitempty"`
+	SettlementTs         string                `json:"settlement_ts,omitempty"`
+	SettlementValue      float64               `json:"settlement_value,omitempty"`
+	Status               string                `json:"status"`
+	Subtitle             string                `json:"subtitle,omitempty"`
+	Symbol               string                `json:"symbol"`
+	Tags                 []string              `json:"tags"`
+	Title                string                `json:"title"`
+	UpdatedAt            string                `json:"updated_at"`
+}
+
+type EventContractContractsPage struct {
+	Contracts     []EventContractContract `json:"contracts"`
+	NextPageToken string                  `json:"next_page_token,omitempty"`
+}
+
+type EventContractEvent struct {
+	Contracts    []EventContractContract `json:"contracts,omitempty"`
+	Exchange     EventContractExchange   `json:"exchange"`
+	SeriesSymbol string                  `json:"series_symbol,omitempty"`
+	Subtitle     string                  `json:"subtitle,omitempty"`
+	Symbol       string                  `json:"symbol"`
+	Title        string                  `json:"title"`
+	UpdatedAt    string                  `json:"updated_at"`
+}
+
+type EventContractEventsPage struct {
+	Events        []EventContractEvent `json:"events"`
+	NextPageToken string               `json:"next_page_token,omitempty"`
+}
+
+type EventContractSeries struct {
+	Categories      []string              `json:"categories"`
+	Description     string                `json:"description,omitempty"`
+	Exchange        EventContractExchange `json:"exchange"`
+	RecurrenceLabel string                `json:"recurrence_label,omitempty"`
+	SeriesType      string                `json:"series_type,omitempty"`
+	Subtitle        string                `json:"subtitle,omitempty"`
+	Symbol          string                `json:"symbol"`
+	Tags            []string              `json:"tags"`
+	Title           string                `json:"title"`
+	UpdatedAt       string                `json:"updated_at"`
+	VolumeFp        float64               `json:"volume_fp,omitempty"`
+}
+
+type EventContractSeriesPage struct {
+	NextPageToken string                `json:"next_page_token,omitempty"`
+	Series        []EventContractSeries `json:"series"`
 }
 
 type FixedIncomeLatestPricesResp struct {

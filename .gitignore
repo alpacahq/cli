@@ -12,3 +12,4 @@ man/
 .DS_Store
 .envrc
 generate
+.idea/

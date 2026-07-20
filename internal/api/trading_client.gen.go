@@ -76,16 +76,6 @@ func (c *TradingClient) GetV2Assets(params url.Values) ([]Assets, error) {
 	return unmarshalSlice[Assets](c.Raw.Do("GET", c.baseURL, "/v2/assets", params, nil))
 }
 
-// UsCorporates — Get US corporates
-func (c *TradingClient) UsCorporates(params url.Values) (*UsCorporatesResp, error) {
-	return unmarshal[UsCorporatesResp](c.Raw.Do("GET", c.baseURL, "/v2/assets/fixed_income/us_corporates", params, nil))
-}
-
-// UsTreasuries — Get US treasuries
-func (c *TradingClient) UsTreasuries(params url.Values) (*UsTreasuriesResp, error) {
-	return unmarshal[UsTreasuriesResp](c.Raw.Do("GET", c.baseURL, "/v2/assets/fixed_income/us_treasuries", params, nil))
-}
-
 // GetV2AssetsSymbolOrAssetID — Get an Asset by ID or Symbol
 func (c *TradingClient) GetV2AssetsSymbolOrAssetID(SymbolOrAssetID string) (*Assets, error) {
 	return unmarshal[Assets](c.Raw.Do("GET", c.baseURL, fmt.Sprintf("/v2/assets/%s", url.PathEscape(SymbolOrAssetID)), nil, nil))
@@ -177,66 +167,6 @@ func (c *TradingClient) GetOrderByClientOrderID(params url.Values) (*Order, erro
 	return unmarshal[Order](c.Raw.Do("GET", c.baseURL, "/v2/orders:by_client_order_id", params, nil))
 }
 
-// GetCryptoPerpAccountVitals — Retrieve Account Vitals
-func (c *TradingClient) GetCryptoPerpAccountVitals() (json.RawMessage, error) {
-	return c.Raw.Do("GET", c.baseURL, "/v2/perpetuals/account_vitals", nil, nil)
-}
-
-// GetCryptoPerpAccountLeverage — Get Account Leverage for an Asset
-func (c *TradingClient) GetCryptoPerpAccountLeverage(params url.Values) (json.RawMessage, error) {
-	return c.Raw.Do("GET", c.baseURL, "/v2/perpetuals/leverage", params, nil)
-}
-
-// SetCryptoPerpAccountLeverage — Set Account Leverage for an Asset
-func (c *TradingClient) SetCryptoPerpAccountLeverage(params url.Values) (json.RawMessage, error) {
-	return c.Raw.Do("POST", c.baseURL, "/v2/perpetuals/leverage", params, nil)
-}
-
-// ListCryptoPerpFundingWallets — Retrieve Crypto Funding Wallets
-func (c *TradingClient) ListCryptoPerpFundingWallets(params url.Values) (*CryptoWallet, error) {
-	return unmarshal[CryptoWallet](c.Raw.Do("GET", c.baseURL, "/v2/perpetuals/wallets", params, nil))
-}
-
-// GetCryptoPerpTransferEstimate — Returns the estimated gas fee for a proposed transaction
-func (c *TradingClient) GetCryptoPerpTransferEstimate(params url.Values) (json.RawMessage, error) {
-	return c.Raw.Do("GET", c.baseURL, "/v2/perpetuals/wallets/fees/estimate", params, nil)
-}
-
-// ListCryptoPerpFundingTransfers — Retrieve Crypto Funding Transfers
-func (c *TradingClient) ListCryptoPerpFundingTransfers() (*CryptoTransfer, error) {
-	return unmarshal[CryptoTransfer](c.Raw.Do("GET", c.baseURL, "/v2/perpetuals/wallets/transfers", nil, nil))
-}
-
-// CreateCryptoPerpTransferForAccount — Request a New Withdrawal
-func (c *TradingClient) CreateCryptoPerpTransferForAccount(body *CreateCryptoTransferRequest) (*CryptoTransfer, error) {
-	return unmarshal[CryptoTransfer](c.Raw.Do("POST", c.baseURL, "/v2/perpetuals/wallets/transfers", nil, body))
-}
-
-// GetCryptoPerpFundingTransfer — Retrieve a Crypto Funding Transfer
-func (c *TradingClient) GetCryptoPerpFundingTransfer(TransferID string) (*CryptoTransfer, error) {
-	return unmarshal[CryptoTransfer](c.Raw.Do("GET", c.baseURL, fmt.Sprintf("/v2/perpetuals/wallets/transfers/%s", url.PathEscape(TransferID)), nil, nil))
-}
-
-// ListWhitelistedPerpAddress — An array of whitelisted addresses
-func (c *TradingClient) ListWhitelistedPerpAddress() (*WhitelistedAddress, error) {
-	return unmarshal[WhitelistedAddress](c.Raw.Do("GET", c.baseURL, "/v2/perpetuals/wallets/whitelists", nil, nil))
-}
-
-type CreateWhitelistedPerpAddressRequest struct {
-	Address string `json:"address,omitempty"`
-	Asset   string `json:"asset,omitempty"`
-}
-
-// CreateWhitelistedPerpAddress — Request a new whitelisted address
-func (c *TradingClient) CreateWhitelistedPerpAddress(body *CreateWhitelistedPerpAddressRequest) (*WhitelistedAddress, error) {
-	return unmarshal[WhitelistedAddress](c.Raw.Do("POST", c.baseURL, "/v2/perpetuals/wallets/whitelists", nil, body))
-}
-
-// DeleteWhitelistedPerpAddress — Delete a whitelisted address
-func (c *TradingClient) DeleteWhitelistedPerpAddress(WhitelistedAddressID string) (json.RawMessage, error) {
-	return c.Raw.Do("DELETE", c.baseURL, fmt.Sprintf("/v2/perpetuals/wallets/whitelists/%s", url.PathEscape(WhitelistedAddressID)), nil, nil)
-}
-
 // GetAllOpenPositions — All Open Positions
 func (c *TradingClient) GetAllOpenPositions() ([]Position, error) {
 	return unmarshalSlice[Position](c.Raw.Do("GET", c.baseURL, "/v2/positions", nil, nil))
@@ -277,6 +207,16 @@ func (c *TradingClient) GetTokenizationRequests(params url.Values) ([]Tokenizati
 	return unmarshalSlice[TokenizationRequest](c.Raw.Do("GET", c.baseURL, "/v2/tokenization/requests", params, nil))
 }
 
+// GetTokenizationRequest — Get Tokenization Request by ID
+func (c *TradingClient) GetTokenizationRequest(TokenizationRequestID string) (*TokenizationRequest, error) {
+	return unmarshal[TokenizationRequest](c.Raw.Do("GET", c.baseURL, fmt.Sprintf("/v2/tokenization/requests/%s", url.PathEscape(TokenizationRequestID)), nil, nil))
+}
+
+// GetTokenizationRequestByClientRequestID — Get Tokenization Request by `client_request_id`
+func (c *TradingClient) GetTokenizationRequestByClientRequestID(params url.Values) (*TokenizationRequest, error) {
+	return unmarshal[TokenizationRequest](c.Raw.Do("GET", c.baseURL, "/v2/tokenization/requests:by_client_request_id", params, nil))
+}
+
 // ListCryptoFundingWallets — Retrieve Crypto Funding Wallets
 func (c *TradingClient) ListCryptoFundingWallets(params url.Values) (*CryptoWallet, error) {
 	return unmarshal[CryptoWallet](c.Raw.Do("GET", c.baseURL, "/v2/wallets", params, nil))
@@ -308,9 +248,9 @@ func (c *TradingClient) ListWhitelistedAddress() (*WhitelistedAddress, error) {
 }
 
 type CreateWhitelistedAddressRequest struct {
-	Address string `json:"address,omitempty"`
-	Asset   string `json:"asset,omitempty"`
-	Chain   string `json:"chain,omitempty"`
+	Address string      `json:"address,omitempty"`
+	Asset   string      `json:"asset,omitempty"`
+	Chain   CryptoChain `json:"chain,omitempty"`
 }
 
 // CreateWhitelistedAddress — Request a new whitelisted address
@@ -329,7 +269,7 @@ func (c *TradingClient) GetWatchlists() ([]WatchlistWithoutAsset, error) {
 }
 
 // PostWatchlist — Create Watchlist
-func (c *TradingClient) PostWatchlist(body *UpdateWatchlistRequest) (*Watchlist, error) {
+func (c *TradingClient) PostWatchlist(body *CreateWatchlistRequest) (*Watchlist, error) {
 	return unmarshal[Watchlist](c.Raw.Do("POST", c.baseURL, "/v2/watchlists", nil, body))
 }
 
@@ -412,23 +352,6 @@ func (r *CreateLocateRequest) Validate() error {
 	return nil
 }
 
-func (r *CreateCryptoTransferRequest) Validate() error {
-	var missing []string
-	if r.Address == "" {
-		missing = append(missing, "address")
-	}
-	if r.Amount == "" {
-		missing = append(missing, "amount")
-	}
-	if r.Asset == "" {
-		missing = append(missing, "asset")
-	}
-	if len(missing) > 0 {
-		return fmt.Errorf("missing required fields: %s", strings.Join(missing, ", "))
-	}
-	return nil
-}
-
 func (r *TokenizationMintRequest) Validate() error {
 	var missing []string
 	if r.Qty == "" {
@@ -446,7 +369,24 @@ func (r *TokenizationMintRequest) Validate() error {
 	return nil
 }
 
-func (r *UpdateWatchlistRequest) Validate() error {
+func (r *CreateCryptoTransferRequest) Validate() error {
+	var missing []string
+	if r.Address == "" {
+		missing = append(missing, "address")
+	}
+	if r.Amount == "" {
+		missing = append(missing, "amount")
+	}
+	if r.Asset == "" {
+		missing = append(missing, "asset")
+	}
+	if len(missing) > 0 {
+		return fmt.Errorf("missing required fields: %s", strings.Join(missing, ", "))
+	}
+	return nil
+}
+
+func (r *CreateWatchlistRequest) Validate() error {
 	var missing []string
 	if r.Name == "" {
 		missing = append(missing, "name")

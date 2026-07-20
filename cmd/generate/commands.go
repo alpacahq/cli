@@ -37,7 +37,7 @@ var cmdParents = map[string]parentDef{
 	"activity":      {use: "activity", short: "Account activities (fills, dividends, transfers, etc.)", parent: "account"},
 	"asset": {
 		use: "asset", short: "Browse assets",
-		long: "List and look up equities, options contracts, treasuries, and corporate bonds available for trading.",
+		long: "List and look up equities and options contracts available for trading.",
 	},
 	"position": {
 		use: "position", short: "Manage positions",
@@ -83,6 +83,10 @@ var cmdParents = map[string]parentDef{
 		long: "Bars, trades, snapshots, chains, latest quotes, and exchange/condition reference data for options.",
 	},
 	"dataForex": {use: "forex", short: "Foreign exchange rate data", parent: "data"},
+	"dataEventContract": {
+		use: "event-contract", short: "Event contract (prediction market) reference data", parent: "data",
+		long: "Browse event contract series, events, contracts, and categories for prediction markets.",
+	},
 	"dataIndex": {use: "index", short: "Index market data", parent: "data"},
 	"dataMeta":  {use: "meta", short: "Stock exchange and condition reference data", parent: "data"},
 	"screener": {
@@ -172,18 +176,6 @@ var cmdRegistry = map[string]cmdDef{
 		use:    "get",
 		examples: `  alpaca asset get --symbol-or-asset-id AAPL
   alpaca asset get --symbol-or-asset-id BTC/USD`,
-	},
-	"UsTreasuries": {
-		parent: "asset",
-		use:    "treasury",
-		examples: `  alpaca asset treasury
-  alpaca asset treasury --bond-status active`,
-	},
-	"UsCorporates": {
-		parent: "asset",
-		use:    "bond",
-		examples: `  alpaca asset bond
-  alpaca asset bond --bond-status active`,
 	},
 
 	// --- corporate action ---
@@ -390,67 +382,6 @@ var cmdRegistry = map[string]cmdDef{
 		examples: "  alpaca wallet whitelist delete --whitelisted-address-id <id>",
 	},
 
-	// --- crypto perp ---
-	"GetCryptoPerpAccountVitals": {
-		parent: "cryptoPerp",
-		use:    "vitals",
-
-		examples: "  alpaca crypto-perp vitals",
-	},
-	"GetCryptoPerpAccountLeverage": {
-		parent: "cryptoPerp",
-		use:    "leverage",
-
-		examples: "  alpaca crypto-perp leverage",
-	},
-	"SetCryptoPerpAccountLeverage": {
-		parent: "cryptoPerp",
-		use:    "set-leverage",
-
-		examples: "  alpaca crypto-perp set-leverage --asset BTC --leverage 5",
-	},
-	"ListCryptoPerpFundingWallets": {
-		parent:   "cryptoPerpWallet",
-		use:      "list",
-		examples: "  alpaca crypto-perp wallet list",
-	},
-	"GetCryptoPerpTransferEstimate": {
-		parent: "cryptoPerpTransfer",
-		use:    "estimate",
-
-		examples: "  alpaca crypto-perp wallet transfer estimate --asset BTC --amount 0.5",
-	},
-	"ListCryptoPerpFundingTransfers": {
-		parent:   "cryptoPerpTransfer",
-		use:      "list",
-		examples: "  alpaca crypto-perp wallet transfer list",
-	},
-	"CreateCryptoPerpTransferForAccount": {
-		parent:   "cryptoPerpTransfer",
-		use:      "create",
-		examples: "  alpaca crypto-perp wallet transfer create --amount 0.5 --address 0xabc... --asset BTC",
-	},
-	"GetCryptoPerpFundingTransfer": {
-		parent:   "cryptoPerpTransfer",
-		use:      "get",
-		examples: "  alpaca crypto-perp wallet transfer get --transfer-id <id>",
-	},
-	"ListWhitelistedPerpAddress": {
-		parent:   "cryptoPerpWhitelist",
-		use:      "list",
-		examples: "  alpaca crypto-perp wallet whitelist list",
-	},
-	"CreateWhitelistedPerpAddress": {
-		parent:   "cryptoPerpWhitelist",
-		use:      "add",
-		examples: "  alpaca crypto-perp wallet whitelist add --address 0xabc... --asset ETH",
-	},
-	"DeleteWhitelistedPerpAddress": {
-		parent:   "cryptoPerpWhitelist",
-		use:      "delete",
-		examples: "  alpaca crypto-perp wallet whitelist delete --whitelisted-address-id <id>",
-	},
-
 	// --- watchlist ---
 	"GetWatchlists": {
 		parent:   "watchlist",
@@ -627,6 +558,31 @@ var cmdRegistry = map[string]cmdDef{
 		use:    "latest",
 
 		examples: "  alpaca data forex latest --currency-pairs EUR/USD,GBP/USD",
+	},
+
+	// --- data: event contracts ---
+	"ListEventContractSeries": {
+		parent: "dataEventContract",
+		use:    "series",
+		examples: `  alpaca data event-contract series
+  alpaca data event-contract series --categories Crypto --limit 50`,
+	},
+	"ListEventContractEvents": {
+		parent: "dataEventContract",
+		use:    "events",
+		examples: `  alpaca data event-contract events
+  alpaca data event-contract events --series-symbols KXBTCPRICE --has-open-contracts true`,
+	},
+	"ListEventContractContracts": {
+		parent: "dataEventContract",
+		use:    "contracts",
+		examples: `  alpaca data event-contract contracts
+  alpaca data event-contract contracts --event-symbols KXBTCPRICE-26JUL18 --status active`,
+	},
+	"ListEventContractCategories": {
+		parent:   "dataEventContract",
+		use:      "categories",
+		examples: "  alpaca data event-contract categories",
 	},
 
 	// --- data: crypto orderbook ---
@@ -820,49 +776,20 @@ var cmdRegistry = map[string]cmdDef{
 		defaults: map[string]string{"loc": "us"},
 		examples: `  alpaca data crypto latest-trades --symbols BTC/USD`,
 	},
-
-	// --- data: crypto perp data ---
-	"CryptoPerpLatestBars": {
-		parent: "cryptoPerpData",
-		use:    "latest-bars",
-
-		defaults: map[string]string{"loc": "us"},
-		examples: `  alpaca crypto-perp data latest-bars --symbols BTC/USD`,
-	},
-	"CryptoPerpLatestFuturesPricing": {
-		parent: "cryptoPerpData",
-		use:    "latest-futures-pricing",
-
-		defaults: map[string]string{"loc": "us"},
-		examples: `  alpaca crypto-perp data latest-futures-pricing --symbols BTC/USD`,
-	},
-	"CryptoPerpLatestOrderbooks": {
-		parent: "cryptoPerpData",
-		use:    "latest-orderbooks",
-
-		defaults: map[string]string{"loc": "us"},
-		examples: `  alpaca crypto-perp data latest-orderbooks --symbols BTC/USD`,
-	},
-	"CryptoPerpLatestQuotes": {
-		parent: "cryptoPerpData",
-		use:    "latest-quotes",
-
-		defaults: map[string]string{"loc": "us"},
-		examples: `  alpaca crypto-perp data latest-quotes --symbols BTC/USD`,
-	},
-	"CryptoPerpLatestTrades": {
-		parent: "cryptoPerpData",
-		use:    "latest-trades",
-
-		defaults: map[string]string{"loc": "us"},
-		examples: `  alpaca crypto-perp data latest-trades --symbols BTC/USD`,
-	},
 }
 
 var cmdSkip = map[string]string{
-	"GetTokenizationRequests":  "tokenization is restricted to Authorized Participants on the Instant Tokenization Network and not exposed via the CLI",
-	"PostTokenizationMint":     "tokenization is restricted to Authorized Participants on the Instant Tokenization Network and not exposed via the CLI",
-	"SubscribeToActivitiesSSE": "Server-Sent Events streaming endpoint; the CLI's fetch/JSON model does not support long-lived streams",
+	"CryptoPerpLatestBars":                    "crypto perpetuals are not exposed via the CLI",
+	"CryptoPerpLatestFuturesPricing":          "crypto perpetuals are not exposed via the CLI",
+	"CryptoPerpLatestOrderbooks":              "crypto perpetuals are not exposed via the CLI",
+	"CryptoPerpLatestQuotes":                  "crypto perpetuals are not exposed via the CLI",
+	"CryptoPerpLatestTrades":                  "crypto perpetuals are not exposed via the CLI",
+	"GetTokenizationRequest":                  "tokenization is restricted to Authorized Participants on the Instant Tokenization Network and not exposed via the CLI",
+	"GetTokenizationRequestByClientRequestID": "tokenization is restricted to Authorized Participants on the Instant Tokenization Network and not exposed via the CLI",
+	"GetTokenizationRequests":                 "tokenization is restricted to Authorized Participants on the Instant Tokenization Network and not exposed via the CLI",
+	"PostTokenizationMint":                    "tokenization is restricted to Authorized Participants on the Instant Tokenization Network and not exposed via the CLI",
+	"SubscribeToActivitiesSSE":                "Server-Sent Events streaming endpoint; the CLI's fetch/JSON model does not support long-lived streams",
+	"SubscribeToCorporateActionsEventsSSE":    "Server-Sent Events streaming endpoint; the CLI's fetch/JSON model does not support long-lived streams",
 }
 
 func checkExhaustive(epByOp map[string]*endpointInfo) {

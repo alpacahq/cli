@@ -25,29 +25,29 @@ func (c *MarketDataClient) CorporateActions(params url.Values) (*CorporateAction
 	return unmarshal[CorporateActionsResp](c.Raw.Do("GET", c.baseURL, "/v1/corporate-actions", params, nil))
 }
 
-// CryptoPerpLatestBars — Latest bars
-func (c *MarketDataClient) CryptoPerpLatestBars(Loc string, params url.Values) (*CryptoLatestBarsResp, error) {
-	return unmarshal[CryptoLatestBarsResp](c.Raw.Do("GET", c.baseURL, fmt.Sprintf("/v1beta1/crypto-perps/%s/latest/bars", url.PathEscape(Loc)), params, nil))
+// ListEventContractCategories — List event contract categories and tags
+func (c *MarketDataClient) ListEventContractCategories(params url.Values) (json.RawMessage, error) {
+	return c.Raw.Do("GET", c.baseURL, "/v1beta1/event_contracts/categories", params, nil)
 }
 
-// CryptoPerpLatestOrderbooks — Latest orderbook
-func (c *MarketDataClient) CryptoPerpLatestOrderbooks(Loc string, params url.Values) (*CryptoLatestOrderbooksResp, error) {
-	return unmarshal[CryptoLatestOrderbooksResp](c.Raw.Do("GET", c.baseURL, fmt.Sprintf("/v1beta1/crypto-perps/%s/latest/orderbooks", url.PathEscape(Loc)), params, nil))
+// ListEventContractContracts — List event contracts
+func (c *MarketDataClient) ListEventContractContracts(params url.Values) (*EventContractContractsPage, error) {
+	return unmarshal[EventContractContractsPage](c.Raw.Do("GET", c.baseURL, "/v1beta1/event_contracts/contracts", params, nil))
 }
 
-// CryptoPerpLatestFuturesPricing — Latest pricing
-func (c *MarketDataClient) CryptoPerpLatestFuturesPricing(Loc string, params url.Values) (*CryptoPerpLatestFuturesPricingResp, error) {
-	return unmarshal[CryptoPerpLatestFuturesPricingResp](c.Raw.Do("GET", c.baseURL, fmt.Sprintf("/v1beta1/crypto-perps/%s/latest/pricing", url.PathEscape(Loc)), params, nil))
+// ListEventContractEvents — List event contract events
+func (c *MarketDataClient) ListEventContractEvents(params url.Values) (*EventContractEventsPage, error) {
+	return unmarshal[EventContractEventsPage](c.Raw.Do("GET", c.baseURL, "/v1beta1/event_contracts/events", params, nil))
 }
 
-// CryptoPerpLatestQuotes — Latest quotes
-func (c *MarketDataClient) CryptoPerpLatestQuotes(Loc string, params url.Values) (*CryptoLatestQuotesResp, error) {
-	return unmarshal[CryptoLatestQuotesResp](c.Raw.Do("GET", c.baseURL, fmt.Sprintf("/v1beta1/crypto-perps/%s/latest/quotes", url.PathEscape(Loc)), params, nil))
+// ListEventContractSeries — List event contract series
+func (c *MarketDataClient) ListEventContractSeries(params url.Values) (*EventContractSeriesPage, error) {
+	return unmarshal[EventContractSeriesPage](c.Raw.Do("GET", c.baseURL, "/v1beta1/event_contracts/series", params, nil))
 }
 
-// CryptoPerpLatestTrades — Latest trades
-func (c *MarketDataClient) CryptoPerpLatestTrades(Loc string, params url.Values) (*CryptoLatestTradesResp, error) {
-	return unmarshal[CryptoLatestTradesResp](c.Raw.Do("GET", c.baseURL, fmt.Sprintf("/v1beta1/crypto-perps/%s/latest/trades", url.PathEscape(Loc)), params, nil))
+// SubscribeToCorporateActionsEventsSSE — Subscribe to Corporate Actions Events (SSE)
+func (c *MarketDataClient) SubscribeToCorporateActionsEventsSSE(params url.Values) (json.RawMessage, error) {
+	return c.Raw.Do("GET", c.baseURL, "/v1beta1/events/corporate-actions", params, nil)
 }
 
 // FixedIncomeLatestPrices — Latest prices

@@ -100,8 +100,7 @@ Top-level command areas include:
 
 - Trading: `order`, `position`, `option`, `locate`, `clock`, `calendar`
 - Account and assets: `account`, `asset`, `watchlist`, `wallet`, `corporate-action`
-- Market data: `data`, `data crypto`, `data option`, `data forex`, `data index`, `data meta`, `data screener`, `data news`
-- Crypto perpetuals: `crypto-perp`
+- Market data: `data`, `data crypto`, `data option`, `data forex`, `data index`, `data meta`, `data screener`, `data news`, `data event-contract`
 - Utilities: `profile`, `api`, `doctor`, `update`, `version`, `completion`
 
 Use `alpaca api [METHOD] <path>` as a raw escape hatch for direct API requests.

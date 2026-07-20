@@ -246,20 +246,6 @@ func TestValidateMethods(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 		}
 	})
-
-	t.Run("UpdateWatchlistRequest/empty", func(t *testing.T) {
-		r := &api.UpdateWatchlistRequest{}
-		if err := r.Validate(); err == nil {
-			t.Error("expected validation error for empty name")
-		}
-	})
-
-	t.Run("UpdateWatchlistRequest/valid", func(t *testing.T) {
-		r := &api.UpdateWatchlistRequest{Name: "my-list"}
-		if err := r.Validate(); err != nil {
-			t.Errorf("unexpected error: %s", err)
-		}
-	})
 }
 
 // TestAllOpsValid iterates every generated Op via api.AllOps and validates
