@@ -183,7 +183,7 @@ var createLocatesCmd = fetchCmd("create", api.CreateLocatesOp, func(cmd *cobra.C
 		v := cmdutil.Str(cmd, "limit-price")
 		body.LimitPrice = &v
 	}
-	return tradingClient.CreateLocates(body)
+	return tradingClient.CreateLocates(headersFromFlags(cmd, api.CreateLocatesOp), body)
 })
 
 var createWhitelistedAddressCmd = fetchCmd("add", api.CreateWhitelistedAddressOp, func(cmd *cobra.Command, args []string) (any, error) {

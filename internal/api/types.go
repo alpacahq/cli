@@ -13,14 +13,14 @@ type Op struct {
 
 // FlagDef describes a CLI flag derived from the OpenAPI spec.
 type FlagDef struct {
-	Name        string   // kebab-case CLI flag name
-	OASName     string   // original OAS property/parameter name
-	Type        string   // "string", "bool", "int"
+	Name        string // kebab-case CLI flag name
+	OASName     string // original OAS property/parameter name
+	Type        string // "string", "bool", "int"
 	Default     string
 	Description string
 	Completions []string // enum values for shell completion
 	Required    bool     // true if OAS marks this parameter as required
-	Source      string   // "path", "query", or "body"
+	Source      string   // "path", "query", "header", or "body"
 }
 
 // ResponseField describes a field in an API response.

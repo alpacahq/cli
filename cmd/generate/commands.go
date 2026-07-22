@@ -765,10 +765,13 @@ func checkExhaustive(epByOp map[string]*endpointInfo) {
 		}
 		nonBodyNames := map[string]bool{}
 		for _, p := range ep.pathParams {
-			nonBodyNames[strings.ReplaceAll(p.name, "_", "-")] = true
+			nonBodyNames[strings.ToLower(strings.ReplaceAll(p.name, "_", "-"))] = true
 		}
 		for _, p := range ep.queryParams {
-			nonBodyNames[strings.ReplaceAll(p.name, "_", "-")] = true
+			nonBodyNames[strings.ToLower(strings.ReplaceAll(p.name, "_", "-"))] = true
+		}
+		for _, p := range ep.headerParams {
+			nonBodyNames[strings.ToLower(strings.ReplaceAll(p.name, "_", "-"))] = true
 		}
 		for _, fieldName := range sortedKeys(bodySchema.props) {
 			flagName := strings.ReplaceAll(fieldName, "_", "-")
@@ -778,7 +781,7 @@ func checkExhaustive(epByOp map[string]*endpointInfo) {
 			if _, aliased := def.bodyAliases[flagName]; aliased {
 				continue
 			}
-			errs = append(errs, fmt.Sprintf("cmdRegistry[%q]: body field %q collides with a query/path param — add bodyAliases entry to resolve", opID, flagName))
+			errs = append(errs, fmt.Sprintf("cmdRegistry[%q]: body field %q collides with a path/query/header param — add bodyAliases entry to resolve", opID, flagName))
 		}
 	}
 
@@ -912,6 +915,9 @@ func buildCallExpr(ep *endpointInfo, def cmdDef, clientVar string, extraArgs ...
 	}
 	if len(ep.queryParams) > 0 {
 		args = append(args, queryFromFlagsExpr(ep))
+	}
+	if len(ep.headerParams) > 0 {
+		args = append(args, headersFromFlagsExpr(ep))
 	}
 	args = append(args, extraArgs...)
 	return fmt.Sprintf("%s.%s(%s)", clientVar, ep.goName, strings.Join(args, ", "))
@@ -1204,8 +1210,12 @@ func queryFromFlagsExpr(ep *endpointInfo) string {
 	return fmt.Sprintf("queryFromFlags(cmd, api.%sOp)", ep.goName)
 }
 
+func headersFromFlagsExpr(ep *endpointInfo) string {
+	return fmt.Sprintf("headersFromFlags(cmd, api.%sOp)", ep.goName)
+}
+
 func pathParamExpr(pp paramInfo, def cmdDef) string {
-	flagName := strings.ReplaceAll(pp.name, "_", "-")
+	flagName := strings.ToLower(strings.ReplaceAll(pp.name, "_", "-"))
 	expr := fmt.Sprintf("cmdutil.Str(cmd, %q)", flagName)
 	for _, n := range def.normalize {
 		if n == flagName {

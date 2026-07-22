@@ -339,6 +339,7 @@ alpaca data trades
 alpaca doctor
 alpaca locate create
   --all-or-none (bool)
+  --idempotency-key (string)
   --limit-price (string)
   --qty (int)
   --symbol (string)

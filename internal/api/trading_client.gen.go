@@ -5,6 +5,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strings"
 
@@ -27,8 +28,8 @@ func (c *TradingClient) ListLocates(params url.Values) (*ListLocatesResponse, er
 }
 
 // CreateLocates — Create Locate
-func (c *TradingClient) CreateLocates(body *CreateLocateRequest) (*Locate, error) {
-	return unmarshal[Locate](c.Raw.Do("POST", c.baseURL, "/v1/locates", nil, body))
+func (c *TradingClient) CreateLocates(headers http.Header, body *CreateLocateRequest) (*Locate, error) {
+	return unmarshal[Locate](c.Raw.DoWithHeaders("POST", c.baseURL, "/v1/locates", nil, headers, body))
 }
 
 // ListLocateQuotes — Get Locate Quotes

@@ -308,6 +308,7 @@ StockTrades: "Get historical trades"
   symbols (query, string, required) -> symbols
 
 SubscribeToCorporateActionsEventsSSE: "Get subscribe to corporate actions events (SSE)"
+  last-event-id (header, string) -> Last-Event-Id
   region (query, string, default=all) -> region
   since (query, string) -> since
   since-id (query, string) -> since_id
@@ -330,6 +331,7 @@ CreateCryptoTransferForAccount: "Request a new withdrawal"
   chain (body, string) -> chain
 
 CreateLocates: "Create locate"
+  idempotency-key (header, string) -> Idempotency-Key
   all-or-none (body, bool) -> all_or_none
   limit-price (body, string) -> limit_price
   qty (body, int) -> qty

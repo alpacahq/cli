@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"strings"
 	"testing"
 )
@@ -211,5 +212,70 @@ func TestBuildPostBody(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestExtractEndpointsHeaderParameter(t *testing.T) {
+	spec := map[string]any{
+		"paths": map[string]any{
+			"/v1/locates": map[string]any{
+				"post": map[string]any{
+					"operationId": "createLocates",
+					"parameters": []any{
+						map[string]any{
+							"name":        "Idempotency-Key",
+							"in":          "header",
+							"required":    false,
+							"description": "Idempotency key for safe retries.",
+							"schema":      map[string]any{"type": "string"},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	endpoints := extractEndpoints(spec)
+	if len(endpoints) != 1 {
+		t.Fatalf("extractEndpoints() returned %d endpoints, want 1", len(endpoints))
+	}
+	headers := endpoints[0].headerParams
+	if len(headers) != 1 {
+		t.Fatalf("headerParams has %d entries, want 1", len(headers))
+	}
+	if headers[0].name != "Idempotency-Key" {
+		t.Errorf("header name = %q, want %q", headers[0].name, "Idempotency-Key")
+	}
+}
+
+func TestHeaderParameterGeneration(t *testing.T) {
+	ep := &endpointInfo{
+		method:       "POST",
+		path:         "/v1/locates",
+		goName:       "CreateLocates",
+		bodyRef:      "CreateLocateRequest",
+		headerParams: []paramInfo{{name: "Idempotency-Key", goType: "string"}},
+	}
+
+	var method bytes.Buffer
+	genEndpointMethod(&method, ep, "Trading")
+	for _, want := range []string{
+		"headers http.Header",
+		`c.Raw.DoWithHeaders("POST", c.baseURL, "/v1/locates", nil, headers, body)`,
+	} {
+		if !strings.Contains(method.String(), want) {
+			t.Errorf("generated method missing %q:\n%s", want, method.String())
+		}
+	}
+
+	call := buildCallExpr(ep, cmdDef{}, "tradingClient", "body")
+	wantCall := "tradingClient.CreateLocates(headersFromFlags(cmd, api.CreateLocatesOp), body)"
+	if call != wantCall {
+		t.Errorf("buildCallExpr() = %q, want %q", call, wantCall)
+	}
+
+	flag := paramToFlag(ep.headerParams[0], "header")
+	if flag.flagName != "idempotency-key" || flag.oasName != "Idempotency-Key" || flag.source != "header" {
+		t.Errorf("unexpected header flag: %#v", flag)
 	}
 }

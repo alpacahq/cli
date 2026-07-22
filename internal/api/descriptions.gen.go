@@ -612,6 +612,7 @@ var SubscribeToCorporateActionsEventsSSEOp = Op{
 	Name: "SubscribeToCorporateActionsEventsSSE", Summary: "Get subscribe to corporate actions events (SSE)",
 	Long: "Server-Sent Events (SSE) stream that delivers every corporate-action mutation (`insert` / `update` / `delete`) across all 15 CA types on a single long-lived `text/event-stream` connection",
 	Flags: []FlagDef{
+		{Name: "last-event-id", OASName: "Last-Event-Id", Type: "string", Description: "standard SSE reconnect header", Source: "header"},
 		{Name: "region", OASName: "region", Type: "string", Default: "all", Description: "which markets to receive events for", Completions: []string{"all", "non_us", "us"}, Source: "query"},
 		{Name: "since", OASName: "since", Type: "string", Description: "replay events emitted on or after this RFC-3339 date. Mutually exclusive with\nsince_id. Required when until is specified", Source: "query"},
 		{Name: "since-id", OASName: "since_id", Type: "string", Description: "ULID matching an event_id; replay events whose event_id is greater than\nor equal to this value (inclusive -- the even...", Source: "query"},
@@ -659,6 +660,7 @@ var CreateLocatesOp = Op{
 	Example: `  alpaca locate create --symbol TSLA --qty 100
   alpaca locate create --symbol TSLA --qty 100 --limit-price 0.05 --all-or-none true`,
 	Flags: []FlagDef{
+		{Name: "idempotency-key", OASName: "Idempotency-Key", Type: "string", Description: "optional idempotency key for safe retries", Source: "header"},
 		{Name: "all-or-none", OASName: "all_or_none", Type: "bool", Description: "reject the locate unless the full requested quantity is available", Source: "body"},
 		{Name: "limit-price", OASName: "limit_price", Type: "string", Description: "maximum acceptable locate fee per share, as a decimal string in USD.\nIf omitted, any quoted fee is accepted", Source: "body"},
 		{Name: "qty", OASName: "qty", Type: "int", Description: "number of shares to locate. Must be positive and in round lots of 100; invalid quantities return HTTP 400", Source: "body"},

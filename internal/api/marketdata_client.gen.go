@@ -5,6 +5,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"net/url"
 
 	"github.com/alpacahq/cli/internal/client"
@@ -26,8 +27,8 @@ func (c *MarketDataClient) CorporateActions(params url.Values) (*CorporateAction
 }
 
 // SubscribeToCorporateActionsEventsSSE — Subscribe to Corporate Actions Events (SSE)
-func (c *MarketDataClient) SubscribeToCorporateActionsEventsSSE(params url.Values) (json.RawMessage, error) {
-	return c.Raw.Do("GET", c.baseURL, "/v1beta1/events/corporate-actions", params, nil)
+func (c *MarketDataClient) SubscribeToCorporateActionsEventsSSE(params url.Values, headers http.Header) (json.RawMessage, error) {
+	return c.Raw.DoWithHeaders("GET", c.baseURL, "/v1beta1/events/corporate-actions", params, headers, nil)
 }
 
 // FixedIncomeLatestPrices — Latest prices
