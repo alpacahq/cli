@@ -21,6 +21,26 @@ func NewTradingClient(raw *client.Client) *TradingClient {
 	return &TradingClient{Raw: raw, baseURL: raw.BaseURL}
 }
 
+// ListLocates — List Locates
+func (c *TradingClient) ListLocates(params url.Values) (*ListLocatesResponse, error) {
+	return unmarshal[ListLocatesResponse](c.Raw.Do("GET", c.baseURL, "/v1/locates", params, nil))
+}
+
+// CreateLocates — Create Locate
+func (c *TradingClient) CreateLocates(body *CreateLocateRequest) (*Locate, error) {
+	return unmarshal[Locate](c.Raw.Do("POST", c.baseURL, "/v1/locates", nil, body))
+}
+
+// ListLocateQuotes — Get Locate Quotes
+func (c *TradingClient) ListLocateQuotes(params url.Values) (*ListLocateQuotesResponse, error) {
+	return unmarshal[ListLocateQuotesResponse](c.Raw.Do("GET", c.baseURL, "/v1/locates/quotes", params, nil))
+}
+
+// GetLocate — Get Locate
+func (c *TradingClient) GetLocate(LocateID string) (*Locate, error) {
+	return unmarshal[Locate](c.Raw.Do("GET", c.baseURL, fmt.Sprintf("/v1/locates/%s", url.PathEscape(LocateID)), nil, nil))
+}
+
 // GetAccount — Get Account
 func (c *TradingClient) GetAccount() (*Account, error) {
 	return unmarshal[Account](c.Raw.Do("GET", c.baseURL, "/v2/account", nil, nil))
@@ -263,8 +283,8 @@ func (c *TradingClient) ListCryptoFundingWallets(params url.Values) (*CryptoWall
 }
 
 // GetCryptoTransferEstimate — Returns the estimated gas fee for a proposed transaction.
-func (c *TradingClient) GetCryptoTransferEstimate(params url.Values) (json.RawMessage, error) {
-	return c.Raw.Do("GET", c.baseURL, "/v2/wallets/fees/estimate", params, nil)
+func (c *TradingClient) GetCryptoTransferEstimate(params url.Values) (*WalletFeeEstimateResponse, error) {
+	return unmarshal[WalletFeeEstimateResponse](c.Raw.Do("GET", c.baseURL, "/v2/wallets/fees/estimate", params, nil))
 }
 
 // ListCryptoFundingTransfers — Retrieve Crypto Funding Transfers
@@ -290,6 +310,7 @@ func (c *TradingClient) ListWhitelistedAddress() (*WhitelistedAddress, error) {
 type CreateWhitelistedAddressRequest struct {
 	Address string `json:"address,omitempty"`
 	Asset   string `json:"asset,omitempty"`
+	Chain   string `json:"chain,omitempty"`
 }
 
 // CreateWhitelistedAddress — Request a new whitelisted address
@@ -378,6 +399,17 @@ func (c *TradingClient) Calendar(Market string, params url.Values) (*PublicCalen
 // Clock — Get Market Clock
 func (c *TradingClient) Clock(params url.Values) (*ClockResp, error) {
 	return unmarshal[ClockResp](c.Raw.Do("GET", c.baseURL, "/v3/clock", params, nil))
+}
+
+func (r *CreateLocateRequest) Validate() error {
+	var missing []string
+	if r.Symbol == "" {
+		missing = append(missing, "symbol")
+	}
+	if len(missing) > 0 {
+		return fmt.Errorf("missing required fields: %s", strings.Join(missing, ", "))
+	}
+	return nil
 }
 
 func (r *CreateCryptoTransferRequest) Validate() error {

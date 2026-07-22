@@ -95,6 +95,11 @@ var dataForexCmd = &cobra.Command{
 	Short: "Foreign exchange rate data",
 }
 
+var dataIndexCmd = &cobra.Command{
+	Use:   "index",
+	Short: "Index market data",
+}
+
 var dataMetaCmd = &cobra.Command{
 	Use:   "meta",
 	Short: "Stock exchange and condition reference data",
@@ -104,6 +109,12 @@ var dataOptionCmd = &cobra.Command{
 	Use:   "option",
 	Short: "Options market data",
 	Long:  "Bars, trades, snapshots, chains, latest quotes, and exchange/condition reference data for options.",
+}
+
+var locateCmd = &cobra.Command{
+	Use:   "locate",
+	Short: "Manage locate requests",
+	Long:  "Create, list, and inspect stock locate requests for short sales.",
 }
 
 var optionCmd = &cobra.Command{
@@ -183,6 +194,7 @@ var createCryptoPerpTransferForAccountCmd = fetchCmd("create", api.CreateCryptoP
 		Address: cmdutil.Str(cmd, "address"),
 		Amount:  cmdutil.Str(cmd, "amount"),
 		Asset:   cmdutil.Str(cmd, "asset"),
+		Chain:   cmdutil.Str(cmd, "chain"),
 	}
 	return tradingClient.CreateCryptoPerpTransferForAccount(body)
 })
@@ -192,14 +204,29 @@ var createCryptoTransferForAccountCmd = fetchCmd("create", api.CreateCryptoTrans
 		Address: cmdutil.Str(cmd, "address"),
 		Amount:  cmdutil.Str(cmd, "amount"),
 		Asset:   cmdutil.Str(cmd, "asset"),
+		Chain:   cmdutil.Str(cmd, "chain"),
 	}
 	return tradingClient.CreateCryptoTransferForAccount(body)
+})
+
+var createLocatesCmd = fetchCmd("create", api.CreateLocatesOp, func(cmd *cobra.Command, args []string) (any, error) {
+	body := &api.CreateLocateRequest{
+		AllOrNone: cmdutil.Bool(cmd, "all-or-none"),
+		Qty:       cmdutil.Int(cmd, "qty"),
+		Symbol:    cmdutil.Str(cmd, "symbol"),
+	}
+	if cmdutil.Changed(cmd, "limit-price") {
+		v := cmdutil.Str(cmd, "limit-price")
+		body.LimitPrice = &v
+	}
+	return tradingClient.CreateLocates(body)
 })
 
 var createWhitelistedAddressCmd = fetchCmd("add", api.CreateWhitelistedAddressOp, func(cmd *cobra.Command, args []string) (any, error) {
 	body := &api.CreateWhitelistedAddressRequest{
 		Address: cmdutil.Str(cmd, "address"),
 		Asset:   cmdutil.Str(cmd, "asset"),
+		Chain:   cmdutil.Str(cmd, "chain"),
 	}
 	return tradingClient.CreateWhitelistedAddress(body)
 })
@@ -300,6 +327,10 @@ var fixedIncomeLatestPricesCmd = fetchCmd("fixed-income", api.FixedIncomeLatestP
 	return dataClient.FixedIncomeLatestPrices(queryFromFlags(cmd, api.FixedIncomeLatestPricesOp))
 })
 
+var fixedIncomeLatestQuotesCmd = fetchCmd("fixed-income-quotes", api.FixedIncomeLatestQuotesOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return dataClient.FixedIncomeLatestQuotes(queryFromFlags(cmd, api.FixedIncomeLatestQuotesOp))
+})
+
 var getAccountCmd = fetchCmd("get", api.GetAccountOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return tradingClient.GetAccount()
 })
@@ -349,7 +380,11 @@ var getCryptoPerpTransferEstimateCmd = fetchCmd("estimate", api.GetCryptoPerpTra
 })
 
 var getCryptoTransferEstimateCmd = fetchCmd("estimate", api.GetCryptoTransferEstimateOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return voidResponse(tradingClient.GetCryptoTransferEstimate(queryFromFlags(cmd, api.GetCryptoTransferEstimateOp)))
+	return tradingClient.GetCryptoTransferEstimate(queryFromFlags(cmd, api.GetCryptoTransferEstimateOp))
+})
+
+var getLocateCmd = fetchCmd("get", api.GetLocateOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.GetLocate(cmdutil.Str(cmd, "locate-id"))
 })
 
 var getOpenPositionCmd = fetchCmd("get", api.GetOpenPositionOp, func(cmd *cobra.Command, args []string) (any, error) {
@@ -400,6 +435,14 @@ var getWatchlistsCmd = fetchCmd("list", api.GetWatchlistsOp, func(cmd *cobra.Com
 	return tradingClient.GetWatchlists()
 })
 
+var indexLatestValuesCmd = fetchCmd("latest-values", api.IndexLatestValuesOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return dataClient.IndexLatestValues(queryFromFlags(cmd, api.IndexLatestValuesOp))
+})
+
+var indexValuesCmd = fetchCmd("values", api.IndexValuesOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return dataClient.IndexValues(queryFromFlags(cmd, api.IndexValuesOp))
+})
+
 var latestRatesCmd = fetchCmd("latest", api.LatestRatesOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.LatestRates(queryFromFlags(cmd, api.LatestRatesOp))
 })
@@ -418,6 +461,14 @@ var listCryptoPerpFundingTransfersCmd = fetchCmd("list", api.ListCryptoPerpFundi
 
 var listCryptoPerpFundingWalletsCmd = fetchCmd("list", api.ListCryptoPerpFundingWalletsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return tradingClient.ListCryptoPerpFundingWallets(queryFromFlags(cmd, api.ListCryptoPerpFundingWalletsOp))
+})
+
+var listLocateQuotesCmd = fetchCmd("quotes", api.ListLocateQuotesOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.ListLocateQuotes(queryFromFlags(cmd, api.ListLocateQuotesOp))
+})
+
+var listLocatesCmd = fetchCmd("list", api.ListLocatesOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.ListLocates(queryFromFlags(cmd, api.ListLocatesOp))
 })
 
 var listWhitelistedAddressCmd = fetchCmd("list", api.ListWhitelistedAddressOp, func(cmd *cobra.Command, args []string) (any, error) {
@@ -769,6 +820,7 @@ func init() {
 	cryptoPerpWalletCmd.AddCommand(cryptoPerpWhitelistCmd)
 	dataCmd.AddCommand(dataCryptoCmd)
 	dataCmd.AddCommand(dataForexCmd)
+	dataCmd.AddCommand(dataIndexCmd)
 	dataCmd.AddCommand(dataMetaCmd)
 	dataCmd.AddCommand(dataOptionCmd)
 	dataCmd.AddCommand(screenerCmd)
@@ -782,6 +834,7 @@ func init() {
 	dataCmd.AddCommand(corporateActionsCmd)
 	cryptoPerpTransferCmd.AddCommand(createCryptoPerpTransferForAccountCmd)
 	walletTransferCmd.AddCommand(createCryptoTransferForAccountCmd)
+	locateCmd.AddCommand(createLocatesCmd)
 	walletWhitelistCmd.AddCommand(createWhitelistedAddressCmd)
 	cryptoPerpWhitelistCmd.AddCommand(createWhitelistedPerpAddressCmd)
 	dataCryptoCmd.AddCommand(cryptoBarsCmd)
@@ -806,6 +859,7 @@ func init() {
 	walletWhitelistCmd.AddCommand(deleteWhitelistedAddressCmd)
 	cryptoPerpWhitelistCmd.AddCommand(deleteWhitelistedPerpAddressCmd)
 	dataCmd.AddCommand(fixedIncomeLatestPricesCmd)
+	dataCmd.AddCommand(fixedIncomeLatestQuotesCmd)
 	accountCmd.AddCommand(getAccountCmd)
 	activityCmd.AddCommand(getAccountActivitiesCmd)
 	activityCmd.AddCommand(getAccountActivitiesByActivityTypeCmd)
@@ -819,6 +873,7 @@ func init() {
 	cryptoPerpTransferCmd.AddCommand(getCryptoPerpFundingTransferCmd)
 	cryptoPerpTransferCmd.AddCommand(getCryptoPerpTransferEstimateCmd)
 	walletTransferCmd.AddCommand(getCryptoTransferEstimateCmd)
+	locateCmd.AddCommand(getLocateCmd)
 	positionCmd.AddCommand(getOpenPositionCmd)
 	optionCmd.AddCommand(getOptionContractSymbolOrIDCmd)
 	optionCmd.AddCommand(getOptionsContractsCmd)
@@ -831,11 +886,15 @@ func init() {
 	watchlistCmd.AddCommand(getWatchlistByIDCmd)
 	watchlistCmd.AddCommand(getWatchlistByNameCmd)
 	watchlistCmd.AddCommand(getWatchlistsCmd)
+	dataIndexCmd.AddCommand(indexLatestValuesCmd)
+	dataIndexCmd.AddCommand(indexValuesCmd)
 	dataForexCmd.AddCommand(latestRatesCmd)
 	walletTransferCmd.AddCommand(listCryptoFundingTransfersCmd)
 	walletCmd.AddCommand(listCryptoFundingWalletsCmd)
 	cryptoPerpTransferCmd.AddCommand(listCryptoPerpFundingTransfersCmd)
 	cryptoPerpWalletCmd.AddCommand(listCryptoPerpFundingWalletsCmd)
+	locateCmd.AddCommand(listLocateQuotesCmd)
+	locateCmd.AddCommand(listLocatesCmd)
 	walletWhitelistCmd.AddCommand(listWhitelistedAddressCmd)
 	cryptoPerpWhitelistCmd.AddCommand(listWhitelistedPerpAddressCmd)
 	dataCmd.AddCommand(logosCmd)

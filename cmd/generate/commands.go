@@ -55,6 +55,11 @@ var cmdParents = map[string]parentDef{
 		use: "order", short: "Manage orders",
 		long: "Submit, list, replace, and cancel orders. Supports market, limit, stop, stop-limit, and trailing-stop order types with bracket (take-profit/stop-loss) legs.",
 	},
+	"locate": {
+		use:   "locate",
+		short: "Manage locate requests",
+		long:  "Create, list, and inspect stock locate requests for short sales.",
+	},
 	"wallet": {
 		use: "wallet", short: "Crypto funding wallets and transfers",
 		long: "View crypto funding wallets, create and track transfers, and manage whitelisted withdrawal addresses.",
@@ -78,6 +83,7 @@ var cmdParents = map[string]parentDef{
 		long: "Bars, trades, snapshots, chains, latest quotes, and exchange/condition reference data for options.",
 	},
 	"dataForex": {use: "forex", short: "Foreign exchange rate data", parent: "data"},
+	"dataIndex": {use: "index", short: "Index market data", parent: "data"},
 	"dataMeta":  {use: "meta", short: "Stock exchange and condition reference data", parent: "data"},
 	"screener": {
 		use: "screener", short: "Stock and crypto screener and market movers", parent: "data",
@@ -238,6 +244,30 @@ var cmdRegistry = map[string]cmdDef{
 		parent:   "order",
 		use:      "cancel-all",
 		examples: "  alpaca order cancel-all",
+	},
+
+	// --- locate ---
+	"ListLocates": {
+		parent: "locate",
+		use:    "list",
+		examples: `  alpaca locate list
+  alpaca locate list --symbol TSLA --status active --limit 100`,
+	},
+	"CreateLocates": {
+		parent: "locate",
+		use:    "create",
+		examples: `  alpaca locate create --symbol TSLA --qty 100
+  alpaca locate create --symbol TSLA --qty 100 --limit-price 0.05 --all-or-none true`,
+	},
+	"GetLocate": {
+		parent:   "locate",
+		use:      "get",
+		examples: "  alpaca locate get --locate-id <id>",
+	},
+	"ListLocateQuotes": {
+		parent:   "locate",
+		use:      "quotes",
+		examples: "  alpaca locate quotes --symbols TSLA,AAPL",
 	},
 
 	// --- clock / calendar (self: true = parent IS the command) ---
@@ -637,6 +667,26 @@ var cmdRegistry = map[string]cmdDef{
 		use:    "fixed-income",
 
 		examples: "  alpaca data fixed-income --isins 912797KR1,912797LB5",
+	},
+	"FixedIncomeLatestQuotes": {
+		parent: "data",
+		use:    "fixed-income-quotes",
+
+		examples: "  alpaca data fixed-income-quotes --isins US912797SX61,US912810SK51 --trade-size 1000",
+	},
+
+	// --- data: index ---
+	"IndexLatestValues": {
+		parent: "dataIndex",
+		use:    "latest-values",
+
+		examples: "  alpaca data index latest-values --symbols SPX,VIX",
+	},
+	"IndexValues": {
+		parent: "dataIndex",
+		use:    "values",
+
+		examples: "  alpaca data index values --symbols SPX,VIX --start 2026-05-18 --limit 100",
 	},
 
 	// --- data: logo ---
@@ -1062,7 +1112,7 @@ func extractProps(schema map[string]any) map[string]map[string]any {
 type fieldKind struct {
 	goField    string
 	flagName   string
-	kind       string // "string", "bool", "int", "enum", "arrayString", "json"
+	kind       string // "string", "bool", "int", "ptrString", "ptrBool", "ptrInt", "enum", "arrayString", "json"
 	enumGoType string
 }
 
@@ -1103,11 +1153,23 @@ func classifyFields(props map[string]map[string]any, skipFields []string, aliase
 
 		switch t, _ := ps["type"].(string); t {
 		case "string":
-			fields = append(fields, fieldKind{goField, flagName, "string", ""})
+			kind := "string"
+			if isNullable(ps) {
+				kind = "ptrString"
+			}
+			fields = append(fields, fieldKind{goField, flagName, kind, ""})
 		case "boolean":
-			fields = append(fields, fieldKind{goField, flagName, "bool", ""})
+			kind := "bool"
+			if isNullable(ps) {
+				kind = "ptrBool"
+			}
+			fields = append(fields, fieldKind{goField, flagName, kind, ""})
 		case "integer":
-			fields = append(fields, fieldKind{goField, flagName, "int", ""})
+			kind := "int"
+			if isNullable(ps) {
+				kind = "ptrInt"
+			}
+			fields = append(fields, fieldKind{goField, flagName, kind, ""})
 		case "array":
 			if items, ok := ps["items"].(map[string]any); ok {
 				if itemType, _ := items["type"].(string); itemType == "string" {
@@ -1175,6 +1237,27 @@ func buildPostBody(typeName string, props map[string]map[string]any, skipFields 
 		}
 	}
 
+	// Post-init: nullable scalar pointers (only include explicitly set flags)
+	for _, f := range fields {
+		switch f.kind {
+		case "ptrString":
+			fmt.Fprintf(&b, "\n\tif cmdutil.Changed(cmd, %q) {\n", f.flagName)
+			fmt.Fprintf(&b, "\t\tv := cmdutil.Str(cmd, %q)\n", f.flagName)
+			fmt.Fprintf(&b, "\t\tbody.%s = &v\n", f.goField)
+			b.WriteString("\t}")
+		case "ptrBool":
+			fmt.Fprintf(&b, "\n\tif cmdutil.Changed(cmd, %q) {\n", f.flagName)
+			fmt.Fprintf(&b, "\t\tv := cmdutil.Bool(cmd, %q)\n", f.flagName)
+			fmt.Fprintf(&b, "\t\tbody.%s = &v\n", f.goField)
+			b.WriteString("\t}")
+		case "ptrInt":
+			fmt.Fprintf(&b, "\n\tif cmdutil.Changed(cmd, %q) {\n", f.flagName)
+			fmt.Fprintf(&b, "\t\tv := cmdutil.Int(cmd, %q)\n", f.flagName)
+			fmt.Fprintf(&b, "\t\tbody.%s = &v\n", f.goField)
+			b.WriteString("\t}")
+		}
+	}
+
 	// Post-init: JSON unmarshal for complex types
 	for _, f := range fields {
 		if f.kind == "json" {
@@ -1213,6 +1296,15 @@ func buildPatchBody(typeName string, props map[string]map[string]any, aliases ma
 			fmt.Fprintf(&b, "\t\tbody.%s = cmdutil.Bool(cmd, %q)\n", f.goField, f.flagName)
 		case "int":
 			fmt.Fprintf(&b, "\t\tbody.%s = cmdutil.Int(cmd, %q)\n", f.goField, f.flagName)
+		case "ptrString":
+			fmt.Fprintf(&b, "\t\tv := cmdutil.Str(cmd, %q)\n", f.flagName)
+			fmt.Fprintf(&b, "\t\tbody.%s = &v\n", f.goField)
+		case "ptrBool":
+			fmt.Fprintf(&b, "\t\tv := cmdutil.Bool(cmd, %q)\n", f.flagName)
+			fmt.Fprintf(&b, "\t\tbody.%s = &v\n", f.goField)
+		case "ptrInt":
+			fmt.Fprintf(&b, "\t\tv := cmdutil.Int(cmd, %q)\n", f.flagName)
+			fmt.Fprintf(&b, "\t\tbody.%s = &v\n", f.goField)
 		case "enum":
 			fmt.Fprintf(&b, "\t\tbody.%s = api.%s(cmdutil.Str(cmd, %q))\n", f.goField, f.enumGoType, f.flagName)
 		case "arrayString":

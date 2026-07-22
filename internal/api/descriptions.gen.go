@@ -10,7 +10,7 @@ var CalendarOp = Op{
 	Example: `  alpaca calendar market --market XNYS --start 2025-01-01`,
 	Flags: []FlagDef{
 		{Name: "end", OASName: "end", Type: "string", Description: "last date to retrieve data for (inclusive). Default: one week from the start date", Source: "query"},
-		{Name: "market", OASName: "market", Type: "string", Description: "market identifier (MIC, BIC, or acronym)", Completions: []string{"BMO", "BNYM", "BOATS", "CEUX", "CHIX", "HKEX", "IEX", "IEXG", "ISE", "LSE", "MTA", "MTAA", "NASDAQ", "NYSE", "OCEA", "OPRA", "OTC", "OTCM", "SIFMA", "TADAWUL", "XAMS", "XBRU", "XDUB", "XETR", "XETRA", "XHKG", "XLIS", "XLON", "XNAS", "XNYS", "XPAR", "XSAU"}, Required: true, Source: "path"},
+		{Name: "market", OASName: "market", Type: "string", Description: "market identifier", Completions: []string{"BMO", "BNYM", "BOATS", "CEUX", "CHIX", "HKEX", "IEX", "IEXG", "ISE", "LSE", "MTA", "MTAA", "NASDAQ", "NYSE", "OCEA", "OPRA", "OTC", "OTCM", "SIFMA", "TADAWUL", "XAMS", "XBRU", "XDUB", "XETR", "XETRA", "XHKG", "XLIS", "XLON", "XNAS", "XNYS", "XPAR", "XSAU"}, Required: true, Source: "path"},
 		{Name: "start", OASName: "start", Type: "string", Description: "first date to retrieve data for (inclusive). Default: today", Source: "query"},
 		{Name: "timezone", OASName: "timezone", Type: "string", Description: "timezone of the times. Default: the timezone of the market", Completions: []string{"UTC"}, Source: "query"},
 	},
@@ -36,6 +36,7 @@ var CorporateActionsOp = Op{
 		{Name: "ids", OASName: "ids", Type: "string", Description: "A comma-separated list of corporate action IDs", Source: "query"},
 		{Name: "limit", OASName: "limit", Type: "int", Default: "100", Description: "maximum number of corporate actions to return in a response.", Source: "query"},
 		{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", Source: "query"},
+		{Name: "region", OASName: "region", Type: "string", Default: "us", Description: "region to filter corporate actions by", Completions: []string{"all", "non_us", "us"}, Source: "query"},
 		{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}, Source: "query"},
 		{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval", Source: "query"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of symbols", Source: "query"},
@@ -195,6 +196,39 @@ var FixedIncomeLatestPricesOp = Op{
 	Example: `  alpaca data fixed-income --isins 912797KR1,912797LB5`,
 	Flags: []FlagDef{
 		{Name: "isins", OASName: "isins", Type: "string", Description: "A comma-separated list of ISINs with a limit of 1000", Required: true, Source: "query"},
+	},
+}
+
+var FixedIncomeLatestQuotesOp = Op{
+	Name: "FixedIncomeLatestQuotes", Summary: "Get latest quotes",
+	Long:    "This endpoint returns the latest quotes for the given fixed income securities",
+	Example: `  alpaca data fixed-income-quotes --isins US912797SX61,US912810SK51 --trade-size 1000`,
+	Flags: []FlagDef{
+		{Name: "isins", OASName: "isins", Type: "string", Description: "A comma-separated list of ISINs with a limit of 100", Required: true, Source: "query"},
+		{Name: "trade-size", OASName: "trade_size", Type: "int", Description: "filters to best bid/ask where the minimum trade size is less than or equal to the given numeric value", Source: "query"},
+	},
+}
+
+var IndexLatestValuesOp = Op{
+	Name: "IndexLatestValues", Summary: "Get latest values for indices",
+	Long:    "Get the latest values for the given indices",
+	Example: `  alpaca data index latest-values --symbols SPX,VIX`,
+	Flags: []FlagDef{
+		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of index symbols", Required: true, Source: "query"},
+	},
+}
+
+var IndexValuesOp = Op{
+	Name: "IndexValues", Summary: "Get historical values for indices",
+	Long:    "Get historical values for the given indices in the given time interval",
+	Example: `  alpaca data index values --symbols SPX,VIX --start 2026-05-18 --limit 100`,
+	Flags: []FlagDef{
+		{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", Source: "query"},
+		{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", Source: "query"},
+		{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", Source: "query"},
+		{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}, Source: "query"},
+		{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval", Source: "query"},
+		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of index symbols", Required: true, Source: "query"},
 	},
 }
 
@@ -676,8 +710,9 @@ var CreateCryptoPerpTransferForAccountOp = Op{
 	Example: `  alpaca crypto-perp wallet transfer create --amount 0.5 --address 0xabc... --asset BTC`,
 	Flags: []FlagDef{
 		{Name: "address", OASName: "address", Type: "string", Description: "destination wallet address", Source: "body"},
-		{Name: "amount", OASName: "amount", Type: "string", Description: "amount, denoted in the specified asset, to be withdrawn from the user’s wallet", Source: "body"},
+		{Name: "amount", OASName: "amount", Type: "string", Description: "amount, denoted in the specified asset, to be withdrawn from the user's wallet", Source: "body"},
 		{Name: "asset", OASName: "asset", Type: "string", Description: "crypto asset symbol, e.g. BTC, ETH, USDT", Source: "body"},
+		{Name: "chain", OASName: "chain", Type: "string", Description: "optional chain identifier. The blockchain network used for the withdrawal", Completions: []string{"ARB", "BTC", "ETH", "SOL", "XRP"}, Source: "body"},
 	},
 }
 
@@ -687,8 +722,22 @@ var CreateCryptoTransferForAccountOp = Op{
 	Example: `  alpaca wallet transfer create --amount 0.5 --address 0xabc... --asset BTC`,
 	Flags: []FlagDef{
 		{Name: "address", OASName: "address", Type: "string", Description: "destination wallet address", Source: "body"},
-		{Name: "amount", OASName: "amount", Type: "string", Description: "amount, denoted in the specified asset, to be withdrawn from the user’s wallet", Source: "body"},
+		{Name: "amount", OASName: "amount", Type: "string", Description: "amount, denoted in the specified asset, to be withdrawn from the user's wallet", Source: "body"},
 		{Name: "asset", OASName: "asset", Type: "string", Description: "crypto asset symbol, e.g. BTC, ETH, USDT", Source: "body"},
+		{Name: "chain", OASName: "chain", Type: "string", Description: "optional chain identifier. The blockchain network used for the withdrawal", Completions: []string{"ARB", "BTC", "ETH", "SOL", "XRP"}, Source: "body"},
+	},
+}
+
+var CreateLocatesOp = Op{
+	Name: "CreateLocates", Summary: "Create locate",
+	Long: "Creates a locate request for a short sale",
+	Example: `  alpaca locate create --symbol TSLA --qty 100
+  alpaca locate create --symbol TSLA --qty 100 --limit-price 0.05 --all-or-none true`,
+	Flags: []FlagDef{
+		{Name: "all-or-none", OASName: "all_or_none", Type: "bool", Description: "reject the locate unless the full requested quantity is available", Source: "body"},
+		{Name: "limit-price", OASName: "limit_price", Type: "string", Description: "maximum acceptable locate fee per share, as a decimal string in USD.\nIf omitted, any quoted fee is accepted", Source: "body"},
+		{Name: "qty", OASName: "qty", Type: "int", Description: "number of shares to locate. Must be positive and in round lots of 100; invalid quantities return HTTP 400", Source: "body"},
+		{Name: "symbol", OASName: "symbol", Type: "string", Description: "stock symbol", Source: "body"},
 	},
 }
 
@@ -699,6 +748,7 @@ var CreateWhitelistedAddressOp = Op{
 	Flags: []FlagDef{
 		{Name: "address", OASName: "address", Type: "string", Description: "address to be whitelisted", Source: "body"},
 		{Name: "asset", OASName: "asset", Type: "string", Description: "symbol of underlying asset for the whitelisted address", Source: "body"},
+		{Name: "chain", OASName: "chain", Type: "string", Description: "optional chain identifier. Use when the underlying asset for the whitelisted address is a multi-chain crypto asset", Completions: []string{"ARB", "BTC", "ETH", "SOL", "XRP"}, Source: "body"},
 	},
 }
 
@@ -714,7 +764,7 @@ var CreateWhitelistedPerpAddressOp = Op{
 
 var DeleteAllOpenPositionsOp = Op{
 	Name: "DeleteAllOpenPositions", Summary: "Close all positions", ReturnsArray: true,
-	Long:    "Closes (liquidates) all of the account’s open long and short positions. A response will be provided for each order that is attempted to be cancelled. If an order is no longer cancelable, the server will respond with status 500 and reject the request",
+	Long:    "Closes (liquidates) all of the account's open long and short positions. A response will be provided for each order that is attempted to be cancelled. If an order is no longer cancelable, the server will respond with status 500 and reject the request",
 	Example: `  alpaca position close-all`,
 	Flags: []FlagDef{
 		{Name: "cancel-orders", OASName: "cancel_orders", Type: "bool", Description: "if true is specified, cancel all open orders before liquidating all positions", Source: "query"},
@@ -729,7 +779,7 @@ var DeleteAllOrdersOp = Op{
 
 var DeleteOpenPositionOp = Op{
 	Name: "DeleteOpenPosition", Summary: "Close a position",
-	Long: "Closes (liquidates) the account’s open position for the given symbol. Works for both long and short positions",
+	Long: "Closes (liquidates) the account's open position for the given symbol. Works for both long and short positions",
 	Example: `  alpaca position close --symbol-or-asset-id AAPL
   alpaca position close --symbol-or-asset-id AAPL --qty 5
   alpaca position close --symbol-or-asset-id AAPL --percentage 50`,
@@ -828,7 +878,7 @@ var GetV2AssetsOp = Op{
 		{Name: "asset-class", OASName: "asset_class", Type: "string", Description: "defaults to us_equity", Source: "query"},
 		{Name: "attributes", OASName: "attributes", Type: "string", Description: "comma separated values to query for more than one attribute", Source: "query"},
 		{Name: "exchange", OASName: "exchange", Type: "string", Description: "optional AMEX, ARCA, BATS, NYSE, NASDAQ, NYSEARCA or OTC", Source: "query"},
-		{Name: "status", OASName: "status", Type: "string", Description: "e.g. “active”. By default, all statuses are included", Source: "query"},
+		{Name: "status", OASName: "status", Type: "string", Description: "e.g. \"active\". By default, all statuses are included", Source: "query"},
 	},
 }
 
@@ -862,7 +912,7 @@ var GetV2CorporateActionsAnnouncementsIDOp = Op{
 	Long:    "This endpoint is deprecated, please use the new corporate actions endpoint instead",
 	Example: `  alpaca corporate-action get --id <announcement-id>`,
 	Flags: []FlagDef{
-		{Name: "id", OASName: "id", Type: "string", Description: "corporate announcement’s id", Required: true, Source: "path"},
+		{Name: "id", OASName: "id", Type: "string", Description: "corporate announcement's id", Required: true, Source: "path"},
 	},
 }
 
@@ -931,7 +981,7 @@ var GetAccountPortfolioHistoryOp = Op{
 
 var GetAllOpenPositionsOp = Op{
 	Name: "GetAllOpenPositions", Summary: "List all open positions", ReturnsArray: true,
-	Long: "The positions API provides information about an account’s current open positions. The response will include information such as cost basis, shares traded, and market value, which will be updated live as price information is updated",
+	Long: "The positions API provides information about an account's current open positions. The response will include information such as cost basis, shares traded, and market value, which will be updated live as price information is updated",
 	Example: `  alpaca position list
   alpaca position list --csv`,
 }
@@ -1015,9 +1065,18 @@ var GetCryptoTransferEstimateOp = Op{
 	},
 }
 
+var GetLocateOp = Op{
+	Name: "GetLocate", Summary: "Get locate",
+	Long:    "Returns a locate by ID",
+	Example: `  alpaca locate get --locate-id <id>`,
+	Flags: []FlagDef{
+		{Name: "locate-id", OASName: "locate_id", Type: "string", Description: "locate ID", Required: true, Source: "path"},
+	},
+}
+
 var GetOpenPositionOp = Op{
 	Name: "GetOpenPosition", Summary: "Get an open position",
-	Long: "Retrieves the account’s open position for the given symbol or assetId",
+	Long: "Retrieves the account's open position for the given symbol or assetId",
 	Example: `  alpaca position get --symbol-or-asset-id AAPL
   alpaca position get --symbol-or-asset-id BTC/USD`,
 	Flags: []FlagDef{
@@ -1094,7 +1153,8 @@ var ListCryptoFundingWalletsOp = Op{
 	Example: `  alpaca wallet list`,
 	Flags: []FlagDef{
 		{Name: "asset", OASName: "asset", Type: "string", Description: "filter by crypto asset symbol, e.g. BTC, ETH, USDT. If specified and no wallet exists, one will be created", Source: "query"},
-		{Name: "network", OASName: "network", Type: "string", Description: "optional network identifier", Completions: []string{"ethereum", "solana"}, Source: "query"},
+		{Name: "chain", OASName: "chain", Type: "string", Description: "optional chain identifier", Completions: []string{"ARB", "BTC", "ETH", "SOL", "XRP"}, Source: "query"},
+		{Name: "network", OASName: "network", Type: "string", Description: "deprecated", Completions: []string{"ethereum", "solana"}, Source: "query"},
 	},
 }
 
@@ -1110,6 +1170,30 @@ var ListCryptoPerpFundingWalletsOp = Op{
 	Example: `  alpaca crypto-perp wallet list`,
 	Flags: []FlagDef{
 		{Name: "asset", OASName: "asset", Type: "string", Description: "asset", Source: "query"},
+	},
+}
+
+var ListLocateQuotesOp = Op{
+	Name: "ListLocateQuotes", Summary: "Get locate quotes",
+	Long:    "Returns locate availability and pricing for one or more symbols",
+	Example: `  alpaca locate quotes --symbols TSLA,AAPL`,
+	Flags: []FlagDef{
+		{Name: "symbols", OASName: "symbols", Type: "string", Description: "comma-separated list of stock symbols. Maximum 100 unique symbols", Required: true, Source: "query"},
+	},
+}
+
+var ListLocatesOp = Op{
+	Name: "ListLocates", Summary: "List locates",
+	Long: "Returns locates filtered by status, symbol, or date range. Results are sorted by `created_at` descending, with `id` descending as the tie-breaker",
+	Example: `  alpaca locate list
+  alpaca locate list --symbol TSLA --status active --limit 100`,
+	Flags: []FlagDef{
+		{Name: "end", OASName: "end", Type: "string", Description: "filter locates with locate trading date before this date (exclusive)", Source: "query"},
+		{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of results to return", Source: "query"},
+		{Name: "page-token", OASName: "page_token", Type: "string", Description: "used for pagination, this token retrieves the next page of results", Source: "query"},
+		{Name: "start", OASName: "start", Type: "string", Description: "filter locates with locate trading date on or after this date", Source: "query"},
+		{Name: "status", OASName: "status", Type: "string", Description: "filter by locate status", Completions: []string{"active", "expired", "rejected"}, Source: "query"},
+		{Name: "symbol", OASName: "symbol", Type: "string", Description: "filter by stock symbol", Source: "query"},
 	},
 }
 
@@ -1191,7 +1275,7 @@ var PatchOrderByOrderIDOp = Op{
 		{Name: "qty", OASName: "qty", Type: "string", Description: "number of shares to trade.\n\nYou can only patch full shares for now.\n\nQty of equity fractional orders are not allowed ...", Source: "body"},
 		{Name: "stop-price", OASName: "stop_price", Type: "string", Description: "required if original order type is limit or stop_limit", Source: "body"},
 		{Name: "time-in-force", OASName: "time_in_force", Type: "string", Description: "time-In-Force values supported by Alpaca vary based on the order's security type", Completions: []string{"cls", "day", "fok", "gtc", "ioc", "opg"}, Source: "body"},
-		{Name: "trail", OASName: "trail", Type: "string", Description: "the new value of the trail_price or trail_percent value (works only for type=“trailing_stop”)", Source: "body"},
+		{Name: "trail", OASName: "trail", Type: "string", Description: "the new value of the trail_price or trail_percent value (works only for type=\"trailing_stop\")", Source: "body"},
 	},
 }
 
@@ -1313,9 +1397,10 @@ var accountConfigurationsResponseFields = []ResponseField{
 
 var assetsResponseFields = []ResponseField{
 	{Name: "attributes", Type: "[]enum", Description: "unique characteristics of the asset", EnumValues: []string{"fractional_eh_enabled", "has_options", "ipo", "options_late_close", "overnight_halted", "overnight_tradable", "ptp_no_exception", "ptp_with_exception"}},
+	{Name: "borrow_status", Type: "enum", Description: "borrow status for US equity assets. This field is omitted for non-US-equity assets", EnumValues: []string{"easy_to_borrow", "hard_to_borrow"}},
 	{Name: "class", Type: "enum", Description: "this represents the category to which the asset belongs to", EnumValues: []string{"crypto", "ipo", "us_equity", "us_option"}},
 	{Name: "cusip", Type: "string", Description: "CUSIP identifier for the asset (US Equities only).\nTo request a specific CUSIP, please reach out to Alpaca support"},
-	{Name: "easy_to_borrow", Type: "boolean", Description: "asset is easy-to-borrow or not (filtering for easy_to_borrow = True is the best way to check whether the name is curr..."},
+	{Name: "easy_to_borrow", Type: "boolean", Description: "**deprecated**: Please use borrow_status instead."},
 	{Name: "exchange", Type: "enum", Description: "represents the current exchanges Alpaca supports", EnumValues: []string{"AMEX", "ARCA", "BATS", "NASDAQ", "NYSE", "NYSEARCA", "OTC"}},
 	{Name: "fractionable", Type: "boolean", Description: "asset is fractionable or not"},
 	{Name: "id", Type: "string", Description: "asset ID"},
@@ -1323,7 +1408,10 @@ var assetsResponseFields = []ResponseField{
 	{Name: "margin_requirement_long", Type: "string", Description: "margin requirement percentage for the asset's long positions (equities only)"},
 	{Name: "margin_requirement_short", Type: "string", Description: "margin requirement percentage for the asset's short positions (equities only)"},
 	{Name: "marginable", Type: "boolean", Description: "asset is marginable or not"},
+	{Name: "min_order_size", Type: "string", Description: "minimum order size. Field available for crypto only"},
+	{Name: "min_trade_increment", Type: "string", Description: "amount a trade quantity can be incremented by. Field available for crypto only"},
 	{Name: "name", Type: "string", Description: "official name of the asset"},
+	{Name: "price_increment", Type: "string", Description: "amount the price can be incremented by. Field available for crypto only"},
 	{Name: "shortable", Type: "boolean", Description: "asset is shortable or not"},
 	{Name: "status", Type: "enum", Description: "active or inactive", EnumValues: []string{"active", "inactive"}},
 	{Name: "symbol", Type: "string", Description: "symbol of the asset"},
@@ -1368,6 +1456,21 @@ var cryptoWalletResponseFields = []ResponseField{
 	{Name: "created_at", Type: "string", Description: "timestamp (RFC3339) of account creation"},
 }
 
+var locateResponseFields = []ResponseField{
+	{Name: "all_or_none", Type: "boolean", Description: "whether the request required the full quantity"},
+	{Name: "created_at", Type: "string", Description: "time when the locate was created"},
+	{Name: "expires_at", Type: "string", Description: "time when the active locate expires. Omitted when rejected"},
+	{Name: "id", Type: "string", Description: "locate ID"},
+	{Name: "limit_price", Type: "string", Description: "maximum acceptable fee per share from the request"},
+	{Name: "located_price", Type: "string", Description: "locate fee per share in USD. Omitted when rejected"},
+	{Name: "located_qty", Type: "integer", Description: "number of shares located. Omitted when rejected"},
+	{Name: "rejection_reason", Type: "string", Description: "machine-readable rejection reason"},
+	{Name: "requested_qty", Type: "integer", Description: "number of shares requested"},
+	{Name: "status", Type: "enum", Description: "locate status", EnumValues: []string{"active", "expired", "rejected"}},
+	{Name: "symbol", Type: "string", Description: "stock symbol"},
+	{Name: "total_fee", Type: "string", Description: "total locate fee in USD. Omitted when rejected"},
+}
+
 var optionSnapshotsRespResponseFields = []ResponseField{
 	{Name: "next_page_token", Type: "string", Description: "pagination token for the next page"},
 	{Name: "snapshots", Type: "map[string]object", Description: "snapshots"},
@@ -1380,6 +1483,7 @@ var orderResponseFields = []ResponseField{
 	{Name: "client_order_id", Type: "string", Description: "client unique order ID"},
 	{Name: "created_at", Type: "string", Description: "created at"},
 	{Name: "expired_at", Type: "string", Description: "expired at"},
+	{Name: "expires_at", Type: "string", Description: "expires at"},
 	{Name: "extended_hours", Type: "boolean", Description: "if true, eligible for execution outside regular trading hours"},
 	{Name: "failed_at", Type: "string", Description: "failed at"},
 	{Name: "filled_at", Type: "string", Description: "filled at"},
@@ -1394,11 +1498,12 @@ var orderResponseFields = []ResponseField{
 	{Name: "order_type", Type: "string", Description: "deprecated in favour of the field \"type\""},
 	{Name: "position_intent", Type: "enum", Description: "represents the desired position strategy", EnumValues: []string{"buy_to_close", "buy_to_open", "sell_to_close", "sell_to_open"}},
 	{Name: "qty", Type: "string", Description: "ordered quantity. If entered, notional will be null. Can take up to 9 decimal points. Required if order class is mleg"},
+	{Name: "ratio_qty", Type: "string", Description: "proportional quantity of this leg in relation to the overall multi-leg order quantity"},
 	{Name: "replaced_at", Type: "string", Description: "replaced at"},
 	{Name: "replaced_by", Type: "string", Description: "order ID that this order was replaced by"},
 	{Name: "replaces", Type: "string", Description: "order ID that this order replaces"},
 	{Name: "side", Type: "enum", Description: "represents which side this order was on:\n- buy\n- sell\nRequired for all order classes except for mleg", EnumValues: []string{"buy", "sell"}},
-	{Name: "status", Type: "enum", Description: "an order executed through Alpaca can experience several status changes during its lifecycle", EnumValues: []string{"accepted", "accepted_for_bidding", "calculated", "canceled", "done_for_day", "expired", "filled", "new", "partially_filled", "pending_cancel", "pending_new", "pending_replace", "rejected", "replaced", "stopped", "suspended"}},
+	{Name: "status", Type: "enum", Description: "an order executed through Alpaca can experience several status changes during its lifecycle", EnumValues: []string{"accepted", "accepted_for_bidding", "calculated", "canceled", "done_for_day", "expired", "filled", "held", "new", "partially_filled", "pending_cancel", "pending_new", "pending_replace", "rejected", "replaced", "stopped", "suspended"}},
 	{Name: "stop_price", Type: "string", Description: "stop price"},
 	{Name: "submitted_at", Type: "string", Description: "submitted at"},
 	{Name: "symbol", Type: "string", Description: "asset symbol, required for all order classes except for mleg"},
@@ -1414,20 +1519,24 @@ var positionResponseFields = []ResponseField{
 	{Name: "asset_id", Type: "string", Description: "asset ID (For options this represents the option contract ID)"},
 	{Name: "asset_marginable", Type: "boolean", Description: "asset marginable"},
 	{Name: "avg_entry_price", Type: "string", Description: "average entry price of the position"},
+	{Name: "avg_entry_swap_rate", Type: "string", Description: "weighted-average exchange rate at the time the position was entered"},
 	{Name: "change_today", Type: "string", Description: "percent change from last day price (by a factor of 1)"},
 	{Name: "cost_basis", Type: "string", Description: "total cost basis in dollar"},
 	{Name: "current_price", Type: "string", Description: "current asset price per share"},
 	{Name: "exchange", Type: "enum", Description: "represents the current exchanges Alpaca supports", EnumValues: []string{"AMEX", "ARCA", "BATS", "NASDAQ", "NYSE", "NYSEARCA", "OTC"}},
-	{Name: "lastday_price", Type: "string", Description: "last day’s asset price per share based on the closing value of the last trading day"},
+	{Name: "lastday_price", Type: "string", Description: "last day's asset price per share based on the closing value of the last trading day"},
 	{Name: "market_value", Type: "string", Description: "total dollar amount of the position"},
+	{Name: "prev_swap_rate", Type: "string", Description: "exchange rate as of the previous close (i.e. yesterday's rate)"},
 	{Name: "qty", Type: "string", Description: "number of shares"},
 	{Name: "qty_available", Type: "string", Description: "total number of shares available minus open orders / locked for options covered call"},
-	{Name: "side", Type: "string", Description: "“long”"},
+	{Name: "side", Type: "enum", Description: "long", EnumValues: []string{"long", "short"}},
+	{Name: "swap_rate", Type: "string", Description: "current exchange rate (without mark-up) used to convert local-currency position values into USD"},
 	{Name: "symbol", Type: "string", Description: "symbol name of the asset"},
 	{Name: "unrealized_intraday_pl", Type: "string", Description: "unrealized profit/loss in dollars for the day"},
 	{Name: "unrealized_intraday_plpc", Type: "string", Description: "unrealized profit/loss percent (by a factor of 1)"},
 	{Name: "unrealized_pl", Type: "string", Description: "unrealized profit/loss in dollars"},
 	{Name: "unrealized_plpc", Type: "string", Description: "unrealized profit/loss percent (by a factor of 1)"},
+	{Name: "usd", Type: "object", Description: "position values in USD. This is returned for LCT (non-USD) accounts only"},
 }
 
 var watchlistResponseFields = []ResponseField{
@@ -1496,6 +1605,16 @@ func ResponseSchema(opName string) ([]ResponseField, bool) {
 			},
 			"FixedIncomeLatestPrices": {
 				{Name: "prices", Type: "map[string]object", Description: "prices"},
+			},
+			"FixedIncomeLatestQuotes": {
+				{Name: "quotes", Type: "map[string]object", Description: "quotes"},
+			},
+			"IndexLatestValues": {
+				{Name: "values", Type: "map[string]object", Description: "values"},
+			},
+			"IndexValues": {
+				{Name: "next_page_token", Type: "string", Description: "pagination token for the next page"},
+				{Name: "values", Type: "map[string][]object", Description: "values"},
 			},
 			"LatestRates": {
 				{Name: "rates", Type: "map[string]object", Description: "rates"},
@@ -1618,6 +1737,7 @@ func ResponseSchema(opName string) ([]ResponseField, bool) {
 			"AddAssetToWatchlistByName":          watchlistResponseFields,
 			"CreateCryptoPerpTransferForAccount": cryptoTransferResponseFields,
 			"CreateCryptoTransferForAccount":     cryptoTransferResponseFields,
+			"CreateLocates":                      locateResponseFields,
 			"CreateWhitelistedAddress":           whitelistedAddressResponseFields,
 			"CreateWhitelistedPerpAddress":       whitelistedAddressResponseFields,
 			"DeleteAllOpenPositions": {
@@ -1661,6 +1781,7 @@ func ResponseSchema(opName string) ([]ResponseField, bool) {
 				{Name: "buying_power", Type: "string", Description: "current available $ buying power; If multiplier = 4, this is your daytrade buying power which is calculated as (last_..."},
 				{Name: "cash", Type: "string", Description: "cash Balance"},
 				{Name: "created_at", Type: "string", Description: "timestamp this account was created at"},
+				{Name: "crypto_status", Type: "enum", Description: "an enum representing the various possible account status values.\n\nMost likely, the account status is ACTIVE unless th...", EnumValues: []string{"ACCOUNT_CLOSED", "ACCOUNT_CLOSED_PENDING", "ACCOUNT_UPDATED", "ACTION_REQUIRED", "ACTIVE", "APPROVAL_PENDING", "APPROVED", "INACTIVE", "LIMITED", "ONBOARDING", "PAPER_ONLY", "REJECTED", "SUBMISSION_FAILED", "SUBMITTED"}},
 				{Name: "currency", Type: "string", Description: "USD"},
 				{Name: "daytrade_count", Type: "integer", Description: "current number of daytrades that have been made in the last 5 trading days (inclusive of today)"},
 				{Name: "daytrading_buying_power", Type: "string", Description: "your buying power for day trades (continuously updated value)"},
@@ -1686,7 +1807,7 @@ func ResponseSchema(opName string) ([]ResponseField, bool) {
 				{Name: "short_market_value", Type: "string", Description: "real-time MtM value of all short positions held in the account"},
 				{Name: "shorting_enabled", Type: "boolean", Description: "flag to denote whether or not the account is permitted to short"},
 				{Name: "sma", Type: "string", Description: "value of special memorandum account (will be used at a later date to provide additional buying_power)"},
-				{Name: "status", Type: "enum", Description: "an enum representing the various possible account status values.\n\nMost likely, the account status is ACTIVE unless th...", EnumValues: []string{"ACCOUNT_UPDATED", "ACTIVE", "APPROVAL_PENDING", "ONBOARDING", "REJECTED", "SUBMISSION_FAILED", "SUBMITTED"}},
+				{Name: "status", Type: "enum", Description: "an enum representing the various possible account status values.\n\nMost likely, the account status is ACTIVE unless th...", EnumValues: []string{"ACCOUNT_CLOSED", "ACCOUNT_CLOSED_PENDING", "ACCOUNT_UPDATED", "ACTION_REQUIRED", "ACTIVE", "APPROVAL_PENDING", "APPROVED", "INACTIVE", "LIMITED", "ONBOARDING", "PAPER_ONLY", "REJECTED", "SUBMISSION_FAILED", "SUBMITTED"}},
 				{Name: "trade_suspended_by_user", Type: "boolean", Description: "user setting. If true, the account is not allowed to place orders"},
 				{Name: "trading_blocked", Type: "boolean", Description: "if true, the account is not allowed to place orders"},
 				{Name: "transfers_blocked", Type: "boolean", Description: "if true, the account is not allowed to request money transfers"},
@@ -1706,9 +1827,14 @@ func ResponseSchema(opName string) ([]ResponseField, bool) {
 			"GetAllOrders":                 orderResponseFields,
 			"GetCryptoFundingTransfer":     cryptoTransferResponseFields,
 			"GetCryptoPerpFundingTransfer": cryptoTransferResponseFields,
-			"GetOpenPosition":              positionResponseFields,
-			"GetOrderByClientOrderID":      orderResponseFields,
-			"GetOrderByOrderID":            orderResponseFields,
+			"GetCryptoTransferEstimate": {
+				{Name: "fee", Type: "string", Description: "fee"},
+				{Name: "network_fee", Type: "string", Description: "network fee"},
+			},
+			"GetLocate":               locateResponseFields,
+			"GetOpenPosition":         positionResponseFields,
+			"GetOrderByClientOrderID": orderResponseFields,
+			"GetOrderByOrderID":       orderResponseFields,
 			"GetTokenizationRequests": {
 				{Name: "account", Type: "string", Description: "alpaca account ID associated with this tokenization request"},
 				{Name: "created_at", Type: "string", Description: "created at"},
@@ -1740,8 +1866,16 @@ func ResponseSchema(opName string) ([]ResponseField, bool) {
 			"ListCryptoFundingWallets":       cryptoWalletResponseFields,
 			"ListCryptoPerpFundingTransfers": cryptoTransferResponseFields,
 			"ListCryptoPerpFundingWallets":   cryptoWalletResponseFields,
-			"ListWhitelistedAddress":         whitelistedAddressResponseFields,
-			"ListWhitelistedPerpAddress":     whitelistedAddressResponseFields,
+			"ListLocateQuotes": {
+				{Name: "errors", Type: "[]object", Description: "symbols that could not be quoted"},
+				{Name: "quotes", Type: "[]object", Description: "locate quotes returned for requested symbols"},
+			},
+			"ListLocates": {
+				{Name: "locates", Type: "[]object", Description: "locates matching the filter criteria"},
+				{Name: "next_page_token", Type: "string", Description: "token to use to retrieve the next page of results. If null, there are no more pages"},
+			},
+			"ListWhitelistedAddress":     whitelistedAddressResponseFields,
+			"ListWhitelistedPerpAddress": whitelistedAddressResponseFields,
 			"OptionBars": {
 				{Name: "bars", Type: "map[string][]object", Description: "bars"},
 				{Name: "currency", Type: "string", Description: "currency"},
@@ -1789,6 +1923,9 @@ var AllOps = []Op{
 	CryptoSnapshotsOp,
 	CryptoTradesOp,
 	FixedIncomeLatestPricesOp,
+	FixedIncomeLatestQuotesOp,
+	IndexLatestValuesOp,
+	IndexValuesOp,
 	LatestRatesOp,
 	LegacyCalendarOp,
 	LegacyClockOp,
@@ -1828,6 +1965,7 @@ var AllOps = []Op{
 	AddAssetToWatchlistByNameOp,
 	CreateCryptoPerpTransferForAccountOp,
 	CreateCryptoTransferForAccountOp,
+	CreateLocatesOp,
 	CreateWhitelistedAddressOp,
 	CreateWhitelistedPerpAddressOp,
 	DeleteAllOpenPositionsOp,
@@ -1857,6 +1995,7 @@ var AllOps = []Op{
 	GetCryptoPerpFundingTransferOp,
 	GetCryptoPerpTransferEstimateOp,
 	GetCryptoTransferEstimateOp,
+	GetLocateOp,
 	GetOpenPositionOp,
 	GetOrderByClientOrderIDOp,
 	GetOrderByOrderIDOp,
@@ -1868,6 +2007,8 @@ var AllOps = []Op{
 	ListCryptoFundingWalletsOp,
 	ListCryptoPerpFundingTransfersOp,
 	ListCryptoPerpFundingWalletsOp,
+	ListLocateQuotesOp,
+	ListLocatesOp,
 	ListWhitelistedAddressOp,
 	ListWhitelistedPerpAddressOp,
 	OptionBarsOp,

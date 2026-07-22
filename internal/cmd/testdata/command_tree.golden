@@ -119,6 +119,7 @@ alpaca crypto-perp wallet transfer create
   --address (string)
   --amount (string)
   --asset (string)
+  --chain (string)
 alpaca crypto-perp wallet transfer estimate
   --amount (string)
   --asset (string)
@@ -171,6 +172,7 @@ alpaca data corporate-actions
   --ids (string)
   --limit (int, default=100)
   --page-token (string)
+  --region (string, default=us)
   --sort (string, default=asc)
   --start (string)
   --symbols (string)
@@ -217,6 +219,9 @@ alpaca data crypto-orderbook
   --symbols (string)
 alpaca data fixed-income
   --isins (string)
+alpaca data fixed-income-quotes
+  --isins (string)
+  --trade-size (int)
 alpaca data forex latest
   --currency-pairs (string)
 alpaca data forex rates
@@ -227,6 +232,15 @@ alpaca data forex rates
   --sort (string, default=asc)
   --start (string)
   --timeframe (string, default=1Min)
+alpaca data index latest-values
+  --symbols (string)
+alpaca data index values
+  --end (string)
+  --limit (int, default=1000)
+  --page-token (string)
+  --sort (string, default=asc)
+  --start (string)
+  --symbols (string)
 alpaca data latest-bar
   --currency (string)
   --feed (string)
@@ -377,6 +391,22 @@ alpaca data trades
   --start (string)
   --symbol (string)
 alpaca doctor
+alpaca locate create
+  --all-or-none (bool)
+  --limit-price (string)
+  --qty (int)
+  --symbol (string)
+alpaca locate get
+  --locate-id (string)
+alpaca locate list
+  --end (string)
+  --limit (int, default=1000)
+  --page-token (string)
+  --start (string)
+  --status (string)
+  --symbol (string)
+alpaca locate quotes
+  --symbols (string)
 alpaca option contracts
   --expiration-date (string)
   --expiration-date-gte (string)
@@ -475,11 +505,13 @@ alpaca update
 alpaca version
 alpaca wallet list
   --asset (string)
+  --chain (string)
   --network (string)
 alpaca wallet transfer create
   --address (string)
   --amount (string)
   --asset (string)
+  --chain (string)
 alpaca wallet transfer estimate
   --amount (string)
   --asset (string)
@@ -491,6 +523,7 @@ alpaca wallet transfer list
 alpaca wallet whitelist add
   --address (string)
   --asset (string)
+  --chain (string)
 alpaca wallet whitelist delete
   --whitelisted-address-id (string)
 alpaca wallet whitelist list

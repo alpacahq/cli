@@ -40,6 +40,8 @@ alpaca profile login
 
 Credentials are stored in `~/.config/alpaca/profiles/` with 0600 permissions.
 
+The embedded OAuth client ID and secret are public native-app identifiers, not security credentials. OAuth access is gated by browser consent plus redirect/state validation, and remains paper-only until the flow is hardened with PKCE or Device Authorization Grant.
+
 ### Environment variables (for scripts, CI, agents)
 
 No secrets touch disk. Preferred for automation:
@@ -267,3 +269,4 @@ The response includes a `next_page_token` field when more data is available.
 - **NEVER** hardcode API keys in scripts or committed files - use environment variables or profile-based auth.
 - **NEVER** submit live orders without confirming the user's intent - use `--dry-run` to preview first when there is any ambiguity.
 - **NEVER** submit orders without `--client-order-id` in automation - without it, retries after ambiguous failures (timeouts, network errors) risk placing duplicate orders.
+- **NEVER** create locates without explicit user intent - `alpaca locate create` may incur locate fees. Use `alpaca locate quotes` or `alpaca locate list` for read-only checks.
