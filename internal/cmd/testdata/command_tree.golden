@@ -30,12 +30,10 @@ alpaca account activity list-by-type
 alpaca account config get
 alpaca account config set
   --disable-overnight-trading (bool)
-  --dtbp-check (string)
   --fractional-trading (bool)
   --max-margin-multiplier (string)
   --max-options-trading-level (int)
   --no-shorting (bool)
-  --pdt-check (string)
   --ptp-no-exception-entry (bool)
   --suspend-trade (bool)
   --trade-confirm-email (string)
@@ -53,11 +51,6 @@ alpaca api
   --body (string)
   --query (string)
   --use-data-api (bool)
-alpaca asset bond
-  --bond-status (string)
-  --cusips (string)
-  --isins (string)
-  --tickers (string)
 alpaca asset get
   --symbol-or-asset-id (string)
 alpaca asset list
@@ -65,11 +58,6 @@ alpaca asset list
   --attributes (string)
   --exchange (string)
   --status (string)
-alpaca asset treasury
-  --bond-status (string)
-  --cusips (string)
-  --isins (string)
-  --subtype (string)
 alpaca calendar
   --date-type (string)
   --end (string)
@@ -92,48 +80,6 @@ alpaca corporate-action list
   --since (string)
   --symbol (string)
   --until (string)
-alpaca crypto-perp data latest-bars
-  --loc (string, default=us)
-  --symbols (string)
-alpaca crypto-perp data latest-futures-pricing
-  --loc (string, default=us)
-  --symbols (string)
-alpaca crypto-perp data latest-orderbooks
-  --loc (string, default=us)
-  --symbols (string)
-alpaca crypto-perp data latest-quotes
-  --loc (string, default=us)
-  --symbols (string)
-alpaca crypto-perp data latest-trades
-  --loc (string, default=us)
-  --symbols (string)
-alpaca crypto-perp leverage
-  --symbol (string)
-alpaca crypto-perp set-leverage
-  --leverage (int)
-  --symbol (string)
-alpaca crypto-perp vitals
-alpaca crypto-perp wallet list
-  --asset (string)
-alpaca crypto-perp wallet transfer create
-  --address (string)
-  --amount (string)
-  --asset (string)
-  --chain (string)
-alpaca crypto-perp wallet transfer estimate
-  --amount (string)
-  --asset (string)
-  --from-address (string)
-  --to-address (string)
-alpaca crypto-perp wallet transfer get
-  --transfer-id (string)
-alpaca crypto-perp wallet transfer list
-alpaca crypto-perp wallet whitelist add
-  --address (string)
-  --asset (string)
-alpaca crypto-perp wallet whitelist delete
-  --whitelisted-address-id (string)
-alpaca crypto-perp wallet whitelist list
 alpaca data auction
   --asof (string)
   --currency (string)
@@ -393,6 +339,7 @@ alpaca data trades
 alpaca doctor
 alpaca locate create
   --all-or-none (bool)
+  --idempotency-key (string)
   --limit-price (string)
   --qty (int)
   --symbol (string)

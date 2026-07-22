@@ -2,11 +2,15 @@
 
 package api
 
+type CorporateActionEventAction string
+
+type CorporateActionEventRegion string
+
+type CorporateActionEventType string
+
 type CryptoHistoricalLoc string
 
 type CryptoLatestLoc string
-
-type CryptoPerpLoc string
 
 type MarketType string
 
@@ -21,6 +25,19 @@ type StockHistoricalFeed string
 type StockLatestFeed string
 
 type StockTape string
+
+type CaEventBase struct {
+	ID          string `json:"id"`
+	ProcessDate string `json:"process_date"`
+}
+
+type CaEventReorganizationStockMovement struct {
+	Cusip      string `json:"cusip"`
+	Isin       string `json:"isin,omitempty"`
+	NewRate    string `json:"new_rate"`
+	SourceRate string `json:"source_rate"`
+	Symbol     string `json:"symbol"`
+}
 
 type CashDividend struct {
 	Currency       string  `json:"currency,omitempty"`
@@ -53,6 +70,13 @@ type CashMerger struct {
 	PayableDate    string  `json:"payable_date,omitempty"`
 	ProcessDate    string  `json:"process_date"`
 	Rate           float64 `json:"rate"`
+}
+
+type CorporateActionEventBase struct {
+	Action  CorporateActionEventAction `json:"action"`
+	At      string                     `json:"at"`
+	EventID string                     `json:"event_id"`
+	Region  CorporateActionEventRegion `json:"region"`
 }
 
 type CorporateActions struct {
@@ -119,19 +143,6 @@ type CryptoOrderbook struct {
 type CryptoOrderbookEntry struct {
 	P float64 `json:"p"`
 	S float64 `json:"s"`
-}
-
-type CryptoPerpFuturesPricing struct {
-	Fr float64 `json:"fr"`
-	Ft string  `json:"ft"`
-	IP float64 `json:"ip"`
-	Mp float64 `json:"mp"`
-	Oi float64 `json:"oi"`
-	T  string  `json:"t"`
-}
-
-type CryptoPerpLatestFuturesPricingResp struct {
-	Pricing map[string]CryptoPerpFuturesPricing `json:"pricing"`
 }
 
 type CryptoQuote struct {
