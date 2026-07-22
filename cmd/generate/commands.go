@@ -93,26 +93,6 @@ var cmdParents = map[string]parentDef{
 		use: "watchlist", short: "Manage watchlists",
 		long: "Create, update, and delete watchlists. Add or remove symbols by watchlist ID or name.",
 	},
-	"cryptoPerp": {
-		use: "crypto-perp", short: "Crypto perpetuals (futures)",
-		long: "Trade crypto perpetual futures. View account vitals, manage leverage, fund wallets, and access perpetuals market data.",
-	},
-	"cryptoPerpWallet": {
-		use: "wallet", short: "Crypto perpetuals funding wallets and transfers",
-		parent: "cryptoPerp",
-	},
-	"cryptoPerpTransfer": {
-		use: "transfer", short: "Manage crypto perpetuals transfers",
-		parent: "cryptoPerpWallet",
-	},
-	"cryptoPerpWhitelist": {
-		use: "whitelist", short: "Manage whitelisted perpetuals crypto addresses",
-		parent: "cryptoPerpWallet",
-	},
-	"cryptoPerpData": {
-		use: "data", short: "Crypto perpetuals market data",
-		parent: "cryptoPerp",
-	},
 	"dataCrypto": {
 		use: "crypto", short: "Crypto market data", parent: "data",
 		long: "Bars, quotes, trades, snapshots, and orderbooks for crypto pairs.",
@@ -172,18 +152,6 @@ var cmdRegistry = map[string]cmdDef{
 		use:    "get",
 		examples: `  alpaca asset get --symbol-or-asset-id AAPL
   alpaca asset get --symbol-or-asset-id BTC/USD`,
-	},
-	"UsTreasuries": {
-		parent: "asset",
-		use:    "treasury",
-		examples: `  alpaca asset treasury
-  alpaca asset treasury --bond-status active`,
-	},
-	"UsCorporates": {
-		parent: "asset",
-		use:    "bond",
-		examples: `  alpaca asset bond
-  alpaca asset bond --bond-status active`,
 	},
 
 	// --- corporate action ---
@@ -388,67 +356,6 @@ var cmdRegistry = map[string]cmdDef{
 		parent:   "walletWhitelist",
 		use:      "delete",
 		examples: "  alpaca wallet whitelist delete --whitelisted-address-id <id>",
-	},
-
-	// --- crypto perp ---
-	"GetCryptoPerpAccountVitals": {
-		parent: "cryptoPerp",
-		use:    "vitals",
-
-		examples: "  alpaca crypto-perp vitals",
-	},
-	"GetCryptoPerpAccountLeverage": {
-		parent: "cryptoPerp",
-		use:    "leverage",
-
-		examples: "  alpaca crypto-perp leverage",
-	},
-	"SetCryptoPerpAccountLeverage": {
-		parent: "cryptoPerp",
-		use:    "set-leverage",
-
-		examples: "  alpaca crypto-perp set-leverage --asset BTC --leverage 5",
-	},
-	"ListCryptoPerpFundingWallets": {
-		parent:   "cryptoPerpWallet",
-		use:      "list",
-		examples: "  alpaca crypto-perp wallet list",
-	},
-	"GetCryptoPerpTransferEstimate": {
-		parent: "cryptoPerpTransfer",
-		use:    "estimate",
-
-		examples: "  alpaca crypto-perp wallet transfer estimate --asset BTC --amount 0.5",
-	},
-	"ListCryptoPerpFundingTransfers": {
-		parent:   "cryptoPerpTransfer",
-		use:      "list",
-		examples: "  alpaca crypto-perp wallet transfer list",
-	},
-	"CreateCryptoPerpTransferForAccount": {
-		parent:   "cryptoPerpTransfer",
-		use:      "create",
-		examples: "  alpaca crypto-perp wallet transfer create --amount 0.5 --address 0xabc... --asset BTC",
-	},
-	"GetCryptoPerpFundingTransfer": {
-		parent:   "cryptoPerpTransfer",
-		use:      "get",
-		examples: "  alpaca crypto-perp wallet transfer get --transfer-id <id>",
-	},
-	"ListWhitelistedPerpAddress": {
-		parent:   "cryptoPerpWhitelist",
-		use:      "list",
-		examples: "  alpaca crypto-perp wallet whitelist list",
-	},
-	"CreateWhitelistedPerpAddress": {
-		parent:   "cryptoPerpWhitelist",
-		use:      "add",
-		examples: "  alpaca crypto-perp wallet whitelist add --address 0xabc... --asset ETH",
-	},
-	"DeleteWhitelistedPerpAddress": {
-		parent:   "cryptoPerpWhitelist",
-		use:      "delete",
-		examples: "  alpaca crypto-perp wallet whitelist delete --whitelisted-address-id <id>",
 	},
 
 	// --- watchlist ---
@@ -820,49 +727,15 @@ var cmdRegistry = map[string]cmdDef{
 		defaults: map[string]string{"loc": "us"},
 		examples: `  alpaca data crypto latest-trades --symbols BTC/USD`,
 	},
-
-	// --- data: crypto perp data ---
-	"CryptoPerpLatestBars": {
-		parent: "cryptoPerpData",
-		use:    "latest-bars",
-
-		defaults: map[string]string{"loc": "us"},
-		examples: `  alpaca crypto-perp data latest-bars --symbols BTC/USD`,
-	},
-	"CryptoPerpLatestFuturesPricing": {
-		parent: "cryptoPerpData",
-		use:    "latest-futures-pricing",
-
-		defaults: map[string]string{"loc": "us"},
-		examples: `  alpaca crypto-perp data latest-futures-pricing --symbols BTC/USD`,
-	},
-	"CryptoPerpLatestOrderbooks": {
-		parent: "cryptoPerpData",
-		use:    "latest-orderbooks",
-
-		defaults: map[string]string{"loc": "us"},
-		examples: `  alpaca crypto-perp data latest-orderbooks --symbols BTC/USD`,
-	},
-	"CryptoPerpLatestQuotes": {
-		parent: "cryptoPerpData",
-		use:    "latest-quotes",
-
-		defaults: map[string]string{"loc": "us"},
-		examples: `  alpaca crypto-perp data latest-quotes --symbols BTC/USD`,
-	},
-	"CryptoPerpLatestTrades": {
-		parent: "cryptoPerpData",
-		use:    "latest-trades",
-
-		defaults: map[string]string{"loc": "us"},
-		examples: `  alpaca crypto-perp data latest-trades --symbols BTC/USD`,
-	},
 }
 
 var cmdSkip = map[string]string{
-	"GetTokenizationRequests":  "tokenization is restricted to Authorized Participants on the Instant Tokenization Network and not exposed via the CLI",
-	"PostTokenizationMint":     "tokenization is restricted to Authorized Participants on the Instant Tokenization Network and not exposed via the CLI",
-	"SubscribeToActivitiesSSE": "Server-Sent Events streaming endpoint; the CLI's fetch/JSON model does not support long-lived streams",
+	"GetTokenizationRequest":                  "tokenization is restricted to Authorized Participants on the Instant Tokenization Network and not exposed via the CLI",
+	"GetTokenizationRequestByClientRequestID": "tokenization is restricted to Authorized Participants on the Instant Tokenization Network and not exposed via the CLI",
+	"GetTokenizationRequests":                 "tokenization is restricted to Authorized Participants on the Instant Tokenization Network and not exposed via the CLI",
+	"PostTokenizationMint":                    "tokenization is restricted to Authorized Participants on the Instant Tokenization Network and not exposed via the CLI",
+	"SubscribeToActivitiesSSE":                "Server-Sent Events streaming endpoint; the CLI's fetch/JSON model does not support long-lived streams",
+	"SubscribeToCorporateActionsEventsSSE":    "Server-Sent Events streaming endpoint; the CLI's fetch/JSON model does not support long-lived streams",
 }
 
 func checkExhaustive(epByOp map[string]*endpointInfo) {

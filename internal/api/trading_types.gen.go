@@ -6,13 +6,23 @@ type AccountStatus string
 
 type ActivityType string
 
+type AssetAttribute string
+
 type AssetClass string
+
+type CryptoChain string
 
 type CryptoTransferStatus string
 
 type Exchange string
 
 type ExchangeForPosition string
+
+type LocateStatus string
+
+type OptionContractStyle string
+
+type OptionContractType string
 
 type OrderClass string
 
@@ -36,23 +46,9 @@ type TokenizationRequestType string
 
 type TransferDirection string
 
-type BondStatus string
-
-type CallType string
-
-type CouponFrequency string
-
-type CouponType string
-
-type DayCount string
-
 type Market string
 
 type Phase string
-
-type SpOutlook string
-
-type TreasurySubtype string
 
 type Account struct {
 	AccountBlocked           bool          `json:"account_blocked,omitempty"`
@@ -64,8 +60,6 @@ type Account struct {
 	CreatedAt                string        `json:"created_at,omitempty"`
 	CryptoStatus             AccountStatus `json:"crypto_status,omitempty"`
 	Currency                 string        `json:"currency,omitempty"`
-	DaytradeCount            int           `json:"daytrade_count,omitempty"`
-	DaytradingBuyingPower    string        `json:"daytrading_buying_power,omitempty"`
 	Equity                   string        `json:"equity,omitempty"`
 	ID                       string        `json:"id"`
 	InitialMargin            string        `json:"initial_margin,omitempty"`
@@ -79,7 +73,6 @@ type Account struct {
 	OptionsApprovedLevel     int           `json:"options_approved_level,omitempty"`
 	OptionsBuyingPower       string        `json:"options_buying_power,omitempty"`
 	OptionsTradingLevel      int           `json:"options_trading_level,omitempty"`
-	PatternDayTrader         bool          `json:"pattern_day_trader,omitempty"`
 	PendingRegTafFees        string        `json:"pending_reg_taf_fees,omitempty"`
 	PendingTransferIn        string        `json:"pending_transfer_in,omitempty"`
 	PendingTransferOut       string        `json:"pending_transfer_out,omitempty"`
@@ -96,12 +89,10 @@ type Account struct {
 
 type AccountConfigurations struct {
 	DisableOvernightTrading bool   `json:"disable_overnight_trading,omitempty"`
-	DTBPCheck               string `json:"dtbp_check,omitempty"`
 	FractionalTrading       bool   `json:"fractional_trading,omitempty"`
 	MaxMarginMultiplier     string `json:"max_margin_multiplier,omitempty"`
 	MaxOptionsTradingLevel  int    `json:"max_options_trading_level,omitempty"`
 	NoShorting              bool   `json:"no_shorting,omitempty"`
-	PDTCheck                string `json:"pdt_check,omitempty"`
 	PtpNoExceptionEntry     bool   `json:"ptp_no_exception_entry,omitempty"`
 	SuspendTrade            bool   `json:"suspend_trade,omitempty"`
 	TradeConfirmEmail       string `json:"trade_confirm_email,omitempty"`
@@ -149,26 +140,26 @@ type AdvancedInstructions struct {
 }
 
 type Assets struct {
-	Attributes                   []string   `json:"attributes,omitempty"`
-	BorrowStatus                 string     `json:"borrow_status,omitempty"`
-	Class                        AssetClass `json:"class"`
-	Cusip                        *string    `json:"cusip,omitempty"`
-	EasyToBorrow                 bool       `json:"easy_to_borrow"`
-	Exchange                     Exchange   `json:"exchange"`
-	Fractionable                 bool       `json:"fractionable"`
-	ID                           string     `json:"id"`
-	MaintenanceMarginRequirement float64    `json:"maintenance_margin_requirement,omitempty"`
-	MarginRequirementLong        string     `json:"margin_requirement_long,omitempty"`
-	MarginRequirementShort       string     `json:"margin_requirement_short,omitempty"`
-	Marginable                   bool       `json:"marginable"`
-	MinOrderSize                 string     `json:"min_order_size,omitempty"`
-	MinTradeIncrement            string     `json:"min_trade_increment,omitempty"`
-	Name                         string     `json:"name"`
-	PriceIncrement               string     `json:"price_increment,omitempty"`
-	Shortable                    bool       `json:"shortable"`
-	Status                       string     `json:"status"`
-	Symbol                       string     `json:"symbol"`
-	Tradable                     bool       `json:"tradable"`
+	Attributes                   []AssetAttribute `json:"attributes,omitempty"`
+	BorrowStatus                 string           `json:"borrow_status,omitempty"`
+	Class                        AssetClass       `json:"class"`
+	Cusip                        *string          `json:"cusip,omitempty"`
+	EasyToBorrow                 bool             `json:"easy_to_borrow,omitempty"`
+	Exchange                     Exchange         `json:"exchange"`
+	Fractionable                 bool             `json:"fractionable"`
+	ID                           string           `json:"id"`
+	MaintenanceMarginRequirement float64          `json:"maintenance_margin_requirement,omitempty"`
+	MarginRequirementLong        string           `json:"margin_requirement_long,omitempty"`
+	MarginRequirementShort       string           `json:"margin_requirement_short,omitempty"`
+	Marginable                   bool             `json:"marginable"`
+	MinOrderSize                 string           `json:"min_order_size,omitempty"`
+	MinTradeIncrement            string           `json:"min_trade_increment,omitempty"`
+	Name                         string           `json:"name"`
+	PriceIncrement               string           `json:"price_increment,omitempty"`
+	Shortable                    bool             `json:"shortable"`
+	Status                       string           `json:"status"`
+	Symbol                       string           `json:"symbol"`
+	Tradable                     bool             `json:"tradable"`
 }
 
 type CanceledOrderResponse struct {
@@ -258,10 +249,10 @@ type CommonVOFSubtypeActivityV2 struct {
 }
 
 type CreateCryptoTransferRequest struct {
-	Address string `json:"address"`
-	Amount  string `json:"amount"`
-	Asset   string `json:"asset"`
-	Chain   string `json:"chain,omitempty"`
+	Address string      `json:"address"`
+	Amount  string      `json:"amount"`
+	Asset   string      `json:"asset"`
+	Chain   CryptoChain `json:"chain,omitempty"`
 }
 
 type CreateLocateRequest struct {
@@ -269,6 +260,11 @@ type CreateLocateRequest struct {
 	LimitPrice *string `json:"limit_price,omitempty"`
 	Qty        int     `json:"qty"`
 	Symbol     string  `json:"symbol"`
+}
+
+type CreateWatchlistRequest struct {
+	Name    string   `json:"name"`
+	Symbols []string `json:"symbols,omitempty"`
 }
 
 type CryptoTransfer struct {
@@ -313,18 +309,18 @@ type ListLocatesResponse struct {
 }
 
 type Locate struct {
-	AllOrNone       bool    `json:"all_or_none"`
-	CreatedAt       string  `json:"created_at"`
-	ExpiresAt       *string `json:"expires_at,omitempty"`
-	ID              string  `json:"id"`
-	LimitPrice      *string `json:"limit_price,omitempty"`
-	LocatedPrice    *string `json:"located_price,omitempty"`
-	LocatedQty      *int    `json:"located_qty,omitempty"`
-	RejectionReason *string `json:"rejection_reason,omitempty"`
-	RequestedQty    int     `json:"requested_qty"`
-	Status          string  `json:"status"`
-	Symbol          string  `json:"symbol"`
-	TotalFee        *string `json:"total_fee,omitempty"`
+	AllOrNone       bool         `json:"all_or_none"`
+	CreatedAt       string       `json:"created_at"`
+	ExpiresAt       *string      `json:"expires_at,omitempty"`
+	ID              string       `json:"id"`
+	LimitPrice      *string      `json:"limit_price,omitempty"`
+	LocatedPrice    *string      `json:"located_price,omitempty"`
+	LocatedQty      *int         `json:"located_qty,omitempty"`
+	RejectionReason *string      `json:"rejection_reason,omitempty"`
+	RequestedQty    int          `json:"requested_qty"`
+	Status          LocateStatus `json:"status"`
+	Symbol          string       `json:"symbol"`
+	TotalFee        *string      `json:"total_fee,omitempty"`
 }
 
 type LocateError struct {
@@ -382,10 +378,10 @@ type OptionContract struct {
 	Size              string              `json:"size"`
 	Status            string              `json:"status"`
 	StrikePrice       string              `json:"strike_price"`
-	Style             string              `json:"style"`
+	Style             OptionContractStyle `json:"style"`
 	Symbol            string              `json:"symbol"`
 	Tradable          bool                `json:"tradable"`
-	Type              string              `json:"type"`
+	Type              OptionContractType  `json:"type"`
 	UnderlyingAssetID string              `json:"underlying_asset_id"`
 	UnderlyingSymbol  string              `json:"underlying_symbol"`
 }
@@ -487,7 +483,7 @@ type PatchOrderRequest struct {
 }
 
 type PortfolioHistory struct {
-	BaseValue     float64        `json:"base_value"`
+	BaseValue     *float64       `json:"base_value"`
 	BaseValueAsof string         `json:"base_value_asof,omitempty"`
 	Cashflow      map[string]any `json:"cashflow,omitempty"`
 	Equity        []float64      `json:"equity"`
@@ -548,22 +544,25 @@ type TokenizationMintResponse struct {
 }
 
 type TokenizationRequest struct {
-	Account               string                    `json:"account,omitempty"`
-	CreatedAt             string                    `json:"created_at"`
-	Fees                  *string                   `json:"fees,omitempty"`
-	Issuer                TokenizationIssuer        `json:"issuer"`
-	IssuerAccount         string                    `json:"issuer_account,omitempty"`
-	IssuerRequestID       *string                   `json:"issuer_request_id,omitempty"`
-	Network               TokenizationNetwork       `json:"network"`
-	Qty                   string                    `json:"qty"`
-	Status                TokenizationRequestStatus `json:"status"`
-	TokenSymbol           string                    `json:"token_symbol"`
-	TokenizationRequestID string                    `json:"tokenization_request_id"`
-	TxHash                *string                   `json:"tx_hash,omitempty"`
-	Type                  TokenizationRequestType   `json:"type"`
-	UnderlyingSymbol      string                    `json:"underlying_symbol"`
-	UpdatedAt             *string                   `json:"updated_at,omitempty"`
-	WalletAddress         string                    `json:"wallet_address"`
+	Account                 string                    `json:"account,omitempty"`
+	ClientAccountID         string                    `json:"client_account_id,omitempty"`
+	ClientExternalAccountID string                    `json:"client_external_account_id,omitempty"`
+	ClientRequestID         string                    `json:"client_request_id,omitempty"`
+	CreatedAt               string                    `json:"created_at"`
+	Fees                    *string                   `json:"fees,omitempty"`
+	Issuer                  TokenizationIssuer        `json:"issuer"`
+	IssuerAccount           string                    `json:"issuer_account,omitempty"`
+	IssuerRequestID         *string                   `json:"issuer_request_id,omitempty"`
+	Network                 TokenizationNetwork       `json:"network"`
+	Qty                     string                    `json:"qty"`
+	Status                  TokenizationRequestStatus `json:"status"`
+	TokenSymbol             string                    `json:"token_symbol"`
+	TokenizationRequestID   string                    `json:"tokenization_request_id"`
+	TxHash                  *string                   `json:"tx_hash,omitempty"`
+	Type                    TokenizationRequestType   `json:"type"`
+	UnderlyingSymbol        string                    `json:"underlying_symbol"`
+	UpdatedAt               *string                   `json:"updated_at,omitempty"`
+	WalletAddress           string                    `json:"wallet_address"`
 }
 
 type TradingActivities struct {
@@ -595,7 +594,7 @@ type USDPositionValues struct {
 }
 
 type UpdateWatchlistRequest struct {
-	Name    string   `json:"name"`
+	Name    string   `json:"name,omitempty"`
 	Symbols []string `json:"symbols,omitempty"`
 }
 
@@ -684,94 +683,4 @@ type PublicMarket struct {
 	Mic      string `json:"mic,omitempty"`
 	Name     string `json:"name"`
 	Timezone string `json:"timezone"`
-}
-
-type UsCorporate struct {
-	AccruedInterest                 float64         `json:"accrued_interest,omitempty"`
-	BondStatus                      BondStatus      `json:"bond_status"`
-	CallType                        CallType        `json:"call_type,omitempty"`
-	Callable                        bool            `json:"callable"`
-	ClosePrice                      float64         `json:"close_price,omitempty"`
-	ClosePriceDate                  string          `json:"close_price_date,omitempty"`
-	CloseYieldToMaturity            float64         `json:"close_yield_to_maturity,omitempty"`
-	CloseYieldToWorst               float64         `json:"close_yield_to_worst,omitempty"`
-	Convertible                     bool            `json:"convertible"`
-	CountryDomicile                 string          `json:"country_domicile"`
-	Coupon                          float64         `json:"coupon"`
-	CouponFrequency                 CouponFrequency `json:"coupon_frequency"`
-	CouponType                      CouponType      `json:"coupon_type"`
-	Cusip                           string          `json:"cusip"`
-	DatedDate                       string          `json:"dated_date"`
-	DayCount                        DayCount        `json:"day_count"`
-	Description                     string          `json:"description"`
-	DescriptionShort                string          `json:"description_short"`
-	FirstCouponDate                 string          `json:"first_coupon_date,omitempty"`
-	Isin                            string          `json:"isin"`
-	IssueDate                       string          `json:"issue_date"`
-	IssueMinimumDenomination        float64         `json:"issue_minimum_denomination"`
-	IssuePrice                      float64         `json:"issue_price"`
-	IssueSize                       float64         `json:"issue_size"`
-	Issuer                          string          `json:"issuer"`
-	LastCouponDate                  string          `json:"last_coupon_date,omitempty"`
-	LiquidityInstitutionalAggregate float64         `json:"liquidity_institutional_aggregate,omitempty"`
-	LiquidityInstitutionalBuy       float64         `json:"liquidity_institutional_buy,omitempty"`
-	LiquidityInstitutionalSell      float64         `json:"liquidity_institutional_sell,omitempty"`
-	LiquidityMicroAggregate         float64         `json:"liquidity_micro_aggregate,omitempty"`
-	LiquidityMicroBuy               float64         `json:"liquidity_micro_buy,omitempty"`
-	LiquidityMicroSell              float64         `json:"liquidity_micro_sell,omitempty"`
-	LiquidityRetailAggregate        float64         `json:"liquidity_retail_aggregate,omitempty"`
-	LiquidityRetailBuy              float64         `json:"liquidity_retail_buy,omitempty"`
-	LiquidityRetailSell             float64         `json:"liquidity_retail_sell,omitempty"`
-	Marginable                      bool            `json:"marginable"`
-	MaturityDate                    string          `json:"maturity_date,omitempty"`
-	NextCallDate                    string          `json:"next_call_date,omitempty"`
-	NextCallPrice                   float64         `json:"next_call_price,omitempty"`
-	NextCouponDate                  string          `json:"next_coupon_date,omitempty"`
-	ParValue                        float64         `json:"par_value"`
-	Perpetual                       bool            `json:"perpetual"`
-	Puttable                        bool            `json:"puttable"`
-	RegS                            bool            `json:"reg_s"`
-	ReissueDate                     string          `json:"reissue_date,omitempty"`
-	ReissuePrice                    float64         `json:"reissue_price,omitempty"`
-	ReissueSize                     float64         `json:"reissue_size,omitempty"`
-	Sector                          string          `json:"sector"`
-	Seniority                       string          `json:"seniority"`
-	SpCreditwatch                   string          `json:"sp_creditwatch,omitempty"`
-	SpCreditwatchDate               string          `json:"sp_creditwatch_date,omitempty"`
-	SpOutlook                       SpOutlook       `json:"sp_outlook,omitempty"`
-	SpOutlookDate                   string          `json:"sp_outlook_date,omitempty"`
-	SpRating                        string          `json:"sp_rating,omitempty"`
-	SpRatingDate                    string          `json:"sp_rating_date,omitempty"`
-	Ticker                          string          `json:"ticker"`
-	Tradable                        bool            `json:"tradable"`
-}
-
-type UsCorporatesResp struct {
-	UsCorporates []UsCorporate `json:"us_corporates"`
-}
-
-type UsTreasuriesResp struct {
-	UsTreasuries []UsTreasury `json:"us_treasuries"`
-}
-
-type UsTreasury struct {
-	BondStatus           BondStatus      `json:"bond_status"`
-	ClosePrice           float64         `json:"close_price,omitempty"`
-	ClosePriceDate       string          `json:"close_price_date,omitempty"`
-	CloseYieldToMaturity float64         `json:"close_yield_to_maturity,omitempty"`
-	CloseYieldToWorst    float64         `json:"close_yield_to_worst,omitempty"`
-	Coupon               float64         `json:"coupon"`
-	CouponFrequency      CouponFrequency `json:"coupon_frequency"`
-	CouponType           CouponType      `json:"coupon_type"`
-	Cusip                string          `json:"cusip"`
-	Description          string          `json:"description"`
-	DescriptionShort     string          `json:"description_short"`
-	FirstCouponDate      string          `json:"first_coupon_date,omitempty"`
-	Isin                 string          `json:"isin"`
-	IssueDate            string          `json:"issue_date"`
-	LastCouponDate       string          `json:"last_coupon_date,omitempty"`
-	MaturityDate         string          `json:"maturity_date"`
-	NextCouponDate       string          `json:"next_coupon_date,omitempty"`
-	Subtype              TreasurySubtype `json:"subtype"`
-	Tradable             bool            `json:"tradable"`
 }
