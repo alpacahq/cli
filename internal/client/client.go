@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/alpacahq/cli/internal/config"
+	"github.com/alpacahq/cli/internal/useragent"
 )
 
 const (
@@ -99,7 +100,7 @@ func New(cfg *config.Resolved) *Client {
 		APIKey:      cfg.APIKey,
 		Secret:      cfg.SecretKey,
 		AccessToken: cfg.AccessToken,
-		UserAgent:   "alpaca-cli/" + Version,
+		UserAgent:   useragent.Build(Version),
 		Timeout:     30 * time.Second,
 	}
 }

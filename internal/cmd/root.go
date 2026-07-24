@@ -13,6 +13,7 @@ import (
 	"github.com/alpacahq/cli/internal/config"
 	"github.com/alpacahq/cli/internal/oauth"
 	"github.com/alpacahq/cli/internal/output"
+	"github.com/alpacahq/cli/internal/useragent"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
@@ -40,7 +41,7 @@ var (
 func SetVersion(v string) {
 	version = v
 	client.Version = v
-	oauth.UserAgent = "alpaca-cli/" + v
+	oauth.UserAgent = useragent.Build(v)
 }
 
 func Root() *cobra.Command {
