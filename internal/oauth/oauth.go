@@ -15,10 +15,12 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/alpacahq/cli/internal/useragent"
 )
 
 // UserAgent is set by cmd.SetVersion to include the CLI version.
-var UserAgent = "alpaca-cli/dev"
+var UserAgent = useragent.Build("dev")
 
 type Token struct {
 	AccessToken string `json:"access_token"`

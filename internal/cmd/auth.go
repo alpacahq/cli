@@ -13,6 +13,7 @@ import (
 	"github.com/alpacahq/cli/internal/cmdutil"
 	"github.com/alpacahq/cli/internal/config"
 	"github.com/alpacahq/cli/internal/oauth"
+	"github.com/alpacahq/cli/internal/useragent"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/yarlson/tap"
@@ -345,7 +346,7 @@ func init() {
 
 func validateCredentials(baseURL string, headers map[string]string) error {
 	req, _ := http.NewRequest("GET", baseURL+"/v2/account", nil)
-	req.Header.Set("User-Agent", "alpaca-cli/"+version)
+	req.Header.Set("User-Agent", useragent.Build(version))
 	for k, v := range headers {
 		req.Header.Set(k, v)
 	}

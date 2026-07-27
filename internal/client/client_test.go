@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -322,6 +323,9 @@ func TestNewClient(t *testing.T) {
 	}
 	if c.DataURL != "https://data.alpaca.markets" {
 		t.Errorf("trailing slash not trimmed from DataURL: %s", c.DataURL)
+	}
+	if re := regexp.MustCompile(`^APCA-CLI/\S* \S+/\S+$`); !re.MatchString(c.UserAgent) {
+		t.Errorf("UserAgent = %q, want format matching %s", c.UserAgent, re.String())
 	}
 }
 
