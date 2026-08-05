@@ -93,18 +93,18 @@ func (c *TradingClient) LegacyClock() (*LegacyClock, error) {
 }
 
 // GetV2CorporateActionsAnnouncements — Retrieve Announcements
-func (c *TradingClient) GetV2CorporateActionsAnnouncements(params url.Values) (json.RawMessage, error) {
-	return c.Raw.Do("GET", c.baseURL, "/v2/corporate_actions/announcements", params, nil)
+func (c *TradingClient) GetV2CorporateActionsAnnouncements(params url.Values) ([]CorporateAnnouncement, error) {
+	return unmarshalSlice[CorporateAnnouncement](c.Raw.Do("GET", c.baseURL, "/v2/corporate_actions/announcements", params, nil))
 }
 
 // GetV2CorporateActionsAnnouncementsID — Retrieve a Specific Announcement
-func (c *TradingClient) GetV2CorporateActionsAnnouncementsID(ID string) (json.RawMessage, error) {
-	return c.Raw.Do("GET", c.baseURL, fmt.Sprintf("/v2/corporate_actions/announcements/%s", url.PathEscape(ID)), nil, nil)
+func (c *TradingClient) GetV2CorporateActionsAnnouncementsID(ID string) (*CorporateAnnouncement, error) {
+	return unmarshal[CorporateAnnouncement](c.Raw.Do("GET", c.baseURL, fmt.Sprintf("/v2/corporate_actions/announcements/%s", url.PathEscape(ID)), nil, nil))
 }
 
 // GetOptionsContracts — Get Option Contracts
-func (c *TradingClient) GetOptionsContracts(params url.Values) (json.RawMessage, error) {
-	return c.Raw.Do("GET", c.baseURL, "/v2/options/contracts", params, nil)
+func (c *TradingClient) GetOptionsContracts(params url.Values) (*OptionContractsResponse, error) {
+	return unmarshal[OptionContractsResponse](c.Raw.Do("GET", c.baseURL, "/v2/options/contracts", params, nil))
 }
 
 // GetOptionContractSymbolOrID — Get an option contract by ID or Symbol
@@ -117,29 +117,8 @@ func (c *TradingClient) GetAllOrders(params url.Values) ([]Order, error) {
 	return unmarshalSlice[Order](c.Raw.Do("GET", c.baseURL, "/v2/orders", params, nil))
 }
 
-type PostOrderRequest struct {
-	AdvancedInstructions AdvancedInstructions `json:"advanced_instructions,omitempty"`
-	ClientOrderID        string               `json:"client_order_id,omitempty"`
-	ExtendedHours        bool                 `json:"extended_hours,omitempty"`
-	Legs                 []MLegOrderLeg       `json:"legs,omitempty"`
-	LimitPrice           string               `json:"limit_price,omitempty"`
-	Notional             string               `json:"notional,omitempty"`
-	OrderClass           OrderClass           `json:"order_class,omitempty"`
-	PositionIntent       PositionIntent       `json:"position_intent,omitempty"`
-	Qty                  string               `json:"qty,omitempty"`
-	Side                 OrderSide            `json:"side,omitempty"`
-	StopLoss             map[string]any       `json:"stop_loss,omitempty"`
-	StopPrice            string               `json:"stop_price,omitempty"`
-	Symbol               string               `json:"symbol,omitempty"`
-	TakeProfit           map[string]any       `json:"take_profit,omitempty"`
-	TimeInForce          TimeInForce          `json:"time_in_force"`
-	TrailPercent         string               `json:"trail_percent,omitempty"`
-	TrailPrice           string               `json:"trail_price,omitempty"`
-	Type                 OrderType            `json:"type"`
-}
-
 // PostOrder — Create an Order
-func (c *TradingClient) PostOrder(body *PostOrderRequest) (*Order, error) {
+func (c *TradingClient) PostOrder(body *CreateOrderRequest) (*Order, error) {
 	return unmarshal[Order](c.Raw.Do("POST", c.baseURL, "/v2/orders", nil, body))
 }
 
@@ -199,8 +178,8 @@ func (c *TradingClient) OptionExercise(SymbolOrContractID string) (json.RawMessa
 }
 
 // PostTokenizationMint — Mint a Tokenized Asset
-func (c *TradingClient) PostTokenizationMint(body *TokenizationMintRequest) (*TokenizationMintResponse, error) {
-	return unmarshal[TokenizationMintResponse](c.Raw.Do("POST", c.baseURL, "/v2/tokenization/mint", nil, body))
+func (c *TradingClient) PostTokenizationMint(headers http.Header, body *TokenizationMintRequest) (*TokenizationMintResponse, error) {
+	return unmarshal[TokenizationMintResponse](c.Raw.DoWithHeaders("POST", c.baseURL, "/v2/tokenization/mint", nil, headers, body))
 }
 
 // GetTokenizationRequests — List Tokenization Requests
@@ -248,12 +227,6 @@ func (c *TradingClient) ListWhitelistedAddress() (*WhitelistedAddress, error) {
 	return unmarshal[WhitelistedAddress](c.Raw.Do("GET", c.baseURL, "/v2/wallets/whitelists", nil, nil))
 }
 
-type CreateWhitelistedAddressRequest struct {
-	Address string      `json:"address,omitempty"`
-	Asset   string      `json:"asset,omitempty"`
-	Chain   CryptoChain `json:"chain,omitempty"`
-}
-
 // CreateWhitelistedAddress — Request a new whitelisted address
 func (c *TradingClient) CreateWhitelistedAddress(body *CreateWhitelistedAddressRequest) (*WhitelistedAddress, error) {
 	return unmarshal[WhitelistedAddress](c.Raw.Do("POST", c.baseURL, "/v2/wallets/whitelists", nil, body))
@@ -277,10 +250,6 @@ func (c *TradingClient) PostWatchlist(body *CreateWatchlistRequest) (*Watchlist,
 // GetWatchlistByID — Get Watchlist by ID
 func (c *TradingClient) GetWatchlistByID(WatchlistID string) (*Watchlist, error) {
 	return unmarshal[Watchlist](c.Raw.Do("GET", c.baseURL, fmt.Sprintf("/v2/watchlists/%s", url.PathEscape(WatchlistID)), nil, nil))
-}
-
-type AddAssetToWatchlistRequest struct {
-	Symbol string `json:"symbol,omitempty"`
 }
 
 // AddAssetToWatchlist — Add Asset to Watchlist
@@ -308,12 +277,8 @@ func (c *TradingClient) GetWatchlistByName(params url.Values) (*Watchlist, error
 	return unmarshal[Watchlist](c.Raw.Do("GET", c.baseURL, "/v2/watchlists:by_name", params, nil))
 }
 
-type AddAssetToWatchlistByNameRequest struct {
-	Symbol string `json:"symbol,omitempty"`
-}
-
 // AddAssetToWatchlistByName — Add Asset to Watchlist By Name
-func (c *TradingClient) AddAssetToWatchlistByName(params url.Values, body *AddAssetToWatchlistByNameRequest) (*Watchlist, error) {
+func (c *TradingClient) AddAssetToWatchlistByName(params url.Values, body *AddAssetToWatchlistRequest) (*Watchlist, error) {
 	return unmarshal[Watchlist](c.Raw.Do("POST", c.baseURL, "/v2/watchlists:by_name", params, body))
 }
 

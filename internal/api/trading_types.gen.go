@@ -10,6 +10,8 @@ type AssetAttribute string
 
 type AssetClass string
 
+type CorporateActionCaType string
+
 type CryptoChain string
 
 type CryptoTransferStatus string
@@ -130,6 +132,10 @@ type ActivityV2DetailTRD struct {
 	Symbol        string `json:"symbol"`
 }
 
+type AddAssetToWatchlistRequest struct {
+	Symbol string `json:"symbol,omitempty"`
+}
+
 type AdvancedInstructions struct {
 	Algorithm     string `json:"algorithm,omitempty"`
 	Destination   string `json:"destination,omitempty"`
@@ -179,6 +185,7 @@ type CommonCDIVActivityV2 struct {
 	DueBillOnDate  string `json:"due_bill_on_date,omitempty"`
 	ExDate         string `json:"ex_date,omitempty"`
 	Foreign        bool   `json:"foreign"`
+	Isin           string `json:"isin,omitempty"`
 	PayableDate    string `json:"payable_date,omitempty"`
 	Rate           string `json:"rate"`
 	RecordDate     string `json:"record_date,omitempty"`
@@ -186,11 +193,25 @@ type CommonCDIVActivityV2 struct {
 	Symbol         string `json:"symbol"`
 }
 
+type CommonFixedIncomeInterestActivityV2 struct {
+	AccruedInterestRate string `json:"accrued_interest_rate,omitempty"`
+	CashPayout          string `json:"cash_payout"`
+	Cusip               string `json:"cusip"`
+	EntitledQty         string `json:"entitled_qty"`
+	Isin                string `json:"isin,omitempty"`
+	PaymentDate         string `json:"payment_date,omitempty"`
+	Price               string `json:"price,omitempty"`
+	Rate                string `json:"rate,omitempty"`
+	RecordDate          string `json:"record_date,omitempty"`
+}
+
 type CommonMAActivityV2 struct {
 	AcquireeCusip  string `json:"acquiree_cusip"`
+	AcquireeIsin   string `json:"acquiree_isin,omitempty"`
 	AcquireeRate   string `json:"acquiree_rate,omitempty"`
 	AcquireeSymbol string `json:"acquiree_symbol"`
 	AcquirerCusip  string `json:"acquirer_cusip,omitempty"`
+	AcquirerIsin   string `json:"acquirer_isin,omitempty"`
 	AcquirerRate   string `json:"acquirer_rate,omitempty"`
 	AcquirerSymbol string `json:"acquirer_symbol,omitempty"`
 	EffectiveDate  string `json:"effective_date"`
@@ -212,6 +233,7 @@ type CommonNTAActivityV2 struct {
 type CommonSDIVActivityV2 struct {
 	Cusip       string `json:"cusip"`
 	ExDate      string `json:"ex_date,omitempty"`
+	Isin        string `json:"isin,omitempty"`
 	PayableDate string `json:"payable_date,omitempty"`
 	Rate        string `json:"rate"`
 	RecordDate  string `json:"record_date,omitempty"`
@@ -222,12 +244,14 @@ type CommonSpinoffActivityV2 struct {
 	DueBillRedemptionDate string `json:"due_bill_redemption_date,omitempty"`
 	ExDate                string `json:"ex_date,omitempty"`
 	NewCusip              string `json:"new_cusip"`
+	NewIsin               string `json:"new_isin,omitempty"`
 	NewPrice              string `json:"new_price"`
 	NewRate               string `json:"new_rate"`
 	NewSymbol             string `json:"new_symbol"`
 	PayableDate           string `json:"payable_date,omitempty"`
 	RecordDate            string `json:"record_date,omitempty"`
 	SourceCusip           string `json:"source_cusip"`
+	SourceIsin            string `json:"source_isin,omitempty"`
 	SourcePrice           string `json:"source_price"`
 	SourceRate            string `json:"source_rate"`
 	SourceSymbol          string `json:"source_symbol"`
@@ -235,8 +259,10 @@ type CommonSpinoffActivityV2 struct {
 
 type CommonSplitActivityV2 struct {
 	NewCusip    string `json:"new_cusip"`
+	NewIsin     string `json:"new_isin,omitempty"`
 	NewRate     string `json:"new_rate"`
 	OldCusip    string `json:"old_cusip"`
+	OldIsin     string `json:"old_isin,omitempty"`
 	OldRate     string `json:"old_rate"`
 	PayableDate string `json:"payable_date,omitempty"`
 }
@@ -246,6 +272,25 @@ type CommonVOFSubtypeActivityV2 struct {
 	NewSymbol    string `json:"new_symbol,omitempty"`
 	SourceCusip  string `json:"source_cusip"`
 	SourceSymbol string `json:"source_symbol"`
+}
+
+type CorporateAnnouncement struct {
+	CaSubType               string                `json:"ca_sub_type,omitempty"`
+	CaType                  CorporateActionCaType `json:"ca_type,omitempty"`
+	Cash                    string                `json:"cash,omitempty"`
+	CorporateActionID       string                `json:"corporate_action_id,omitempty"`
+	DeclarationDate         string                `json:"declaration_date,omitempty"`
+	EffectiveDate           string                `json:"effective_date,omitempty"`
+	ExDate                  string                `json:"ex_date,omitempty"`
+	ID                      string                `json:"id,omitempty"`
+	InitiatingOriginalCusip string                `json:"initiating_original_cusip,omitempty"`
+	InitiatingSymbol        string                `json:"initiating_symbol,omitempty"`
+	NewRate                 string                `json:"new_rate,omitempty"`
+	OldRate                 string                `json:"old_rate,omitempty"`
+	PayableDate             string                `json:"payable_date,omitempty"`
+	RecordDate              string                `json:"record_date,omitempty"`
+	TargetOriginalCusip     string                `json:"target_original_cusip,omitempty"`
+	TargetSymbol            string                `json:"target_symbol,omitempty"`
 }
 
 type CreateCryptoTransferRequest struct {
@@ -262,9 +307,36 @@ type CreateLocateRequest struct {
 	Symbol     string  `json:"symbol"`
 }
 
+type CreateOrderRequest struct {
+	AdvancedInstructions AdvancedInstructions `json:"advanced_instructions,omitempty"`
+	ClientOrderID        string               `json:"client_order_id,omitempty"`
+	ExtendedHours        bool                 `json:"extended_hours,omitempty"`
+	Legs                 []MLegOrderLeg       `json:"legs,omitempty"`
+	LimitPrice           string               `json:"limit_price,omitempty"`
+	Notional             string               `json:"notional,omitempty"`
+	OrderClass           OrderClass           `json:"order_class,omitempty"`
+	PositionIntent       PositionIntent       `json:"position_intent,omitempty"`
+	Qty                  string               `json:"qty,omitempty"`
+	Side                 OrderSide            `json:"side,omitempty"`
+	StopLoss             map[string]any       `json:"stop_loss,omitempty"`
+	StopPrice            string               `json:"stop_price,omitempty"`
+	Symbol               string               `json:"symbol,omitempty"`
+	TakeProfit           map[string]any       `json:"take_profit,omitempty"`
+	TimeInForce          TimeInForce          `json:"time_in_force"`
+	TrailPercent         string               `json:"trail_percent,omitempty"`
+	TrailPrice           string               `json:"trail_price,omitempty"`
+	Type                 OrderType            `json:"type"`
+}
+
 type CreateWatchlistRequest struct {
 	Name    string   `json:"name"`
 	Symbols []string `json:"symbols,omitempty"`
+}
+
+type CreateWhitelistedAddressRequest struct {
+	Address string      `json:"address,omitempty"`
+	Asset   string      `json:"asset,omitempty"`
+	Chain   CryptoChain `json:"chain,omitempty"`
 }
 
 type CryptoTransfer struct {
@@ -386,6 +458,11 @@ type OptionContract struct {
 	UnderlyingSymbol  string              `json:"underlying_symbol"`
 }
 
+type OptionContractsResponse struct {
+	NextPageToken   string           `json:"next_page_token,omitempty"`
+	OptionContracts []OptionContract `json:"option_contracts"`
+}
+
 type OptionDeliverable struct {
 	AllocationPercentage string `json:"allocation_percentage"`
 	Amount               string `json:"amount"`
@@ -483,14 +560,14 @@ type PatchOrderRequest struct {
 }
 
 type PortfolioHistory struct {
-	BaseValue     *float64       `json:"base_value"`
-	BaseValueAsof string         `json:"base_value_asof,omitempty"`
-	Cashflow      map[string]any `json:"cashflow,omitempty"`
-	Equity        []float64      `json:"equity"`
-	ProfitLoss    []float64      `json:"profit_loss"`
-	ProfitLossPct []float64      `json:"profit_loss_pct"`
-	Timeframe     string         `json:"timeframe"`
-	Timestamp     []int          `json:"timestamp"`
+	BaseValue     *float64             `json:"base_value"`
+	BaseValueAsof string               `json:"base_value_asof,omitempty"`
+	Cashflow      map[string][]float64 `json:"cashflow,omitempty"`
+	Equity        []float64            `json:"equity"`
+	ProfitLoss    []float64            `json:"profit_loss"`
+	ProfitLossPct []float64            `json:"profit_loss_pct"`
+	Timeframe     string               `json:"timeframe"`
+	Timestamp     []int                `json:"timestamp"`
 }
 
 type Position struct {

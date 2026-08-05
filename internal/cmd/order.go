@@ -14,7 +14,7 @@ func configureOrderSubmit(cmd *cobra.Command) {
 	cmd.Flags().Bool("dry-run", false, "Print the request body without submitting")
 }
 
-func postOrderHook(cmd *cobra.Command, body *api.PostOrderRequest) (any, error) {
+func postOrderHook(cmd *cobra.Command, body *api.CreateOrderRequest) (any, error) {
 	if body.TimeInForce == "" {
 		body.TimeInForce = defaultTimeInForce(body.Symbol)
 	}
@@ -34,7 +34,7 @@ func defaultTimeInForce(symbol string) api.TimeInForce {
 	return "day"
 }
 
-func applyBracket(body *api.PostOrderRequest, takeProfit, stopLoss string) error {
+func applyBracket(body *api.CreateOrderRequest, takeProfit, stopLoss string) error {
 	if takeProfit == "" && stopLoss == "" {
 		return nil
 	}

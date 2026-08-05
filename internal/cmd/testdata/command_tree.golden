@@ -16,6 +16,7 @@ alpaca account activity list
   --category (string)
   --date (string)
   --direction (string, default=desc)
+  --order-id (string)
   --page-size (int, default=100)
   --page-token (string)
   --until (string)
@@ -24,6 +25,7 @@ alpaca account activity list-by-type
   --after (string)
   --date (string)
   --direction (string, default=desc)
+  --order-id (string)
   --page-size (int, default=100)
   --page-token (string)
   --until (string)
@@ -114,6 +116,7 @@ alpaca data bars
   --timeframe (string)
 alpaca data corporate-actions
   --cusips (string)
+  --data-quality (string, default=complete)
   --end (string)
   --ids (string)
   --limit (int, default=100)
@@ -163,11 +166,6 @@ alpaca data crypto trades
 alpaca data crypto-orderbook
   --loc (string, default=us)
   --symbols (string)
-alpaca data fixed-income
-  --isins (string)
-alpaca data fixed-income-quotes
-  --isins (string)
-  --trade-size (int)
 alpaca data forex latest
   --currency-pairs (string)
 alpaca data forex rates
@@ -178,15 +176,6 @@ alpaca data forex rates
   --sort (string, default=asc)
   --start (string)
   --timeframe (string, default=1Min)
-alpaca data index latest-values
-  --symbols (string)
-alpaca data index values
-  --end (string)
-  --limit (int, default=1000)
-  --page-token (string)
-  --sort (string, default=asc)
-  --start (string)
-  --symbols (string)
 alpaca data latest-bar
   --currency (string)
   --feed (string)

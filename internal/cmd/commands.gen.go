@@ -69,11 +69,6 @@ var dataForexCmd = &cobra.Command{
 	Short: "Foreign exchange rate data",
 }
 
-var dataIndexCmd = &cobra.Command{
-	Use:   "index",
-	Short: "Index market data",
-}
-
 var dataMetaCmd = &cobra.Command{
 	Use:   "meta",
 	Short: "Stock exchange and condition reference data",
@@ -145,7 +140,7 @@ var addAssetToWatchlistCmd = fetchCmd("add", api.AddAssetToWatchlistOp, func(cmd
 })
 
 var addAssetToWatchlistByNameCmd = fetchCmd("add-by-name", api.AddAssetToWatchlistByNameOp, func(cmd *cobra.Command, args []string) (any, error) {
-	body := &api.AddAssetToWatchlistByNameRequest{
+	body := &api.AddAssetToWatchlistRequest{
 		Symbol: cmdutil.Str(cmd, "symbol"),
 	}
 	return tradingClient.AddAssetToWatchlistByName(queryFromFlags(cmd, api.AddAssetToWatchlistByNameOp), body)
@@ -255,14 +250,6 @@ var deleteWhitelistedAddressCmd = fetchCmd("delete", api.DeleteWhitelistedAddres
 	return voidResponse(tradingClient.DeleteWhitelistedAddress(cmdutil.Str(cmd, "whitelisted-address-id")))
 })
 
-var fixedIncomeLatestPricesCmd = fetchCmd("fixed-income", api.FixedIncomeLatestPricesOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return dataClient.FixedIncomeLatestPrices(queryFromFlags(cmd, api.FixedIncomeLatestPricesOp))
-})
-
-var fixedIncomeLatestQuotesCmd = fetchCmd("fixed-income-quotes", api.FixedIncomeLatestQuotesOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return dataClient.FixedIncomeLatestQuotes(queryFromFlags(cmd, api.FixedIncomeLatestQuotesOp))
-})
-
 var getAccountCmd = fetchCmd("get", api.GetAccountOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return tradingClient.GetAccount()
 })
@@ -312,7 +299,7 @@ var getOptionContractSymbolOrIDCmd = fetchCmd("get", api.GetOptionContractSymbol
 })
 
 var getOptionsContractsCmd = fetchCmd("contracts", api.GetOptionsContractsOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return voidResponse(tradingClient.GetOptionsContracts(queryFromFlags(cmd, api.GetOptionsContractsOp)))
+	return tradingClient.GetOptionsContracts(queryFromFlags(cmd, api.GetOptionsContractsOp))
 })
 
 var getOrderByClientOrderIDCmd = fetchCmd("get-by-client-id", api.GetOrderByClientOrderIDOp, func(cmd *cobra.Command, args []string) (any, error) {
@@ -332,11 +319,11 @@ var getV2AssetsSymbolOrAssetIDCmd = fetchCmd("get", api.GetV2AssetsSymbolOrAsset
 })
 
 var getV2CorporateActionsAnnouncementsCmd = fetchCmd("list", api.GetV2CorporateActionsAnnouncementsOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return voidResponse(tradingClient.GetV2CorporateActionsAnnouncements(queryFromFlags(cmd, api.GetV2CorporateActionsAnnouncementsOp)))
+	return tradingClient.GetV2CorporateActionsAnnouncements(queryFromFlags(cmd, api.GetV2CorporateActionsAnnouncementsOp))
 })
 
 var getV2CorporateActionsAnnouncementsIDCmd = fetchCmd("get", api.GetV2CorporateActionsAnnouncementsIDOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return voidResponse(tradingClient.GetV2CorporateActionsAnnouncementsID(cmdutil.Str(cmd, "id")))
+	return tradingClient.GetV2CorporateActionsAnnouncementsID(cmdutil.Str(cmd, "id"))
 })
 
 var getWatchlistByIDCmd = fetchCmd("get", api.GetWatchlistByIDOp, func(cmd *cobra.Command, args []string) (any, error) {
@@ -349,14 +336,6 @@ var getWatchlistByNameCmd = fetchCmd("get-by-name", api.GetWatchlistByNameOp, fu
 
 var getWatchlistsCmd = fetchCmd("list", api.GetWatchlistsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return tradingClient.GetWatchlists()
-})
-
-var indexLatestValuesCmd = fetchCmd("latest-values", api.IndexLatestValuesOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return dataClient.IndexLatestValues(queryFromFlags(cmd, api.IndexLatestValuesOp))
-})
-
-var indexValuesCmd = fetchCmd("values", api.IndexValuesOp, func(cmd *cobra.Command, args []string) (any, error) {
-	return dataClient.IndexValues(queryFromFlags(cmd, api.IndexValuesOp))
 })
 
 var latestRatesCmd = fetchCmd("latest", api.LatestRatesOp, func(cmd *cobra.Command, args []string) (any, error) {
@@ -524,7 +503,7 @@ var patchOrderByOrderIDCmd = fetchCmd("replace", api.PatchOrderByOrderIDOp, func
 })
 
 var postOrderCmd = fetchCmd("submit", api.PostOrderOp, func(cmd *cobra.Command, args []string) (any, error) {
-	body := &api.PostOrderRequest{
+	body := &api.CreateOrderRequest{
 		ClientOrderID:  cmdutil.Str(cmd, "client-order-id"),
 		ExtendedHours:  cmdutil.Bool(cmd, "extended-hours"),
 		LimitPrice:     cmdutil.Str(cmd, "limit-price"),
@@ -700,7 +679,6 @@ func init() {
 	accountCmd.AddCommand(activityCmd)
 	dataCmd.AddCommand(dataCryptoCmd)
 	dataCmd.AddCommand(dataForexCmd)
-	dataCmd.AddCommand(dataIndexCmd)
 	dataCmd.AddCommand(dataMetaCmd)
 	dataCmd.AddCommand(dataOptionCmd)
 	dataCmd.AddCommand(screenerCmd)
@@ -730,8 +708,6 @@ func init() {
 	watchlistCmd.AddCommand(deleteWatchlistByIDCmd)
 	watchlistCmd.AddCommand(deleteWatchlistByNameCmd)
 	walletWhitelistCmd.AddCommand(deleteWhitelistedAddressCmd)
-	dataCmd.AddCommand(fixedIncomeLatestPricesCmd)
-	dataCmd.AddCommand(fixedIncomeLatestQuotesCmd)
 	accountCmd.AddCommand(getAccountCmd)
 	activityCmd.AddCommand(getAccountActivitiesCmd)
 	activityCmd.AddCommand(getAccountActivitiesByActivityTypeCmd)
@@ -754,8 +730,6 @@ func init() {
 	watchlistCmd.AddCommand(getWatchlistByIDCmd)
 	watchlistCmd.AddCommand(getWatchlistByNameCmd)
 	watchlistCmd.AddCommand(getWatchlistsCmd)
-	dataIndexCmd.AddCommand(indexLatestValuesCmd)
-	dataIndexCmd.AddCommand(indexValuesCmd)
 	dataForexCmd.AddCommand(latestRatesCmd)
 	walletTransferCmd.AddCommand(listCryptoFundingTransfersCmd)
 	walletCmd.AddCommand(listCryptoFundingWalletsCmd)

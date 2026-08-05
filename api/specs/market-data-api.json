@@ -33,6 +33,14 @@
                     "type": "string"
                 }
             },
+            "cas_data_quality": {
+                "description": "Controls which corporate actions are returned based on data quality.\n",
+                "in": "query",
+                "name": "data_quality",
+                "schema": {
+                    "$ref": "#/components/schemas/data_quality"
+                }
+            },
             "cas_end": {
                 "description": "The inclusive end of the interval. The corporate actions are sorted by their `process_date`. Format: YYYY-MM-DD. Default: current day.\n",
                 "examples": {
@@ -127,7 +135,7 @@
                 }
             },
             "cas_ids": {
-                "description": "A comma-separated list of corporate action IDs. This parameter is mutually exclusive with all other filters (symbols, types, start, end).\n",
+                "description": "A comma-separated list of corporate action IDs. This parameter is mutually exclusive with all other filters (symbols, types, start, end, region, data_quality).\n",
                 "example": "1dbc7685-9517-4a77-a236-8527d49cefdc,f8489167-4e4b-431d-a0be-6017ae1cf08a",
                 "in": "query",
                 "name": "ids",
@@ -256,26 +264,6 @@
                 "required": false,
                 "schema": {
                     "$ref": "#/components/schemas/forex_timeframe"
-                }
-            },
-            "index_symbols": {
-                "description": "A comma-separated list of index symbols.",
-                "example": "SPX,VIX",
-                "in": "query",
-                "name": "symbols",
-                "required": true,
-                "schema": {
-                    "type": "string"
-                }
-            },
-            "isins": {
-                "description": "A comma-separated list of ISINs with a limit of 1000.",
-                "example": "US912797KJ59,US912797KS58,US912797LB15",
-                "in": "query",
-                "name": "isins",
-                "required": true,
-                "schema": {
-                    "type": "string"
                 }
             },
             "limit": {
@@ -532,16 +520,6 @@
                 "required": true,
                 "schema": {
                     "type": "string"
-                }
-            },
-            "trade_size": {
-                "description": "Filters to best bid/ask where the minimum trade size is less than or equal to the given numeric value. For any negative value the best bid/ask will be returned for the smallest trade size on either side.\n",
-                "in": "query",
-                "name": "trade_size",
-                "required": false,
-                "schema": {
-                    "format": "int32",
-                    "type": "integer"
                 }
             }
         },
@@ -2692,6 +2670,15 @@
                 "description": "The ISO 4217 currency code associated with the corporate action.\nEmpty value can mean USD, non-applicable (e.g. for name changes) or unknown\n(can change later to a valid currency).\n",
                 "type": "string"
             },
+            "data_quality": {
+                "default": "complete",
+                "description": "Controls which corporate actions are returned based on data quality.\n\n- `complete` (default): exclude corporate actions that are still missing required\n  fields (for example, ex-date or CUSIP/ISIN) and have not yet been processed.\n  Already-processed corporate actions are always included, even if they would\n  otherwise be considered incomplete.\n- `all`: return matching corporate actions regardless of field completeness.\n",
+                "enum": [
+                    "complete",
+                    "all"
+                ],
+                "type": "string"
+            },
             "date": {
                 "description": "Date in RFC-3339.",
                 "format": "date",
@@ -2722,153 +2709,6 @@
             "expiration_date": {
                 "format": "date",
                 "type": "string"
-            },
-            "fixed_income_latest_prices_resp": {
-                "properties": {
-                    "prices": {
-                        "additionalProperties": {
-                            "$ref": "#/components/schemas/fixed_income_price"
-                        },
-                        "type": "object"
-                    }
-                },
-                "required": [
-                    "prices"
-                ],
-                "type": "object"
-            },
-            "fixed_income_latest_quotes_resp": {
-                "properties": {
-                    "quotes": {
-                        "additionalProperties": {
-                            "$ref": "#/components/schemas/fixed_income_quote"
-                        },
-                        "type": "object"
-                    }
-                },
-                "required": [
-                    "quotes"
-                ],
-                "type": "object"
-            },
-            "fixed_income_price": {
-                "description": "The price of the instrument as a percentage of its par value.",
-                "example": {
-                    "p": 99.6459,
-                    "t": "2025-02-14T20:58:00.648Z",
-                    "ytm": 4.249,
-                    "ytw": 4.249
-                },
-                "properties": {
-                    "p": {
-                        "description": "Price",
-                        "format": "double",
-                        "type": "number"
-                    },
-                    "t": {
-                        "$ref": "#/components/schemas/timestamp"
-                    },
-                    "ytm": {
-                        "description": "Yield to maturity.",
-                        "format": "double",
-                        "type": "number"
-                    },
-                    "ytw": {
-                        "description": "Yield to worst.",
-                        "format": "double",
-                        "type": "number"
-                    }
-                },
-                "required": [
-                    "t",
-                    "p"
-                ],
-                "type": "object"
-            },
-            "fixed_income_quote": {
-                "description": "The best bid and ask information for a given fixed income security. A value of 0 means there is no active bid or ask for that field.\n",
-                "example": {
-                    "ams": 1000,
-                    "ap": 99.91958333,
-                    "as": 1000000,
-                    "aytm": 2.226923,
-                    "aytw": 2.226923,
-                    "bms": 1000,
-                    "bp": 99.81091667,
-                    "bs": 1000000,
-                    "bytm": 5.236154,
-                    "bytw": 5.236154,
-                    "t": "2026-05-21T06:56:01.882466873Z"
-                },
-                "properties": {
-                    "ams": {
-                        "description": "Best ask minimum trade size in par value.",
-                        "format": "int64",
-                        "type": "integer"
-                    },
-                    "ap": {
-                        "description": "Best ask price. 0 means there is no active ask.",
-                        "format": "double",
-                        "type": "number"
-                    },
-                    "as": {
-                        "description": "Best ask size in par value. 0 means there is no active ask.",
-                        "format": "int64",
-                        "type": "integer"
-                    },
-                    "aytm": {
-                        "description": "Best ask yield to maturity.",
-                        "format": "double",
-                        "type": "number"
-                    },
-                    "aytw": {
-                        "description": "Best ask yield to worst.",
-                        "format": "double",
-                        "type": "number"
-                    },
-                    "bms": {
-                        "description": "Best bid minimum trade size in par value.",
-                        "format": "int64",
-                        "type": "integer"
-                    },
-                    "bp": {
-                        "description": "Best bid price. 0 means there is no active bid.",
-                        "format": "double",
-                        "type": "number"
-                    },
-                    "bs": {
-                        "description": "Best bid size in par value. 0 means there is no active bid.",
-                        "format": "int64",
-                        "type": "integer"
-                    },
-                    "bytm": {
-                        "description": "Best bid yield to maturity.",
-                        "format": "double",
-                        "type": "number"
-                    },
-                    "bytw": {
-                        "description": "Best bid yield to worst.",
-                        "format": "double",
-                        "type": "number"
-                    },
-                    "t": {
-                        "$ref": "#/components/schemas/timestamp"
-                    }
-                },
-                "required": [
-                    "t",
-                    "bp",
-                    "bs",
-                    "bms",
-                    "bytm",
-                    "bytw",
-                    "ap",
-                    "as",
-                    "ams",
-                    "aytm",
-                    "aytw"
-                ],
-                "type": "object"
             },
             "forex_currency_pairs": {
                 "description": "A comma-separated string with currency pairs.",
@@ -3016,64 +2856,6 @@
                     "old_rate",
                     "process_date",
                     "ex_date"
-                ],
-                "type": "object"
-            },
-            "index_latest_values_resp": {
-                "description": "The response object of the latest index values.",
-                "properties": {
-                    "values": {
-                        "additionalProperties": {
-                            "$ref": "#/components/schemas/index_value"
-                        },
-                        "type": "object"
-                    }
-                },
-                "required": [
-                    "values"
-                ],
-                "type": "object"
-            },
-            "index_value": {
-                "description": "The value of an index at a given point in time.",
-                "example": {
-                    "t": "2026-05-18T17:00:02.0256Z",
-                    "v": 7383.46
-                },
-                "properties": {
-                    "t": {
-                        "$ref": "#/components/schemas/timestamp"
-                    },
-                    "v": {
-                        "description": "Index value.",
-                        "format": "double",
-                        "type": "number"
-                    }
-                },
-                "required": [
-                    "t",
-                    "v"
-                ],
-                "type": "object"
-            },
-            "index_values_resp": {
-                "properties": {
-                    "next_page_token": {
-                        "$ref": "#/components/schemas/next_page_token"
-                    },
-                    "values": {
-                        "additionalProperties": {
-                            "items": {
-                                "$ref": "#/components/schemas/index_value"
-                            },
-                            "type": "array"
-                        },
-                        "type": "object"
-                    }
-                },
-                "required": [
-                    "values",
-                    "next_page_token"
                 ],
                 "type": "object"
             },
@@ -5191,7 +4973,7 @@
             "name": "Alpaca Support",
             "url": "https://alpaca.markets/support"
         },
-        "description": "Access real-time and historical market data for US equities, options, crypto, and foreign exchange data through the Alpaca REST and WebSocket APIs. There are APIs for Stock Pricing, Option Pricing, Crypto Pricing, Forex, Logos, Fixed income, Corporate Actions, Screener, and News.\n",
+        "description": "Access real-time and historical market data for US equities, options, crypto, and foreign exchange data through the Alpaca REST and WebSocket APIs. There are APIs for Stock Pricing, Option Pricing, Crypto Pricing, Forex, Logos, Corporate Actions, Screener, and News.\n",
         "license": {
             "name": "Creative Commons Attribution Share Alike 4.0 International",
             "url": "https://spdx.org/licenses/CC-BY-SA-4.0.html"
@@ -5677,182 +5459,6 @@
                 ]
             }
         },
-        "/v1beta1/fixed_income/latest/prices": {
-            "get": {
-                "description": "This endpoint returns the latest prices for the given fixed income securities.\n",
-                "operationId": "FixedIncomeLatestPrices",
-                "parameters": [
-                    {
-                        "$ref": "#/components/parameters/isins"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "examples": {
-                                    "prices": {
-                                        "value": {
-                                            "prices": {
-                                                "US912797KJ59": {
-                                                    "p": 99.6459,
-                                                    "t": "2025-02-14T20:58:00.648Z",
-                                                    "ytm": 4.249,
-                                                    "ytw": 4.249
-                                                },
-                                                "US912797KS58": {
-                                                    "p": 99.3193,
-                                                    "t": "2025-02-14T20:58:00.648Z",
-                                                    "ytm": 4.2245,
-                                                    "ytw": 4.2245
-                                                },
-                                                "US912797LB15": {
-                                                    "p": 98.9927,
-                                                    "t": "2025-02-14T20:58:00.648Z",
-                                                    "ytm": 4.2165,
-                                                    "ytw": 4.2165
-                                                }
-                                            }
-                                        }
-                                    }
-                                },
-                                "schema": {
-                                    "$ref": "#/components/schemas/fixed_income_latest_prices_resp"
-                                }
-                            }
-                        },
-                        "description": "OK",
-                        "headers": {
-                            "X-RateLimit-Limit": {
-                                "$ref": "#/components/headers/ratelimit_limit"
-                            },
-                            "X-RateLimit-Remaining": {
-                                "$ref": "#/components/headers/ratelimit_remaining"
-                            },
-                            "X-RateLimit-Reset": {
-                                "$ref": "#/components/headers/ratelimit_reset"
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/400"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/401"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/403"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/500"
-                    }
-                },
-                "summary": "Latest prices",
-                "tags": [
-                    "Fixed income"
-                ]
-            }
-        },
-        "/v1beta1/fixed_income/latest/quotes": {
-            "get": {
-                "description": "This endpoint returns the latest quotes for the given fixed income securities.\n",
-                "operationId": "FixedIncomeLatestQuotes",
-                "parameters": [
-                    {
-                        "description": "A comma-separated list of ISINs with a limit of 100.",
-                        "example": "US912797SX61,US912810SK51",
-                        "in": "query",
-                        "name": "isins",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "$ref": "#/components/parameters/trade_size"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "examples": {
-                                    "quotes": {
-                                        "value": {
-                                            "quotes": {
-                                                "US912797SX61": {
-                                                    "ams": 1000,
-                                                    "ap": 99.91958333,
-                                                    "as": 1000000,
-                                                    "aytm": 2.226923,
-                                                    "aytw": 2.226923,
-                                                    "bms": 1000,
-                                                    "bp": 99.81091667,
-                                                    "bs": 1000000,
-                                                    "bytm": 5.236154,
-                                                    "bytw": 5.236154,
-                                                    "t": "2026-05-21T06:56:01.882466873Z"
-                                                },
-                                                "US912810SK51": {
-                                                    "ams": 1000,
-                                                    "ap": 63.06436526,
-                                                    "as": 1000000,
-                                                    "aytm": 5.08819,
-                                                    "aytw": 5.08819,
-                                                    "bms": 1000,
-                                                    "bp": 60.60009769,
-                                                    "bs": 1000000,
-                                                    "bytm": 5.338343,
-                                                    "bytw": 5.338343,
-                                                    "t": "2026-05-21T07:27:53.683424845Z"
-                                                }
-                                            }
-                                        }
-                                    }
-                                },
-                                "schema": {
-                                    "$ref": "#/components/schemas/fixed_income_latest_quotes_resp"
-                                }
-                            }
-                        },
-                        "description": "OK",
-                        "headers": {
-                            "X-RateLimit-Limit": {
-                                "$ref": "#/components/headers/ratelimit_limit"
-                            },
-                            "X-RateLimit-Remaining": {
-                                "$ref": "#/components/headers/ratelimit_remaining"
-                            },
-                            "X-RateLimit-Reset": {
-                                "$ref": "#/components/headers/ratelimit_reset"
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/400"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/401"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/403"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/500"
-                    }
-                },
-                "summary": "Latest quotes",
-                "tags": [
-                    "Fixed income"
-                ]
-            }
-        },
         "/v1beta1/forex/latest/rates": {
             "get": {
                 "description": "Get the latest forex rates for the given currency pairs.\n",
@@ -6017,180 +5623,6 @@
                 "summary": "Historical rates for currency pairs",
                 "tags": [
                     "Forex"
-                ]
-            }
-        },
-        "/v1beta1/indices/latest/values": {
-            "get": {
-                "description": "Get the latest values for the given indices.",
-                "operationId": "IndexLatestValues",
-                "parameters": [
-                    {
-                        "$ref": "#/components/parameters/index_symbols"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "examples": {
-                                    "values": {
-                                        "value": {
-                                            "values": {
-                                                "SPX": {
-                                                    "t": "2026-05-18T17:00:02.0256Z",
-                                                    "v": 7383.46
-                                                },
-                                                "VIX": {
-                                                    "t": "2026-05-18T17:00:46.354Z",
-                                                    "v": 18.45
-                                                }
-                                            }
-                                        }
-                                    }
-                                },
-                                "schema": {
-                                    "$ref": "#/components/schemas/index_latest_values_resp"
-                                }
-                            }
-                        },
-                        "description": "OK",
-                        "headers": {
-                            "X-RateLimit-Limit": {
-                                "$ref": "#/components/headers/ratelimit_limit"
-                            },
-                            "X-RateLimit-Remaining": {
-                                "$ref": "#/components/headers/ratelimit_remaining"
-                            },
-                            "X-RateLimit-Reset": {
-                                "$ref": "#/components/headers/ratelimit_reset"
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/400"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/401"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/403"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/500"
-                    }
-                },
-                "summary": "Latest values for indices",
-                "tags": [
-                    "Index"
-                ]
-            }
-        },
-        "/v1beta1/indices/values": {
-            "get": {
-                "description": "Get historical values for the given indices in the given time interval.\n",
-                "operationId": "IndexValues",
-                "parameters": [
-                    {
-                        "$ref": "#/components/parameters/index_symbols"
-                    },
-                    {
-                        "$ref": "#/components/parameters/start"
-                    },
-                    {
-                        "$ref": "#/components/parameters/end"
-                    },
-                    {
-                        "$ref": "#/components/parameters/limit"
-                    },
-                    {
-                        "$ref": "#/components/parameters/page_token"
-                    },
-                    {
-                        "$ref": "#/components/parameters/sort"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "examples": {
-                                    "values": {
-                                        "value": {
-                                            "next_page_token": "U1BYfDIwMjYtMDUtMThUMTc6MDA6MDIuMDI1Nlo",
-                                            "values": {
-                                                "SPX": [
-                                                    {
-                                                        "t": "2026-05-18T17:00:00.0302Z",
-                                                        "v": 7384.41
-                                                    },
-                                                    {
-                                                        "t": "2026-05-18T17:00:01.0918Z",
-                                                        "v": 7384.07
-                                                    },
-                                                    {
-                                                        "t": "2026-05-18T17:00:02.0256Z",
-                                                        "v": 7383.46
-                                                    }
-                                                ],
-                                                "VIX": [
-                                                    {
-                                                        "t": "2026-05-18T17:00:01.3355Z",
-                                                        "v": 18.4
-                                                    },
-                                                    {
-                                                        "t": "2026-05-18T17:00:16.3453Z",
-                                                        "v": 18.41
-                                                    },
-                                                    {
-                                                        "t": "2026-05-18T17:00:46.354Z",
-                                                        "v": 18.45
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    }
-                                },
-                                "schema": {
-                                    "$ref": "#/components/schemas/index_values_resp"
-                                }
-                            }
-                        },
-                        "description": "OK",
-                        "headers": {
-                            "X-RateLimit-Limit": {
-                                "$ref": "#/components/headers/ratelimit_limit"
-                            },
-                            "X-RateLimit-Remaining": {
-                                "$ref": "#/components/headers/ratelimit_remaining"
-                            },
-                            "X-RateLimit-Reset": {
-                                "$ref": "#/components/headers/ratelimit_reset"
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/400"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/401"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/403"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/500"
-                    }
-                },
-                "summary": "Historical values for indices",
-                "tags": [
-                    "Index"
                 ]
             }
         },
@@ -7970,7 +7402,7 @@
         },
         "/v1/corporate-actions": {
             "get": {
-                "description": "This endpoint provides data about the corporate actions for each given symbol over a specified time period.\n\n> \u26a0\ufe0f Warning\n>\n> Currently Alpaca has no guarantees on the creation time of corporate actions. There may be delays in receiving corporate actions from our data providers, and there may be delays in processing and making them available via this API. As a result, corporate actions may not be available immediately after they are announced.\n",
+                "description": "This endpoint provides data about the corporate actions for each given symbol over a specified time period.\n\nBy default (`data_quality=complete`), corporate actions that are still incomplete (for example, missing required fields such as ex-date or CUSIP/ISIN) and have not yet been processed are excluded from the response. Pass `data_quality=all` to also receive those early, incomplete records. Already-processed corporate actions are always returned when `data_quality=complete`, even if they would otherwise be considered incomplete.\n\n> \u26a0\ufe0f Warning\n>\n> Currently Alpaca has no guarantees on the creation time of corporate actions. There may be delays in receiving corporate actions from our data providers, and there may be delays in processing and making them available via this API. As a result, corporate actions may not be available immediately after they are announced.\n",
                 "operationId": "CorporateActions",
                 "parameters": [
                     {
@@ -7996,6 +7428,9 @@
                     },
                     {
                         "$ref": "#/components/parameters/cas_limit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/cas_data_quality"
                     },
                     {
                         "$ref": "#/components/parameters/page_token"
@@ -10020,10 +9455,6 @@
         {
             "description": "Endpoints for cryptocurrencies.",
             "name": "Crypto"
-        },
-        {
-            "description": "Endpoints for fixed income data.",
-            "name": "Fixed income"
         },
         {
             "description": "Endpoints for forex currency rates.",

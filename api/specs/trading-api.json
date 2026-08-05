@@ -864,12 +864,12 @@
                 "type": "object"
             },
             "ActivitySubType": {
-                "description": "Represents a more specific classification to the `activity_type`.\nThis field is optional and may not always be populated, depending on the activity type and the available data.\nEach `activity_type` has a set of valid `activity_sub_type` values.\n\nFull mapping of `activity_type` to `activity_sub_type`:\n\n- **DIV**: Dividend activity sub-types:\n  - **CDIV**: Cash Dividend\n  - **SDIV**: Stock Dividend\n  - **SPD**: Substitute Payment In Lieu Of Dividend\n\n- **FEE**: Fee-related activity sub-types:\n  - **REG**: Regulatory Fee\n  - **TAF**: Trading Activity Fee\n  - **LCT**: Local Currency Trading Fee\n  - **ORF**: Options Regulatory Fee\n  - **OCC**: Options Clearing Corporation Fee\n  - **NRC**: Non-Retail Commission Fee\n  - **NRV**: Non-Retail Venue Fee\n  - **COM**: Commission\n  - **CAT**: Consolidated Audit Trail Fee\n\n- **INT**: Interest-related activity sub-types:\n  - **MGN**: Margin Interest\n  - **CDT**: Credit Interest\n  - **SWP**: Sweep Interest\n  - **QII**: Qualified Interest\n\n- **MA**: Merger and Acquisition activity sub-types:\n  - **CMA**: Cash Merger\n  - **SMA**: Stock Merger\n  - **SCMA**: Stock & Cash Merger\n\n- **NC**: Name Change activity sub types\n  - **SNC**: Symbol Name Change\n  - **CNC**: CUSIP Name Change\n  - **SCNC**: Symbol & CUSIP Name Change\n\n- **OPCA**: Option Corporate Action activity sub-types:\n  - **DIV.CDIV**: Cash Dividend\n  - **DIV.SDIV**: Stock Dividend\n  - **MA.CMA**: Cash Merger\n  - **MA.SMA**: Stock Merger\n  - **MA.SCMA**: Stock & Cash Merger\n  - **NC.CNC**: CUSIP Name Change\n  - **NC.SNC**: Symbol Name Change\n  - **NC.SCNC**: Symbol & CUSIP Name Change\n  - **SPIN**: Spin-off\n  - **SPLIT.FSPLIT**: Forward Stock Split\n  - **SPLIT.RSPLIT**: Reverse Stock Split\n  - **SPLIT.USPLIT**: Unit Split\n\n- **REORG**: Reorganization activity sub-types:\n  - **WRM**: Worthless Removal\n\n- **SPLIT**: Stock Split activity sub-types:\n  - **FSPLIT**: Forward Stock Split\n  - **RSPLIT**: Reverse Stock Split\n  - **USPLIT**: Unit Split\n\n- **VOF**: Voluntary Offering activity sub-types:\n  - **VTND**: Tender Offer\n  - **VWRT**: Warrant Exercise\n  - **VRGT**: Rights Offer\n  - **VEXH**: Exchange Offer\n\n- **WH**: Withholding activity sub-types:\n  - **SWH**: State Withholding\n  - **FWH**: Federal Withholding\n  - **SLWH**: Sales Withholding",
+                "description": "Represents a more specific classification to the `activity_type`.\nThis field is optional and may not always be populated, depending on the activity type and the available data.\nEach `activity_type` has a set of valid `activity_sub_type` values.\n\nFull mapping of `activity_type` to `activity_sub_type`:\n\n- **DIV**: Dividend activity sub-types:\n  - **CDIV**: Cash Dividend\n  - **SDIV**: Stock Dividend\n  - **SPD**: Substitute Payment In Lieu Of Dividend\n\n- **FEE**: Fee-related activity sub-types:\n  - **REG**: Regulatory Fee\n  - **TAF**: Trading Activity Fee\n  - **LCT**: Local Currency Trading Fee\n  - **ORF**: Options Regulatory Fee\n  - **OCC**: Options Clearing Corporation Fee\n  - **NRC**: Non-Retail Commission Fee\n  - **NRV**: Non-Retail Venue Fee\n  - **COM**: Commission\n  - **CAT**: Consolidated Audit Trail Fee\n\n- **INT**: Interest-related activity sub-types:\n  - **MGN**: Margin Interest\n  - **CDT**: Credit Interest\n  - **SWP**: Sweep Interest\n  - **QII**: Qualified Interest\n  - **FI**: Fixed Income Interest (coupon payment or accrued interest on call)\n\n- **MA**: Merger and Acquisition activity sub-types:\n  - **CMA**: Cash Merger\n  - **SMA**: Stock Merger\n  - **SCMA**: Stock & Cash Merger\n\n- **NC**: Name Change activity sub types\n  - **SNC**: Symbol Name Change\n  - **CNC**: CUSIP Name Change\n  - **SCNC**: Symbol & CUSIP Name Change\n\n- **OPCA**: Option Corporate Action activity sub-types:\n  - **DIV.CDIV**: Cash Dividend\n  - **DIV.SDIV**: Stock Dividend\n  - **MA.CMA**: Cash Merger\n  - **MA.SMA**: Stock Merger\n  - **MA.SCMA**: Stock & Cash Merger\n  - **NC.CNC**: CUSIP Name Change\n  - **NC.SNC**: Symbol Name Change\n  - **NC.SCNC**: Symbol & CUSIP Name Change\n  - **SPIN**: Spin-off\n  - **SPLIT.FSPLIT**: Forward Stock Split\n  - **SPLIT.RSPLIT**: Reverse Stock Split\n  - **SPLIT.USPLIT**: Unit Split\n\n- **REORG**: Reorganization activity sub-types:\n  - **WRM**: Worthless Removal\n\n- **SPLIT**: Stock Split activity sub-types:\n  - **FSPLIT**: Forward Stock Split\n  - **RSPLIT**: Reverse Stock Split\n  - **USPLIT**: Unit Split\n\n- **VOF**: Voluntary Offering activity sub-types:\n  - **VTND**: Tender Offer\n  - **VWRT**: Warrant Exercise\n  - **VRGT**: Rights Offer\n  - **VEXH**: Exchange Offer\n\n- **WH**: Withholding activity sub-types:\n  - **SWH**: State Withholding\n  - **FWH**: Federal Withholding\n  - **SLWH**: Sales Withholding",
                 "title": "ActivitySubType",
                 "type": "string"
             },
             "ActivityType": {
-                "description": "- FILL\n  Order fills (both partial and full fills)\n\n- TRANS\n  Cash transactions (both CSD and CSW)\n\n- MISC\n  Miscellaneous or rarely used activity types (All types except those in TRANS, DIV, or FILL)\n\n- ACATC\n  ACATS IN/OUT (Cash)\n\n- ACATS\n  ACATS IN/OUT (Securities)\n\n- CFEE\n  Crypto fee\n\n- CGD\n  Capital gain distribution\n\n- CSD\n  Cash deposit(+)\n\n- CSW\n  Cash withdrawal(-)\n\n- DIV\n  Dividends\n\n- DIVCGL\n  Dividend (capital gain long term)\n\n- DIVCGS\n  Dividend (capital gain short term)\n\n- DIVFEE\n  Dividend fee\n\n- DIVFT\n  Dividend adjusted (Foreign Tax Withheld)\n\n- DIVNRA\n  Dividend adjusted (NRA Withheld)\n\n- DIVROC\n  Dividend return of capital\n\n- DIVTW\n  Dividend adjusted (Tefra Withheld)\n\n- DIVTXEX\n  Dividend (tax exempt)\n\n- FEE\n  Fee denominated in USD\n\n- INT\n  Interest (credit/margin)\n\n- INTNRA\n  Interest adjusted (NRA Withheld)\n\n- INTTW\n  Interest adjusted (Tefra Withheld)\n\n- JNL\n  Journal entry\n\n- JNLC\n  Journal entry (cash)\n\n- JNLS\n  Journal entry (stock)\n\n- MA\n  Merger/Acquisition\n\n- NC\n  Name change\n\n- OPASN\n  Option assignment\n\n- OPCA\n  Option corporate action\n\n- OPCSH\n  Option cash deliverable for non-standard contracts\n\n- OPEXC\n  Option exercise\n\n- OPEXP\n  Option expiration\n\n- OPTRD\n  Option trade\n\n- PTC\n  Pass Thru Charge\n\n- PTR\n  Pass Thru Rebate\n\n- REORG\n  Reorg CA\n\n- SPIN\n  Stock spinoff\n\n- SPLIT\n  Stock split\n\n- FOPT\n  Free of Payment Transfers",
+                "description": "- FILL\n  Order fills (both partial and full fills)\n\n- TRANS\n  Cash transactions (both CSD and CSW)\n\n- MISC\n  Miscellaneous or rarely used activity types (All types except those in TRANS, DIV, or FILL)\n\n- ACATC\n  ACATS IN/OUT (Cash)\n\n- ACATS\n  ACATS IN/OUT (Securities)\n\n- CFEE\n  Crypto fee\n\n- CGD\n  Capital gain distribution\n\n- CSD\n  Cash deposit(+)\n\n- CSW\n  Cash withdrawal(-)\n\n- DIV\n  Dividends\n\n- DIVCGL\n  Dividend (capital gain long term)\n\n- DIVCGS\n  Dividend (capital gain short term)\n\n- DIVFEE\n  Dividend fee\n\n- DIVFT\n  Dividend adjusted (Foreign Tax Withheld)\n\n- DIVNRA\n  Dividend adjusted (NRA Withheld)\n\n- DIVROC\n  Dividend return of capital\n\n- DIVTW\n  Dividend adjusted (Tefra Withheld)\n\n- DIVTXEX\n  Dividend (tax exempt)\n\n- FEE\n  Fee denominated in USD\n\n- INT\n  Interest (credit/margin)\n\n- INTNRA\n  Interest adjusted (NRA Withheld)\n\n- INTTW\n  Interest adjusted (Tefra Withheld)\n\n- JNL\n  Journal entry\n\n- JNLC\n  Journal entry (cash)\n\n- JNLS\n  Journal entry (stock)\n\n- MA\n  Merger/Acquisition\n\n- NC\n  Name change\n\n- OPASN\n  Option assignment\n\n- OPCA\n  Option corporate action\n\n- OPCSH\n  Option cash deliverable for non-standard contracts\n\n- OPEXC\n  Option exercise\n\n- OPEXP\n  Option expiration\n\n- OPTRD\n  Option trade\n\n- PTC\n  Pass Thru Charge\n\n- PTR\n  Pass Thru Rebate\n\n- REORG\n  Reorg CA\n\n- SPIN\n  Stock spinoff\n\n- SPLIT\n  Stock split\n\n- FOPT\n  Free of Payment Transfers\n\n- OCT\n  On chain transactions (blockchain deposits/withdrawals)",
                 "enum": [
                     "FILL",
                     "TRANS",
@@ -909,7 +909,8 @@
                     "REORG",
                     "SPIN",
                     "SPLIT",
-                    "FOPT"
+                    "FOPT",
+                    "OCT"
                 ],
                 "title": "ActivityType",
                 "type": "string",
@@ -950,6 +951,9 @@
                             },
                             {
                                 "$ref": "#/components/schemas/FixedIncomeRedemptionActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/FixedIncomeInterestActivityV2"
                             },
                             {
                                 "$ref": "#/components/schemas/RightsDistributionActivityV2"
@@ -1018,6 +1022,9 @@
                                 "$ref": "#/components/schemas/DIVNRAActivityV2"
                             },
                             {
+                                "$ref": "#/components/schemas/DIVWHActivityV2"
+                            },
+                            {
                                 "$ref": "#/components/schemas/JNLSActivityV2"
                             },
                             {
@@ -1028,6 +1035,12 @@
                             },
                             {
                                 "$ref": "#/components/schemas/FEEActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/MEMActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/OCTActivityV2"
                             }
                         ]
                     }
@@ -1106,6 +1119,17 @@
                     "order_status",
                     "execution_type"
                 ],
+                "type": "object"
+            },
+            "AddAssetToWatchlistRequest": {
+                "description": "Request format used for appending an asset to an existing watchlist.",
+                "properties": {
+                    "symbol": {
+                        "description": "the symbol name to add to the watchlist",
+                        "type": "string"
+                    }
+                },
+                "title": "AddAssetToWatchlistRequest",
                 "type": "object"
             },
             "AdvancedInstructions": {
@@ -1483,6 +1507,10 @@
                         "description": "Indicates if related to a non-US security",
                         "type": "boolean"
                     },
+                    "isin": {
+                        "description": "The ISIN of the security involved with the activity",
+                        "type": "string"
+                    },
                     "payable_date": {
                         "description": "The payable_date for this corporate action",
                         "format": "date",
@@ -1548,6 +1576,60 @@
                 ],
                 "type": "object"
             },
+            "CommonFixedIncomeInterestActivityV2": {
+                "description": "Fixed income interest fields (INT/FI). Two variants from the same activity type,\ndistinguished by which fields are present:\n- Regular coupon: includes `rate` (no `price` / `accrued_interest_rate`)\n- Accrued interest on call: includes `price` and `accrued_interest_rate` (no `rate`)",
+                "properties": {
+                    "accrued_interest_rate": {
+                        "description": "Accrued interest rate (present for accrued-interest-on-call variants)",
+                        "format": "decimal",
+                        "type": "string"
+                    },
+                    "cash_payout": {
+                        "description": "The cash payout for this interest activity",
+                        "format": "decimal",
+                        "type": "string"
+                    },
+                    "cusip": {
+                        "description": "The CUSIP of the security involved with the activity",
+                        "type": "string"
+                    },
+                    "entitled_qty": {
+                        "description": "The entitled quantity (principal / face amount)",
+                        "example": "1000",
+                        "type": "string"
+                    },
+                    "isin": {
+                        "description": "The ISIN of the security involved with the activity",
+                        "type": "string"
+                    },
+                    "payment_date": {
+                        "description": "The payment date",
+                        "format": "date",
+                        "type": "string"
+                    },
+                    "price": {
+                        "description": "Call price used for accrued-interest-on-call variants",
+                        "format": "decimal",
+                        "type": "string"
+                    },
+                    "rate": {
+                        "description": "Coupon rate amount (present for regular coupon payments)",
+                        "format": "decimal",
+                        "type": "string"
+                    },
+                    "record_date": {
+                        "description": "The record date",
+                        "format": "date",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "entitled_qty",
+                    "cash_payout",
+                    "cusip"
+                ],
+                "type": "object"
+            },
             "CommonJournalActivityV2": {
                 "allOf": [
                     {
@@ -1572,6 +1654,10 @@
                         "description": "CUSIP of the acquiree",
                         "type": "string"
                     },
+                    "acquiree_isin": {
+                        "description": "ISIN of the acquiree",
+                        "type": "string"
+                    },
                     "acquiree_rate": {
                         "description": "Rate of the acquiree",
                         "type": "string"
@@ -1582,6 +1668,10 @@
                     },
                     "acquirer_cusip": {
                         "description": "CUSIP of the acquirer",
+                        "type": "string"
+                    },
+                    "acquirer_isin": {
+                        "description": "ISIN of the acquirer",
                         "type": "string"
                     },
                     "acquirer_rate": {
@@ -1719,6 +1809,10 @@
                         "minLength": 1,
                         "type": "string"
                     },
+                    "isin": {
+                        "description": "The ISIN of the security involved with the activity",
+                        "type": "string"
+                    },
                     "payable_date": {
                         "description": "The payable_date for this corporate action",
                         "format": "date",
@@ -1765,6 +1859,10 @@
                         "description": "CUSIP of the new security",
                         "type": "string"
                     },
+                    "new_isin": {
+                        "description": "ISIN of the new security",
+                        "type": "string"
+                    },
                     "new_price": {
                         "description": "Market price of new shares after the spinoff",
                         "type": "string"
@@ -1791,6 +1889,10 @@
                     },
                     "source_cusip": {
                         "description": "CUSIP of the parent security",
+                        "type": "string"
+                    },
+                    "source_isin": {
+                        "description": "ISIN of the parent security",
                         "type": "string"
                     },
                     "source_price": {
@@ -1824,12 +1926,20 @@
                         "description": "CUSIP of the new security after the split",
                         "type": "string"
                     },
+                    "new_isin": {
+                        "description": "ISIN of the new security after the split",
+                        "type": "string"
+                    },
                     "new_rate": {
                         "description": "Ratio of new shares received",
                         "type": "string"
                     },
                     "old_cusip": {
                         "description": "CUSIP of the old security before the split",
+                        "type": "string"
+                    },
+                    "old_isin": {
+                        "description": "ISIN of the old security before the split",
                         "type": "string"
                     },
                     "old_rate": {
@@ -1904,6 +2014,102 @@
                 ],
                 "type": "object"
             },
+            "CorporateActionCaType": {
+                "description": "The type of corporate action.",
+                "enum": [
+                    "Spinoff",
+                    "Merger",
+                    "Split",
+                    "Reorg",
+                    "Dividend"
+                ],
+                "example": "Dividend",
+                "title": "CorporateActionCaType",
+                "type": "string"
+            },
+            "CorporateAnnouncement": {
+                "description": "A corporate action announcement.",
+                "properties": {
+                    "ca_sub_type": {
+                        "type": "string"
+                    },
+                    "ca_type": {
+                        "$ref": "#/components/schemas/CorporateActionCaType"
+                    },
+                    "cash": {
+                        "format": "decimal",
+                        "type": "string"
+                    },
+                    "corporate_action_id": {
+                        "type": "string"
+                    },
+                    "declaration_date": {
+                        "format": "date",
+                        "type": "string"
+                    },
+                    "effective_date": {
+                        "format": "date",
+                        "type": "string"
+                    },
+                    "ex_date": {
+                        "format": "date",
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "initiating_original_cusip": {
+                        "type": "string"
+                    },
+                    "initiating_symbol": {
+                        "type": "string"
+                    },
+                    "new_rate": {
+                        "format": "decimal",
+                        "type": "string"
+                    },
+                    "old_rate": {
+                        "format": "decimal",
+                        "type": "string"
+                    },
+                    "payable_date": {
+                        "format": "date",
+                        "type": "string"
+                    },
+                    "record_date": {
+                        "format": "date",
+                        "type": "string"
+                    },
+                    "target_original_cusip": {
+                        "type": "string"
+                    },
+                    "target_symbol": {
+                        "type": "string"
+                    }
+                },
+                "title": "CorporateAnnouncement",
+                "type": "object",
+                "x-examples": {
+                    "Example 1": {
+                        "ca_sub_type": "DIV",
+                        "ca_type": "Dividend",
+                        "cash": "0.018",
+                        "corporate_action_id": "F58684224_XY37",
+                        "declaration_date": "2021-01-05",
+                        "effective_date": "2021-01-08",
+                        "ex_date": "2021-01-12",
+                        "id": "be3c368a-4c7c-4384-808e-f02c9f5a8afe",
+                        "initiating_original_cusip": "55275E101",
+                        "initiating_symbol": "MLLAX",
+                        "new_rate": "1",
+                        "old_rate": "1",
+                        "payable_date": "2021-01-14",
+                        "record_date": "2021-01-13",
+                        "target_original_cusip": "55275E101",
+                        "target_symbol": "MLLAX"
+                    }
+                }
+            },
             "CreateCryptoTransferRequest": {
                 "properties": {
                     "address": {
@@ -1970,6 +2176,107 @@
                 ],
                 "type": "object"
             },
+            "CreateOrderRequest": {
+                "description": "Represents a request to create an order.",
+                "properties": {
+                    "advanced_instructions": {
+                        "$ref": "#/components/schemas/AdvancedInstructions"
+                    },
+                    "client_order_id": {
+                        "description": "A unique identifier for the order. Automatically generated if not sent. (<= 128 characters)",
+                        "maxLength": 128,
+                        "type": "string"
+                    },
+                    "extended_hours": {
+                        "description": "(default) false. If true, order will be eligible for execution in the pre-market, after-hours, and overnight sessions. Only works with type `limit` and time_in_force set to either `day` or `gtc`",
+                        "type": "boolean"
+                    },
+                    "legs": {
+                        "description": "list of order legs (<= 4)",
+                        "items": {
+                            "$ref": "#/components/schemas/MLegOrderLeg"
+                        },
+                        "maxItems": 4,
+                        "type": "array"
+                    },
+                    "limit_price": {
+                        "description": "Required if type is `limit` or `stop_limit`.\nIn case of `mleg`, the limit_price parameter is expressed with the following notation:\n- A positive value indicates a debit, representing a cost or payment to be made.\n- A negative value signifies a credit, reflecting an amount to be received.",
+                        "type": "string"
+                    },
+                    "notional": {
+                        "description": "dollar amount to trade. Cannot work with `qty`. Can only work for market order types and day for time in force.",
+                        "type": "string"
+                    },
+                    "order_class": {
+                        "$ref": "#/components/schemas/OrderClass"
+                    },
+                    "position_intent": {
+                        "$ref": "#/components/schemas/PositionIntent"
+                    },
+                    "qty": {
+                        "description": "number of shares to trade. Can be fractionable for only market and day order types. Required for `mleg` order class, represents the number of units to trade of this strategy.",
+                        "type": "string"
+                    },
+                    "side": {
+                        "$ref": "#/components/schemas/OrderSide"
+                    },
+                    "stop_loss": {
+                        "description": "Takes in string/number values for stop_price and limit_price",
+                        "properties": {
+                            "limit_price": {
+                                "example": "3.14",
+                                "format": "decimal",
+                                "type": "string"
+                            },
+                            "stop_price": {
+                                "example": "3.14",
+                                "format": "decimal",
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "stop_price": {
+                        "description": "required if type is `stop` or `stop_limit`",
+                        "type": "string"
+                    },
+                    "symbol": {
+                        "description": "symbol, asset ID, or currency pair to identify the asset to trade, required for all order classes except for `mleg`.",
+                        "type": "string"
+                    },
+                    "take_profit": {
+                        "description": "Takes in a string/number value for limit_price",
+                        "properties": {
+                            "limit_price": {
+                                "example": "3.14",
+                                "format": "decimal",
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "time_in_force": {
+                        "$ref": "#/components/schemas/TimeInForce"
+                    },
+                    "trail_percent": {
+                        "description": "this or `trail_price` is required if type is `trailing_stop`",
+                        "type": "string"
+                    },
+                    "trail_price": {
+                        "description": "this or `trail_percent` is required if type is `trailing_stop`",
+                        "type": "string"
+                    },
+                    "type": {
+                        "$ref": "#/components/schemas/OrderType"
+                    }
+                },
+                "required": [
+                    "type",
+                    "time_in_force"
+                ],
+                "title": "CreateOrderRequest",
+                "type": "object"
+            },
             "CreateWatchlistRequest": {
                 "description": "Request format used for creating a new watchlist with a set of assets and name.",
                 "properties": {
@@ -1990,6 +2297,24 @@
                     "name"
                 ],
                 "title": "PostWatchlistRequest",
+                "type": "object"
+            },
+            "CreateWhitelistedAddressRequest": {
+                "description": "Request format used for whitelisting a crypto address for transfers.",
+                "properties": {
+                    "address": {
+                        "description": "The address to be whitelisted",
+                        "type": "string"
+                    },
+                    "asset": {
+                        "description": "Symbol of underlying asset for the whitelisted address",
+                        "type": "string"
+                    },
+                    "chain": {
+                        "$ref": "#/components/schemas/CryptoChain"
+                    }
+                },
+                "title": "CreateWhitelistedAddressRequest",
                 "type": "object"
             },
             "CryptoChain": {
@@ -2098,6 +2423,7 @@
                             },
                             "parent_id": {
                                 "description": "The ref_id of the parent dividend",
+                                "format": "uuid",
                                 "type": "string"
                             },
                             "symbol": {
@@ -2157,6 +2483,10 @@
                                 "description": "Indicates if related to a non-US security",
                                 "type": "boolean"
                             },
+                            "isin": {
+                                "description": "The ISIN of the security involved with the activity",
+                                "type": "string"
+                            },
                             "payable_date": {
                                 "description": "The payable_date for this corporate action",
                                 "format": "date",
@@ -2195,6 +2525,42 @@
                     }
                 ],
                 "description": "Substitute payment in lieu of dividend",
+                "type": "object"
+            },
+            "DIVWHActivityV2": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonNTAActivityV2"
+                    },
+                    {
+                        "properties": {
+                            "cusip": {
+                                "description": "The CUSIP of the security involved with the activity",
+                                "type": "string"
+                            },
+                            "isin": {
+                                "description": "The ISIN of the security involved with the activity",
+                                "type": "string"
+                            },
+                            "parent_id": {
+                                "description": "The ref_id of the parent dividend",
+                                "format": "uuid",
+                                "type": "string"
+                            },
+                            "symbol": {
+                                "description": "The symbol of the security involved with the activity",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "cusip",
+                            "symbol",
+                            "parent_id"
+                        ],
+                        "type": "object"
+                    }
+                ],
+                "description": "Dividend tax withholding (e.g. foreign withholding on global securities)",
                 "type": "object"
             },
             "Error": {
@@ -2318,6 +2684,18 @@
                     }
                 ],
                 "description": "Free-of-payment (FOP) transfers",
+                "type": "object"
+            },
+            "FixedIncomeInterestActivityV2": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonCaActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CommonFixedIncomeInterestActivityV2"
+                    }
+                ],
+                "description": "Fixed income interest (INT/FI)",
                 "type": "object"
             },
             "FixedIncomeRedemptionActivityV2": {
@@ -2624,7 +3002,8 @@
                             "insufficient_buying_power",
                             "easy_to_borrow",
                             "threshold_security",
-                            "idempotency_key_conflict"
+                            "idempotency_key_conflict",
+                            "quote_unavailable"
                         ],
                         "example": "invalid_symbols",
                         "type": "string"
@@ -2693,7 +3072,8 @@
                             "symbol_not_found",
                             "easy_to_borrow",
                             "threshold_security",
-                            "corporate_action"
+                            "corporate_action",
+                            "quote_unavailable"
                         ],
                         "example": "symbol_not_found",
                         "type": "string"
@@ -2760,6 +3140,28 @@
                     }
                 ],
                 "description": "Merger and acquisition",
+                "type": "object"
+            },
+            "MEMActivityV2": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonNTAActivityV2"
+                    },
+                    {
+                        "properties": {
+                            "transfer_id": {
+                                "description": "The transfer's ID",
+                                "format": "uuid",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "transfer_id"
+                        ],
+                        "type": "object"
+                    }
+                ],
+                "description": "Instant funding memopost",
                 "type": "object"
             },
             "MLegOrderLeg": {
@@ -2895,6 +3297,38 @@
                         "symbol": "T"
                     }
                 }
+            },
+            "OCTActivityV2": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonNTAActivityV2"
+                    },
+                    {
+                        "properties": {
+                            "symbol": {
+                                "description": "The symbol of the asset involved with the on chain transaction",
+                                "type": "string"
+                            },
+                            "transfer_id": {
+                                "description": "The transfer ID of the associated deposit or withdrawal",
+                                "format": "uuid",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "transfer_id",
+                            "symbol"
+                        ],
+                        "type": "object"
+                    }
+                ],
+                "description": "On chain transaction (blockchain deposit/withdrawal)",
+                "example": {
+                    "symbol": "USDCUSD",
+                    "system_date": "2026-07-31",
+                    "transfer_id": "08d7a129-bd3e-4480-94ff-1a7288166845"
+                },
+                "type": "object"
             },
             "OPASNActivityV2": {
                 "allOf": [
@@ -3266,6 +3700,25 @@
                 ],
                 "example": "call",
                 "type": "string"
+            },
+            "OptionContractsResponse": {
+                "description": "Paginated list of option contracts.",
+                "properties": {
+                    "next_page_token": {
+                        "$ref": "#/components/schemas/NextPageToken"
+                    },
+                    "option_contracts": {
+                        "items": {
+                            "$ref": "#/components/schemas/OptionContract"
+                        },
+                        "type": "array"
+                    }
+                },
+                "required": [
+                    "option_contracts"
+                ],
+                "title": "OptionContractsResponse",
+                "type": "object"
             },
             "OptionDeliverable": {
                 "properties": {
@@ -3810,6 +4263,12 @@
                         "type": "string"
                     },
                     "cashflow": {
+                        "additionalProperties": {
+                            "items": {
+                                "type": "number"
+                            },
+                            "type": "array"
+                        },
                         "description": "accumulated value in dollar amount as of the end of each time window",
                         "type": "object"
                     },
@@ -3863,205 +4322,7 @@
                     "timeframe"
                 ],
                 "title": "PortfolioHistory",
-                "type": "object",
-                "x-examples": {
-                    "example-cashflows": {
-                        "base_value": 8413.04,
-                        "base_value_asof": "2026-04-06",
-                        "cashflow": {
-                            "CSD": [
-                                9.93,
-                                10.13,
-                                10.16,
-                                0
-                            ],
-                            "DIV": [
-                                0,
-                                0,
-                                0.63,
-                                0
-                            ]
-                        },
-                        "equity": [
-                            8425.21,
-                            8639.77,
-                            8766.1,
-                            8835.31
-                        ],
-                        "profit_loss": [
-                            12.17,
-                            214.56,
-                            126.33,
-                            69.21
-                        ],
-                        "profit_loss_pct": [
-                            0.0014,
-                            0.0255,
-                            0.0146,
-                            0.0079
-                        ],
-                        "timeframe": "1D",
-                        "timestamp": [
-                            1775606400,
-                            1775692800,
-                            1775779200,
-                            1775865600
-                        ]
-                    },
-                    "example-intraday-query-15min-1d": {
-                        "base_value": 2774.16,
-                        "base_value_asof": "2023-10-18",
-                        "equity": [
-                            2773.79,
-                            2769.04,
-                            2768.65,
-                            2765.11,
-                            2763.03,
-                            2763.17,
-                            2763.17,
-                            2763.47,
-                            2763.91,
-                            2768.13,
-                            2774.98,
-                            2757.94,
-                            2757.65,
-                            2774.54,
-                            2775.58,
-                            2775.28,
-                            2767.9,
-                            2762.26,
-                            2762.56,
-                            2756.99,
-                            2756.84,
-                            2752.43,
-                            2752.13,
-                            2748.44,
-                            2751.23,
-                            2747.54,
-                            2748.74
-                        ],
-                        "profit_loss": [
-                            -0.37,
-                            -5.12,
-                            -5.51,
-                            -9.05,
-                            -11.13,
-                            -10.99,
-                            -10.99,
-                            -10.69,
-                            -10.25,
-                            -6.03,
-                            0.82,
-                            -16.22,
-                            -16.51,
-                            0.38,
-                            1.42,
-                            1.12,
-                            -6.26,
-                            -11.9,
-                            -11.6,
-                            -17.17,
-                            -17.32,
-                            -21.73,
-                            -22.03,
-                            -25.72,
-                            -22.93,
-                            -26.62,
-                            -25.42
-                        ],
-                        "profit_loss_pct": [
-                            -0.0001,
-                            -0.0018,
-                            -0.002,
-                            -0.0033,
-                            -0.004,
-                            -0.004,
-                            -0.004,
-                            -0.0039,
-                            -0.0037,
-                            -0.0022,
-                            0.0003,
-                            -0.0058,
-                            -0.006,
-                            0.0001,
-                            0.0005,
-                            0.0004,
-                            -0.0023,
-                            -0.0043,
-                            -0.0042,
-                            -0.0062,
-                            -0.0062,
-                            -0.0078,
-                            -0.0079,
-                            -0.0093,
-                            -0.0083,
-                            -0.0096,
-                            -0.0092
-                        ],
-                        "timeframe": "15Min",
-                        "timestamp": [
-                            1697722200,
-                            1697723100,
-                            1697724000,
-                            1697724900,
-                            1697725800,
-                            1697726700,
-                            1697727600,
-                            1697728500,
-                            1697729400,
-                            1697730300,
-                            1697731200,
-                            1697732100,
-                            1697733000,
-                            1697733900,
-                            1697734800,
-                            1697735700,
-                            1697736600,
-                            1697737500,
-                            1697738400,
-                            1697739300,
-                            1697740200,
-                            1697741100,
-                            1697742000,
-                            1697742900,
-                            1697743800,
-                            1697744700,
-                            1697745600
-                        ]
-                    },
-                    "example-query-1d-7d": {
-                        "base_value": 2784.79,
-                        "equity": [
-                            2784.79,
-                            2794.79,
-                            2805.46,
-                            2774.16,
-                            2748.73
-                        ],
-                        "profit_loss": [
-                            0,
-                            10.0022,
-                            10.6692,
-                            -31.2996,
-                            -25.4232
-                        ],
-                        "profit_loss_pct": [
-                            0,
-                            0.0035,
-                            0.0074,
-                            -0.0038,
-                            -0.0129
-                        ],
-                        "timeframe": "1D",
-                        "timestamp": [
-                            1697241600,
-                            1697500800,
-                            1697587200,
-                            1697673600,
-                            1697760000
-                        ]
-                    }
-                }
+                "type": "object"
             },
             "Position": {
                 "description": "The positions API provides information about an account's current open positions. The response will include information such as cost basis, shares traded, and market value, which will be updated live as price information is updated. Once a position is closed, it will no longer be queryable through this API.",
@@ -4915,6 +5176,10 @@
                                 "description": "CUSIP for the alternate security after the split",
                                 "type": "string"
                             },
+                            "alternate_isin": {
+                                "description": "ISIN for the alternate security after the split",
+                                "type": "string"
+                            },
                             "alternate_qty": {
                                 "description": "Quantity of alternate shares received",
                                 "type": "string"
@@ -4997,6 +5262,10 @@
                         "properties": {
                             "cusip": {
                                 "description": "The CUSIP of the security involved with the activity",
+                                "type": "string"
+                            },
+                            "isin": {
+                                "description": "The ISIN of the security involved with the activity",
                                 "type": "string"
                             },
                             "removed_qty": {
@@ -5815,6 +6084,12 @@
                                             "message": "insufficient buying power to cover locate fee"
                                         }
                                     },
+                                    "quote_unavailable": {
+                                        "value": {
+                                            "code": "quote_unavailable",
+                                            "message": "locate quote is unavailable for this symbol"
+                                        }
+                                    },
                                     "symbol_not_found": {
                                         "value": {
                                             "code": "symbol_not_found",
@@ -6204,6 +6479,16 @@
                         }
                     },
                     {
+                        "description": "Filter activities associated with a specific order. Useful for retrieving the fills that make up a completely filled order.",
+                        "in": "query",
+                        "name": "order_id",
+                        "schema": {
+                            "example": "fe060a1b-5b45-4eba-ba46-c3a3345d8255",
+                            "format": "uuid",
+                            "type": "string"
+                        }
+                    },
+                    {
                         "description": "Filter activities by their creation date (created_at), not the activity's settlement date. For non-trade activities such as fees, the creation date is typically the day after the trade date (in UTC). Both formats YYYY-MM-DD and YYYY-MM-DDTHH:MM:SSZ are supported.",
                         "in": "query",
                         "name": "date",
@@ -6298,6 +6583,16 @@
                 "description": "Returns account activity entries for a specific type of activity.",
                 "operationId": "getAccountActivitiesByActivityType",
                 "parameters": [
+                    {
+                        "description": "Filter activities associated with a specific order. Useful for retrieving the fills that make up a completely filled order.",
+                        "in": "query",
+                        "name": "order_id",
+                        "schema": {
+                            "example": "fe060a1b-5b45-4eba-ba46-c3a3345d8255",
+                            "format": "uuid",
+                            "type": "string"
+                        }
+                    },
                     {
                         "description": "Filter activities by their creation date (created_at), not the activity's settlement date. For non-trade activities such as fees, the creation date is typically the day after the trade date (in UTC). Both formats YYYY-MM-DD and YYYY-MM-DDTHH:MM:SSZ are supported.",
                         "in": "query",
@@ -6551,6 +6846,250 @@
                     "200": {
                         "content": {
                             "application/json": {
+                                "examples": {
+                                    "example-cashflows": {
+                                        "value": {
+                                            "base_value": 8413.04,
+                                            "base_value_asof": "2026-04-06",
+                                            "cashflow": {
+                                                "CSD": [
+                                                    9.93,
+                                                    10.13,
+                                                    10.16,
+                                                    0
+                                                ],
+                                                "DIV": [
+                                                    0,
+                                                    0,
+                                                    0.63,
+                                                    0
+                                                ]
+                                            },
+                                            "equity": [
+                                                8425.21,
+                                                8639.77,
+                                                8766.1,
+                                                8835.31
+                                            ],
+                                            "profit_loss": [
+                                                12.17,
+                                                214.56,
+                                                126.33,
+                                                69.21
+                                            ],
+                                            "profit_loss_pct": [
+                                                0.0014,
+                                                0.0255,
+                                                0.0146,
+                                                0.0079
+                                            ],
+                                            "timeframe": "1D",
+                                            "timestamp": [
+                                                1775606400,
+                                                1775692800,
+                                                1775779200,
+                                                1775865600
+                                            ]
+                                        }
+                                    },
+                                    "example-intraday-query-15min-1d": {
+                                        "value": {
+                                            "base_value": 2774.16,
+                                            "base_value_asof": "2023-10-18",
+                                            "cashflow": {
+                                                "CSD": [
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    100,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0
+                                                ]
+                                            },
+                                            "equity": [
+                                                2773.79,
+                                                2769.04,
+                                                2768.65,
+                                                2765.11,
+                                                2763.03,
+                                                2763.17,
+                                                2763.17,
+                                                2763.47,
+                                                2763.91,
+                                                2768.13,
+                                                2774.98,
+                                                2757.94,
+                                                2757.65,
+                                                2774.54,
+                                                2775.58,
+                                                2775.28,
+                                                2767.9,
+                                                2762.26,
+                                                2762.56,
+                                                2756.99,
+                                                2756.84,
+                                                2752.43,
+                                                2752.13,
+                                                2748.44,
+                                                2751.23,
+                                                2747.54,
+                                                2748.74
+                                            ],
+                                            "profit_loss": [
+                                                -0.37,
+                                                -5.12,
+                                                -5.51,
+                                                -9.05,
+                                                -11.13,
+                                                -10.99,
+                                                -10.99,
+                                                -10.69,
+                                                -10.25,
+                                                -6.03,
+                                                0.82,
+                                                -16.22,
+                                                -16.51,
+                                                0.38,
+                                                1.42,
+                                                1.12,
+                                                -6.26,
+                                                -11.9,
+                                                -11.6,
+                                                -17.17,
+                                                -17.32,
+                                                -21.73,
+                                                -22.03,
+                                                -25.72,
+                                                -22.93,
+                                                -26.62,
+                                                -25.42
+                                            ],
+                                            "profit_loss_pct": [
+                                                -0.0001,
+                                                -0.0018,
+                                                -0.002,
+                                                -0.0033,
+                                                -0.004,
+                                                -0.004,
+                                                -0.004,
+                                                -0.0039,
+                                                -0.0037,
+                                                -0.0022,
+                                                0.0003,
+                                                -0.0058,
+                                                -0.006,
+                                                0.0001,
+                                                0.0005,
+                                                0.0004,
+                                                -0.0023,
+                                                -0.0043,
+                                                -0.0042,
+                                                -0.0062,
+                                                -0.0062,
+                                                -0.0078,
+                                                -0.0079,
+                                                -0.0093,
+                                                -0.0083,
+                                                -0.0096,
+                                                -0.0092
+                                            ],
+                                            "timeframe": "15Min",
+                                            "timestamp": [
+                                                1697722200,
+                                                1697723100,
+                                                1697724000,
+                                                1697724900,
+                                                1697725800,
+                                                1697726700,
+                                                1697727600,
+                                                1697728500,
+                                                1697729400,
+                                                1697730300,
+                                                1697731200,
+                                                1697732100,
+                                                1697733000,
+                                                1697733900,
+                                                1697734800,
+                                                1697735700,
+                                                1697736600,
+                                                1697737500,
+                                                1697738400,
+                                                1697739300,
+                                                1697740200,
+                                                1697741100,
+                                                1697742000,
+                                                1697742900,
+                                                1697743800,
+                                                1697744700,
+                                                1697745600
+                                            ]
+                                        }
+                                    },
+                                    "example-query-1d-7d": {
+                                        "value": {
+                                            "base_value": 2784.79,
+                                            "cashflow": {
+                                                "CSD": [
+                                                    0,
+                                                    0,
+                                                    100,
+                                                    0,
+                                                    0
+                                                ]
+                                            },
+                                            "equity": [
+                                                2784.79,
+                                                2794.79,
+                                                2805.46,
+                                                2774.16,
+                                                2748.73
+                                            ],
+                                            "profit_loss": [
+                                                0,
+                                                10.0022,
+                                                10.6692,
+                                                -31.2996,
+                                                -25.4232
+                                            ],
+                                            "profit_loss_pct": [
+                                                0,
+                                                0.0035,
+                                                0.0074,
+                                                -0.0038,
+                                                -0.0129
+                                            ],
+                                            "timeframe": "1D",
+                                            "timestamp": [
+                                                1697241600,
+                                                1697500800,
+                                                1697587200,
+                                                1697673600,
+                                                1697760000
+                                            ]
+                                        }
+                                    }
+                                },
                                 "schema": {
                                     "$ref": "#/components/schemas/PortfolioHistory"
                                 }
@@ -6768,13 +7307,18 @@
                 "operationId": "get-v2-corporate_actions-announcements",
                 "parameters": [
                     {
-                        "description": "A comma-delimited list of Dividend, Merger, Spinoff, or Split.",
+                        "description": "A comma-delimited list of corporate action types.",
+                        "explode": false,
                         "in": "query",
                         "name": "ca_types",
                         "required": true,
                         "schema": {
-                            "type": "string"
-                        }
+                            "items": {
+                                "$ref": "#/components/schemas/CorporateActionCaType"
+                            },
+                            "type": "array"
+                        },
+                        "style": "form"
                     },
                     {
                         "description": "The start (inclusive) of the date range when searching corporate action announcements. This should follow the YYYY-MM-DD format. The date range is limited to 90 days.",
@@ -6823,66 +7367,9 @@
                     "200": {
                         "content": {
                             "application/json": {
-                                "schema": {
-                                    "items": {
-                                        "properties": {
-                                            "ca_sub_type": {
-                                                "type": "string"
-                                            },
-                                            "ca_type": {
-                                                "type": "string"
-                                            },
-                                            "cash": {
-                                                "type": "string"
-                                            },
-                                            "corporate_action_id": {
-                                                "type": "string"
-                                            },
-                                            "corporate_actions_id": {
-                                                "type": "string"
-                                            },
-                                            "declaration_date": {
-                                                "type": "string"
-                                            },
-                                            "ex_date": {
-                                                "type": "string"
-                                            },
-                                            "expiration_date": {
-                                                "type": "string"
-                                            },
-                                            "id": {
-                                                "type": "string"
-                                            },
-                                            "initiating_original_cusip": {
-                                                "type": "string"
-                                            },
-                                            "initiating_symbol": {
-                                                "type": "string"
-                                            },
-                                            "new_rate": {
-                                                "type": "string"
-                                            },
-                                            "old_rate": {
-                                                "type": "string"
-                                            },
-                                            "payable_date": {
-                                                "type": "string"
-                                            },
-                                            "record_date": {
-                                                "type": "string"
-                                            },
-                                            "target_original_cusip": {
-                                                "type": "string"
-                                            },
-                                            "target_symbol": {
-                                                "type": "string"
-                                            }
-                                        },
-                                        "type": "object"
-                                    },
-                                    "type": "array",
-                                    "x-examples": {
-                                        "Example 1": [
+                                "examples": {
+                                    "Example 1": {
+                                        "value": [
                                             {
                                                 "ca_sub_type": "DIV",
                                                 "ca_type": "Dividend",
@@ -6891,13 +7378,13 @@
                                                 "declaration_date": "2021-01-05",
                                                 "expiration_date": "2021-01-12",
                                                 "id": "be3c368a-4c7c-4384-808e-f02c9f5a8afe",
-                                                "initiating_original_cusip": 5.5275e+105,
+                                                "initiating_original_cusip": "55275E101",
                                                 "initiating_symbol": "MLLAX",
                                                 "new_rate": "1",
                                                 "old_rate": "1",
                                                 "payable_date": "2021-01-14",
                                                 "record_date": "2021-01-13",
-                                                "target_original_cusip": 5.5275e+105,
+                                                "target_original_cusip": "55275E101",
                                                 "target_symbol": "MLLAX"
                                             },
                                             {
@@ -6918,6 +7405,12 @@
                                             }
                                         ]
                                     }
+                                },
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/CorporateAnnouncement"
+                                    },
+                                    "type": "array"
                                 }
                             }
                         },
@@ -6940,74 +7433,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "ca_sub_type": {
-                                            "type": "string"
-                                        },
-                                        "ca_type": {
-                                            "description": "A comma-delimited list of Dividend, Merger, Spinoff, or Split.",
-                                            "type": "string"
-                                        },
-                                        "cash": {
-                                            "type": "string"
-                                        },
-                                        "corporate_actions_id": {
-                                            "type": "string"
-                                        },
-                                        "declaration_date": {
-                                            "type": "string"
-                                        },
-                                        "expiration_date": {
-                                            "type": "string"
-                                        },
-                                        "id": {
-                                            "type": "string"
-                                        },
-                                        "initiating_original_cusip": {
-                                            "type": "string"
-                                        },
-                                        "initiating_symbol": {
-                                            "type": "string"
-                                        },
-                                        "new_rate": {
-                                            "type": "string"
-                                        },
-                                        "old_rate": {
-                                            "type": "string"
-                                        },
-                                        "payable_date": {
-                                            "type": "string"
-                                        },
-                                        "record_date": {
-                                            "type": "string"
-                                        },
-                                        "target_original_cusip": {
-                                            "type": "string"
-                                        },
-                                        "target_symbol": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "type": "object",
-                                    "x-examples": {
-                                        "Example 1": {
-                                            "ca_sub_type": "DIV",
-                                            "ca_type": "Dividend",
-                                            "cash": "0.018",
-                                            "corporate_actions_id": "F58684224_XY37",
-                                            "declaration_date": "2021-01-05",
-                                            "expiration_date": "2021-01-12",
-                                            "id": "be3c368a-4c7c-4384-808e-f02c9f5a8afe",
-                                            "initiating_original_cusip": 5.5275e+105,
-                                            "initiating_symbol": "MLLAX",
-                                            "new_rate": "1",
-                                            "old_rate": "1",
-                                            "payable_date": "2021-01-14",
-                                            "record_date": "2021-01-13",
-                                            "target_original_cusip": 5.5275e+105,
-                                            "target_symbol": "MLLAX"
-                                        }
-                                    }
+                                    "$ref": "#/components/schemas/CorporateAnnouncement"
                                 }
                             }
                         },
@@ -7169,21 +7595,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "next_page_token": {
-                                            "$ref": "#/components/schemas/NextPageToken"
-                                        },
-                                        "option_contracts": {
-                                            "items": {
-                                                "$ref": "#/components/schemas/OptionContract"
-                                            },
-                                            "type": "array"
-                                        }
-                                    },
-                                    "required": [
-                                        "option_contracts"
-                                    ],
-                                    "type": "object"
+                                    "$ref": "#/components/schemas/OptionContractsResponse"
                                 }
                             }
                         },
@@ -7506,103 +7918,7 @@
                                 }
                             },
                             "schema": {
-                                "properties": {
-                                    "advanced_instructions": {
-                                        "$ref": "#/components/schemas/AdvancedInstructions"
-                                    },
-                                    "client_order_id": {
-                                        "description": "A unique identifier for the order. Automatically generated if not sent. (<= 128 characters)",
-                                        "maxLength": 128,
-                                        "type": "string"
-                                    },
-                                    "extended_hours": {
-                                        "description": "(default) false. If true, order will be eligible for execution in the pre-market, after-hours, and overnight sessions. Only works with type `limit` and time_in_force set to either `day` or `gtc`",
-                                        "type": "boolean"
-                                    },
-                                    "legs": {
-                                        "description": "list of order legs (<= 4)",
-                                        "items": {
-                                            "$ref": "#/components/schemas/MLegOrderLeg"
-                                        },
-                                        "maxItems": 4,
-                                        "type": "array"
-                                    },
-                                    "limit_price": {
-                                        "description": "Required if type is `limit` or `stop_limit`.\nIn case of `mleg`, the limit_price parameter is expressed with the following notation:\n- A positive value indicates a debit, representing a cost or payment to be made.\n- A negative value signifies a credit, reflecting an amount to be received.",
-                                        "type": "string"
-                                    },
-                                    "notional": {
-                                        "description": "dollar amount to trade. Cannot work with `qty`. Can only work for market order types and day for time in force.",
-                                        "type": "string"
-                                    },
-                                    "order_class": {
-                                        "$ref": "#/components/schemas/OrderClass"
-                                    },
-                                    "position_intent": {
-                                        "$ref": "#/components/schemas/PositionIntent"
-                                    },
-                                    "qty": {
-                                        "description": "number of shares to trade. Can be fractionable for only market and day order types. Required for `mleg` order class, represents the number of units to trade of this strategy.",
-                                        "type": "string"
-                                    },
-                                    "side": {
-                                        "$ref": "#/components/schemas/OrderSide"
-                                    },
-                                    "stop_loss": {
-                                        "description": "Takes in string/number values for stop_price and limit_price",
-                                        "properties": {
-                                            "limit_price": {
-                                                "example": "3.14",
-                                                "format": "decimal",
-                                                "type": "string"
-                                            },
-                                            "stop_price": {
-                                                "example": "3.14",
-                                                "format": "decimal",
-                                                "type": "string"
-                                            }
-                                        },
-                                        "type": "object"
-                                    },
-                                    "stop_price": {
-                                        "description": "required if type is `stop` or `stop_limit`",
-                                        "type": "string"
-                                    },
-                                    "symbol": {
-                                        "description": "symbol, asset ID, or currency pair to identify the asset to trade, required for all order classes except for `mleg`.",
-                                        "type": "string"
-                                    },
-                                    "take_profit": {
-                                        "description": "Takes in a string/number value for limit_price",
-                                        "properties": {
-                                            "limit_price": {
-                                                "example": "3.14",
-                                                "format": "decimal",
-                                                "type": "string"
-                                            }
-                                        },
-                                        "type": "object"
-                                    },
-                                    "time_in_force": {
-                                        "$ref": "#/components/schemas/TimeInForce"
-                                    },
-                                    "trail_percent": {
-                                        "description": "this or `trail_price` is required if type is `trailing_stop`",
-                                        "type": "string"
-                                    },
-                                    "trail_price": {
-                                        "description": "this or `trail_percent` is required if type is `trailing_stop`",
-                                        "type": "string"
-                                    },
-                                    "type": {
-                                        "$ref": "#/components/schemas/OrderType"
-                                    }
-                                },
-                                "required": [
-                                    "type",
-                                    "time_in_force"
-                                ],
-                                "type": "object"
+                                "$ref": "#/components/schemas/CreateOrderRequest"
                             }
                         }
                     },
@@ -8096,8 +8412,19 @@
         },
         "/v2/tokenization/mint": {
             "post": {
-                "description": "This endpoint is used by an Authorized Participant to request the minting of a tokenized asset.",
+                "description": "This endpoint is used by an Authorized Participant to request the minting of a tokenized asset.\n\n**Idempotency**: When the `Idempotency-Key` header is supplied, this endpoint is\nidempotent. Multiple requests with the same key and identical request body will\ncreate only one mint request. A subsequent request returns the previously created\nrequest with the same response (no duplicate is created). If the same key is used\nwith a different request body, the API returns `422 Unprocessable Entity`.\n\n**Recommended for production**: Always supply `Idempotency-Key` when requesting a\nmint. This allows safe retries on timeouts, network errors, or 5xx responses\nwithout risking duplicate requests. Use a client-generated unique value (e.g. UUID).",
                 "operationId": "postTokenizationMint",
+                "parameters": [
+                    {
+                        "description": "Unique key for idempotent create. When supplied, duplicate requests (same key\nand body) return the original mint request instead of creating a new one. Use a\nclient-generated value (e.g. UUID) per logical request. Strongly recommended\nfor production to prevent duplicate requests on retries.\n",
+                        "in": "header",
+                        "name": "Idempotency-Key",
+                        "schema": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -8131,7 +8458,7 @@
                                 }
                             }
                         },
-                        "description": "Bad request (e.g. malformed input, insufficient position, or account not authorized to mint)."
+                        "description": "Bad request (e.g. malformed input, insufficient position, or account not authorized to mint). Also returned when the `Idempotency-Key` header is malformed, or when replaying a request that was originally rejected."
                     },
                     "401": {
                         "content": {
@@ -8173,7 +8500,7 @@
                                 }
                             }
                         },
-                        "description": "One or more request parameters are missing or invalid."
+                        "description": "One or more request parameters are missing or invalid, or the same `Idempotency-Key` was reused with a different request body."
                     }
                 },
                 "summary": "Mint a Tokenized Asset",
@@ -8755,20 +9082,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "properties": {
-                                    "address": {
-                                        "description": "The address to be whitelisted",
-                                        "type": "string"
-                                    },
-                                    "asset": {
-                                        "description": "Symbol of underlying asset for the whitelisted address",
-                                        "type": "string"
-                                    },
-                                    "chain": {
-                                        "$ref": "#/components/schemas/CryptoChain"
-                                    }
-                                },
-                                "type": "object"
+                                "$ref": "#/components/schemas/CreateWhitelistedAddressRequest"
                             }
                         }
                     },
@@ -8942,13 +9256,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "properties": {
-                                    "symbol": {
-                                        "description": "the symbol name to add to the watchlist",
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
+                                "$ref": "#/components/schemas/AddAssetToWatchlistRequest"
                             }
                         }
                     }
@@ -9117,13 +9425,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "properties": {
-                                    "symbol": {
-                                        "description": "the symbol name to add to the watchlist",
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
+                                "$ref": "#/components/schemas/AddAssetToWatchlistRequest"
                             }
                         }
                     }

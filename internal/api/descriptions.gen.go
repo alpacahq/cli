@@ -32,6 +32,7 @@ var CorporateActionsOp = Op{
 	Example: `  alpaca data corporate-actions --symbols AAPL --types forward_split --start 2025-01-01`,
 	Flags: []FlagDef{
 		{Name: "cusips", OASName: "cusips", Type: "string", Description: "A comma-separated list of CUSIPs", Source: "query"},
+		{Name: "data-quality", OASName: "data_quality", Type: "string", Default: "complete", Description: "controls which corporate actions are returned based on data quality", Completions: []string{"all", "complete"}, Source: "query"},
 		{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", Source: "query"},
 		{Name: "ids", OASName: "ids", Type: "string", Description: "A comma-separated list of corporate action IDs", Source: "query"},
 		{Name: "limit", OASName: "limit", Type: "int", Default: "100", Description: "maximum number of corporate actions to return in a response.", Source: "query"},
@@ -137,48 +138,6 @@ var CryptoTradesOp = Op{
 		{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}, Source: "query"},
 		{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval", Source: "query"},
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of crypto symbols", Required: true, Source: "query"},
-	},
-}
-
-var FixedIncomeLatestPricesOp = Op{
-	Name: "FixedIncomeLatestPrices", Summary: "Get latest prices",
-	Long:    "This endpoint returns the latest prices for the given fixed income securities",
-	Example: `  alpaca data fixed-income --isins 912797KR1,912797LB5`,
-	Flags: []FlagDef{
-		{Name: "isins", OASName: "isins", Type: "string", Description: "A comma-separated list of ISINs with a limit of 1000", Required: true, Source: "query"},
-	},
-}
-
-var FixedIncomeLatestQuotesOp = Op{
-	Name: "FixedIncomeLatestQuotes", Summary: "Get latest quotes",
-	Long:    "This endpoint returns the latest quotes for the given fixed income securities",
-	Example: `  alpaca data fixed-income-quotes --isins US912797SX61,US912810SK51 --trade-size 1000`,
-	Flags: []FlagDef{
-		{Name: "isins", OASName: "isins", Type: "string", Description: "A comma-separated list of ISINs with a limit of 100", Required: true, Source: "query"},
-		{Name: "trade-size", OASName: "trade_size", Type: "int", Description: "filters to best bid/ask where the minimum trade size is less than or equal to the given numeric value", Source: "query"},
-	},
-}
-
-var IndexLatestValuesOp = Op{
-	Name: "IndexLatestValues", Summary: "Get latest values for indices",
-	Long:    "Get the latest values for the given indices",
-	Example: `  alpaca data index latest-values --symbols SPX,VIX`,
-	Flags: []FlagDef{
-		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of index symbols", Required: true, Source: "query"},
-	},
-}
-
-var IndexValuesOp = Op{
-	Name: "IndexValues", Summary: "Get historical values for indices",
-	Long:    "Get historical values for the given indices in the given time interval",
-	Example: `  alpaca data index values --symbols SPX,VIX --start 2026-05-18 --limit 100`,
-	Flags: []FlagDef{
-		{Name: "end", OASName: "end", Type: "string", Description: "inclusive end of the interval", Source: "query"},
-		{Name: "limit", OASName: "limit", Type: "int", Default: "1000", Description: "maximum number of data points to return in the response page.", Source: "query"},
-		{Name: "page-token", OASName: "page_token", Type: "string", Description: "pagination token from which to continue", Source: "query"},
-		{Name: "sort", OASName: "sort", Type: "string", Default: "asc", Description: "sort data in ascending or descending order", Completions: []string{"asc", "desc"}, Source: "query"},
-		{Name: "start", OASName: "start", Type: "string", Description: "inclusive start of the interval", Source: "query"},
-		{Name: "symbols", OASName: "symbols", Type: "string", Description: "A comma-separated list of index symbols", Required: true, Source: "query"},
 	},
 }
 
@@ -801,12 +760,12 @@ var GetV2AssetsSymbolOrAssetIDOp = Op{
 }
 
 var GetV2CorporateActionsAnnouncementsOp = Op{
-	Name: "GetV2CorporateActionsAnnouncements", Summary: "Retrieve announcements",
+	Name: "GetV2CorporateActionsAnnouncements", Summary: "Retrieve announcements", ReturnsArray: true,
 	Long: "This endpoint is deprecated, please use the new corporate actions endpoint instead",
 	Example: `  alpaca corporate-action list --ca-types reverse_split --since 2025-01-01 --until 2025-12-31
   alpaca corporate-action list --ca-types cash_dividend --symbol AAPL --since 2025-01-01 --until 2025-06-30`,
 	Flags: []FlagDef{
-		{Name: "ca-types", OASName: "ca_types", Type: "string", Description: "A comma-delimited list of Dividend, Merger, Spinoff, or Split", Required: true, Source: "query"},
+		{Name: "ca-types", OASName: "ca_types", Type: "string", Description: "A comma-delimited list of corporate action types", Required: true, Source: "query"},
 		{Name: "cusip", OASName: "cusip", Type: "string", Description: "CUSIP of the company initiating the announcement", Source: "query"},
 		{Name: "date-type", OASName: "date_type", Type: "string", Description: "declaration_date, ex_date, record_date, or payable_date", Source: "query"},
 		{Name: "since", OASName: "since", Type: "string", Description: "start (inclusive) of the date range when searching corporate action announcements", Required: true, Source: "query"},
@@ -842,6 +801,7 @@ var GetAccountActivitiesOp = Op{
 		{Name: "category", OASName: "category", Type: "string", Description: "activity category. Cannot be used with \"activity_types\" parameter", Completions: []string{"non_trade_activity", "trade_activity"}, Source: "query"},
 		{Name: "date", OASName: "date", Type: "string", Description: "filter activities by their creation date (created_at), not the activity's settlement date", Source: "query"},
 		{Name: "direction", OASName: "direction", Type: "string", Default: "desc", Description: "chronological order of response based on the activity datetime", Completions: []string{"asc", "desc"}, Source: "query"},
+		{Name: "order-id", OASName: "order_id", Type: "string", Description: "filter activities associated with a specific order", Source: "query"},
 		{Name: "page-size", OASName: "page_size", Type: "int", Default: "100", Description: "maximum number of entries to return in the response", Source: "query"},
 		{Name: "page-token", OASName: "page_token", Type: "string", Description: "token used for pagination. Provide the ID of the last activity from the last page to retrieve the next set of results", Source: "query"},
 		{Name: "until", OASName: "until", Type: "string", Description: "get activities created before this date. Both formats YYYY-MM-DD and YYYY-MM-DDTHH:MM:SSZ are supported", Source: "query"},
@@ -858,6 +818,7 @@ var GetAccountActivitiesByActivityTypeOp = Op{
 		{Name: "after", OASName: "after", Type: "string", Description: "get activities created after this date. Both formats YYYY-MM-DD and YYYY-MM-DDTHH:MM:SSZ are supported", Source: "query"},
 		{Name: "date", OASName: "date", Type: "string", Description: "filter activities by their creation date (created_at), not the activity's settlement date", Source: "query"},
 		{Name: "direction", OASName: "direction", Type: "string", Default: "desc", Description: "chronological order of response based on the activity datetime", Completions: []string{"asc", "desc"}, Source: "query"},
+		{Name: "order-id", OASName: "order_id", Type: "string", Description: "filter activities associated with a specific order", Source: "query"},
 		{Name: "page-size", OASName: "page_size", Type: "int", Default: "100", Description: "maximum number of entries to return in the response", Source: "query"},
 		{Name: "page-token", OASName: "page_token", Type: "string", Description: "token used for pagination. Provide the ID of the last activity from the last page to retrieve the next set of results", Source: "query"},
 		{Name: "until", OASName: "until", Type: "string", Description: "get activities created before this date. Both formats YYYY-MM-DD and YYYY-MM-DDTHH:MM:SSZ are supported", Source: "query"},
@@ -1177,6 +1138,7 @@ var PostTokenizationMintOp = Op{
 	Name: "PostTokenizationMint", Summary: "Create mint a tokenized asset",
 	Long: "This endpoint is used by an Authorized Participant to request the minting of a tokenized asset",
 	Flags: []FlagDef{
+		{Name: "idempotency-key", OASName: "Idempotency-Key", Type: "string", Description: "unique key for idempotent create", Source: "header"},
 		{Name: "issuer", OASName: "issuer", Type: "string", Description: "tokenized asset's issuer", Completions: []string{"st0x", "xstocks"}, Source: "body"},
 		{Name: "network", OASName: "network", Type: "string", Description: "token's blockchain network", Completions: []string{"arbitrum", "base", "binance", "ethereum", "mantle", "solana", "ton", "tron"}, Source: "body"},
 		{Name: "qty", OASName: "qty", Type: "string", Description: "underlying quantity to convert into the tokenized asset. It can be fractional", Source: "body"},
@@ -1269,6 +1231,25 @@ var assetsResponseFields = []ResponseField{
 	{Name: "status", Type: "enum", Description: "active or inactive", EnumValues: []string{"active", "inactive"}},
 	{Name: "symbol", Type: "string", Description: "symbol of the asset"},
 	{Name: "tradable", Type: "boolean", Description: "asset is tradable on Alpaca or not"},
+}
+
+var corporateAnnouncementResponseFields = []ResponseField{
+	{Name: "ca_sub_type", Type: "string", Description: "ca sub type"},
+	{Name: "ca_type", Type: "enum", Description: "type of corporate action", EnumValues: []string{"Dividend", "Merger", "Reorg", "Spinoff", "Split"}},
+	{Name: "cash", Type: "string", Description: "cash"},
+	{Name: "corporate_action_id", Type: "string", Description: "corporate action id"},
+	{Name: "declaration_date", Type: "string", Description: "declaration date"},
+	{Name: "effective_date", Type: "string", Description: "effective date"},
+	{Name: "ex_date", Type: "string", Description: "ex date"},
+	{Name: "id", Type: "string", Description: "id"},
+	{Name: "initiating_original_cusip", Type: "string", Description: "initiating original cusip"},
+	{Name: "initiating_symbol", Type: "string", Description: "initiating symbol"},
+	{Name: "new_rate", Type: "string", Description: "new rate"},
+	{Name: "old_rate", Type: "string", Description: "old rate"},
+	{Name: "payable_date", Type: "string", Description: "payable date"},
+	{Name: "record_date", Type: "string", Description: "record date"},
+	{Name: "target_original_cusip", Type: "string", Description: "target original cusip"},
+	{Name: "target_symbol", Type: "string", Description: "target symbol"},
 }
 
 var cryptoTransferResponseFields = []ResponseField{
@@ -1457,19 +1438,6 @@ func ResponseSchema(opName string) ([]ResponseField, bool) {
 				{Name: "next_page_token", Type: "string", Description: "pagination token for the next page"},
 				{Name: "trades", Type: "map[string][]object", Description: "trades"},
 			},
-			"FixedIncomeLatestPrices": {
-				{Name: "prices", Type: "map[string]object", Description: "prices"},
-			},
-			"FixedIncomeLatestQuotes": {
-				{Name: "quotes", Type: "map[string]object", Description: "quotes"},
-			},
-			"IndexLatestValues": {
-				{Name: "values", Type: "map[string]object", Description: "values"},
-			},
-			"IndexValues": {
-				{Name: "next_page_token", Type: "string", Description: "pagination token for the next page"},
-				{Name: "values", Type: "map[string][]object", Description: "values"},
-			},
 			"LatestRates": {
 				{Name: "rates", Type: "map[string]object", Description: "rates"},
 			},
@@ -1617,8 +1585,14 @@ func ResponseSchema(opName string) ([]ResponseField, bool) {
 				{Name: "underlying_asset_id", Type: "string", Description: "unique identifier of the underlying asset"},
 				{Name: "underlying_symbol", Type: "string", Description: "underlying symbol of the option contract"},
 			},
-			"GetV2Assets":                assetsResponseFields,
-			"GetV2AssetsSymbolOrAssetID": assetsResponseFields,
+			"GetOptionsContracts": {
+				{Name: "next_page_token", Type: "string", Description: "use this token in your next API call to paginate through the dataset and retrieve the next page of results"},
+				{Name: "option_contracts", Type: "[]object", Description: "option contracts"},
+			},
+			"GetV2Assets":                          assetsResponseFields,
+			"GetV2AssetsSymbolOrAssetID":           assetsResponseFields,
+			"GetV2CorporateActionsAnnouncements":   corporateAnnouncementResponseFields,
+			"GetV2CorporateActionsAnnouncementsID": corporateAnnouncementResponseFields,
 			"GetAccount": {
 				{Name: "account_blocked", Type: "boolean", Description: "if true, the account activity by user is prohibited"},
 				{Name: "account_number", Type: "string", Description: "account number"},
@@ -1659,7 +1633,7 @@ func ResponseSchema(opName string) ([]ResponseField, bool) {
 			"GetAccountPortfolioHistory": {
 				{Name: "base_value", Type: "number", Description: "basis in dollar of the profit loss calculation"},
 				{Name: "base_value_asof", Type: "string", Description: "if included, then it indicates that the base_value is the account's closing\nequity value at this trading date.\n\nIf no..."},
-				{Name: "cashflow", Type: "object", Description: "accumulated value in dollar amount as of the end of each time window"},
+				{Name: "cashflow", Type: "map[string][]number", Description: "accumulated value in dollar amount as of the end of each time window"},
 				{Name: "equity", Type: "[]number", Description: "equity value of the account in dollar amount as of the end of each time window"},
 				{Name: "profit_loss", Type: "[]number", Description: "profit/loss in dollar from the base value"},
 				{Name: "profit_loss_pct", Type: "[]number", Description: "profit/loss in percentage from the base value"},
@@ -1745,10 +1719,6 @@ var AllOps = []Op{
 	CryptoQuotesOp,
 	CryptoSnapshotsOp,
 	CryptoTradesOp,
-	FixedIncomeLatestPricesOp,
-	FixedIncomeLatestQuotesOp,
-	IndexLatestValuesOp,
-	IndexValuesOp,
 	LatestRatesOp,
 	LegacyCalendarOp,
 	LegacyClockOp,

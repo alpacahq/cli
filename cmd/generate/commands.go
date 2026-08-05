@@ -83,7 +83,6 @@ var cmdParents = map[string]parentDef{
 		long: "Bars, trades, snapshots, chains, latest quotes, and exchange/condition reference data for options.",
 	},
 	"dataForex": {use: "forex", short: "Foreign exchange rate data", parent: "data"},
-	"dataIndex": {use: "index", short: "Index market data", parent: "data"},
 	"dataMeta":  {use: "meta", short: "Stock exchange and condition reference data", parent: "data"},
 	"screener": {
 		use: "screener", short: "Stock and crypto screener and market movers", parent: "data",
@@ -566,34 +565,6 @@ var cmdRegistry = map[string]cmdDef{
 		use:    "corporate-actions",
 
 		examples: "  alpaca data corporate-actions --symbols AAPL --types forward_split --start 2025-01-01",
-	},
-
-	// --- data: fixed income ---
-	"FixedIncomeLatestPrices": {
-		parent: "data",
-		use:    "fixed-income",
-
-		examples: "  alpaca data fixed-income --isins 912797KR1,912797LB5",
-	},
-	"FixedIncomeLatestQuotes": {
-		parent: "data",
-		use:    "fixed-income-quotes",
-
-		examples: "  alpaca data fixed-income-quotes --isins US912797SX61,US912810SK51 --trade-size 1000",
-	},
-
-	// --- data: index ---
-	"IndexLatestValues": {
-		parent: "dataIndex",
-		use:    "latest-values",
-
-		examples: "  alpaca data index latest-values --symbols SPX,VIX",
-	},
-	"IndexValues": {
-		parent: "dataIndex",
-		use:    "values",
-
-		examples: "  alpaca data index values --symbols SPX,VIX --start 2026-05-18 --limit 100",
 	},
 
 	// --- data: logo ---

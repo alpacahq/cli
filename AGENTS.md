@@ -49,7 +49,7 @@ Rules:
 - **Flat tests for independent calls, sub-tests for sequential chains** - don't use `t.Run` unless steps depend on prior state (e.g., create -> get -> delete).
 - **Use the helpers** - `alpaca()`, `alpacaFail()`, `parseJSONMap()`, `requireFields()`, `daysAgo()`, `pollFor()`. Don't reinvent them.
 - **Each parallel test must use a unique symbol** - the Alpaca API rejects orders as "potential wash trade" when buy and sell orders coexist on the same symbol. Bracket orders create sell-side child legs (take-profit, stop-loss), so a bracket on TSLA plus a plain buy on TSLA from another parallel test will fail. Use `submitTestOrder(t, "SYMBOL")` and pick a symbol no other parallel test uses. Check existing tests before choosing.
-- **Some endpoints are unavailable on paper** - wallet, forex, fixed-income, logo, and tokenization return 403/404. Don't write tests that require these unless you have a compatible test account.
+- **Some endpoints are unavailable on paper** - wallet, forex, logo, and tokenization return 403/404. Don't write tests that require these unless you have a compatible test account.
 - **One file per feature area** - `order_test.go`, `data_option_test.go`, `data_stock_test.go`, etc. Cross-cutting E2E flows go in `e2e_test.go`.
 
 ## Keep docs in sync
