@@ -1,13 +1,23 @@
 -- allium: 3
 -- http-client.allium
+--
+-- Behaviour of the shared HTTP client (internal/client/client.go): auth
+-- header selection, retry policy, error shaping, and credential scrubbing
+-- of diagnostic output.
 
 ------------------------------------------------------------
 -- Value Types
 ------------------------------------------------------------
 
+-- Shape of client.APIError (client.go:44-53). code is the numeric Alpaca
+-- API error code parsed from the JSON error body; status is the HTTP
+-- status (0 for transport failures).
 value RequestError {
-    code: String?
+    status: Integer
+    code: Integer?
     message: String
+    method: String?
+    path: String?
     request_id: String?
     hint: String?
 }
@@ -17,6 +27,20 @@ value RequestError {
 ------------------------------------------------------------
 
 enum HttpMethod { get | post | put | patch | delete }
+
+------------------------------------------------------------
+-- Config
+------------------------------------------------------------
+
+config {
+    -- client.go:27 (maxRetries = 3): total send attempts, including the first
+    max_attempts: Integer = 3
+    -- client.go:183: base delay is 500ms, doubling per attempt
+    backoff_base: Duration = 500.milliseconds
+    -- client.go:96, 103; overridable per invocation with --timeout <seconds>
+    -- (root.go:190-192)
+    default_timeout: Duration = 30.seconds
+}
 
 ------------------------------------------------------------
 -- Entities and Variants
@@ -37,6 +61,7 @@ entity OutboundRequest {
     path: String
     attempt: Integer
     status: in_flight | awaiting_retry | succeeded | failed
+    error: RequestError when status = failed
 
     transitions status {
         in_flight -> awaiting_retry
@@ -48,12 +73,48 @@ entity OutboundRequest {
 }
 
 ------------------------------------------------------------
--- Config
+-- Surfaces
 ------------------------------------------------------------
 
-config {
-    max_attempts: Integer = 3
-    backoff_base: Duration = 1.seconds
+-- Generated typed client methods (internal/api/*_client.gen.go) and the raw
+-- `alpaca api` passthrough all funnel through Client.Do / doWithRetry
+-- (client.go:112-148).
+surface TypedClientMethods {
+    provides:
+        SendRequest(client, method, path, body?)
+}
+
+-- Stimuli from the Alpaca API server and the network.
+surface UpstreamResponses {
+    provides:
+        ReceiveOkResponse(request)
+        ReceiveRateLimitResponse(request, retry_after?)
+        ReceiveServerErrorResponse(request)
+        ReceiveNonRetryableErrorResponse(request, http_status)
+        TransportFailure(request, cause)
+
+    @guidance
+        -- ReceiveOkResponse: any 2xx/3xx (status < 400, client.go:260).
+        -- ReceiveRateLimitResponse: HTTP 429.
+        -- ReceiveServerErrorResponse: exactly 500, 502, 503 or 504
+        -- (client.go:175-177); 501 and every other 5xx are NOT retryable.
+        -- ReceiveNonRetryableErrorResponse: any other status >= 400.
+        -- TransportFailure: DNS/TCP/TLS/timeout errors where no HTTP
+        -- response was received.
+}
+
+-- The process clock: the retry backoff timer firing.
+surface RetryScheduler {
+    provides:
+        RetryDelayElapsed(request)
+}
+
+-- Verbose/debug/trace flags (and their ALPACA_VERBOSE / ALPACA_DEBUG /
+-- ALPACA_TRACE env equivalents, root.go:152-160) route request/response
+-- details to stderr.
+surface DiagnosticOutput {
+    provides:
+        EmitDiagnosticOutput(content)
 }
 
 ------------------------------------------------------------
@@ -72,8 +133,12 @@ rule AuthWithAccessToken {
     )
 
     @guidance
-        -- Access token authentication takes priority over API key and secret
-        -- authentication when both are configured.
+        -- Access-token auth sends "Authorization: Bearer <token>" and takes
+        -- priority over API key/secret when both are configured
+        -- (client.go:207-208). Every request also carries
+        -- "User-Agent: alpaca-cli/<version>" (client.go:216) and
+        -- "Content-Type: application/json" when a body is present
+        -- (client.go:213-215).
 }
 
 rule AuthWithApiKeyAndSecret {
@@ -86,12 +151,23 @@ rule AuthWithApiKeyAndSecret {
         attempt: 1,
         status: in_flight
     )
+
+    @guidance
+        -- Key-pair auth sends the "APCA-API-KEY-ID" and
+        -- "APCA-API-SECRET-KEY" headers (client.go:209-211). If neither
+        -- credential is set the headers are sent empty; the server rejects
+        -- with 401 — the client itself never blocks an unauthenticated send.
 }
 
 rule SucceedOnOkResponse {
     when: ReceiveOkResponse(request)
     requires: request.status = in_flight
     ensures: request.status = succeeded
+
+    @guidance
+        -- An empty 2xx body yields an empty result rather than a JSON parse
+        -- error (client.go:284-287); the command layer renders it as {}
+        -- (factory.go:94-103).
 }
 
 rule RetryOnRateLimitResponse {
@@ -101,10 +177,12 @@ rule RetryOnRateLimitResponse {
     ensures: request.status = awaiting_retry
 
     @guidance
-        -- A rate-limit response indicates the server is temporarily rejecting
-        -- further requests. Wait for the delay stated in the Retry-After
-        -- response field before re-sending; apply exponential backoff if
-        -- no delay is stated.
+        -- Wait for the delay in the Retry-After response header, parsed as
+        -- integer seconds only (client.go:274-280); an absent or unparseable
+        -- header falls back to the exponential backoff used for server
+        -- errors (client.go:179-186).
+        -- Unless --quiet, a "Rate limited, retrying in ..." notice goes to
+        -- stderr; with --verbose every retry is announced (client.go:164-169).
 }
 
 rule RetryOnServerErrorResponse {
@@ -114,9 +192,9 @@ rule RetryOnServerErrorResponse {
     ensures: request.status = awaiting_retry
 
     @guidance
-        -- A server error response indicates a transient server-side failure.
-        -- Apply exponential backoff with random jitter before re-sending.
-        -- Delay grows as backoff_base * 2^attempt.
+        -- Backoff before resend: backoff_base * 2^(attempt-1) plus uniform
+        -- random jitter in [0, delay/2] (client.go:179-186). With the
+        -- defaults: ~500ms, ~1s, ~2s (each +jitter).
 }
 
 rule ResumeAfterRetryDelay {
@@ -141,12 +219,66 @@ rule FailOnServerErrorMaxAttempts {
     ensures: request.status = failed
 }
 
+-- 4xx and non-retryable 5xx responses fail immediately, on any attempt.
+rule FailOnNonRetryableErrorResponse {
+    when: ReceiveNonRetryableErrorResponse(request, http_status)
+    requires: request.status = in_flight
+    ensures:
+        request.status = failed
+        request.error = parse_api_error(http_status)
+
+    @guidance
+        -- The error body is parsed as JSON into {code, message}
+        -- (client.go:261-262); a non-JSON or message-less body falls back to
+        -- the raw body text, then to the HTTP status text (client.go:262-267).
+        -- request_id comes from the X-Request-Id response header
+        -- (client.go:261).
+        -- Default hints are attached by status: 401 invalid credentials,
+        -- 403 forbidden, 422 validation, 429 rate limited (client.go:75-90).
+        -- A 401 whose body is not JSON gets a "possible proxy or wrong URL"
+        -- hint instead (client.go:268-273).
+}
+
+-- Network-level failures are never retried: only *APIError values with a
+-- retryable status re-enter the loop, and transport errors carry status 0
+-- (client.go:158-161, 175-177, 232-238).
+rule FailOnTransportError {
+    when: TransportFailure(request, cause)
+    requires: request.status = in_flight
+    ensures:
+        request.status = failed
+        request.error = transport_error(cause)
+
+    @guidance
+        -- The message is "could not reach <url>: <cause>" with credentials
+        -- scrubbed from both URL and cause, plus a hint to check the
+        -- connection and run `alpaca doctor` (client.go:232-238, 312-321).
+}
+
 rule ScrubCredentialsFromDiagnosticOutput {
     when: EmitDiagnosticOutput(content)
     ensures: DiagnosticEmitted(content: scrub_credentials(content))
 
     @guidance
-        -- Replace all occurrences of the API key, secret, and access token
-        -- with a redaction marker before writing to verbose, debug, or trace
-        -- output.
+        -- Every occurrence of the API key, secret and access token is
+        -- replaced with "[REDACTED]" in --verbose request lines, --debug
+        -- URLs, headers and response bodies, --trace output, and transport
+        -- error messages (client.go:219-256, 291-321).
 }
+
+------------------------------------------------------------
+-- Invariants
+------------------------------------------------------------
+
+invariant AttemptsNeverExceedMax {
+    for r in OutboundRequests:
+        r.attempt <= config.max_attempts
+}
+
+------------------------------------------------------------
+-- Open Questions
+------------------------------------------------------------
+
+open question "The --debug request BODY is printed without credential scrubbing (client.go:221-223), while the request URL, headers and response body are scrubbed. Credentials normally travel in headers, not bodies — is the unscrubbed body intentional or an oversight?"
+
+open question "After the final failed retryable attempt, doWithRetry sleeps the full backoff delay once more before returning the error (client.go:150-172) — wasted latency of up to ~3s. Intended?"
