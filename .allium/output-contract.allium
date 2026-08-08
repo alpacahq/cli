@@ -3,7 +3,10 @@
 --
 -- Two-tier output model: API commands emit structured data (JSON or CSV)
 -- to stdout with JSON errors on stderr; operational commands emit plain
--- text. Covers jq-filter transformation and CSV formatting support.
+-- text. Covers jq-filter transformation, CSV formatting, and process exit
+-- codes.
+-- Grounded in: internal/cmd/root.go (renderData, printJSONError, Execute),
+-- internal/output/output.go, internal/output/jq.go, internal/cmd/factory.go.
 
 ------------------------------------------------------------
 -- Enumerations
@@ -15,14 +18,15 @@ enum OutputFormat { json | csv }
 -- Value Types
 ------------------------------------------------------------
 
+-- Shape of the JSON error document written to stderr (root.go:65-84).
 value CommandError {
     error: String
-    code: String?
-    status: Integer?
+    code: Integer
+    status: Integer
     hint: String
-    request_id: String?
     method: String?
     path: String?
+    request_id: String?
 }
 
 ------------------------------------------------------------
@@ -31,6 +35,11 @@ value CommandError {
 
 config {
     default_format: OutputFormat = json
+    exit_success: Integer = 0
+    -- client.go:23 (ExitAPIError)
+    exit_error: Integer = 1
+    -- client.go:24 (ExitAuthError, HTTP 401 only)
+    exit_auth_error: Integer = 2
 }
 
 ------------------------------------------------------------
@@ -40,43 +49,92 @@ config {
 contract RenderingPipeline {
     render: (data: Any, format: OutputFormat, jq_filter: String?) -> String
 
+    @invariant FormatSelectionPrecedence
+        -- The output format resolves --csv flag > ALPACA_OUTPUT env var >
+        -- global config `output` field > json (root.go:163-167,
+        -- config.go:97). There is no --json flag; JSON is reached by not
+        -- selecting CSV at any level.
+
     @invariant JqBeforeFormat
         -- When a jq filter is present, it is applied to the raw data
         -- before the output format serialiser runs. The serialiser
-        -- receives the transformed data, not the original.
+        -- receives the transformed data, not the original
+        -- (root.go:254-266).
+
+    @invariant JqResultShape
+        -- A jq program producing exactly one value yields that value
+        -- unwrapped; zero or multiple values are collected into an array
+        -- (jq.go:40-44). Parse, compile and evaluation errors abort the
+        -- command with an "--jq:" prefixed error.
 
     @invariant NilCollectionAsEmptyArray
         -- A nil or absent collection renders as an empty JSON array ([]),
-        -- never as null. Downstream scripts need no null-checks on list
-        -- results.
+        -- never as null (output.go:28-35). Downstream scripts need no
+        -- null-checks on list results.
 
-    @invariant CsvColumnsAlphabetical
-        -- CSV columns are ordered alphabetically by field name when
-        -- column order is not otherwise specified by a schema.
+    @invariant EmptyResponseAsObject
+        -- Endpoints that return no content (204 etc.) render {} on stdout,
+        -- so stdout is always valid JSON in JSON mode (factory.go:94-103).
 
-    @invariant CsvHeadersFromSchema
-        -- When no jq filter is active and the command declares a response
-        -- schema, CSV headers follow the schema field list. When the data
-        -- set is empty but headers are declared, the header row is still
-        -- emitted.
+    @invariant CsvColumnsFromFirstRow
+        -- For a non-empty data set, CSV columns are the keys of the FIRST
+        -- row, sorted alphabetically (output.go:56-58). Keys missing from
+        -- later rows render as empty cells; keys appearing only in later
+        -- rows are dropped. Declared response schemas do NOT reorder
+        -- populated CSV output.
+
+    @invariant CsvHeadersFromSchemaWhenEmpty
+        -- Schema-derived headers are used only when the data set is empty:
+        -- if no jq filter is active and the command declares a response
+        -- schema, an empty result still emits the header row
+        -- (output.go:45-55, root.go:262-263, 268-285). An empty result
+        -- with no schema headers emits nothing at all.
+
+    @invariant CsvScalarFormatting
+        -- CSV cells: integral numbers render without decimals, other
+        -- numbers with two decimal places, booleans as true/false, null as
+        -- an empty cell (output.go:110-133).
 
     @invariant DefaultFormatIsJson
         -- When no output format is explicitly selected, the pipeline
-        -- defaults to JSON.
+        -- defaults to JSON, indented with two spaces (output.go:36-38).
 }
 
 contract ErrorChannel {
     emit_error: (error: CommandError) -> String
 
     @invariant ErrorOnStderr
-        -- Error documents are serialised as JSON and written to stderr,
-        -- independent of the configured output format or any jq filter.
+        -- Error documents are serialised as indented JSON and written to
+        -- stderr, independent of the configured output format or any jq
+        -- filter (root.go:65-84).
 
     @invariant ErrorStructure
-        -- Every error document carries at minimum the error message and
-        -- a hint. Optional fields (code, status, method, path,
-        -- request_id) are included only when the upstream API response
-        -- supplies them.
+        -- Every error document carries error, code, status and hint keys —
+        -- code and status are 0 and hint is "" when the failure was not an
+        -- API response (root.go:66-71). method, path and request_id are
+        -- included only when the upstream API response supplies them
+        -- (root.go:72-80).
+
+    @invariant AllErrorsAreStructured
+        -- Every failure path funnels through Execute: API errors keep their
+        -- fields; any other error (flag parsing, validation, config
+        -- problems) is wrapped into an error document with just error/hint
+        -- text (root.go:50-63). No failure mode prints a bare non-JSON
+        -- message to stderr as its primary output.
+}
+
+contract ExitStatus {
+    exit_code: (error: CommandError?) -> Integer
+
+    @invariant ZeroOnSuccess
+        -- Successful commands exit 0.
+
+    @invariant TwoOnAuthFailure
+        -- An API response of HTTP 401 exits with code 2 (client.go:68-73).
+
+    @invariant OneOnAnyOtherFailure
+        -- Every other failure — API errors, usage errors, config errors —
+        -- exits with code 1 (root.go:50-62).
 }
 
 ------------------------------------------------------------
@@ -87,6 +145,7 @@ surface ApiCommandOutput {
     contracts:
         fulfils RenderingPipeline
         fulfils ErrorChannel
+        fulfils ExitStatus
 
     @guarantee StructuredStdout
         -- Successful API commands write structured data (JSON or CSV) to
@@ -97,12 +156,34 @@ surface ApiCommandOutput {
         -- Errors from API commands appear on stderr as a JSON document.
         -- Callers can separate structured results (stdout) from failure
         -- signals (stderr) without parsing output text.
+
+    @guarantee SchemaFlagShortCircuits
+        -- --schema prints a TypeScript-like response schema for the command
+        -- and exits without calling the API (root.go:136-140, 293-326).
+
+    @guidance
+        -- Retry notices, verbose/debug/trace diagnostics and shadowing
+        -- warnings all go to stderr, never stdout. --quiet (or ALPACA_QUIET)
+        -- suppresses those notices and disables color (root.go:145-150,
+        -- client.go:164-169).
 }
 
 surface OperationalCommandOutput {
+    contracts:
+        fulfils ExitStatus
+
     @guarantee PlainTextStdout
         -- Operational commands (version, update, doctor) emit
         -- human-readable plain text to stdout. They do not use the
         -- structured rendering pipeline and are not subject to
         -- --jq or --csv flags.
+
+    @guarantee UpdateCheckIsJson
+        -- Exception: `alpaca update --check` prints a machine-readable
+        -- indented JSON status document to stdout (update.go:50-61); it is
+        -- still outside the rendering pipeline, so --jq/--csv do not apply.
+
+    @guarantee NoAuthRequired
+        -- version, help, completion, update and doctor run without resolved
+        -- credentials (root.go:231-241).
 }

@@ -2,9 +2,11 @@
 -- hand-authored-commands.allium
 
 -- Scope: Hand-authored CLI command logic for the Alpaca CLI
--- Includes: bracket-order leg construction with time-in-force defaulting,
+-- Includes: order-submit body hook (bracket legs, time-in-force defaulting, dry run),
 --           watchlist by-name asset removal, self-update discovery and upgrade,
 --           doctor diagnostics, credential profile management
+-- Grounded in: internal/cmd/order.go, internal/cmd/watchlist.go, internal/cmd/update.go,
+--              internal/cmd/update_check.go, internal/cmd/doctor.go, internal/cmd/auth.go
 -- Excludes: generated Cobra command tree (internal/cmd/commands.gen.go),
 --           raw API passthrough (api.go), factory helpers (factory.go),
 --           help-all rendering (help_all.go)
@@ -13,12 +15,14 @@
 -- External Entities
 ------------------------------------------------------------
 
+-- Broker-side resources; the Alpaca Trading API governs their lifecycle.
+
 external entity Asset {
     symbol: String
-    asset_class: equity | crypto
 }
 
 external entity BrokerWatchlist {
+    id: String
     name: String
     assets: Set<Asset>
 }
@@ -27,10 +31,14 @@ external entity BrokerWatchlist {
 -- Value Types
 ------------------------------------------------------------
 
+-- The --take-profit flag accepts either a bare price (shorthand for
+-- {"limit_price": <value>}) or a raw JSON object (order.go:59-72).
 value TakeProfitLeg {
     limit_price: Decimal
 }
 
+-- The --stop-loss flag accepts either a bare price (shorthand for
+-- {"stop_price": <value>}) or a raw JSON object (order.go:59-72).
 value StopLossLeg {
     stop_price: Decimal
     limit_price: Decimal?
@@ -40,20 +48,41 @@ value StopLossLeg {
 -- Enumerations
 ------------------------------------------------------------
 
-enum InstallMethod { homebrew | go_install }
-
-enum TradingMode { paper | live }
+-- Literals match the code exactly: "homebrew" and "goinstall"
+-- (internal/cmd/update_check.go:11-13).
+enum InstallMethod { homebrew | goinstall }
 
 enum CredentialSource { env_api_key | oauth | profile_api_key }
+
+------------------------------------------------------------
+-- Config
+------------------------------------------------------------
+
+config {
+    -- internal/cmd/auth.go:22 (defaultProfileName = config.EnvPaper)
+    default_profile_name: String = "paper"
+    -- internal/cmd/update.go:40, internal/cmd/doctor.go:89
+    update_check_timeout: Duration = 10.seconds
+    -- internal/cmd/auth.go:352 (credential validation HTTP client)
+    validate_timeout: Duration = 10.seconds
+}
 
 ------------------------------------------------------------
 -- Entities and Variants
 ------------------------------------------------------------
 
+-- A stored connection profile: one YAML file under
+-- $ALPACA_CONFIG_DIR|~/.config/alpaca/profiles/<name>.yaml
+-- (internal/config/config.go:39-49, 208-243). Field-level shape matches
+-- config.Profile. live_trade is a tri-state: absent means paper (safe
+-- default), false means explicitly paper, true means live.
 entity Profile {
     name: String
-    trading_mode: TradingMode
-    credential_source: oauth | profile_api_key
+    api_key: String?
+    secret_key: String?
+    access_token: String?
+    scopes: String?
+    live_trade: Boolean?
 }
 
 entity Order {
@@ -69,71 +98,130 @@ entity Order {
     }
 }
 
+-- The structured document printed by `alpaca update --check`
+-- (internal/cmd/update.go:50-61).
+entity UpdateStatus {
+    current_version: String
+    latest_version: String
+    update_available: Boolean
+    install_method: InstallMethod
+    update_command: String
+}
+
 entity DiagnosticReport {
     cli_version: String
     credential_source: CredentialSource
     config_accessible: Boolean
     trading_api_reachable: Boolean
     data_api_reachable: Boolean
-    update_available: Boolean
+    -- null when the GitHub release check itself failed; doctor reports
+    -- "could not check for updates" without failing (doctor.go:88-98)
+    update_available: Boolean?
+}
+
+------------------------------------------------------------
+-- Surfaces
+------------------------------------------------------------
+
+surface AlpacaCLIHandAuthored {
+    provides:
+        PlaceOrder(symbol, side, qty?, time_in_force?, take_profit?, stop_loss?, dry_run?)
+        RemoveWatchlistAssetByName(watchlist_name, symbol)
+        CheckForUpdate()
+        UpgradeCli(install_method, confirmed)
+        RunDiagnostics()
+        LoginWithOAuth(profile_name?, scopes?)
+        LoginWithApiKey(profile_name?, api_key, secret_key, live?)
+        LogoutProfile(profile_name?)
+        SwitchActiveProfile(profile_name)
+
+    @guarantee NoLiveOAuthLogin
+        -- `alpaca profile login --live` without --api-key is rejected with an
+        -- error before any browser flow starts; OAuth login is paper-only
+        -- (auth.go:47-50).
+
+    @guidance
+        -- Command mapping: PlaceOrder = `alpaca order submit` (generated
+        -- command + postOrderHook), RemoveWatchlistAssetByName =
+        -- `alpaca watchlist remove-by-name`, CheckForUpdate/UpgradeCli =
+        -- `alpaca update`, RunDiagnostics = `alpaca doctor`, the rest =
+        -- `alpaca profile login|logout|switch`.
 }
 
 ------------------------------------------------------------
 -- Rules
 ------------------------------------------------------------
 
--- Bracket Order Construction
+-- Order Construction (postOrderHook, internal/cmd/order.go)
+
+-- Time-in-force defaulting applies only when the user did not pass
+-- --time-in-force. Crypto detection is purely syntactic: a "/" in the symbol
+-- (e.g. BTC/USD) means crypto. No asset lookup is performed (order.go:30-35).
 
 rule ConstructBracketOrder {
-    when: PlaceOrder(symbol, side, qty, take_profit?, stop_loss?)
+    when: PlaceOrder(symbol, side, time_in_force?, take_profit?, stop_loss?, dry_run?)
 
     requires: take_profit != null or stop_loss != null
+    requires: dry_run != true
 
-    let asset = Asset{symbol}
-    let default_tif = if asset.asset_class = crypto: gtc else: day
+    let tif =
+        if time_in_force != null: time_in_force
+        else if is_crypto_pair_symbol(symbol): gtc
+        else: day
 
     ensures: Order.created(
         symbol: symbol,
         side: side,
         order_class: bracket,
-        time_in_force: default_tif,
-        take_profit: take_profit,
-        stop_loss: stop_loss
-    )
-}
-
-rule ConstructSimpleOrder {
-    when: PlaceOrder(symbol, side, qty, take_profit?, stop_loss?)
-
-    requires: take_profit = null and stop_loss = null
-
-    let asset = Asset{symbol}
-    let default_tif = if asset.asset_class = crypto: gtc else: day
-
-    ensures: Order.created(
-        symbol: symbol,
-        side: side,
-        order_class: simple,
-        time_in_force: default_tif
-    )
-}
-
-rule PreviewOrder {
-    when: PreviewOrder(symbol, side, qty, take_profit?, stop_loss?)
-
-    ensures: OrderPreviewDisplayed(
-        symbol: symbol,
-        order_class: if (take_profit != null or stop_loss != null): bracket else: simple,
+        time_in_force: tif,
         take_profit: take_profit,
         stop_loss: stop_loss
     )
 
     @guidance
-        -- No order is submitted. The constructed request body is displayed to the user.
-        -- Triggered when the user requests a dry run before committing to submission.
+        -- is_crypto_pair_symbol(s) is strings.Contains(s, "/") (order.go:31).
+        -- Presence of either leg flag forces order_class to "bracket"
+        -- (order.go:37-41); the user-supplied order class is overwritten.
+        -- Leg flags parse as shorthand price or raw JSON (order.go:59-72);
+        -- invalid JSON aborts the command before submission.
 }
 
--- Watchlist Management
+rule ConstructSimpleOrder {
+    when: PlaceOrder(symbol, side, time_in_force?, take_profit?, stop_loss?, dry_run?)
+
+    requires: take_profit = null and stop_loss = null
+    requires: dry_run != true
+
+    let tif =
+        if time_in_force != null: time_in_force
+        else if is_crypto_pair_symbol(symbol): gtc
+        else: day
+
+    ensures: Order.created(
+        symbol: symbol,
+        side: side,
+        order_class: simple,
+        time_in_force: tif
+    )
+}
+
+rule DryRunOrder {
+    when: PlaceOrder(symbol, side, time_in_force?, take_profit?, stop_loss?, dry_run?)
+
+    requires: dry_run = true
+
+    ensures: OrderPreviewDisplayed(symbol: symbol)
+
+    @guidance
+        -- --dry-run returns the fully constructed request body (including
+        -- defaulted time-in-force and bracket legs) from the body hook, which
+        -- short-circuits submission; the body is rendered through the standard
+        -- output pipeline, so --jq and --csv apply to it (order.go:24-26,
+        -- commands.gen.go hook wiring, factory.go renderData). No order is
+        -- submitted.
+}
+
+-- Watchlist Management (internal/cmd/watchlist.go)
 
 rule RemoveWatchlistAssetByName {
     when: RemoveWatchlistAssetByName(watchlist_name, symbol)
@@ -143,17 +231,42 @@ rule RemoveWatchlistAssetByName {
     requires: exists watchlist
 
     ensures: watchlist.assets.remove(Asset{symbol})
+
+    @guidance
+        -- Both --name and --symbol are required (watchlist.go:16-18).
+        -- Implemented as two API calls: resolve the watchlist by name, then
+        -- remove the symbol by watchlist ID (watchlist.go:20-31). A missing
+        -- watchlist fails with 'watchlist "<name>" not found' before any
+        -- mutation. The updated watchlist is rendered on success.
 }
 
--- Update Discovery and Self-Upgrade
+-- Update Discovery and Self-Upgrade (internal/cmd/update.go, update_check.go)
 
 rule CheckForUpdate {
     when: CheckForUpdate()
 
-    ensures: UpdateStatusReported(
+    ensures: UpdateStatus.created(
+        current_version: current_version(),
+        latest_version: latest_published_version(),
+        update_available: version_newer(latest_published_version(), current_version()),
         install_method: detect_install_method(),
-        update_available: version_newer(latest_published_version(), current_version())
+        update_command: upgrade_command(detect_install_method())
     )
+
+    @guidance
+        -- latest_published_version() queries the GitHub releases API with a
+        -- config.update_check_timeout deadline (update.go:136-159).
+        -- version_newer compares numeric major.minor.patch, strips a leading
+        -- "v" and anything after "-" (pre-release), and is strictly greater
+        -- (update_check.go:55-78).
+        -- detect_install_method(): resolved executable path containing
+        -- "/Cellar/" or "/homebrew/" means homebrew; every other outcome is
+        -- goinstall (update_check.go:15-44 — the GOBIN/GOPATH branches also
+        -- return goinstall).
+        -- `alpaca update --check` prints this document as indented JSON to
+        -- stdout with "v" prefixes stripped, and never prompts (update.go:50-61).
+        -- The bare `alpaca` help output shows a best-effort update notice with
+        -- a 2-second timeout, silent on error or when current (update.go:120-130).
 }
 
 rule UpgradeCli {
@@ -164,12 +277,17 @@ rule UpgradeCli {
     ensures: CliUpgraded(install_method: install_method)
 
     @guidance
-        -- Homebrew installs upgrade via brew. Go installs upgrade via go install.
-        -- In interactive terminals the user is prompted unless --yes is passed.
-        -- Install method is inferred from the executable's resolved path and environment.
+        -- confirmed means --yes was passed, or the user answered "y"/"yes" to
+        -- the interactive prompt (update.go:72-88). In a non-interactive
+        -- terminal without --yes, the upgrade command is printed but never
+        -- run, and the command exits successfully (update.go:72-76).
+        -- The upgrade shells out via `sh -c` to "brew upgrade alpacahq/tap/cli"
+        -- (homebrew) or "go install github.com/alpacahq/cli/cmd/alpaca@latest"
+        -- (goinstall), streaming output to the terminal (update.go:98-108,
+        -- update_check.go:46-53).
 }
 
--- Doctor Diagnostics
+-- Doctor Diagnostics (internal/cmd/doctor.go)
 
 rule RunDiagnostics {
     when: RunDiagnostics()
@@ -184,46 +302,98 @@ rule RunDiagnostics {
     )
 
     @guidance
-        -- Exits non-zero if any check fails.
-        -- Environment variable shadowing of profile credentials is reported as a warning,
-        -- not as a check failure.
+        -- Checks run in order: config directory exists, profiles exist, config
+        -- loads, credentials resolve, trading API GET /v2/account, data API
+        -- GET /v2/stocks/AAPL/trades/latest (10s client timeout), update check.
+        -- Exits non-zero ("some checks failed") if any check fails
+        -- (doctor.go:115-122).
+        -- A missing config directory or zero saved profiles is NOT a failure
+        -- when both ALPACA_API_KEY and ALPACA_SECRET_KEY are set
+        -- (doctor.go:24, 32-51).
+        -- No resolvable credentials aborts the remaining checks and fails
+        -- (doctor.go:60-63).
+        -- A failed update check is reported but does not fail doctor
+        -- (doctor.go:88-98).
+        -- Environment variable shadowing of profile credentials is reported as
+        -- a warning, not as a check failure (doctor.go:68).
 }
 
--- Credential Profile Management
+-- Credential Profile Management (internal/cmd/auth.go)
 
 rule LoginWithOAuth {
-    when: LoginWithOAuth(profile_name, scopes)
+    when: LoginWithOAuth(profile_name?, scopes?)
 
-    ensures: Profile.created(
-        name: profile_name,
-        trading_mode: paper,
-        credential_source: oauth
-    )
+    let name = if profile_name != null: profile_name else: config.default_profile_name
+
+    ensures:
+        Profile.created(
+            name: name,
+            access_token: granted_access_token(),
+            scopes: granted_scopes()
+        )
+        ActiveProfileChanged(profile_name: name)
 
     @guidance
-        -- OAuth login is restricted to paper trading accounts.
-        -- Available scopes: account:write, trading, data.
-        -- Credentials are validated against the trading API before the profile is saved.
+        -- OAuth login is paper-only; --live is rejected (auth.go:47-50).
+        -- Scopes: --scope is comma-separated and converted to space-separated;
+        -- with no --scope on an interactive terminal, a multi-select prompt
+        -- offers account:write, trading, data (all pre-selected); otherwise the
+        -- default is all scopes (auth.go:63-74, 117-121).
+        -- The granted token is validated with GET /v2/account (Bearer auth)
+        -- against the paper trading API before the profile is saved, unless
+        -- --no-validate is passed (auth.go:81-87, 346-365). HTTP 401/403 means
+        -- invalid credentials; other 4xx/5xx is "unexpected response".
+        -- The saved profile stores access_token and the granted scope string;
+        -- live_trade is never written, so OAuth profiles resolve to paper
+        -- (auth.go:89-92).
+        -- Login also sets global default_profile to this profile, making it
+        -- active (auth.go:97-101).
 }
 
 rule LoginWithApiKey {
-    when: LoginWithApiKey(profile_name, api_key, secret_key, trading_mode)
+    when: LoginWithApiKey(profile_name?, api_key, secret_key, live?)
 
-    ensures: Profile.created(
-        name: profile_name,
-        trading_mode: trading_mode,
-        credential_source: profile_api_key
-    )
+    let name = if profile_name != null: profile_name else: config.default_profile_name
+
+    ensures:
+        Profile.created(
+            name: name,
+            api_key: api_key,
+            secret_key: secret_key,
+            live_trade: if live = true: true else: null
+        )
+        ActiveProfileChanged(profile_name: name)
 
     @guidance
-        -- Supports both paper and live trading modes.
-        -- Credentials are validated against the trading API before the profile is saved.
+        -- Supports paper (default) and live (--live); live_trade is written
+        -- only for live profiles, paper profiles omit the field entirely
+        -- (auth.go:156-160, 201-207).
+        -- Missing --key/--secret are prompted interactively; the secret is
+        -- read without echo on a TTY (auth.go:168-186). Both are required;
+        -- empty values abort (auth.go:188-190).
+        -- Passing --secret on the command line prints a shell-history warning
+        -- (auth.go:163-166).
+        -- Credentials are validated with GET /v2/account using
+        -- APCA-API-KEY-ID / APCA-API-SECRET-KEY headers against the selected
+        -- environment before the profile is saved, unless --no-validate
+        -- (auth.go:192-199, 346-365).
+        -- Login also sets global default_profile to this profile
+        -- (auth.go:212-216).
 }
 
 rule LogoutProfile {
-    when: LogoutProfile(profile)
+    when: LogoutProfile(profile_name?)
+
+    let name = if profile_name != null: profile_name else: config.default_profile_name
+    let profile = Profile{name: name}
+
+    requires: exists profile
 
     ensures: not exists profile
+
+    @guidance
+        -- Deleting a profile that does not exist fails with
+        -- 'profile "<name>" not found' (auth.go:254-264).
 }
 
 rule SwitchActiveProfile {
@@ -233,7 +403,12 @@ rule SwitchActiveProfile {
 
     requires: exists profile
 
-    ensures: ActiveProfileChanged(profile: profile)
+    ensures: ActiveProfileChanged(profile_name: profile_name)
+
+    @guidance
+        -- Switching persists default_profile in the global config file
+        -- (auth.go:318-322). An unknown name fails, listing available profiles
+        -- and hinting at `alpaca profile login --name <name>` (auth.go:310-316).
 }
 
 -- Environment Credential Shadowing
@@ -242,11 +417,19 @@ rule WarnOnEnvCredentialShadowing {
     when: profile: Profile.created
 
     requires: env_credentials_present()
+    requires: profile.access_token != null
+              or (profile.api_key != null and profile.secret_key != null)
 
     ensures: EnvShadowingWarning(profile: profile)
 
     @guidance
-        -- Fires when ALPACA_API_KEY / ALPACA_SECRET_KEY environment variables are set
-        -- at the time a profile is saved. The profile is persisted regardless;
-        -- the warning informs the user that env vars will take precedence at runtime.
+        -- Fires only when BOTH ALPACA_API_KEY and ALPACA_SECRET_KEY are set
+        -- AND the profile holds a complete credential bundle (an access token
+        -- or a full key pair) — env vars shadowing an empty profile is not
+        -- warned about (auth.go:225-234).
+        -- The profile is persisted regardless; the warning informs the user
+        -- that env vars take precedence at runtime.
+        -- The same warning is also printed by `alpaca doctor` (doctor.go:68)
+        -- and around the bare `alpaca` help output (root.go:114-125), not only
+        -- at profile save time.
 }
