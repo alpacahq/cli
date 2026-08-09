@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -50,6 +51,24 @@ func TestAuthHeaders(t *testing.T) {
 	}
 	if gotUA != "alpaca-cli/test" {
 		t.Errorf("expected User-Agent alpaca-cli/test, got %q", gotUA)
+	}
+}
+
+func TestDoWithHeaders(t *testing.T) {
+	var gotIdempotencyKey string
+	c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
+		gotIdempotencyKey = r.Header.Get("Idempotency-Key")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"ok":true}`))
+	})
+
+	headers := http.Header{"Idempotency-Key": []string{"locate-request-123"}}
+	_, err := c.DoWithHeaders(http.MethodPost, c.BaseURL, "/v1/locates", nil, headers, map[string]any{"symbol": "AAPL"})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if gotIdempotencyKey != "locate-request-123" {
+		t.Errorf("Idempotency-Key = %q, want %q", gotIdempotencyKey, "locate-request-123")
 	}
 }
 
@@ -304,6 +323,9 @@ func TestNewClient(t *testing.T) {
 	}
 	if c.DataURL != "https://data.alpaca.markets" {
 		t.Errorf("trailing slash not trimmed from DataURL: %s", c.DataURL)
+	}
+	if re := regexp.MustCompile(`^APCA-CLI/\S* \S+/\S+$`); !re.MatchString(c.UserAgent) {
+		t.Errorf("UserAgent = %q, want format matching %s", c.UserAgent, re.String())
 	}
 }
 

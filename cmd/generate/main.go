@@ -194,6 +194,7 @@ type endpointInfo struct {
 	goName        string
 	pathParams    []paramInfo
 	queryParams   []paramInfo
+	headerParams  []paramInfo
 	bodyRef       string
 	bodyInline    map[string]any
 	responseRef   string
@@ -300,6 +301,8 @@ func extractEndpoints(spec map[string]any) []*endpointInfo {
 					ep.pathParams = append(ep.pathParams, pi)
 				case "query":
 					ep.queryParams = append(ep.queryParams, pi)
+				case "header":
+					ep.headerParams = append(ep.headerParams, pi)
 				}
 			}
 
@@ -528,6 +531,9 @@ func genClient(clientName, specFile string, endpoints []*endpointInfo, baseURLFi
 	if strings.Contains(bodyStr, "url.") {
 		fmt.Fprintf(&buf, "\t\"net/url\"\n")
 	}
+	if strings.Contains(bodyStr, "http.Header") {
+		fmt.Fprintf(&buf, "\t\"net/http\"\n")
+	}
 	if strings.Contains(bodyStr, "strings.") {
 		fmt.Fprintf(&buf, "\t\"strings\"\n")
 	}
@@ -565,6 +571,9 @@ func genEndpointMethod(buf *bytes.Buffer, ep *endpointInfo, clientName string) {
 	if hasParams {
 		args = append(args, "params url.Values")
 	}
+	if len(ep.headerParams) > 0 {
+		args = append(args, "headers http.Header")
+	}
 	if bodyType != "" {
 		args = append(args, "body *"+bodyType)
 	}
@@ -596,7 +605,12 @@ func genEndpointMethod(buf *bytes.Buffer, ep *endpointInfo, clientName string) {
 		bodyExpr = "body"
 	}
 
-	callExpr := fmt.Sprintf("c.Raw.Do(%q, c.baseURL, %s, %s, %s)", ep.method, pathExpr, paramsExpr, bodyExpr)
+	var callExpr string
+	if len(ep.headerParams) > 0 {
+		callExpr = fmt.Sprintf("c.Raw.DoWithHeaders(%q, c.baseURL, %s, %s, headers, %s)", ep.method, pathExpr, paramsExpr, bodyExpr)
+	} else {
+		callExpr = fmt.Sprintf("c.Raw.Do(%q, c.baseURL, %s, %s, %s)", ep.method, pathExpr, paramsExpr, bodyExpr)
+	}
 
 	if respType != "" {
 		if ep.returnsArray {
@@ -774,7 +788,7 @@ type flagDesc struct {
 	defaultVal  string
 	description string
 	enumValues  []string
-	source      string // "path", "query", or "body"
+	source      string // "path", "query", "header", or "body"
 	required    bool
 }
 
@@ -786,7 +800,7 @@ func paramToFlag(p paramInfo, source string) *flagDesc {
 	fd := &flagDesc{
 		oasName:     p.name,
 		goFieldName: toGoName(p.name),
-		flagName:    strings.ReplaceAll(p.name, "_", "-"),
+		flagName:    strings.ToLower(strings.ReplaceAll(p.name, "_", "-")),
 		flagType:    p.goType,
 		description: normalizeDesc(desc),
 		enumValues:  p.enumValues,
@@ -795,7 +809,7 @@ func paramToFlag(p paramInfo, source string) *flagDesc {
 	switch source {
 	case "path":
 		fd.required = true
-	case "query":
+	case "query", "header":
 		fd.required = p.required
 		fd.defaultVal = p.defaultVal
 	}
@@ -819,6 +833,9 @@ func collectDescriptions(endpoints []*endpointInfo, spec map[string]any) []*opDe
 		}
 		for _, p := range ep.pathParams {
 			op.params = append(op.params, paramToFlag(p, "path"))
+		}
+		for _, p := range ep.headerParams {
+			op.params = append(op.params, paramToFlag(p, "header"))
 		}
 
 		bodyProps := getBodyProps(ep)

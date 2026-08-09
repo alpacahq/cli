@@ -225,7 +225,7 @@ func isParamOrPropMatch(enumKey, flagName string) bool {
 	return specName == flagNorm
 }
 
-// TestValidateMethods verifies generated Validate() methods work correctly.
+// TestValidateMethods verifies generated required-field validation works correctly.
 func TestValidateMethods(t *testing.T) {
 	t.Run("CreateCryptoTransferRequest/empty", func(t *testing.T) {
 		r := &api.CreateCryptoTransferRequest{}
@@ -242,20 +242,6 @@ func TestValidateMethods(t *testing.T) {
 
 	t.Run("CreateCryptoTransferRequest/valid", func(t *testing.T) {
 		r := &api.CreateCryptoTransferRequest{Address: "0x1", Amount: "100", Asset: "BTC"}
-		if err := r.Validate(); err != nil {
-			t.Errorf("unexpected error: %s", err)
-		}
-	})
-
-	t.Run("UpdateWatchlistRequest/empty", func(t *testing.T) {
-		r := &api.UpdateWatchlistRequest{}
-		if err := r.Validate(); err == nil {
-			t.Error("expected validation error for empty name")
-		}
-	})
-
-	t.Run("UpdateWatchlistRequest/valid", func(t *testing.T) {
-		r := &api.UpdateWatchlistRequest{Name: "my-list"}
 		if err := r.Validate(); err != nil {
 			t.Errorf("unexpected error: %s", err)
 		}

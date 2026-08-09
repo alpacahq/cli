@@ -72,7 +72,7 @@ func TestSmoke_AccountConfig(t *testing.T) {
 	t.Parallel()
 	out := alpaca(t, "account", "config", "get")
 	cfg := parseJSONMap(t, out)
-	requireFields(t, cfg, "dtbp_check")
+	requireFields(t, cfg, "trade_confirm_email")
 }
 
 func TestSmoke_Assets(t *testing.T) {

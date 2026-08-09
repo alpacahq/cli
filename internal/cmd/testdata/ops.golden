@@ -46,26 +46,6 @@ CryptoLatestTrades: "Get latest trades"
   loc (path, string, required, default=us) -> loc
   symbols (query, string, required) -> symbols
 
-CryptoPerpLatestBars: "Get latest bars"
-  loc (path, string, required, default=us) -> loc
-  symbols (query, string, required) -> symbols
-
-CryptoPerpLatestFuturesPricing: "Get latest pricing"
-  loc (path, string, required, default=us) -> loc
-  symbols (query, string, required) -> symbols
-
-CryptoPerpLatestOrderbooks: "Get latest orderbook"
-  loc (path, string, required, default=us) -> loc
-  symbols (query, string, required) -> symbols
-
-CryptoPerpLatestQuotes: "Get latest quotes"
-  loc (path, string, required, default=us) -> loc
-  symbols (query, string, required) -> symbols
-
-CryptoPerpLatestTrades: "Get latest trades"
-  loc (path, string, required, default=us) -> loc
-  symbols (query, string, required) -> symbols
-
 CryptoQuotes: "Get historical quotes"
   end (query, string) -> end
   limit (query, int, default=1000) -> limit
@@ -327,17 +307,14 @@ StockTrades: "Get historical trades"
   start (query, string) -> start
   symbols (query, string, required) -> symbols
 
-UsCorporates: "Get US corporates"
-  bond-status (query, string) -> bond_status
-  cusips (query, string) -> cusips
-  isins (query, string) -> isins
-  tickers (query, string) -> tickers
-
-UsTreasuries: "Get US treasuries"
-  bond-status (query, string) -> bond_status
-  cusips (query, string) -> cusips
-  isins (query, string) -> isins
-  subtype (query, string) -> subtype
+SubscribeToCorporateActionsEventsSSE: "Get subscribe to corporate actions events (SSE)"
+  last-event-id (header, string) -> Last-Event-Id
+  region (query, string, default=all) -> region
+  since (query, string) -> since
+  since-id (query, string) -> since_id
+  type (query, string) -> type
+  until (query, string) -> until
+  until-id (query, string) -> until_id
 
 AddAssetToWatchlist: "Add asset to watchlist"
   symbol (body, string) -> symbol
@@ -347,12 +324,6 @@ AddAssetToWatchlistByName: "Add asset to watchlist by name"
   name (query, string, required) -> name
   symbol (body, string) -> symbol
 
-CreateCryptoPerpTransferForAccount: "Request a new withdrawal"
-  address (body, string) -> address
-  amount (body, string) -> amount
-  asset (body, string) -> asset
-  chain (body, string) -> chain
-
 CreateCryptoTransferForAccount: "Request a new withdrawal"
   address (body, string) -> address
   amount (body, string) -> amount
@@ -360,6 +331,7 @@ CreateCryptoTransferForAccount: "Request a new withdrawal"
   chain (body, string) -> chain
 
 CreateLocates: "Create locate"
+  idempotency-key (header, string) -> Idempotency-Key
   all-or-none (body, bool) -> all_or_none
   limit-price (body, string) -> limit_price
   qty (body, int) -> qty
@@ -369,10 +341,6 @@ CreateWhitelistedAddress: "Request a new whitelisted address"
   address (body, string) -> address
   asset (body, string) -> asset
   chain (body, string) -> chain
-
-CreateWhitelistedPerpAddress: "Request a new whitelisted address"
-  address (body, string) -> address
-  asset (body, string) -> asset
 
 DeleteAllOpenPositions: "Close all positions"
   cancel-orders (query, bool) -> cancel_orders
@@ -394,9 +362,6 @@ DeleteWatchlistByName: "Delete watchlist by name"
   name (query, string, required) -> name
 
 DeleteWhitelistedAddress: "Delete a whitelisted address"
-  whitelisted-address-id (path, string, required) -> whitelisted_address_id
-
-DeleteWhitelistedPerpAddress: "Delete a whitelisted address"
   whitelisted-address-id (path, string, required) -> whitelisted_address_id
 
 GetOptionContractSymbolOrID: "Get an option contract by ID or symbol"
@@ -489,20 +454,6 @@ GetAllOrders: "Get all orders"
 GetCryptoFundingTransfer: "Retrieve a crypto funding transfer"
   transfer-id (path, string, required) -> transfer_id
 
-GetCryptoPerpAccountLeverage: "Get account leverage for an asset"
-  symbol (query, string) -> symbol
-
-GetCryptoPerpAccountVitals: "Retrieve account vitals"
-
-GetCryptoPerpFundingTransfer: "Retrieve a crypto funding transfer"
-  transfer-id (path, string, required) -> transfer_id
-
-GetCryptoPerpTransferEstimate: "Returns the estimated gas fee for a proposed transaction"
-  amount (query, string) -> amount
-  asset (query, string) -> asset
-  from-address (query, string) -> from_address
-  to-address (query, string) -> to_address
-
 GetCryptoTransferEstimate: "Returns the estimated gas fee for a proposed transaction"
   amount (query, string) -> amount
   asset (query, string) -> asset
@@ -521,6 +472,12 @@ GetOrderByClientOrderID: "Get order by client order ID"
 GetOrderByOrderID: "Get order by ID"
   nested (query, bool) -> nested
   order-id (path, string, required) -> order_id
+
+GetTokenizationRequest: "Get tokenization request by ID"
+  tokenization-request-id (path, string, required) -> tokenization_request_id
+
+GetTokenizationRequestByClientRequestID: "Get tokenization request by `client_request_id`"
+  client-request-id (query, string, required) -> client_request_id
 
 GetTokenizationRequests: "List tokenization requests"
   after (query, string) -> after
@@ -546,11 +503,6 @@ ListCryptoFundingWallets: "Retrieve crypto funding wallets"
   chain (query, string) -> chain
   network (query, string) -> network
 
-ListCryptoPerpFundingTransfers: "Retrieve crypto funding transfers"
-
-ListCryptoPerpFundingWallets: "Retrieve crypto funding wallets"
-  asset (query, string) -> asset
-
 ListLocateQuotes: "Get locate quotes"
   symbols (query, string, required) -> symbols
 
@@ -563,8 +515,6 @@ ListLocates: "List locates"
   symbol (query, string) -> symbol
 
 ListWhitelistedAddress: "Get an array of whitelisted addresses"
-
-ListWhitelistedPerpAddress: "Get an array of whitelisted addresses"
 
 OptionBars: "Get historical bars"
   end (query, string) -> end
@@ -583,12 +533,10 @@ OptionExercise: "Exercise an options position"
 
 PatchAccountConfig: "Update account configurations"
   disable-overnight-trading (body, bool) -> disable_overnight_trading
-  dtbp-check (body, string) -> dtbp_check
   fractional-trading (body, bool) -> fractional_trading
   max-margin-multiplier (body, string) -> max_margin_multiplier
   max-options-trading-level (body, int) -> max_options_trading_level
   no-shorting (body, bool) -> no_shorting
-  pdt-check (body, string) -> pdt_check
   ptp-no-exception-entry (body, bool) -> ptp_no_exception_entry
   suspend-trade (body, bool) -> suspend_trade
   trade-confirm-email (body, string) -> trade_confirm_email
@@ -638,10 +586,6 @@ PostWatchlist: "Create watchlist"
 RemoveAssetFromWatchlist: "Delete symbol from watchlist"
   symbol (path, string, required) -> symbol
   watchlist-id (path, string, required) -> watchlist_id
-
-SetCryptoPerpAccountLeverage: "Set account leverage for an asset"
-  leverage (query, int) -> leverage
-  symbol (query, string) -> symbol
 
 SubscribeToActivitiesSSE: "Get subscribe to activity events (SSE)"
   since (query, string) -> since

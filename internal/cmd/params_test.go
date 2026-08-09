@@ -113,3 +113,25 @@ func TestQueryFromFlagsFieldCoverage(t *testing.T) {
 		}
 	}
 }
+
+func TestHeadersFromFlags(t *testing.T) {
+	op := api.Op{Flags: []api.FlagDef{
+		{Name: "idempotency-key", OASName: "Idempotency-Key", Type: "string", Source: "header"},
+		{Name: "limit", OASName: "limit", Type: "int", Source: "query"},
+	}}
+	cmd := &cobra.Command{Use: "test"}
+	cmdutil.RegisterFlags(cmd, op.Flags, "", nil)
+
+	if got := headersFromFlags(cmd, op).Get("Idempotency-Key"); got != "" {
+		t.Errorf("unchanged header = %q, want empty", got)
+	}
+
+	_ = cmd.Flags().Set("idempotency-key", "locate-request-123")
+	headers := headersFromFlags(cmd, op)
+	if got := headers.Get("Idempotency-Key"); got != "locate-request-123" {
+		t.Errorf("Idempotency-Key = %q, want %q", got, "locate-request-123")
+	}
+	if got := headers.Get("limit"); got != "" {
+		t.Errorf("query parameter appeared as header: %q", got)
+	}
+}

@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strings"
 
@@ -12,7 +13,7 @@ import (
 )
 
 // fetchCmd creates a command that fetches data and renders it.
-// All OAS flags (path, query, body) are auto-registered from the Op.
+// All OAS flags (path, query, header, body) are auto-registered from the Op.
 // Defaults are baked into FlagDef.Default at generation time.
 func fetchCmd(use string, op api.Op, fetch func(cmd *cobra.Command, args []string) (any, error), configure ...func(*cobra.Command)) *cobra.Command {
 	cmd := &cobra.Command{
@@ -83,6 +84,25 @@ func queryFromFlags(cmd *cobra.Command, op api.Op) url.Values {
 		}
 	}
 	return v
+}
+
+// headersFromFlags builds request headers from explicitly set OAS header flags.
+func headersFromFlags(cmd *cobra.Command, op api.Op) http.Header {
+	headers := http.Header{}
+	for _, f := range op.Flags {
+		if f.Source != "header" || !cmd.Flags().Changed(f.Name) {
+			continue
+		}
+		switch f.Type {
+		case "string":
+			headers.Set(f.OASName, cmdutil.Str(cmd, f.Name))
+		case "int":
+			headers.Set(f.OASName, fmt.Sprint(cmdutil.Int(cmd, f.Name)))
+		case "bool":
+			headers.Set(f.OASName, fmt.Sprint(cmdutil.Bool(cmd, f.Name)))
+		}
+	}
+	return headers
 }
 
 // normalizePathParam strips slashes from path param values (e.g. BTC/USD → BTCUSD).

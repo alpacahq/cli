@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/alpacahq/cli/internal/cmdutil"
+	"github.com/alpacahq/cli/internal/useragent"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
@@ -139,7 +140,7 @@ func getLatestVersion(timeout time.Duration) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	req.Header.Set("User-Agent", "alpaca-cli/"+version)
+	req.Header.Set("User-Agent", useragent.Build(version))
 	resp, err := (&http.Client{Timeout: timeout}).Do(req)
 	if err != nil {
 		return "", err

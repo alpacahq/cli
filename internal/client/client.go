@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/alpacahq/cli/internal/config"
+	"github.com/alpacahq/cli/internal/useragent"
 )
 
 const (
@@ -99,7 +100,7 @@ func New(cfg *config.Resolved) *Client {
 		APIKey:      cfg.APIKey,
 		Secret:      cfg.SecretKey,
 		AccessToken: cfg.AccessToken,
-		UserAgent:   "alpaca-cli/" + Version,
+		UserAgent:   useragent.Build(Version),
 		Timeout:     30 * time.Second,
 	}
 }
@@ -112,11 +113,16 @@ func (c *Client) SetTimeout(d time.Duration) {
 // Do sends an HTTP request against baseURL + path with optional query params
 // and body. All other Client methods are thin wrappers around Do.
 func (c *Client) Do(method, baseURL, path string, params url.Values, body any) (json.RawMessage, error) {
+	return c.DoWithHeaders(method, baseURL, path, params, nil, body)
+}
+
+// DoWithHeaders sends an HTTP request with endpoint-specific headers.
+func (c *Client) DoWithHeaders(method, baseURL, path string, params url.Values, headers http.Header, body any) (json.RawMessage, error) {
 	u := baseURL + path
 	if len(params) > 0 {
 		u += "?" + params.Encode()
 	}
-	return c.doWithRetry(method, u, body)
+	return c.doWithRetry(method, u, headers, body)
 }
 
 func (c *Client) Get(path string, params url.Values) (json.RawMessage, error) {
@@ -144,13 +150,13 @@ func (c *Client) GetData(path string, params url.Values) (json.RawMessage, error
 }
 
 func (c *Client) RawRequest(method, fullURL string, body any) (json.RawMessage, error) {
-	return c.doWithRetry(method, fullURL, body)
+	return c.doWithRetry(method, fullURL, nil, body)
 }
 
-func (c *Client) doWithRetry(method, reqURL string, body any) (json.RawMessage, error) {
+func (c *Client) doWithRetry(method, reqURL string, headers http.Header, body any) (json.RawMessage, error) {
 	var lastErr error
 	for attempt := range maxRetries {
-		result, err := c.do(method, reqURL, body)
+		result, err := c.do(method, reqURL, headers, body)
 		if err == nil {
 			return result, nil
 		}
@@ -185,7 +191,7 @@ func retryDelay(apiErr *APIError, attempt int) time.Duration {
 	return base + jitter
 }
 
-func (c *Client) do(method, reqURL string, body any) (json.RawMessage, error) {
+func (c *Client) do(method, reqURL string, headers http.Header, body any) (json.RawMessage, error) {
 	start := time.Now()
 
 	var reqData []byte
@@ -204,6 +210,11 @@ func (c *Client) do(method, reqURL string, body any) (json.RawMessage, error) {
 		return nil, fmt.Errorf("creating request: %w", err)
 	}
 
+	for name, values := range headers {
+		for _, value := range values {
+			req.Header.Add(name, value)
+		}
+	}
 	if c.AccessToken != "" {
 		req.Header.Set("Authorization", "Bearer "+c.AccessToken)
 	} else {
