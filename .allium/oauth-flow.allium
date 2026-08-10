@@ -3,13 +3,13 @@
 -- Authorization-code OAuth2 flow for CLI user authentication
 -- (internal/oauth/oauth.go, internal/oauth/config.go).
 -- Currently restricted to paper trading; live trading requires API keys
--- until PKCE is added (internal/cmd/auth.go:47-50).
+-- until PKCE is added (internal/cmd/auth.go:48-51).
 
 ------------------------------------------------------------
 -- Value Types
 ------------------------------------------------------------
 
--- Shape of the token endpoint response (oauth.go:23-27).
+-- Shape of the token endpoint response (oauth.go:25-29).
 value AccessToken {
     access_token: String
     token_type: String
@@ -43,9 +43,9 @@ entity AuthorizationRequest {
 ------------------------------------------------------------
 
 config {
-    -- oauth.go:73 (2-minute wait for the browser callback)
+    -- oauth.go:75 (2-minute wait for the browser callback)
     authorization_timeout: Duration = 2.minutes
-    -- oauth.go:133 (HTTP client timeout for the token exchange)
+    -- oauth.go:135 (HTTP client timeout for the token exchange)
     token_exchange_timeout: Duration = 15.seconds
     authorize_url: String = "https://app.alpaca.markets/oauth/authorize"
     token_url: String = "https://api.alpaca.markets/oauth/token"
@@ -56,14 +56,14 @@ config {
 ------------------------------------------------------------
 
 -- `alpaca profile login` (OAuth path) drives the flow
--- (internal/cmd/auth.go:47-109).
+-- (internal/cmd/auth.go:48-110).
 surface ProfileLoginCommand {
     provides:
         UserInitiatesAuthorization(scope, environment?)
 }
 
 -- The localhost callback endpoint the browser is redirected to
--- (oauth.go:83-115).
+-- (oauth.go:85-117).
 surface BrowserCallback {
     provides:
         AuthorizationCodeReceived(request, code, state)
@@ -72,13 +72,13 @@ surface BrowserCallback {
     @guarantee CallbackPortsFixed
         -- The callback server binds 127.0.0.1 on the first free port of the
         -- pre-registered set 41920-41924 (oauth/config.go:12,
-        -- oauth.go:184-193); the redirect URI is
-        -- http://localhost:<port>/callback (oauth.go:44).
+        -- oauth.go:186-195); the redirect URI is
+        -- http://localhost:<port>/callback (oauth.go:46).
 
     @guarantee NoPortNoFlow
         -- If none of the callback ports can be bound, login fails before any
         -- browser interaction, with a hint to free a port or close other
-        -- `alpaca profile login` instances (oauth.go:184-193).
+        -- `alpaca profile login` instances (oauth.go:186-195).
 }
 
 ------------------------------------------------------------
@@ -98,14 +98,14 @@ rule UserInitiatesAuthorization {
 
     @guidance
         -- random_state() is 16 bytes from a cryptographic RNG, hex-encoded
-        -- (oauth.go:176-182); it is embedded as the `state` query parameter
+        -- (oauth.go:178-184); it is embedded as the `state` query parameter
         -- of the authorization URL so the callback can be CSRF-validated.
         -- The authorization URL carries response_type=code, client_id,
         -- redirect_uri, state, plus scope and env when non-empty
-        -- (oauth.go:160-174).
+        -- (oauth.go:162-176).
         -- The browser is opened via the platform opener (open/xdg-open/
         -- rundll32); if that fails, the URL is printed for manual use and
-        -- the flow keeps waiting (oauth.go:60-64, 195-206).
+        -- the flow keeps waiting (oauth.go:62-66, 197-208).
 }
 
 rule AuthorizationGranted {
@@ -120,16 +120,16 @@ rule AuthorizationGranted {
     @guidance
         -- exchange_code POSTs grant_type=authorization_code, the code, the
         -- CLI's registered client credentials and the exact redirect URI to
-        -- the token endpoint as a form body (oauth.go:117-131).
+        -- the token endpoint as a form body (oauth.go:119-133).
         -- A non-200 token response, an unparseable body, or an empty
         -- access_token in the response each fail the login with a
-        -- "token exchange failed" error (oauth.go:144-156) — the request
+        -- "token exchange failed" error (oauth.go:146-158) — the request
         -- does NOT reach completed in those cases.
 }
 
 -- A callback state that does not exactly match the value generated at
 -- initiation is rejected as a potential CSRF attack: the browser gets
--- HTTP 400 and the CLI fails with "state mismatch" (oauth.go:99-103).
+-- HTTP 400 and the CLI fails with "state mismatch" (oauth.go:101-105).
 rule AuthorizationStateMismatch {
     when: AuthorizationCodeReceived(request, code, state)
     requires: request.status = pending
@@ -138,7 +138,7 @@ rule AuthorizationStateMismatch {
 }
 
 -- A callback with a matching state but no authorization code fails with
--- "no authorization code received" (oauth.go:105-109).
+-- "no authorization code received" (oauth.go:107-111).
 rule AuthorizationMissingCode {
     when: AuthorizationCodeReceived(request, code, state)
     requires: request.status = pending
@@ -155,9 +155,9 @@ rule AuthorizationDenied {
     @guidance
         -- Fires when the callback carries an `error` query parameter; the
         -- error_description (or the error code when absent) is shown to the
-        -- user and rendered on the browser error page (oauth.go:85-94).
+        -- user and rendered on the browser error page (oauth.go:87-96).
         -- The browser page is static HTML; the description is HTML-escaped
-        -- (oauth.go:219-231).
+        -- (oauth.go:221-233).
 }
 
 rule AuthorizationTimedOut {
@@ -167,10 +167,10 @@ rule AuthorizationTimedOut {
 
     @guidance
         -- The user sees "timed out waiting for authorization" with a hint to
-        -- complete the browser flow (oauth.go:73-75).
+        -- complete the browser flow (oauth.go:75-77).
         -- The race between a callback arriving and the timeout firing is
         -- real and resolved first-event-wins by the select loop
-        -- (oauth.go:67-75); all four status transitions out of pending are
+        -- (oauth.go:69-77); all four status transitions out of pending are
         -- terminal, so the losing event has no effect.
 }
 
@@ -180,4 +180,4 @@ rule AuthorizationTimedOut {
 
 open question "PKCE — when will PKCE or Device Authorization Grant (RFC 8628) be added to enable live trading authorization?"
 
-open question "The callback channel is first-writer-wins with capacity 1 (oauth.go:46); after a rejected callback (state mismatch / missing code) the flow fails immediately rather than continuing to wait for a legitimate callback. Is fail-fast the intended CSRF response, or should the server keep listening until the timeout?"
+open question "The callback channel is first-writer-wins with capacity 1 (oauth.go:48); after a rejected callback (state mismatch / missing code) the flow fails immediately rather than continuing to wait for a legitimate callback. Is fail-fast the intended CSRF response, or should the server keep listening until the timeout?"

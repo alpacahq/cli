@@ -59,11 +59,11 @@ enum CredentialSource { env_api_key | oauth | profile_api_key }
 ------------------------------------------------------------
 
 config {
-    -- internal/cmd/auth.go:22 (defaultProfileName = config.EnvPaper)
+    -- internal/cmd/auth.go:23 (defaultProfileName = config.EnvPaper)
     default_profile_name: String = "paper"
-    -- internal/cmd/update.go:40, internal/cmd/doctor.go:89
+    -- internal/cmd/update.go:41, internal/cmd/doctor.go:89
     update_check_timeout: Duration = 10.seconds
-    -- internal/cmd/auth.go:352 (credential validation HTTP client)
+    -- internal/cmd/auth.go:353 (credential validation HTTP client)
     validate_timeout: Duration = 10.seconds
 }
 
@@ -99,7 +99,7 @@ entity Order {
 }
 
 -- The structured document printed by `alpaca update --check`
--- (internal/cmd/update.go:50-61).
+-- (internal/cmd/update.go:51-62).
 entity UpdateStatus {
     current_version: String
     latest_version: String
@@ -138,7 +138,7 @@ surface AlpacaCLIHandAuthored {
     @guarantee NoLiveOAuthLogin
         -- `alpaca profile login --live` without --api-key is rejected with an
         -- error before any browser flow starts; OAuth login is paper-only
-        -- (auth.go:47-50).
+        -- (auth.go:48-51).
 
     @guidance
         -- Command mapping: PlaceOrder = `alpaca order submit` (generated
@@ -255,7 +255,7 @@ rule CheckForUpdate {
 
     @guidance
         -- latest_published_version() queries the GitHub releases API with a
-        -- config.update_check_timeout deadline (update.go:136-159).
+        -- config.update_check_timeout deadline (update.go:137-160).
         -- version_newer compares numeric major.minor.patch, strips a leading
         -- "v" and anything after "-" (pre-release), and is strictly greater
         -- (update_check.go:55-78).
@@ -264,9 +264,9 @@ rule CheckForUpdate {
         -- goinstall (update_check.go:15-44 — the GOBIN/GOPATH branches also
         -- return goinstall).
         -- `alpaca update --check` prints this document as indented JSON to
-        -- stdout with "v" prefixes stripped, and never prompts (update.go:50-61).
+        -- stdout with "v" prefixes stripped, and never prompts (update.go:51-62).
         -- The bare `alpaca` help output shows a best-effort update notice with
-        -- a 2-second timeout, silent on error or when current (update.go:120-130).
+        -- a 2-second timeout, silent on error or when current (update.go:121-131).
 }
 
 rule UpgradeCli {
@@ -278,12 +278,12 @@ rule UpgradeCli {
 
     @guidance
         -- confirmed means --yes was passed, or the user answered "y"/"yes" to
-        -- the interactive prompt (update.go:72-88). In a non-interactive
+        -- the interactive prompt (update.go:73-89). In a non-interactive
         -- terminal without --yes, the upgrade command is printed but never
-        -- run, and the command exits successfully (update.go:72-76).
+        -- run, and the command exits successfully (update.go:73-77).
         -- The upgrade shells out via `sh -c` to "brew upgrade alpacahq/tap/cli"
         -- (homebrew) or "go install github.com/alpacahq/cli/cmd/alpaca@latest"
-        -- (goinstall), streaming output to the terminal (update.go:98-108,
+        -- (goinstall), streaming output to the terminal (update.go:99-109,
         -- update_check.go:46-53).
 }
 
@@ -334,20 +334,20 @@ rule LoginWithOAuth {
         ActiveProfileChanged(profile_name: name)
 
     @guidance
-        -- OAuth login is paper-only; --live is rejected (auth.go:47-50).
+        -- OAuth login is paper-only; --live is rejected (auth.go:48-51).
         -- Scopes: --scope is comma-separated and converted to space-separated;
         -- with no --scope on an interactive terminal, a multi-select prompt
         -- offers account:write, trading, data (all pre-selected); otherwise the
-        -- default is all scopes (auth.go:63-74, 117-121).
+        -- default is all scopes (auth.go:64-75, 118-122).
         -- The granted token is validated with GET /v2/account (Bearer auth)
         -- against the paper trading API before the profile is saved, unless
-        -- --no-validate is passed (auth.go:81-87, 346-365). HTTP 401/403 means
+        -- --no-validate is passed (auth.go:82-88, 347-366). HTTP 401/403 means
         -- invalid credentials; other 4xx/5xx is "unexpected response".
         -- The saved profile stores access_token and the granted scope string;
         -- live_trade is never written, so OAuth profiles resolve to paper
-        -- (auth.go:89-92).
+        -- (auth.go:90-93).
         -- Login also sets global default_profile to this profile, making it
-        -- active (auth.go:97-101).
+        -- active (auth.go:98-102).
 }
 
 rule LoginWithApiKey {
@@ -367,18 +367,18 @@ rule LoginWithApiKey {
     @guidance
         -- Supports paper (default) and live (--live); live_trade is written
         -- only for live profiles, paper profiles omit the field entirely
-        -- (auth.go:156-160, 201-207).
+        -- (auth.go:157-161, 202-208).
         -- Missing --key/--secret are prompted interactively; the secret is
-        -- read without echo on a TTY (auth.go:168-186). Both are required;
-        -- empty values abort (auth.go:188-190).
+        -- read without echo on a TTY (auth.go:169-187). Both are required;
+        -- empty values abort (auth.go:189-191).
         -- Passing --secret on the command line prints a shell-history warning
-        -- (auth.go:163-166).
+        -- (auth.go:164-167).
         -- Credentials are validated with GET /v2/account using
         -- APCA-API-KEY-ID / APCA-API-SECRET-KEY headers against the selected
         -- environment before the profile is saved, unless --no-validate
-        -- (auth.go:192-199, 346-365).
+        -- (auth.go:193-200, 347-366).
         -- Login also sets global default_profile to this profile
-        -- (auth.go:212-216).
+        -- (auth.go:213-217).
 }
 
 rule LogoutProfile {
@@ -393,7 +393,7 @@ rule LogoutProfile {
 
     @guidance
         -- Deleting a profile that does not exist fails with
-        -- 'profile "<name>" not found' (auth.go:254-264).
+        -- 'profile "<name>" not found' (auth.go:255-265).
 }
 
 rule SwitchActiveProfile {
@@ -407,8 +407,8 @@ rule SwitchActiveProfile {
 
     @guidance
         -- Switching persists default_profile in the global config file
-        -- (auth.go:318-322). An unknown name fails, listing available profiles
-        -- and hinting at `alpaca profile login --name <name>` (auth.go:310-316).
+        -- (auth.go:319-323). An unknown name fails, listing available profiles
+        -- and hinting at `alpaca profile login --name <name>` (auth.go:311-317).
 }
 
 -- Environment Credential Shadowing
@@ -426,10 +426,10 @@ rule WarnOnEnvCredentialShadowing {
         -- Fires only when BOTH ALPACA_API_KEY and ALPACA_SECRET_KEY are set
         -- AND the profile holds a complete credential bundle (an access token
         -- or a full key pair) — env vars shadowing an empty profile is not
-        -- warned about (auth.go:225-234).
+        -- warned about (auth.go:226-235).
         -- The profile is persisted regardless; the warning informs the user
         -- that env vars take precedence at runtime.
         -- The same warning is also printed by `alpaca doctor` (doctor.go:68)
-        -- and around the bare `alpaca` help output (root.go:114-125), not only
+        -- and around the bare `alpaca` help output (root.go:115-126), not only
         -- at profile save time.
 }

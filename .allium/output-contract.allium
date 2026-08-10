@@ -18,7 +18,7 @@ enum OutputFormat { json | csv }
 -- Value Types
 ------------------------------------------------------------
 
--- Shape of the JSON error document written to stderr (root.go:65-84).
+-- Shape of the JSON error document written to stderr (root.go:66-85).
 value CommandError {
     error: String
     code: Integer
@@ -36,9 +36,9 @@ value CommandError {
 config {
     default_format: OutputFormat = json
     exit_success: Integer = 0
-    -- client.go:23 (ExitAPIError)
+    -- client.go:24 (ExitAPIError)
     exit_error: Integer = 1
-    -- client.go:24 (ExitAuthError, HTTP 401 only)
+    -- client.go:25 (ExitAuthError, HTTP 401 only)
     exit_auth_error: Integer = 2
 }
 
@@ -51,7 +51,7 @@ contract RenderingPipeline {
 
     @invariant FormatSelectionPrecedence
         -- The output format resolves --csv flag > ALPACA_OUTPUT env var >
-        -- global config `output` field > json (root.go:163-167,
+        -- global config `output` field > json (root.go:164-168,
         -- config.go:97). There is no --json flag; JSON is reached by not
         -- selecting CSV at any level.
 
@@ -59,7 +59,7 @@ contract RenderingPipeline {
         -- When a jq filter is present, it is applied to the raw data
         -- before the output format serialiser runs. The serialiser
         -- receives the transformed data, not the original
-        -- (root.go:254-266).
+        -- (root.go:255-267).
 
     @invariant JqResultShape
         -- A jq program producing exactly one value yields that value
@@ -74,7 +74,7 @@ contract RenderingPipeline {
 
     @invariant EmptyResponseAsObject
         -- Endpoints that return no content (204 etc.) render {} on stdout,
-        -- so stdout is always valid JSON in JSON mode (factory.go:94-103).
+        -- so stdout is always valid JSON in JSON mode (factory.go:113-123).
 
     @invariant CsvColumnsFromFirstRow
         -- For a non-empty data set, CSV columns are the keys of the FIRST
@@ -87,7 +87,7 @@ contract RenderingPipeline {
         -- Schema-derived headers are used only when the data set is empty:
         -- if no jq filter is active and the command declares a response
         -- schema, an empty result still emits the header row
-        -- (output.go:45-55, root.go:262-263, 268-285). An empty result
+        -- (output.go:45-55, root.go:263-264, 269-286). An empty result
         -- with no schema headers emits nothing at all.
 
     @invariant CsvScalarFormatting
@@ -106,20 +106,20 @@ contract ErrorChannel {
     @invariant ErrorOnStderr
         -- Error documents are serialised as indented JSON and written to
         -- stderr, independent of the configured output format or any jq
-        -- filter (root.go:65-84).
+        -- filter (root.go:66-85).
 
     @invariant ErrorStructure
         -- Every error document carries error, code, status and hint keys —
         -- code and status are 0 and hint is "" when the failure was not an
-        -- API response (root.go:66-71). method, path and request_id are
+        -- API response (root.go:67-72). method, path and request_id are
         -- included only when the upstream API response supplies them
-        -- (root.go:72-80).
+        -- (root.go:73-81).
 
     @invariant AllErrorsAreStructured
         -- Every failure path funnels through Execute: API errors keep their
         -- fields; any other error (flag parsing, validation, config
         -- problems) is wrapped into an error document with just error/hint
-        -- text (root.go:50-63). No failure mode prints a bare non-JSON
+        -- text (root.go:51-64). No failure mode prints a bare non-JSON
         -- message to stderr as its primary output.
 }
 
@@ -130,11 +130,11 @@ contract ExitStatus {
         -- Successful commands exit 0.
 
     @invariant TwoOnAuthFailure
-        -- An API response of HTTP 401 exits with code 2 (client.go:68-73).
+        -- An API response of HTTP 401 exits with code 2 (client.go:69-74).
 
     @invariant OneOnAnyOtherFailure
         -- Every other failure — API errors, usage errors, config errors —
-        -- exits with code 1 (root.go:50-62).
+        -- exits with code 1 (root.go:51-63).
 }
 
 ------------------------------------------------------------
@@ -159,13 +159,13 @@ surface ApiCommandOutput {
 
     @guarantee SchemaFlagShortCircuits
         -- --schema prints a TypeScript-like response schema for the command
-        -- and exits without calling the API (root.go:136-140, 293-326).
+        -- and exits without calling the API (root.go:137-141, 294-327).
 
     @guidance
         -- Retry notices, verbose/debug/trace diagnostics and shadowing
         -- warnings all go to stderr, never stdout. --quiet (or ALPACA_QUIET)
-        -- suppresses those notices and disables color (root.go:145-150,
-        -- client.go:164-169).
+        -- suppresses those notices and disables color (root.go:146-151,
+        -- client.go:170-175).
 }
 
 surface OperationalCommandOutput {
@@ -180,10 +180,10 @@ surface OperationalCommandOutput {
 
     @guarantee UpdateCheckIsJson
         -- Exception: `alpaca update --check` prints a machine-readable
-        -- indented JSON status document to stdout (update.go:50-61); it is
+        -- indented JSON status document to stdout (update.go:51-62); it is
         -- still outside the rendering pipeline, so --jq/--csv do not apply.
 
     @guarantee NoAuthRequired
         -- version, help, completion, update and doctor run without resolved
-        -- credentials (root.go:231-241).
+        -- credentials (root.go:232-242).
 }

@@ -9,7 +9,7 @@
 -- Value Types
 ------------------------------------------------------------
 
--- Shape of client.APIError (client.go:44-53). code is the numeric Alpaca
+-- Shape of client.APIError (client.go:45-54). code is the numeric Alpaca
 -- API error code parsed from the JSON error body; status is the HTTP
 -- status (0 for transport failures).
 value RequestError {
@@ -33,12 +33,12 @@ enum HttpMethod { get | post | put | patch | delete }
 ------------------------------------------------------------
 
 config {
-    -- client.go:27 (maxRetries = 3): total send attempts, including the first
+    -- client.go:28 (maxRetries = 3): total send attempts, including the first
     max_attempts: Integer = 3
-    -- client.go:183: base delay is 500ms, doubling per attempt
+    -- client.go:189: base delay is 500ms, doubling per attempt
     backoff_base: Duration = 500.milliseconds
-    -- client.go:96, 103; overridable per invocation with --timeout <seconds>
-    -- (root.go:190-192)
+    -- client.go:97, 104; overridable per invocation with --timeout <seconds>
+    -- (root.go:191-193)
     default_timeout: Duration = 30.seconds
 }
 
@@ -77,8 +77,10 @@ entity OutboundRequest {
 ------------------------------------------------------------
 
 -- Generated typed client methods (internal/api/*_client.gen.go) and the raw
--- `alpaca api` passthrough all funnel through Client.Do / doWithRetry
--- (client.go:112-148).
+-- `alpaca api` passthrough all funnel through Client.Do / Client.DoWithHeaders
+-- / doWithRetry (client.go:113-154). Operations with OAS header parameters
+-- pass endpoint-specific headers, added to the request before the auth
+-- headers (factory.go:89-106, client.go:213-217).
 surface TypedClientMethods {
     provides:
         SendRequest(client, method, path, body?)
@@ -94,10 +96,10 @@ surface UpstreamResponses {
         TransportFailure(request, cause)
 
     @guidance
-        -- ReceiveOkResponse: any 2xx/3xx (status < 400, client.go:260).
+        -- ReceiveOkResponse: any 2xx/3xx (status < 400, client.go:271).
         -- ReceiveRateLimitResponse: HTTP 429.
         -- ReceiveServerErrorResponse: exactly 500, 502, 503 or 504
-        -- (client.go:175-177); 501 and every other 5xx are NOT retryable.
+        -- (client.go:181-183); 501 and every other 5xx are NOT retryable.
         -- ReceiveNonRetryableErrorResponse: any other status >= 400.
         -- TransportFailure: DNS/TCP/TLS/timeout errors where no HTTP
         -- response was received.
@@ -110,7 +112,7 @@ surface RetryScheduler {
 }
 
 -- Verbose/debug/trace flags (and their ALPACA_VERBOSE / ALPACA_DEBUG /
--- ALPACA_TRACE env equivalents, root.go:152-160) route request/response
+-- ALPACA_TRACE env equivalents, root.go:153-161) route request/response
 -- details to stderr.
 surface DiagnosticOutput {
     provides:
@@ -135,10 +137,12 @@ rule AuthWithAccessToken {
     @guidance
         -- Access-token auth sends "Authorization: Bearer <token>" and takes
         -- priority over API key/secret when both are configured
-        -- (client.go:207-208). Every request also carries
-        -- "User-Agent: alpaca-cli/<version>" (client.go:216) and
+        -- (client.go:218-219). Every request also carries
+        -- "User-Agent: APCA-CLI/<version> <os>/<arch>" following the shared
+        -- Alpaca SDK convention (useragent.Build, internal/useragent/
+        -- useragent.go:13-15; client.go:103, 227) and
         -- "Content-Type: application/json" when a body is present
-        -- (client.go:213-215).
+        -- (client.go:224-226).
 }
 
 rule AuthWithApiKeyAndSecret {
@@ -154,7 +158,7 @@ rule AuthWithApiKeyAndSecret {
 
     @guidance
         -- Key-pair auth sends the "APCA-API-KEY-ID" and
-        -- "APCA-API-SECRET-KEY" headers (client.go:209-211). If neither
+        -- "APCA-API-SECRET-KEY" headers (client.go:220-222). If neither
         -- credential is set the headers are sent empty; the server rejects
         -- with 401 — the client itself never blocks an unauthenticated send.
 }
@@ -166,8 +170,8 @@ rule SucceedOnOkResponse {
 
     @guidance
         -- An empty 2xx body yields an empty result rather than a JSON parse
-        -- error (client.go:284-287); the command layer renders it as {}
-        -- (factory.go:94-103).
+        -- error (client.go:295-297); the command layer renders it as {}
+        -- (factory.go:113-123).
 }
 
 rule RetryOnRateLimitResponse {
@@ -178,11 +182,11 @@ rule RetryOnRateLimitResponse {
 
     @guidance
         -- Wait for the delay in the Retry-After response header, parsed as
-        -- integer seconds only (client.go:274-280); an absent or unparseable
+        -- integer seconds only (client.go:285-291); an absent or unparseable
         -- header falls back to the exponential backoff used for server
-        -- errors (client.go:179-186).
+        -- errors (client.go:185-192).
         -- Unless --quiet, a "Rate limited, retrying in ..." notice goes to
-        -- stderr; with --verbose every retry is announced (client.go:164-169).
+        -- stderr; with --verbose every retry is announced (client.go:170-175).
 }
 
 rule RetryOnServerErrorResponse {
@@ -193,7 +197,7 @@ rule RetryOnServerErrorResponse {
 
     @guidance
         -- Backoff before resend: backoff_base * 2^(attempt-1) plus uniform
-        -- random jitter in [0, delay/2] (client.go:179-186). With the
+        -- random jitter in [0, delay/2] (client.go:185-192). With the
         -- defaults: ~500ms, ~1s, ~2s (each +jitter).
 }
 
@@ -229,19 +233,19 @@ rule FailOnNonRetryableErrorResponse {
 
     @guidance
         -- The error body is parsed as JSON into {code, message}
-        -- (client.go:261-262); a non-JSON or message-less body falls back to
-        -- the raw body text, then to the HTTP status text (client.go:262-267).
+        -- (client.go:272-273); a non-JSON or message-less body falls back to
+        -- the raw body text, then to the HTTP status text (client.go:273-278).
         -- request_id comes from the X-Request-Id response header
-        -- (client.go:261).
+        -- (client.go:272).
         -- Default hints are attached by status: 401 invalid credentials,
-        -- 403 forbidden, 422 validation, 429 rate limited (client.go:75-90).
+        -- 403 forbidden, 422 validation, 429 rate limited (client.go:76-91).
         -- A 401 whose body is not JSON gets a "possible proxy or wrong URL"
-        -- hint instead (client.go:268-273).
+        -- hint instead (client.go:279-284).
 }
 
 -- Network-level failures are never retried: only *APIError values with a
 -- retryable status re-enter the loop, and transport errors carry status 0
--- (client.go:158-161, 175-177, 232-238).
+-- (client.go:165-168, 181-183, 243-249).
 rule FailOnTransportError {
     when: TransportFailure(request, cause)
     requires: request.status = in_flight
@@ -252,7 +256,7 @@ rule FailOnTransportError {
     @guidance
         -- The message is "could not reach <url>: <cause>" with credentials
         -- scrubbed from both URL and cause, plus a hint to check the
-        -- connection and run `alpaca doctor` (client.go:232-238, 312-321).
+        -- connection and run `alpaca doctor` (client.go:243-249, 310-332).
 }
 
 rule ScrubCredentialsFromDiagnosticOutput {
@@ -263,7 +267,7 @@ rule ScrubCredentialsFromDiagnosticOutput {
         -- Every occurrence of the API key, secret and access token is
         -- replaced with "[REDACTED]" in --verbose request lines, --debug
         -- URLs, headers and response bodies, --trace output, and transport
-        -- error messages (client.go:219-256, 291-321).
+        -- error messages (client.go:230-267, 302-332).
 }
 
 ------------------------------------------------------------
@@ -279,6 +283,6 @@ invariant AttemptsNeverExceedMax {
 -- Open Questions
 ------------------------------------------------------------
 
-open question "The --debug request BODY is printed without credential scrubbing (client.go:221-223), while the request URL, headers and response body are scrubbed. Credentials normally travel in headers, not bodies — is the unscrubbed body intentional or an oversight?"
+open question "The --debug request BODY is printed without credential scrubbing (client.go:232-234), while the request URL, headers and response body are scrubbed. Credentials normally travel in headers, not bodies — is the unscrubbed body intentional or an oversight?"
 
-open question "After the final failed retryable attempt, doWithRetry sleeps the full backoff delay once more before returning the error (client.go:150-172) — wasted latency of up to ~3s. Intended?"
+open question "After the final failed retryable attempt, doWithRetry sleeps the full backoff delay once more before returning the error (client.go:156-178) — wasted latency of up to ~3s. Intended?"

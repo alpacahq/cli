@@ -42,7 +42,7 @@ entity CommandMapping {
     self_command: Boolean        -- true: the parent group itself is runnable (attachCmd)
     examples: String?            -- required when mapped; rendered as CLI help examples
     exclusion_reason: String?    -- required when excluded; explains why
-    flag_aliases: Set<String>    -- renames body fields that collide with path/query params (bodyAliases)
+    flag_aliases: Set<String>    -- renames body fields that collide with path/query/header params (bodyAliases)
     skip_fields: Set<String>     -- body fields handled by a hand-written hook (bodySkipFields)
     default_overrides: Set<String>  -- per-flag default value overrides (defaults map)
     normalized_params: Set<String>  -- path params stripped of "/" (normalize list, e.g. BTC/USD → BTCUSD)
@@ -79,7 +79,7 @@ surface CodeGeneratorCLI {
 -- Developers maintain the registry by hand in cmd/generate/commands.go:
 -- every new OAS operation must be added to cmdRegistry (mapped) or cmdSkip
 -- (excluded) — checkExhaustive's error message says exactly that
--- (commands.go:876).
+-- (commands.go:749).
 surface CommandRegistryMaintenance {
     provides:
         RegisterOperation(operation_id, disposition, examples?, exclusion_reason?)
@@ -137,27 +137,30 @@ rule GenerateApiArtifacts {
         -- Client generation: one <prefix>_client.gen.go per spec. Each
         -- operation becomes a typed method with path injection
         -- (url.PathEscape), query-parameter building, and JSON marshaling.
+        -- Operations with OAS header parameters take an http.Header argument
+        -- and dispatch via Client.DoWithHeaders instead of Client.Do
+        -- (main.go:574-576, 608-613).
         -- Generic unmarshal helpers handle typed and array responses;
         -- operations with no response schema return raw JSON
-        -- (main.go:541-612). Request types with required string fields gain
-        -- a Validate() method (main.go:489-513, 634-648).
+        -- (main.go:547-626). Request types with required string fields gain
+        -- a Validate() method (main.go:492-516, 636-662).
         --
         -- Descriptions file: one combined descriptions.gen.go across all
         -- specs. Contains one Op variable per operation (Name, Summary,
         -- Long, Example, ReturnsArray, Flags), lazily-built response
         -- schemas, an AllOps slice, and an OpByName lookup used by the CLI
         -- at runtime for flag registration, --schema output and CSV headers
-        -- (main.go:1192-1324).
+        -- (main.go:1209-1341).
         --
         -- Formatting: gofmt is applied to every artifact; if formatting
         -- fails, the file is still written UNFORMATTED and a warning goes to
-        -- stderr — generation does not abort (main.go:1354-1363).
+        -- stderr — generation does not abort (main.go:1371-1379).
 }
 
 -- Phase 2b: the combined Cobra command tree is gated on registry coverage.
 -- checkExhaustive runs after the API artifacts are written and aborts the
 -- process before commands.gen.go is touched (main.go:90-92,
--- commands.go:868-915).
+-- commands.go:741-791).
 rule GenerateCommandTree {
     when: RunCodeGenerator()
 
@@ -177,16 +180,16 @@ rule GenerateCommandTree {
 
     @guidance
         -- checkExhaustive collects ALL violations, then aborts with the full
-        -- list (commands.go:912-914). The three violation classes:
+        -- list (commands.go:788-790). The three violation classes:
         --   1. an operation_id present in an OAS spec but in neither
-        --      cmdRegistry nor cmdSkip (commands.go:871-878);
-        --   2. a mapped entry with empty examples (commands.go:881-884) —
+        --      cmdRegistry nor cmdSkip (commands.go:744-751);
+        --   2. a mapped entry with empty examples (commands.go:753-757) —
         --      this machine-enforces MappedMustHaveExamples;
         --   3. a body field whose kebab-case flag name collides with a
-        --      path/query parameter and has no flag_aliases entry
-        --      (commands.go:885-910).
+        --      lowercased path/query/header parameter and has no
+        --      flag_aliases entry (commands.go:758-785).
         -- A registry entry referencing an operation that no longer exists in
-        -- any spec is also fatal, at emit time (commands.go:948-951).
+        -- any spec is also fatal, at emit time (commands.go:824-827).
         -- ExcludedMustHaveReason holds by construction (cmdSkip maps
         -- operation → reason string) but is not machine-checked for
         -- non-emptiness.
@@ -194,12 +197,12 @@ rule GenerateCommandTree {
         -- Commands file contents: parent command group variables
         -- (cmdParents), a fetchCmd/attachCmd wiring per mapped operation,
         -- POST body constructors, PATCH/PUT body constructors with change
-        -- tracking (rejecting when no flag was set, commands.go:1323-1326),
+        -- tracking (rejecting when no flag was set, commands.go:1202-1204),
         -- and a single init() that wires the Cobra tree. Body fields in
         -- skip_fields are excluded from generated construction and handled
         -- by body_hook; default_overrides bake flag defaults; nullable OAS
         -- scalars become pointer fields set only when the flag was
-        -- explicitly changed (commands.go:1240-1258).
+        -- explicitly changed (commands.go:1119-1138).
 }
 
 ------------------------------------------------------------
