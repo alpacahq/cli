@@ -55,13 +55,19 @@ var corporateActionCmd = &cobra.Command{
 var dataCmd = &cobra.Command{
 	Use:   "data",
 	Short: "Access market data",
-	Long:  "Historical and real-time market data for stocks, crypto, options, and forex. Includes bars, quotes, trades, snapshots, auctions, screeners, and news.",
+	Long:  "Historical and real-time market data for stocks, crypto, options, forex, and fixed income. Includes bars, quotes, trades, snapshots, auctions, screeners, and news.",
 }
 
 var dataCryptoCmd = &cobra.Command{
 	Use:   "crypto",
 	Short: "Crypto market data",
 	Long:  "Bars, quotes, trades, snapshots, and orderbooks for crypto pairs.",
+}
+
+var dataFixedIncomeCmd = &cobra.Command{
+	Use:   "fixed-income",
+	Short: "Fixed income market data",
+	Long:  "Latest prices and quotes for fixed income securities identified by ISIN.",
 }
 
 var dataForexCmd = &cobra.Command{
@@ -248,6 +254,14 @@ var deleteWatchlistByNameCmd = fetchCmd("delete-by-name", api.DeleteWatchlistByN
 
 var deleteWhitelistedAddressCmd = fetchCmd("delete", api.DeleteWhitelistedAddressOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return voidResponse(tradingClient.DeleteWhitelistedAddress(cmdutil.Str(cmd, "whitelisted-address-id")))
+})
+
+var fixedIncomeLatestPricesCmd = fetchCmd("latest-prices", api.FixedIncomeLatestPricesOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return dataClient.FixedIncomeLatestPrices(queryFromFlags(cmd, api.FixedIncomeLatestPricesOp))
+})
+
+var fixedIncomeLatestQuotesCmd = fetchCmd("latest-quotes", api.FixedIncomeLatestQuotesOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return dataClient.FixedIncomeLatestQuotes(queryFromFlags(cmd, api.FixedIncomeLatestQuotesOp))
 })
 
 var getAccountCmd = fetchCmd("get", api.GetAccountOp, func(cmd *cobra.Command, args []string) (any, error) {
@@ -678,6 +692,7 @@ func init() {
 	accountCmd.AddCommand(accountConfigCmd)
 	accountCmd.AddCommand(activityCmd)
 	dataCmd.AddCommand(dataCryptoCmd)
+	dataCmd.AddCommand(dataFixedIncomeCmd)
 	dataCmd.AddCommand(dataForexCmd)
 	dataCmd.AddCommand(dataMetaCmd)
 	dataCmd.AddCommand(dataOptionCmd)
@@ -708,6 +723,8 @@ func init() {
 	watchlistCmd.AddCommand(deleteWatchlistByIDCmd)
 	watchlistCmd.AddCommand(deleteWatchlistByNameCmd)
 	walletWhitelistCmd.AddCommand(deleteWhitelistedAddressCmd)
+	dataFixedIncomeCmd.AddCommand(fixedIncomeLatestPricesCmd)
+	dataFixedIncomeCmd.AddCommand(fixedIncomeLatestQuotesCmd)
 	accountCmd.AddCommand(getAccountCmd)
 	activityCmd.AddCommand(getAccountActivitiesCmd)
 	activityCmd.AddCommand(getAccountActivitiesByActivityTypeCmd)

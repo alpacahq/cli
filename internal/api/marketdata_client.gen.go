@@ -31,6 +31,16 @@ func (c *MarketDataClient) SubscribeToCorporateActionsEventsSSE(params url.Value
 	return c.Raw.DoWithHeaders("GET", c.baseURL, "/v1beta1/events/corporate-actions", params, headers, nil)
 }
 
+// FixedIncomeLatestPrices — Latest prices
+func (c *MarketDataClient) FixedIncomeLatestPrices(params url.Values) (*FixedIncomeLatestPricesResp, error) {
+	return unmarshal[FixedIncomeLatestPricesResp](c.Raw.Do("GET", c.baseURL, "/v1beta1/fixed_income/latest/prices", params, nil))
+}
+
+// FixedIncomeLatestQuotes — Latest quotes
+func (c *MarketDataClient) FixedIncomeLatestQuotes(params url.Values) (*FixedIncomeLatestQuotesResp, error) {
+	return unmarshal[FixedIncomeLatestQuotesResp](c.Raw.Do("GET", c.baseURL, "/v1beta1/fixed_income/latest/quotes", params, nil))
+}
+
 // LatestRates — Latest rates for currency pairs
 func (c *MarketDataClient) LatestRates(params url.Values) (*ForexLatestRatesResp, error) {
 	return unmarshal[ForexLatestRatesResp](c.Raw.Do("GET", c.baseURL, "/v1beta1/forex/latest/rates", params, nil))

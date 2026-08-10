@@ -185,6 +185,35 @@ type CryptoTradesResp struct {
 	Trades        map[string][]CryptoTrade `json:"trades"`
 }
 
+type FixedIncomeLatestPricesResp struct {
+	Prices map[string]FixedIncomePrice `json:"prices"`
+}
+
+type FixedIncomeLatestQuotesResp struct {
+	Quotes map[string]FixedIncomeQuote `json:"quotes"`
+}
+
+type FixedIncomePrice struct {
+	P   float64 `json:"p"`
+	T   string  `json:"t"`
+	Ytm float64 `json:"ytm,omitempty"`
+	Ytw float64 `json:"ytw,omitempty"`
+}
+
+type FixedIncomeQuote struct {
+	Ams  int     `json:"ams"`
+	Ap   float64 `json:"ap"`
+	As   int     `json:"as"`
+	Aytm float64 `json:"aytm"`
+	Aytw float64 `json:"aytw"`
+	Bms  int     `json:"bms"`
+	Bp   float64 `json:"bp"`
+	Bs   int     `json:"bs"`
+	Bytm float64 `json:"bytm"`
+	Bytw float64 `json:"bytw"`
+	T    string  `json:"t"`
+}
+
 type ForexLatestRatesResp struct {
 	Rates map[string]ForexRate `json:"rates"`
 }

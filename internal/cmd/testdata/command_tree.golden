@@ -89,7 +89,7 @@ alpaca data auction
   --feed (string, default=sip)
   --limit (int, default=1000)
   --page-token (string)
-  --sort (string, default=asc)
+  --sort (string)
   --start (string)
   --symbol (string)
 alpaca data auctions
@@ -99,7 +99,7 @@ alpaca data auctions
   --feed (string, default=sip)
   --limit (int, default=1000)
   --page-token (string)
-  --sort (string, default=asc)
+  --sort (string)
   --start (string)
   --symbols (string)
 alpaca data bars
@@ -110,7 +110,7 @@ alpaca data bars
   --feed (string, default=sip)
   --limit (int, default=1000)
   --page-token (string)
-  --sort (string, default=asc)
+  --sort (string)
   --start (string)
   --symbol (string)
   --timeframe (string)
@@ -122,7 +122,7 @@ alpaca data corporate-actions
   --limit (int, default=100)
   --page-token (string)
   --region (string, default=us)
-  --sort (string, default=asc)
+  --sort (string)
   --start (string)
   --symbols (string)
   --types (string)
@@ -131,7 +131,7 @@ alpaca data crypto bars
   --limit (int, default=1000)
   --loc (string, default=us)
   --page-token (string)
-  --sort (string, default=asc)
+  --sort (string)
   --start (string)
   --symbols (string)
   --timeframe (string)
@@ -149,7 +149,7 @@ alpaca data crypto quotes
   --limit (int, default=1000)
   --loc (string, default=us)
   --page-token (string)
-  --sort (string, default=asc)
+  --sort (string)
   --start (string)
   --symbols (string)
 alpaca data crypto snapshots
@@ -160,12 +160,17 @@ alpaca data crypto trades
   --limit (int, default=1000)
   --loc (string, default=us)
   --page-token (string)
-  --sort (string, default=asc)
+  --sort (string)
   --start (string)
   --symbols (string)
 alpaca data crypto-orderbook
   --loc (string, default=us)
   --symbols (string)
+alpaca data fixed-income latest-prices
+  --isins (string)
+alpaca data fixed-income latest-quotes
+  --isins (string)
+  --trade-size (int)
 alpaca data forex latest
   --currency-pairs (string)
 alpaca data forex rates
@@ -173,7 +178,7 @@ alpaca data forex rates
   --end (string)
   --limit (int, default=1000)
   --page-token (string)
-  --sort (string, default=asc)
+  --sort (string)
   --start (string)
   --timeframe (string, default=1Min)
 alpaca data latest-bar
@@ -215,7 +220,7 @@ alpaca data multi-bars
   --feed (string, default=sip)
   --limit (int, default=1000)
   --page-token (string)
-  --sort (string, default=asc)
+  --sort (string)
   --start (string)
   --symbols (string)
   --timeframe (string)
@@ -226,7 +231,7 @@ alpaca data multi-quotes
   --feed (string, default=sip)
   --limit (int, default=1000)
   --page-token (string)
-  --sort (string, default=asc)
+  --sort (string)
   --start (string)
   --symbols (string)
 alpaca data multi-snapshots
@@ -240,7 +245,7 @@ alpaca data multi-trades
   --feed (string, default=sip)
   --limit (int, default=1000)
   --page-token (string)
-  --sort (string, default=asc)
+  --sort (string)
   --start (string)
   --symbols (string)
 alpaca data news
@@ -256,7 +261,7 @@ alpaca data option bars
   --end (string)
   --limit (int, default=1000)
   --page-token (string)
-  --sort (string, default=asc)
+  --sort (string)
   --start (string)
   --symbols (string)
   --timeframe (string)
@@ -292,7 +297,7 @@ alpaca data option trades
   --end (string)
   --limit (int, default=1000)
   --page-token (string)
-  --sort (string, default=asc)
+  --sort (string)
   --start (string)
   --symbols (string)
 alpaca data quotes
@@ -302,7 +307,7 @@ alpaca data quotes
   --feed (string, default=sip)
   --limit (int, default=1000)
   --page-token (string)
-  --sort (string, default=asc)
+  --sort (string)
   --start (string)
   --symbol (string)
 alpaca data screener most-actives
@@ -322,7 +327,7 @@ alpaca data trades
   --feed (string, default=sip)
   --limit (int, default=1000)
   --page-token (string)
-  --sort (string, default=asc)
+  --sort (string)
   --start (string)
   --symbol (string)
 alpaca doctor

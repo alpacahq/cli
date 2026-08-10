@@ -864,12 +864,12 @@
                 "type": "object"
             },
             "ActivitySubType": {
-                "description": "Represents a more specific classification to the `activity_type`.\nThis field is optional and may not always be populated, depending on the activity type and the available data.\nEach `activity_type` has a set of valid `activity_sub_type` values.\n\nFull mapping of `activity_type` to `activity_sub_type`:\n\n- **DIV**: Dividend activity sub-types:\n  - **CDIV**: Cash Dividend\n  - **SDIV**: Stock Dividend\n  - **SPD**: Substitute Payment In Lieu Of Dividend\n\n- **FEE**: Fee-related activity sub-types:\n  - **REG**: Regulatory Fee\n  - **TAF**: Trading Activity Fee\n  - **LCT**: Local Currency Trading Fee\n  - **ORF**: Options Regulatory Fee\n  - **OCC**: Options Clearing Corporation Fee\n  - **NRC**: Non-Retail Commission Fee\n  - **NRV**: Non-Retail Venue Fee\n  - **COM**: Commission\n  - **CAT**: Consolidated Audit Trail Fee\n\n- **INT**: Interest-related activity sub-types:\n  - **MGN**: Margin Interest\n  - **CDT**: Credit Interest\n  - **SWP**: Sweep Interest\n  - **QII**: Qualified Interest\n  - **FI**: Fixed Income Interest (coupon payment or accrued interest on call)\n\n- **MA**: Merger and Acquisition activity sub-types:\n  - **CMA**: Cash Merger\n  - **SMA**: Stock Merger\n  - **SCMA**: Stock & Cash Merger\n\n- **NC**: Name Change activity sub types\n  - **SNC**: Symbol Name Change\n  - **CNC**: CUSIP Name Change\n  - **SCNC**: Symbol & CUSIP Name Change\n\n- **OPCA**: Option Corporate Action activity sub-types:\n  - **DIV.CDIV**: Cash Dividend\n  - **DIV.SDIV**: Stock Dividend\n  - **MA.CMA**: Cash Merger\n  - **MA.SMA**: Stock Merger\n  - **MA.SCMA**: Stock & Cash Merger\n  - **NC.CNC**: CUSIP Name Change\n  - **NC.SNC**: Symbol Name Change\n  - **NC.SCNC**: Symbol & CUSIP Name Change\n  - **SPIN**: Spin-off\n  - **SPLIT.FSPLIT**: Forward Stock Split\n  - **SPLIT.RSPLIT**: Reverse Stock Split\n  - **SPLIT.USPLIT**: Unit Split\n\n- **REORG**: Reorganization activity sub-types:\n  - **WRM**: Worthless Removal\n\n- **SPLIT**: Stock Split activity sub-types:\n  - **FSPLIT**: Forward Stock Split\n  - **RSPLIT**: Reverse Stock Split\n  - **USPLIT**: Unit Split\n\n- **VOF**: Voluntary Offering activity sub-types:\n  - **VTND**: Tender Offer\n  - **VWRT**: Warrant Exercise\n  - **VRGT**: Rights Offer\n  - **VEXH**: Exchange Offer\n\n- **WH**: Withholding activity sub-types:\n  - **SWH**: State Withholding\n  - **FWH**: Federal Withholding\n  - **SLWH**: Sales Withholding",
+                "description": "Represents a more specific classification to the `activity_type`.\nThis field is optional and may not always be populated, depending on the activity type and the available data.\nEach `activity_type` has a set of valid `activity_sub_type` values.\n\nFull mapping of `activity_type` to `activity_sub_type`:\n\n- **DIV**: Dividend activity sub-types:\n  - **CDIV**: Cash Dividend\n  - **SDIV**: Stock Dividend\n  - **SPD**: Substitute Payment In Lieu Of Dividend\n\n- **FEE**: Fee-related activity sub-types:\n  - **REG**: Regulatory Fee\n  - **TAF**: Trading Activity Fee\n  - **LCT**: Local Currency Trading Fee\n  - **ORF**: Options Regulatory Fee\n  - **OCC**: Options Clearing Corporation Fee\n  - **NRC**: Non-Retail Commission Fee\n  - **NRV**: Non-Retail Venue Fee\n  - **COM**: Commission\n  - **CAT**: Consolidated Audit Trail Fee\n\n- **INT**: Interest-related activity sub-types:\n  - **MGN**: Margin Interest\n  - **CDT**: Credit Interest\n  - **SWP**: Sweep Interest\n  - **QII**: Qualified Interest\n  - **FI**: Fixed Income Interest (coupon payment or accrued interest on call)\n\n- **MA**: Merger and Acquisition activity sub-types:\n  - **CMA**: Cash Merger\n  - **SMA**: Stock Merger\n  - **SCMA**: Stock & Cash Merger\n\n- **NC**: Name Change activity sub types\n  - **SNC**: Symbol Name Change\n  - **CNC**: CUSIP Name Change\n  - **SCNC**: Symbol & CUSIP Name Change\n\n- **OPCA**: Option Corporate Action activity sub-types:\n  - **DIV.CDIV**: Cash Dividend\n  - **DIV.SDIV**: Stock Dividend\n  - **MA.CMA**: Cash Merger\n  - **MA.SMA**: Stock Merger\n  - **MA.SCMA**: Stock & Cash Merger\n  - **NC.CNC**: CUSIP Name Change\n  - **NC.SNC**: Symbol Name Change\n  - **NC.SCNC**: Symbol & CUSIP Name Change\n  - **SPIN**: Spin-off\n  - **SPLIT.FSPLIT**: Forward Stock Split\n  - **SPLIT.RSPLIT**: Reverse Stock Split\n  - **SPLIT.USPLIT**: Unit Split\n\n- **REO**: Reorganization activity sub-types\n  - **REOS**: Stock only (1 or more stock legs)\n  - **REOC**: Cash only (1 cash leg)\n  - **REOSC**: Stock and cash\n\n- **REORG**: Reorganization activity sub-types:\n  - **WRM**: Worthless Removal\n\n- **SPLIT**: Stock Split activity sub-types:\n  - **FSPLIT**: Forward Stock Split\n  - **RSPLIT**: Reverse Stock Split\n  - **USPLIT**: Unit Split\n\n- **VOF**: Voluntary Offering activity sub-types:\n  - **VTND**: Tender Offer\n  - **VWRT**: Warrant Exercise\n  - **VRGT**: Rights Offer\n  - **VEXH**: Exchange Offer\n\n- **WH**: Withholding activity sub-types:\n  - **SWH**: State Withholding\n  - **FWH**: Federal Withholding\n  - **SLWH**: Sales Withholding",
                 "title": "ActivitySubType",
                 "type": "string"
             },
             "ActivityType": {
-                "description": "- FILL\n  Order fills (both partial and full fills)\n\n- TRANS\n  Cash transactions (both CSD and CSW)\n\n- MISC\n  Miscellaneous or rarely used activity types (All types except those in TRANS, DIV, or FILL)\n\n- ACATC\n  ACATS IN/OUT (Cash)\n\n- ACATS\n  ACATS IN/OUT (Securities)\n\n- CFEE\n  Crypto fee\n\n- CGD\n  Capital gain distribution\n\n- CSD\n  Cash deposit(+)\n\n- CSW\n  Cash withdrawal(-)\n\n- DIV\n  Dividends\n\n- DIVCGL\n  Dividend (capital gain long term)\n\n- DIVCGS\n  Dividend (capital gain short term)\n\n- DIVFEE\n  Dividend fee\n\n- DIVFT\n  Dividend adjusted (Foreign Tax Withheld)\n\n- DIVNRA\n  Dividend adjusted (NRA Withheld)\n\n- DIVROC\n  Dividend return of capital\n\n- DIVTW\n  Dividend adjusted (Tefra Withheld)\n\n- DIVTXEX\n  Dividend (tax exempt)\n\n- FEE\n  Fee denominated in USD\n\n- INT\n  Interest (credit/margin)\n\n- INTNRA\n  Interest adjusted (NRA Withheld)\n\n- INTTW\n  Interest adjusted (Tefra Withheld)\n\n- JNL\n  Journal entry\n\n- JNLC\n  Journal entry (cash)\n\n- JNLS\n  Journal entry (stock)\n\n- MA\n  Merger/Acquisition\n\n- NC\n  Name change\n\n- OPASN\n  Option assignment\n\n- OPCA\n  Option corporate action\n\n- OPCSH\n  Option cash deliverable for non-standard contracts\n\n- OPEXC\n  Option exercise\n\n- OPEXP\n  Option expiration\n\n- OPTRD\n  Option trade\n\n- PTC\n  Pass Thru Charge\n\n- PTR\n  Pass Thru Rebate\n\n- REORG\n  Reorg CA\n\n- SPIN\n  Stock spinoff\n\n- SPLIT\n  Stock split\n\n- FOPT\n  Free of Payment Transfers\n\n- OCT\n  On chain transactions (blockchain deposits/withdrawals)",
+                "description": "- FILL\n  Order fills (both partial and full fills)\n\n- TRANS\n  Cash transactions (both CSD and CSW)\n\n- MISC\n  Miscellaneous or rarely used activity types (All types except those in TRANS, DIV, or FILL)\n\n- ACATC\n  ACATS IN/OUT (Cash)\n\n- ACATS\n  ACATS IN/OUT (Securities)\n\n- CFEE\n  Crypto fee\n\n- CGD\n  Capital gain distribution\n\n- CSD\n  Cash deposit(+)\n\n- CSW\n  Cash withdrawal(-)\n\n- DIV\n  Dividends\n\n- DIVCGL\n  Dividend (capital gain long term)\n\n- DIVCGS\n  Dividend (capital gain short term)\n\n- DIVFEE\n  Dividend fee\n\n- DIVFT\n  Dividend adjusted (Foreign Tax Withheld)\n\n- DIVNRA\n  Dividend adjusted (NRA Withheld)\n\n- DIVROC\n  Dividend return of capital\n\n- DIVTW\n  Dividend adjusted (Tefra Withheld)\n\n- DIVTXEX\n  Dividend (tax exempt)\n\n- FEE\n  Fee denominated in USD\n\n- INT\n  Interest (credit/margin)\n\n- INTNRA\n  Interest adjusted (NRA Withheld)\n\n- INTTW\n  Interest adjusted (Tefra Withheld)\n\n- JNL\n  Journal entry\n\n- JNLC\n  Journal entry (cash)\n\n- JNLS\n  Journal entry (stock)\n\n- MA\n  Merger/Acquisition\n\n- NC\n  Name change\n\n- OPASN\n  Option assignment\n\n- OPCA\n  Option corporate action\n\n- OPCSH\n  Option cash deliverable for non-standard contracts\n\n- OPEXC\n  Option exercise\n\n- OPEXP\n  Option expiration\n\n- OPTRD\n  Option trade\n\n- PTC\n  Pass Thru Charge\n\n- PTR\n  Pass Thru Rebate\n\n- REO\n  Reorganization\n\n- REORG\n  Reorg CA\n\n- SPIN\n  Stock spinoff\n\n- SPLIT\n  Stock split\n\n- FOPT\n  Free of Payment Transfers\n\n- OCT\n  On chain transactions (blockchain deposits/withdrawals)",
                 "enum": [
                     "FILL",
                     "TRANS",
@@ -906,6 +906,7 @@
                     "OPTRD",
                     "PTC",
                     "PTR",
+                    "REO",
                     "REORG",
                     "SPIN",
                     "SPLIT",
@@ -954,6 +955,9 @@
                             },
                             {
                                 "$ref": "#/components/schemas/FixedIncomeInterestActivityV2"
+                            },
+                            {
+                                "$ref": "#/components/schemas/REOActivityV2"
                             },
                             {
                                 "$ref": "#/components/schemas/RightsDistributionActivityV2"
@@ -1268,8 +1272,10 @@
                     "cusip": {
                         "description": "The CUSIP identifier for the asset (US Equities only).\nTo request a specific CUSIP, please reach out to Alpaca support.\n",
                         "example": "987654321",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "easy_to_borrow": {
                         "deprecated": true,
@@ -1797,6 +1803,88 @@
                 ],
                 "type": "object"
             },
+            "CommonREOActivityV2": {
+                "description": "Reorganization (REO) activity sub-types:\n- **REOS**: Stock only (1 or more stock legs)\n- **REOC**: Cash only (one cash leg)\n- **REOSC**: Stock and cash",
+                "properties": {
+                    "cash_payout": {
+                        "description": "Cash payout amount",
+                        "format": "decimal",
+                        "type": "string"
+                    },
+                    "cash_rate": {
+                        "description": "Cash rate per share",
+                        "format": "decimal",
+                        "type": "string"
+                    },
+                    "cusip": {
+                        "description": "CUSIP received on this stock leg",
+                        "type": "string"
+                    },
+                    "effective_date": {
+                        "description": "Effective date of the reorganization",
+                        "format": "date",
+                        "type": "string"
+                    },
+                    "isin": {
+                        "description": "ISIN received on this stock leg",
+                        "type": "string"
+                    },
+                    "new_rate": {
+                        "description": "New ratio for this stock leg",
+                        "format": "decimal",
+                        "type": "string"
+                    },
+                    "payable_date": {
+                        "description": "Payable date of the reorganization",
+                        "format": "date",
+                        "type": "string"
+                    },
+                    "qty": {
+                        "description": "Quantity received on this stock leg",
+                        "format": "decimal",
+                        "type": "string"
+                    },
+                    "removed_qty": {
+                        "description": "Positive quantity removed from the source position",
+                        "format": "decimal",
+                        "type": "string"
+                    },
+                    "source_cusip": {
+                        "description": "CUSIP of the source security",
+                        "type": "string"
+                    },
+                    "source_isin": {
+                        "description": "ISIN of the source security",
+                        "type": "string"
+                    },
+                    "source_qty": {
+                        "description": "Source position quantity",
+                        "format": "decimal",
+                        "type": "string"
+                    },
+                    "source_rate": {
+                        "description": "Source ratio for this stock leg",
+                        "format": "decimal",
+                        "type": "string"
+                    },
+                    "source_symbol": {
+                        "description": "Symbol of the source security",
+                        "example": "CEPT",
+                        "type": "string"
+                    },
+                    "symbol": {
+                        "description": "Symbol received on this stock leg",
+                        "example": "SECZ",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "source_symbol",
+                    "source_cusip",
+                    "payable_date"
+                ],
+                "type": "object"
+            },
             "CommonSDIVActivityV2": {
                 "properties": {
                     "cusip": {
@@ -2154,8 +2242,10 @@
                     "limit_price": {
                         "description": "Maximum acceptable locate fee per share, as a decimal string in USD.\nIf omitted, any quoted fee is accepted.\n",
                         "example": "0.05",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "qty": {
                         "description": "Number of shares to locate. Must be positive and in round lots of 100; invalid quantities return HTTP 400.",
@@ -2287,8 +2377,10 @@
                     "symbols": {
                         "description": "List of asset symbols to include in the watchlist.",
                         "items": {
-                            "nullable": true,
-                            "type": "string"
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "type": "array"
                     }
@@ -2881,8 +2973,10 @@
                     },
                     "next_page_token": {
                         "description": "The token to use to retrieve the next page of results. If `null`, there are no more pages.",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     }
                 },
                 "required": [
@@ -2922,8 +3016,10 @@
                         "description": "Time when the active locate expires. Omitted when rejected.",
                         "example": "2026-01-03T01:00:00Z",
                         "format": "date-time",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "id": {
                         "description": "Locate ID.",
@@ -2934,27 +3030,35 @@
                     "limit_price": {
                         "description": "Maximum acceptable fee per share from the request.",
                         "example": "0.05",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "located_price": {
                         "description": "Locate fee per share in USD. Omitted when rejected.",
                         "example": "0.05",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "located_qty": {
                         "description": "Number of shares located. Omitted when rejected.",
                         "example": 100,
                         "format": "int64",
-                        "nullable": true,
-                        "type": "integer"
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
                     },
                     "rejection_reason": {
                         "description": "Machine-readable rejection reason.",
                         "example": "inventory_unavailable",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "requested_qty": {
                         "description": "Number of shares requested.",
@@ -2973,8 +3077,10 @@
                     "total_fee": {
                         "description": "Total locate fee in USD. Omitted when rejected.",
                         "example": "5.00",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     }
                 },
                 "required": [
@@ -3216,8 +3322,10 @@
             "NextPageToken": {
                 "description": "Use this token in your next API call to paginate through the dataset and retrieve the next page of results. A null token indicates there are no more data to fetch.\n",
                 "example": "MTAwMA==",
-                "nullable": true,
-                "type": "string"
+                "type": [
+                    "string",
+                    "null"
+                ]
             },
             "NonTradeActivities": {
                 "properties": {
@@ -3806,8 +3914,10 @@
                     },
                     "canceled_at": {
                         "format": "date-time",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "client_order_id": {
                         "description": "Client unique order ID",
@@ -3820,8 +3930,10 @@
                     },
                     "expired_at": {
                         "format": "date-time",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "expires_at": {
                         "format": "date-time",
@@ -3833,18 +3945,24 @@
                     },
                     "failed_at": {
                         "format": "date-time",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "filled_at": {
                         "format": "date-time",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "filled_avg_price": {
                         "description": "Filled average price",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "filled_qty": {
                         "description": "Filled quantity",
@@ -3853,8 +3971,10 @@
                     },
                     "hwm": {
                         "description": "The highest (lowest) market price seen since the trailing stop order was submitted.",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "id": {
                         "description": "Order ID",
@@ -3866,19 +3986,25 @@
                         "items": {
                             "$ref": "#/components/schemas/OrderLeg"
                         },
-                        "nullable": true,
-                        "type": "array"
+                        "type": [
+                            "array",
+                            "null"
+                        ]
                     },
                     "limit_price": {
                         "description": "Limit price",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "notional": {
                         "description": "Ordered notional amount. If entered, qty will be null. Can take up to 9 decimal points.",
                         "minLength": 1,
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "order_class": {
                         "$ref": "#/components/schemas/OrderClass"
@@ -3894,31 +4020,41 @@
                     "qty": {
                         "description": "Ordered quantity. If entered, notional will be null. Can take up to 9 decimal points. Required if order class is `mleg`.",
                         "minLength": 1,
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "ratio_qty": {
                         "description": "The proportional quantity of this leg in relation to the overall multi-leg order quantity.",
                         "format": "decimal",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "replaced_at": {
                         "format": "date-time",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "replaced_by": {
                         "description": "The order ID that this order was replaced by",
                         "format": "uuid",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "replaces": {
                         "description": "The order ID that this order replaces",
                         "format": "uuid",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "side": {
                         "$ref": "#/components/schemas/OrderSide"
@@ -3928,13 +4064,17 @@
                     },
                     "stop_price": {
                         "description": "Stop price",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "submitted_at": {
                         "format": "date-time",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "symbol": {
                         "description": "Asset symbol, required for all order classes except for `mleg`",
@@ -3946,21 +4086,27 @@
                     },
                     "trail_percent": {
                         "description": "The percent value away from the high water mark for trailing stop orders.",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "trail_price": {
                         "description": "The dollar value away from the high water mark for trailing stop orders.",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "type": {
                         "$ref": "#/components/schemas/OrderType"
                     },
                     "updated_at": {
                         "format": "date-time",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     }
                 },
                 "required": [
@@ -3998,8 +4144,10 @@
                     },
                     "canceled_at": {
                         "format": "date-time",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "client_order_id": {
                         "description": "Client unique order ID",
@@ -4012,8 +4160,10 @@
                     },
                     "expired_at": {
                         "format": "date-time",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "extended_hours": {
                         "description": "If true, eligible for execution outside regular trading hours.",
@@ -4021,18 +4171,24 @@
                     },
                     "failed_at": {
                         "format": "date-time",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "filled_at": {
                         "format": "date-time",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "filled_avg_price": {
                         "description": "Filled average price",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "filled_qty": {
                         "description": "Filled quantity",
@@ -4041,8 +4197,10 @@
                     },
                     "hwm": {
                         "description": "The highest (lowest) market price seen since the trailing stop order was submitted.",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "id": {
                         "description": "Order ID",
@@ -4055,19 +4213,22 @@
                         "items": {
                             "type": "object"
                         },
-                        "nullable": true,
-                        "type": "array"
+                        "type": "null"
                     },
                     "limit_price": {
                         "description": "Limit price",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "notional": {
                         "description": "Ordered notional amount. If entered, qty will be null. Can take up to 9 decimal points.",
                         "minLength": 1,
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "order_class": {
                         "$ref": "#/components/schemas/OrderClass"
@@ -4083,25 +4244,33 @@
                     "qty": {
                         "description": "Ordered quantity. If entered, notional will be null. Can take up to 9 decimal points.",
                         "minLength": 1,
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "replaced_at": {
                         "format": "date-time",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "replaced_by": {
                         "description": "The order ID that this order was replaced by",
                         "format": "uuid",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "replaces": {
                         "description": "The order ID that this order replaces",
                         "format": "uuid",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "side": {
                         "$ref": "#/components/schemas/OrderSide"
@@ -4111,13 +4280,17 @@
                     },
                     "stop_price": {
                         "description": "Stop price",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "submitted_at": {
                         "format": "date-time",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "symbol": {
                         "description": "Asset symbol",
@@ -4129,21 +4302,27 @@
                     },
                     "trail_percent": {
                         "description": "The percent value away from the high water mark for trailing stop orders.",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "trail_price": {
                         "description": "The dollar value away from the high water mark for trailing stop orders.",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "type": {
                         "$ref": "#/components/schemas/OrderType"
                     },
                     "updated_at": {
                         "format": "date-time",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     }
                 },
                 "required": [
@@ -4253,8 +4432,10 @@
                 "properties": {
                     "base_value": {
                         "description": "basis in dollar of the profit loss calculation",
-                        "nullable": true,
-                        "type": "number"
+                        "type": [
+                            "number",
+                            "null"
+                        ]
                     },
                     "base_value_asof": {
                         "description": "If included, then it indicates that the base_value is the account's closing\nequity value at this trading date.\n\nIf not specified, then the baseline calculation is done against the earliest returned data item. This could happen for\naccounts without prior closing balances (e.g. new account) or for queries with 1D timeframes, where the first data point\nis used as a reference point.\n",
@@ -4275,16 +4456,20 @@
                     "equity": {
                         "description": "equity value of the account in dollar amount as of the end of each time window",
                         "items": {
-                            "nullable": true,
-                            "type": "number"
+                            "type": [
+                                "number",
+                                "null"
+                            ]
                         },
                         "type": "array"
                     },
                     "profit_loss": {
                         "description": "profit/loss in dollar from the base value",
                         "items": {
-                            "nullable": true,
-                            "type": "number"
+                            "type": [
+                                "number",
+                                "null"
+                            ]
                         },
                         "type": "array"
                     },
@@ -4295,8 +4480,10 @@
                             0.002
                         ],
                         "items": {
-                            "nullable": true,
-                            "type": "number"
+                            "type": [
+                                "number",
+                                "null"
+                            ]
                         },
                         "type": "array"
                     },
@@ -4569,6 +4756,18 @@
                 "example": "buy_to_open",
                 "title": "PositionIntent",
                 "type": "string"
+            },
+            "REOActivityV2": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonCaActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CommonREOActivityV2"
+                    }
+                ],
+                "description": "Reorganization (REO)",
+                "type": "object"
             },
             "ReverseSplitActivityV2": {
                 "allOf": [
@@ -4876,7 +5075,9 @@
                     "base",
                     "ton",
                     "tron",
-                    "mantle"
+                    "mantle",
+                    "cronos",
+                    "hyperevm"
                 ],
                 "example": "solana",
                 "title": "TokenizationNetwork",
@@ -4913,8 +5114,10 @@
                     },
                     "fees": {
                         "description": "Fees charged for this tokenization request",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "issuer": {
                         "$ref": "#/components/schemas/TokenizationIssuer"
@@ -4931,8 +5134,10 @@
                     },
                     "issuer_request_id": {
                         "description": "Unique identifier of the tokenization request set by the issuer",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "network": {
                         "$ref": "#/components/schemas/TokenizationNetwork"
@@ -4954,8 +5159,10 @@
                     },
                     "tx_hash": {
                         "description": "Transaction hash of the completed request on the blockchain",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "type": {
                         "$ref": "#/components/schemas/TokenizationRequestType"
@@ -4966,8 +5173,10 @@
                     },
                     "updated_at": {
                         "format": "date-time",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "wallet_address": {
                         "description": "The wallet address associated with this tokenization request",
@@ -5244,8 +5453,10 @@
                     "symbols": {
                         "description": "List of asset symbols to include in the watchlist. The existing assets will be replaced with the new list.",
                         "items": {
-                            "nullable": true,
-                            "type": "string"
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "type": "array"
                     }
@@ -5832,7 +6043,7 @@
         "title": "Trading API",
         "version": "2.0.1"
     },
-    "openapi": "3.0.0",
+    "openapi": "3.1.2",
     "paths": {
         "/v1/locates": {
             "get": {

@@ -16,7 +16,7 @@ CorporateActions: "Get corporate actions"
   limit (query, int, default=100) -> limit
   page-token (query, string) -> page_token
   region (query, string, default=us) -> region
-  sort (query, string, default=asc) -> sort
+  sort (query, string) -> sort
   start (query, string) -> start
   symbols (query, string) -> symbols
   types (query, string) -> types
@@ -26,7 +26,7 @@ CryptoBars: "Get historical bars"
   limit (query, int, default=1000) -> limit
   loc (path, string, required, default=us) -> loc
   page-token (query, string) -> page_token
-  sort (query, string, default=asc) -> sort
+  sort (query, string) -> sort
   start (query, string) -> start
   symbols (query, string, required) -> symbols
   timeframe (query, string, required) -> timeframe
@@ -52,7 +52,7 @@ CryptoQuotes: "Get historical quotes"
   limit (query, int, default=1000) -> limit
   loc (path, string, required, default=us) -> loc
   page-token (query, string) -> page_token
-  sort (query, string, default=asc) -> sort
+  sort (query, string) -> sort
   start (query, string) -> start
   symbols (query, string, required) -> symbols
 
@@ -65,9 +65,16 @@ CryptoTrades: "Get historical trades"
   limit (query, int, default=1000) -> limit
   loc (path, string, required, default=us) -> loc
   page-token (query, string) -> page_token
-  sort (query, string, default=asc) -> sort
+  sort (query, string) -> sort
   start (query, string) -> start
   symbols (query, string, required) -> symbols
+
+FixedIncomeLatestPrices: "Get latest prices"
+  isins (query, string, required) -> isins
+
+FixedIncomeLatestQuotes: "Get latest quotes"
+  isins (query, string, required) -> isins
+  trade-size (query, int) -> trade_size
 
 LatestRates: "Get latest rates for currency pairs"
   currency-pairs (query, string, required) -> currency_pairs
@@ -139,7 +146,7 @@ OptionTrades: "Get historical trades"
   end (query, string) -> end
   limit (query, int, default=1000) -> limit
   page-token (query, string) -> page_token
-  sort (query, string, default=asc) -> sort
+  sort (query, string) -> sort
   start (query, string) -> start
   symbols (query, string, required) -> symbols
 
@@ -148,7 +155,7 @@ Rates: "Get historical rates for currency pairs"
   end (query, string) -> end
   limit (query, int, default=1000) -> limit
   page-token (query, string) -> page_token
-  sort (query, string, default=asc) -> sort
+  sort (query, string) -> sort
   start (query, string) -> start
   timeframe (query, string, default=1Min) -> timeframe
 
@@ -159,7 +166,7 @@ StockAuctionSingle: "Get historical auctions (single)"
   feed (query, string, default=sip) -> feed
   limit (query, int, default=1000) -> limit
   page-token (query, string) -> page_token
-  sort (query, string, default=asc) -> sort
+  sort (query, string) -> sort
   start (query, string) -> start
   symbol (path, string, required) -> symbol
 
@@ -170,7 +177,7 @@ StockAuctions: "Get historical auctions"
   feed (query, string, default=sip) -> feed
   limit (query, int, default=1000) -> limit
   page-token (query, string) -> page_token
-  sort (query, string, default=asc) -> sort
+  sort (query, string) -> sort
   start (query, string) -> start
   symbols (query, string, required) -> symbols
 
@@ -182,7 +189,7 @@ StockBarSingle: "Get historical bars (single symbol)"
   feed (query, string, default=sip) -> feed
   limit (query, int, default=1000) -> limit
   page-token (query, string) -> page_token
-  sort (query, string, default=asc) -> sort
+  sort (query, string) -> sort
   start (query, string) -> start
   symbol (path, string, required) -> symbol
   timeframe (query, string, required) -> timeframe
@@ -195,7 +202,7 @@ StockBars: "Get historical bars"
   feed (query, string, default=sip) -> feed
   limit (query, int, default=1000) -> limit
   page-token (query, string) -> page_token
-  sort (query, string, default=asc) -> sort
+  sort (query, string) -> sort
   start (query, string) -> start
   symbols (query, string, required) -> symbols
   timeframe (query, string, required) -> timeframe
@@ -243,7 +250,7 @@ StockQuoteSingle: "Get historical quotes (single symbol)"
   feed (query, string, default=sip) -> feed
   limit (query, int, default=1000) -> limit
   page-token (query, string) -> page_token
-  sort (query, string, default=asc) -> sort
+  sort (query, string) -> sort
   start (query, string) -> start
   symbol (path, string, required) -> symbol
 
@@ -254,7 +261,7 @@ StockQuotes: "Get historical quotes"
   feed (query, string, default=sip) -> feed
   limit (query, int, default=1000) -> limit
   page-token (query, string) -> page_token
-  sort (query, string, default=asc) -> sort
+  sort (query, string) -> sort
   start (query, string) -> start
   symbols (query, string, required) -> symbols
 
@@ -275,7 +282,7 @@ StockTradeSingle: "Get historical trades (single symbol)"
   feed (query, string, default=sip) -> feed
   limit (query, int, default=1000) -> limit
   page-token (query, string) -> page_token
-  sort (query, string, default=asc) -> sort
+  sort (query, string) -> sort
   start (query, string) -> start
   symbol (path, string, required) -> symbol
 
@@ -286,7 +293,7 @@ StockTrades: "Get historical trades"
   feed (query, string, default=sip) -> feed
   limit (query, int, default=1000) -> limit
   page-token (query, string) -> page_token
-  sort (query, string, default=asc) -> sort
+  sort (query, string) -> sort
   start (query, string) -> start
   symbols (query, string, required) -> symbols
 
@@ -505,7 +512,7 @@ OptionBars: "Get historical bars"
   end (query, string) -> end
   limit (query, int, default=1000) -> limit
   page-token (query, string) -> page_token
-  sort (query, string, default=asc) -> sort
+  sort (query, string) -> sort
   start (query, string) -> start
   symbols (query, string, required) -> symbols
   timeframe (query, string, required) -> timeframe

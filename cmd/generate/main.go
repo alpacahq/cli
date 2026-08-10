@@ -340,7 +340,7 @@ func extractEndpoints(spec map[string]any) []*endpointInfo {
 							if schema, ok := jc["schema"].(map[string]any); ok {
 								if ref, ok := schema["$ref"].(string); ok {
 									ep.responseRef = toGoName(refBaseName(ref))
-								} else if t, _ := schema["type"].(string); t == "array" {
+								} else if t, _ := schemaType(schema); t == "array" {
 									if items, ok := schema["items"].(map[string]any); ok {
 										if ref, ok := items["$ref"].(string); ok {
 											ep.responseRef = toGoName(refBaseName(ref))
@@ -425,9 +425,35 @@ func genStruct(buf *bytes.Buffer, s *schemaInfo) {
 	fmt.Fprintf(buf, "}\n\n")
 }
 
+// schemaType returns the non-null JSON Schema type and whether null is allowed.
+// Handles OAS 3.0 (`type: "string", nullable: true`) and OAS 3.1
+// (`type: ["string", "null"]`).
+func schemaType(schema map[string]any) (typ string, nullable bool) {
+	nullable, _ = schema["nullable"].(bool)
+	switch t := schema["type"].(type) {
+	case string:
+		return t, nullable
+	case []any:
+		var primary string
+		for _, v := range t {
+			s, _ := v.(string)
+			if s == "null" {
+				nullable = true
+				continue
+			}
+			if primary == "" {
+				primary = s
+			}
+		}
+		return primary, nullable
+	default:
+		return "", nullable
+	}
+}
+
 func isNullable(schema map[string]any) bool {
-	v, _ := schema["nullable"].(bool)
-	return v
+	_, nullable := schemaType(schema)
+	return nullable
 }
 
 func isScalarType(goType string) bool {
@@ -450,7 +476,7 @@ func resolveGoType(schema map[string]any) string {
 		return toGoName(rn)
 	}
 
-	typ, _ := schema["type"].(string)
+	typ, _ := schemaType(schema)
 	switch typ {
 	case "string":
 		return "string"
@@ -636,7 +662,7 @@ func genInlineRequestStruct(buf *bytes.Buffer, name string, schema map[string]an
 	var reqFields []string
 	for fn := range reqMap {
 		if p, ok := props[fn]; ok {
-			if t, _ := p["type"].(string); t == "string" {
+			if t, _ := schemaType(p); t == "string" {
 				reqFields = append(reqFields, fn)
 			}
 		}
@@ -907,7 +933,7 @@ func bodyPropFlagType(prop map[string]any, compSchemas map[string]any) string {
 }
 
 func schemaToFlagType(s map[string]any) string {
-	switch t, _ := s["type"].(string); t {
+	switch t, _ := schemaType(s); t {
 	case "integer":
 		return "int"
 	case "boolean":
@@ -996,7 +1022,7 @@ func oasFieldType(schema map[string]any, compSchemas map[string]any) string {
 		}
 		return name
 	}
-	typ, _ := schema["type"].(string)
+	typ, _ := schemaType(schema)
 	switch typ {
 	case "string":
 		if _, hasEnum := schema["enum"]; hasEnum {
