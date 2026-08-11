@@ -7,9 +7,30 @@
 --           doctor diagnostics, credential profile management
 -- Grounded in: internal/cmd/order.go, internal/cmd/watchlist.go, internal/cmd/update.go,
 --              internal/cmd/update_check.go, internal/cmd/doctor.go, internal/cmd/auth.go
+-- Read for corroboration (not specified here): internal/cmd/root.go,
+--              internal/cmd/factory.go, internal/config/config.go,
+--              internal/oauth/config.go, internal/api/trading_client.gen.go,
+--              internal/api/descriptions.gen.go, internal/cmd/commands.gen.go
 -- Excludes: generated Cobra command tree (internal/cmd/commands.gen.go),
 --           raw API passthrough (api.go), factory helpers (factory.go),
 --           help-all rendering (help_all.go)
+--
+-- External systems this spec's rules reach:
+--   * Alpaca Trading API — POST /v2/orders, GET /v2/watchlists:by_name,
+--     DELETE /v2/watchlists/{id}/{symbol}, GET /v2/account. Base URL is
+--     https://paper-api.alpaca.markets or https://api.alpaca.markets
+--     (internal/config/config.go:16-17).
+--   * Alpaca Market Data API — GET /v2/stocks/AAPL/trades/latest, at
+--     https://data.alpaca.markets (config.go:18), used only as a doctor probe.
+--   * GitHub Releases API — GET api.github.com/repos/alpacahq/cli/releases/latest
+--     (update.go:138). Unauthenticated, so subject to GitHub's IP rate limit.
+--   * Alpaca OAuth — app.alpaca.markets/oauth/authorize and
+--     api.alpaca.markets/oauth/token (internal/oauth/config.go:4-5).
+--   * Homebrew tap alpacahq/tap/cli and the Go module proxy, invoked as
+--     shell commands by UpgradeCli (update_check.go:46-53).
+-- The request/response shapes for the first two are generated from the OpenAPI
+-- documents in api/specs/*.json; drift there changes flags and body fields
+-- under this spec without any edit to the files it is grounded in.
 
 ------------------------------------------------------------
 -- External Entities
@@ -31,14 +52,22 @@ external entity BrokerWatchlist {
 -- Value Types
 ------------------------------------------------------------
 
--- The --take-profit flag accepts either a bare price (shorthand for
--- {"limit_price": <value>}) or a raw JSON object (order.go:59-72).
+-- These value types model the SHORTHAND form only. The flag value is
+-- dispatched on its first character after trimming (order.go:60-71):
+--   * begins with "{" -> parsed as JSON into an arbitrary string-keyed map.
+--     No key or type validation happens client-side, so the leg the broker
+--     receives may have any shape at all; these value types do not constrain it.
+--   * anything else -> wrapped as { "<shorthand key>": <raw string> }. The
+--     value is NOT parsed as a number; the raw flag text is forwarded verbatim.
+--   * empty after trimming -> no leg is attached (but see ForceBracketOrderClass:
+--     the order class has already been overwritten by then).
+
+-- --take-profit; shorthand key "limit_price" (order.go:43).
 value TakeProfitLeg {
     limit_price: Decimal
 }
 
--- The --stop-loss flag accepts either a bare price (shorthand for
--- {"stop_price": <value>}) or a raw JSON object (order.go:59-72).
+-- --stop-loss; shorthand key "stop_price" (order.go:50).
 value StopLossLeg {
     stop_price: Decimal
     limit_price: Decimal?
@@ -52,17 +81,41 @@ value StopLossLeg {
 -- (internal/cmd/update_check.go:11-13).
 enum InstallMethod { homebrew | goinstall }
 
-enum CredentialSource { env_api_key | oauth | profile_api_key }
+-- Mirrors config.Source (internal/config/config.go:26-31). The code's wire
+-- values are "env-apikey", "profile-oauth" and "profile-apikey"; the fourth
+-- constant SourceNone ("") is not modelled here because doctor aborts before
+-- reporting a source when no credentials resolve (doctor.go:60-63).
+enum CredentialSource { env_api_key | profile_oauth | profile_api_key }
+
+-- Completions advertised for --order-class on `order submit`
+-- (internal/api/descriptions.gen.go:1161). The hand-authored hook only ever
+-- writes `bracket`; the other four reach the request body untouched from
+-- the generated flag.
+enum OrderClass { simple | bracket | mleg | oco | oto }
+
+-- Completions advertised for --time-in-force (descriptions.gen.go:1169).
+enum TimeInForce { day | gtc | ioc | fok | opg | cls }
+
+-- Completions advertised for --side (descriptions.gen.go:1164).
+enum OrderSide { buy | sell }
 
 ------------------------------------------------------------
 -- Config
 ------------------------------------------------------------
 
+-- Every value below is a hardcoded literal in the implementation. None is
+-- readable from a config file, a flag or an environment variable; `config`
+-- here records the constant, not a user-facing knob.
 config {
-    -- internal/cmd/auth.go:23 (defaultProfileName = config.EnvPaper)
+    -- internal/cmd/auth.go:23 (defaultProfileName = config.EnvPaper = "paper",
+    -- internal/config/config.go:14)
     default_profile_name: String = "paper"
     -- internal/cmd/update.go:41, internal/cmd/doctor.go:89
     update_check_timeout: Duration = 10.seconds
+    -- internal/cmd/root.go:127 (best-effort notice on the bare `alpaca` help)
+    help_notice_check_timeout: Duration = 2.seconds
+    -- internal/cmd/doctor.go:72 (HTTP client used for both connectivity probes)
+    doctor_api_timeout: Duration = 10.seconds
     -- internal/cmd/auth.go:353 (credential validation HTTP client)
     validate_timeout: Duration = 10.seconds
 }
@@ -73,9 +126,13 @@ config {
 
 -- A stored connection profile: one YAML file under
 -- $ALPACA_CONFIG_DIR|~/.config/alpaca/profiles/<name>.yaml
--- (internal/config/config.go:39-49, 208-243). Field-level shape matches
--- config.Profile. live_trade is a tri-state: absent means paper (safe
--- default), false means explicitly paper, true means live.
+-- (internal/config/config.go:39-49, 208-243, 233-247). `name` is the identity
+-- of the profile but is NOT a field of config.Profile: it is the YAML file's
+-- base name, so renaming is a file rename and two profiles cannot share a name
+-- by construction (config.go:210, 242, 246, 259-260). Remaining fields match
+-- config.Profile one for one. live_trade is a tri-state (*bool): absent means
+-- paper (safe default), false means explicitly paper, true means live
+-- (config.go:44-48).
 entity Profile {
     name: String
     api_key: String?
@@ -85,17 +142,23 @@ entity Profile {
     live_trade: Boolean?
 }
 
+-- Only the fields the hand-authored body hook reads or writes. The generated
+-- command populates fifteen more (client_order_id, qty, notional, type,
+-- limit_price, stop_price, trail_*, legs, advanced_instructions, ...) that the
+-- hook never inspects — see internal/cmd/commands.gen.go:527-542 and
+-- internal/api/trading_client.gen.go:120-139.
 entity Order {
     symbol: String
-    side: buy | sell
-    order_class: simple | bracket
-    time_in_force: day | gtc | ioc | fok | opg | cls
+    side: OrderSide
+    -- Absent when --order-class was not passed: the field carries `omitempty`,
+    -- so it is dropped from the request body and the broker applies its own
+    -- default (trading_client.gen.go:126).
+    order_class: OrderClass?
+    -- Never absent on the wire: the hook fills an empty value before the
+    -- request is built (order.go:18-20) and the field has no `omitempty`.
+    time_in_force: TimeInForce
     take_profit: TakeProfitLeg?
     stop_loss: StopLossLeg?
-
-    invariant BracketHasLegs {
-        order_class = bracket implies (take_profit != null or stop_loss != null)
-    }
 }
 
 -- The structured document printed by `alpaca update --check`
@@ -108,44 +171,35 @@ entity UpdateStatus {
     update_command: String
 }
 
+-- The document `alpaca doctor` prints. Doctor runs its checks in sequence and
+-- returns early on two of them, so the later fields can be absent: the report
+-- is a prefix of the full check list, not a fixed-width record.
 entity DiagnosticReport {
     cli_version: String
-    credential_source: CredentialSource
-    config_accessible: Boolean
-    trading_api_reachable: Boolean
-    data_api_reachable: Boolean
-    -- null when the GitHub release check itself failed; doctor reports
-    -- "could not check for updates" without failing (doctor.go:88-98)
+
+    -- Three independent config checks, not one. Each prints its own line and
+    -- each can fail on its own (doctor.go:30-58).
+    config_dir_present: Boolean
+    profiles_present: Boolean
+    config_loaded: Boolean
+
+    -- Absent when config loading failed: doctor returns at doctor.go:56 before
+    -- resolving credentials.
+    credential_source: CredentialSource?
+
+    -- Absent when the run aborted at either early return: failed config load
+    -- (doctor.go:53-57) or no resolvable credentials (doctor.go:60-63).
+    trading_api_reachable: Boolean?
+    data_api_reachable: Boolean?
+
+    -- Absent when the run aborted before the update section, and also when the
+    -- GitHub release check itself failed; in the latter case doctor prints
+    -- "could not check for updates" without failing (doctor.go:88-98).
     update_available: Boolean?
-}
 
-------------------------------------------------------------
--- Surfaces
-------------------------------------------------------------
-
-surface AlpacaCLIHandAuthored {
-    provides:
-        PlaceOrder(symbol, side, qty?, time_in_force?, take_profit?, stop_loss?, dry_run?)
-        RemoveWatchlistAssetByName(watchlist_name, symbol)
-        CheckForUpdate()
-        UpgradeCli(install_method, confirmed)
-        RunDiagnostics()
-        LoginWithOAuth(profile_name?, scopes?)
-        LoginWithApiKey(profile_name?, api_key, secret_key, live?)
-        LogoutProfile(profile_name?)
-        SwitchActiveProfile(profile_name)
-
-    @guarantee NoLiveOAuthLogin
-        -- `alpaca profile login --live` without --api-key is rejected with an
-        -- error before any browser flow starts; OAuth login is paper-only
-        -- (auth.go:48-51).
-
-    @guidance
-        -- Command mapping: PlaceOrder = `alpaca order submit` (generated
-        -- command + postOrderHook), RemoveWatchlistAssetByName =
-        -- `alpaca watchlist remove-by-name`, CheckForUpdate/UpgradeCli =
-        -- `alpaca update`, RunDiagnostics = `alpaca doctor`, the rest =
-        -- `alpaca profile login|logout|switch`.
+    -- Drives the exit status: false prints "some checks failed" and returns a
+    -- non-zero exit (doctor.go:115-122).
+    all_checks_passed: Boolean
 }
 
 ------------------------------------------------------------
@@ -154,15 +208,46 @@ surface AlpacaCLIHandAuthored {
 
 -- Order Construction (postOrderHook, internal/cmd/order.go)
 
--- Time-in-force defaulting applies only when the user did not pass
--- --time-in-force. Crypto detection is purely syntactic: a "/" in the symbol
--- (e.g. BTC/USD) means crypto. No asset lookup is performed (order.go:30-35).
+-- The hook runs in three steps, always in this order and always all three
+-- (order.go:17-28): default the time in force, apply the bracket legs, then
+-- decide whether to submit. --dry-run does NOT skip construction; it only
+-- decides what happens to the constructed body. Construction and disposition
+-- are therefore modelled as separate rules over the same trigger.
+
+rule DefaultTimeInForceOnConstruct {
+    when: PlaceOrder(symbol, side, order_class?, time_in_force?, take_profit?, stop_loss?, dry_run?)
+
+    requires: take_profit = null and stop_loss = null
+
+    let tif =
+        if time_in_force != null: time_in_force
+        else if is_crypto_pair_symbol(symbol): gtc
+        else: day
+
+    ensures: Order.created(
+        symbol: symbol,
+        side: side,
+        order_class: order_class,
+        time_in_force: tif
+    )
+
+    @guidance
+        -- With no leg flags the hook leaves order_class exactly as the user
+        -- supplied it (order.go:38-40 returns before the overwrite), so any of
+        -- mleg/oco/oto/simple can reach the broker, and an unset flag stays
+        -- absent from the request body.
+        -- is_crypto_pair_symbol(s) is strings.Contains(s, "/") (order.go:31).
+        -- Crypto detection is purely syntactic: no asset lookup is performed,
+        -- so a non-crypto symbol containing "/" would also default to gtc.
+        -- Defaulting keys off the empty string, not off flag presence: passing
+        -- --time-in-force "" is indistinguishable from omitting it
+        -- (order.go:18).
+}
 
 rule ConstructBracketOrder {
-    when: PlaceOrder(symbol, side, time_in_force?, take_profit?, stop_loss?, dry_run?)
+    when: PlaceOrder(symbol, side, order_class?, time_in_force?, take_profit?, stop_loss?, dry_run?)
 
     requires: take_profit != null or stop_loss != null
-    requires: dry_run != true
 
     let tif =
         if time_in_force != null: time_in_force
@@ -179,46 +264,52 @@ rule ConstructBracketOrder {
     )
 
     @guidance
-        -- is_crypto_pair_symbol(s) is strings.Contains(s, "/") (order.go:31).
         -- Presence of either leg flag forces order_class to "bracket"
-        -- (order.go:37-41); the user-supplied order class is overwritten.
-        -- Leg flags parse as shorthand price or raw JSON (order.go:59-72);
-        -- invalid JSON aborts the command before submission.
+        -- (order.go:41); a user-supplied --order-class is overwritten without
+        -- warning.
+        -- The overwrite happens BEFORE the leg values are parsed, and a leg
+        -- flag that is empty after trimming yields no leg at all
+        -- (order.go:60-63). `--take-profit "   "` therefore produces a bracket
+        -- order with zero legs. The CLI performs no cross-field check here;
+        -- the broker is the only thing that rejects such a body.
+        -- Leg flags parse as shorthand price or raw JSON (order.go:59-72).
+        -- The JSON branch is chosen only when the trimmed value starts with
+        -- "{", so a JSON array or a bare number falls into the shorthand
+        -- branch and is forwarded as a string. Invalid JSON in the "{" branch
+        -- aborts the command before submission (order.go:66-68).
 }
 
-rule ConstructSimpleOrder {
-    when: PlaceOrder(symbol, side, time_in_force?, take_profit?, stop_loss?, dry_run?)
+rule SubmitOrder {
+    when: PlaceOrder(symbol, side, order_class?, time_in_force?, take_profit?, stop_loss?, dry_run?)
 
-    requires: take_profit = null and stop_loss = null
     requires: dry_run != true
 
-    let tif =
-        if time_in_force != null: time_in_force
-        else if is_crypto_pair_symbol(symbol): gtc
-        else: day
+    ensures: OrderSubmitted(symbol: symbol)
 
-    ensures: Order.created(
-        symbol: symbol,
-        side: side,
-        order_class: simple,
-        time_in_force: tif
-    )
+    @guidance
+        -- The hook returns (nil, nil), so the generated command falls through
+        -- to tradingClient.PostOrder — POST /v2/orders on the resolved trading
+        -- base URL (order.go:27, commands.gen.go:553-558,
+        -- trading_client.gen.go:142-144).
 }
 
 rule DryRunOrder {
-    when: PlaceOrder(symbol, side, time_in_force?, take_profit?, stop_loss?, dry_run?)
+    when: PlaceOrder(symbol, side, order_class?, time_in_force?, take_profit?, stop_loss?, dry_run?)
 
     requires: dry_run = true
 
     ensures: OrderPreviewDisplayed(symbol: symbol)
 
     @guidance
-        -- --dry-run returns the fully constructed request body (including
-        -- defaulted time-in-force and bracket legs) from the body hook, which
-        -- short-circuits submission; the body is rendered through the standard
-        -- output pipeline, so --jq and --csv apply to it (order.go:24-26,
-        -- commands.gen.go hook wiring, factory.go renderData). No order is
-        -- submitted.
+        -- --dry-run returns the fully constructed request body (including the
+        -- defaulted time-in-force and the bracket legs, and including every
+        -- generated flag the hook never touches) from the body hook, which
+        -- short-circuits submission (order.go:24-26, commands.gen.go:553-557).
+        -- The body is rendered through the standard output pipeline, so --jq
+        -- and --csv apply to it (factory.go:29-33, root.go:255-267). No order
+        -- is submitted.
+        -- --dry-run is registered by configureOrderSubmit (order.go:13-15),
+        -- not by the OAS-driven flag generator.
 }
 
 -- Watchlist Management (internal/cmd/watchlist.go)
@@ -234,10 +325,16 @@ rule RemoveWatchlistAssetByName {
 
     @guidance
         -- Both --name and --symbol are required (watchlist.go:16-18).
-        -- Implemented as two API calls: resolve the watchlist by name, then
-        -- remove the symbol by watchlist ID (watchlist.go:20-31). A missing
-        -- watchlist fails with 'watchlist "<name>" not found' before any
-        -- mutation. The updated watchlist is rendered on success.
+        -- Implemented as two API calls: GET /v2/watchlists:by_name with the
+        -- name as a query parameter, then DELETE /v2/watchlists/{id}/{symbol}
+        -- (watchlist.go:20-31, trading_client.gen.go:301-309).
+        -- "Not found" is inferred client-side from a nil response or an empty
+        -- ID, not from an HTTP status: watchlist.go:24-26 fails with
+        -- 'watchlist "<name>" not found' before any mutation.
+        -- The symbol is never validated or resolved to an asset; it is
+        -- path-escaped and sent as-is.
+        -- The updated watchlist is rendered through renderData on success
+        -- (watchlist.go:32).
 }
 
 -- Update Discovery and Self-Upgrade (internal/cmd/update.go, update_check.go)
@@ -254,37 +351,57 @@ rule CheckForUpdate {
     )
 
     @guidance
-        -- latest_published_version() queries the GitHub releases API with a
-        -- config.update_check_timeout deadline (update.go:137-160).
+        -- latest_published_version() is a GET to
+        -- https://api.github.com/repos/alpacahq/cli/releases/latest with a
+        -- config.update_check_timeout deadline, reading only `tag_name`
+        -- (update.go:137-160). Any non-200 or transport failure aborts
+        -- `alpaca update` with "checking for updates: ..." (update.go:41-44),
+        -- so no UpdateStatus is produced on failure.
         -- version_newer compares numeric major.minor.patch, strips a leading
         -- "v" and anything after "-" (pre-release), and is strictly greater
-        -- (update_check.go:55-78).
+        -- (update_check.go:55-78). Non-numeric components parse as 0, so a
+        -- "dev" build (the default version, root.go:24) compares as 0.0.0 and
+        -- any published release looks newer.
         -- detect_install_method(): resolved executable path containing
         -- "/Cellar/" or "/homebrew/" means homebrew; every other outcome is
         -- goinstall (update_check.go:15-44 — the GOBIN/GOPATH branches also
-        -- return goinstall).
+        -- return goinstall, as does the final fallthrough and the
+        -- os.Executable error path).
         -- `alpaca update --check` prints this document as indented JSON to
         -- stdout with "v" prefixes stripped, and never prompts (update.go:51-62).
-        -- The bare `alpaca` help output shows a best-effort update notice with
-        -- a 2-second timeout, silent on error or when current (update.go:121-131).
+        -- The JSON keys are "current", "latest", "update_available",
+        -- "install_method" and "update_command" — the first two are shorter
+        -- than the field names used here.
+        -- The bare `alpaca` help output shows a best-effort update notice,
+        -- silent on error or when current (update.go:121-131), called with
+        -- config.help_notice_check_timeout at root.go:127.
 }
 
 rule UpgradeCli {
-    when: UpgradeCli(install_method, confirmed)
+    when: UpgradeCli(confirmed)
 
+    requires: version_newer(latest_published_version(), current_version())
     requires: confirmed
 
-    ensures: CliUpgraded(install_method: install_method)
+    ensures: CliUpgraded(install_method: detect_install_method())
 
     @guidance
-        -- confirmed means --yes was passed, or the user answered "y"/"yes" to
-        -- the interactive prompt (update.go:73-89). In a non-interactive
-        -- terminal without --yes, the upgrade command is printed but never
-        -- run, and the command exits successfully (update.go:73-77).
+        -- The version check comes first: when already current, `alpaca update`
+        -- prints "Already up to date" and exits successfully without prompting
+        -- or upgrading (update.go:64-67).
+        -- confirmed means --yes was passed, or the user answered "y"/"yes"
+        -- (case-insensitive, trimmed) to the interactive prompt
+        -- (update.go:79-89). Any other answer, including empty, cancels and
+        -- exits successfully (update.go:84-88).
+        -- In a non-interactive terminal without --yes, the upgrade command is
+        -- printed but never run, and the command exits successfully
+        -- (update.go:73-77).
         -- The upgrade shells out via `sh -c` to "brew upgrade alpacahq/tap/cli"
         -- (homebrew) or "go install github.com/alpacahq/cli/cmd/alpaca@latest"
-        -- (goinstall), streaming output to the terminal (update.go:99-109,
-        -- update_check.go:46-53).
+        -- (goinstall), streaming stdout/stderr/stdin through to the terminal
+        -- (update.go:99-109, update_check.go:46-53). The CLI does not verify
+        -- that the upgrade actually changed the installed version; it only
+        -- propagates the subprocess exit status.
 }
 
 -- Doctor Diagnostics (internal/cmd/doctor.go)
@@ -294,28 +411,45 @@ rule RunDiagnostics {
 
     ensures: DiagnosticReport.created(
         cli_version: current_version(),
+        config_dir_present: config_dir_present(),
+        profiles_present: saved_profiles_present(),
+        config_loaded: config_loaded(),
         credential_source: active_credential_source(),
-        config_accessible: config_accessible(),
         trading_api_reachable: trading_api_reachable(),
         data_api_reachable: data_api_reachable(),
-        update_available: version_newer(latest_published_version(), current_version())
+        update_available: update_available(),
+        all_checks_passed: all_checks_passed()
     )
 
     @guidance
-        -- Checks run in order: config directory exists, profiles exist, config
-        -- loads, credentials resolve, trading API GET /v2/account, data API
-        -- GET /v2/stocks/AAPL/trades/latest (10s client timeout), update check.
-        -- Exits non-zero ("some checks failed") if any check fails
-        -- (doctor.go:115-122).
+        -- Checks run in this order (doctor.go:21-100): config directory exists,
+        -- saved profiles exist, config loads, credentials resolve, trading API
+        -- GET /v2/account, data API GET /v2/stocks/AAPL/trades/latest, update
+        -- check. Both connectivity probes share one client with a
+        -- config.doctor_api_timeout timeout (doctor.go:71-72) — the timeout is
+        -- not specific to the data probe.
+        -- Two checks return early, truncating the report: a failed config load
+        -- (doctor.go:53-57) and no resolvable credentials (doctor.go:60-63).
+        -- Both also fail the run. Everything after the abort point is simply
+        -- never evaluated, which is why those fields are optional above.
         -- A missing config directory or zero saved profiles is NOT a failure
         -- when both ALPACA_API_KEY and ALPACA_SECRET_KEY are set
-        -- (doctor.go:24, 32-51).
-        -- No resolvable credentials aborts the remaining checks and fails
-        -- (doctor.go:60-63).
+        -- (doctor.go:24, 32-51). Only both being set counts; one alone does
+        -- not waive the check.
         -- A failed update check is reported but does not fail doctor
         -- (doctor.go:88-98).
         -- Environment variable shadowing of profile credentials is reported as
         -- a warning, not as a check failure (doctor.go:68).
+        -- doctor also prints the Go version and OS/arch (doctor.go:27-28), the
+        -- active profile name (doctor.go:58), the resolved trading and data
+        -- base URLs (doctor.go:74, 81) and, for OAuth profiles, the granted
+        -- scopes (doctor.go:65-67). These are informational lines with no
+        -- pass/fail semantics, so they are not modelled as report fields.
+        -- Exits non-zero with "some checks failed" when all_checks_passed is
+        -- false (doctor.go:115-122).
+        -- Note that a ListProfiles error is silently discarded (doctor.go:42),
+        -- so an unreadable profiles directory reports as "no profiles
+        -- configured" rather than as an error.
 }
 
 -- Credential Profile Management (internal/cmd/auth.go)
@@ -343,11 +477,22 @@ rule LoginWithOAuth {
         -- against the paper trading API before the profile is saved, unless
         -- --no-validate is passed (auth.go:82-88, 347-366). HTTP 401/403 means
         -- invalid credentials; other 4xx/5xx is "unexpected response".
+        -- Validation always targets the paper trading API, because the live
+        -- path is unreachable here (auth.go:61).
         -- The saved profile stores access_token and the granted scope string;
         -- live_trade is never written, so OAuth profiles resolve to paper
         -- (auth.go:90-93).
+        -- "created" is a write, not an insert: SaveProfile overwrites any
+        -- existing <name>.yaml wholesale, so logging in over an API-key
+        -- profile of the same name discards its api_key/secret_key
+        -- (config.go:233-243).
         -- Login also sets global default_profile to this profile, making it
-        -- active (auth.go:98-102).
+        -- active (auth.go:98-102). loadOrCreateGlobal rebuilds the global
+        -- config from the currently RESOLVED values (auth.go:368-375), so
+        -- output/color settings survive only because they were resolved; any
+        -- future field not present on config.Resolved would be dropped.
+        -- The two writes are not atomic: a failure saving the global config
+        -- leaves the profile on disk but not active (auth.go:100-102).
 }
 
 rule LoginWithApiKey {
@@ -371,14 +516,21 @@ rule LoginWithApiKey {
         -- Missing --key/--secret are prompted interactively; the secret is
         -- read without echo on a TTY (auth.go:169-187). Both are required;
         -- empty values abort (auth.go:189-191).
-        -- Passing --secret on the command line prints a shell-history warning
+        -- The prompt is unconditional on the value being empty, not on the flag
+        -- being absent, and the key prompt is read with echo on (auth.go:171-175).
+        -- Passing --secret on the command line prints a shell-history warning.
+        -- This keys off flag CHANGED, so `--secret ""` warns and then prompts
         -- (auth.go:164-167).
         -- Credentials are validated with GET /v2/account using
         -- APCA-API-KEY-ID / APCA-API-SECRET-KEY headers against the selected
         -- environment before the profile is saved, unless --no-validate
-        -- (auth.go:193-200, 347-366).
+        -- (auth.go:193-200, 347-366). Validation treats any status below 400 as
+        -- success and does not read the response body.
+        -- SaveProfile overwrites an existing profile of the same name
+        -- wholesale, so an api-key login over an OAuth profile discards its
+        -- access_token and scopes (config.go:233-243).
         -- Login also sets global default_profile to this profile
-        -- (auth.go:213-217).
+        -- (auth.go:213-217), non-atomically, as for OAuth login.
 }
 
 rule LogoutProfile {
@@ -392,8 +544,35 @@ rule LogoutProfile {
     ensures: not exists profile
 
     @guidance
-        -- Deleting a profile that does not exist fails with
-        -- 'profile "<name>" not found' (auth.go:255-265).
+        -- The name is a positional argument, not a flag, and at most one is
+        -- accepted; omitting it targets config.default_profile_name — NOT the
+        -- currently active profile (auth.go:254-259).
+        -- Deletion is an os.Remove of the profile's YAML file; only an
+        -- IsNotExist error is translated to 'profile "<name>" not found', any
+        -- other filesystem error surfaces raw (auth.go:260-265,
+        -- config.go:245-247).
+        -- Logout does NOT clear default_profile from the global config, so the
+        -- global config can name a profile that no longer exists. Subsequent
+        -- commands then resolve an all-empty profile (config.go:208-219) and
+        -- report "authentication required" rather than "profile not found".
+}
+
+rule ListProfiles {
+    when: ListProfiles()
+
+    ensures: ProfilesListed(active_profile_name: active_profile_name())
+
+    @guidance
+        -- `alpaca profile list` enumerates the *.yaml files under
+        -- <config dir>/profiles and strips the extension; the profile contents
+        -- are never read for the listing (auth.go:275-280, config.go:249-264).
+        -- The active profile — the one config.Load resolves, which may come
+        -- from --profile or ALPACA_PROFILE, not just default_profile — is
+        -- marked "(active)" (auth.go:286-293, config.go:91).
+        -- An empty list is not an error: it prints "No profiles configured."
+        -- and a login hint, exiting successfully (auth.go:280-284).
+        -- Output goes to stdout as plain text, bypassing renderData, so --jq
+        -- and --csv do not apply.
 }
 
 rule SwitchActiveProfile {
@@ -406,9 +585,16 @@ rule SwitchActiveProfile {
     ensures: ActiveProfileChanged(profile_name: profile_name)
 
     @guidance
+        -- Existence is decided against the *filenames* returned by
+        -- ListProfiles, not by loading the profile, so a corrupt or empty
+        -- YAML file still counts as existing (auth.go:306-317).
         -- Switching persists default_profile in the global config file
-        -- (auth.go:319-323). An unknown name fails, listing available profiles
-        -- and hinting at `alpaca profile login --name <name>` (auth.go:311-317).
+        -- (auth.go:319-323) via the same loadOrCreateGlobal rebuild used by
+        -- login. An unknown name fails, listing available profiles and hinting
+        -- at `alpaca profile login --name <name>` (auth.go:311-317).
+        -- default_profile is only one of three inputs to profile resolution:
+        -- --profile and ALPACA_PROFILE both outrank it (config.go:91), so
+        -- switching does not guarantee the switched-to profile is used.
 }
 
 -- Environment Credential Shadowing
@@ -427,9 +613,70 @@ rule WarnOnEnvCredentialShadowing {
         -- AND the profile holds a complete credential bundle (an access token
         -- or a full key pair) — env vars shadowing an empty profile is not
         -- warned about (auth.go:226-235).
+        -- The check re-reads the profile from disk by name rather than using
+        -- the value just written, so it reflects persisted state
+        -- (auth.go:233-234).
         -- The profile is persisted regardless; the warning informs the user
-        -- that env vars take precedence at runtime.
-        -- The same warning is also printed by `alpaca doctor` (doctor.go:68)
-        -- and around the bare `alpaca` help output (root.go:115-126), not only
-        -- at profile save time.
+        -- that env vars take precedence at runtime. This is not a claim about
+        -- the CLI's credential resolution order — see credential-resolution
+        -- for that; it is only the notification.
+        -- The same warning is printed at four call sites, of which this rule
+        -- models one: after OAuth login (auth.go:109), after api-key login
+        -- (auth.go:222), inside `alpaca doctor` (doctor.go:68) and twice
+        -- around the bare `alpaca` help output (root.go:115-126). The last one
+        -- checks the *resolved* profile name, so it can warn about a profile
+        -- selected by --profile or ALPACA_PROFILE.
 }
+
+------------------------------------------------------------
+-- Surfaces
+------------------------------------------------------------
+
+surface AlpacaCLIHandAuthored {
+    provides:
+        PlaceOrder(symbol, side, order_class?, time_in_force?, take_profit?, stop_loss?, dry_run?)
+        RemoveWatchlistAssetByName(watchlist_name, symbol)
+        CheckForUpdate()
+        UpgradeCli(confirmed)
+        RunDiagnostics()
+        LoginWithOAuth(profile_name?, scopes?)
+        LoginWithApiKey(profile_name?, api_key, secret_key, live?)
+        LogoutProfile(profile_name?)
+        ListProfiles()
+        SwitchActiveProfile(profile_name)
+
+    @guarantee NoLiveOAuthLogin
+        -- `alpaca profile login --live` without --api-key is rejected with an
+        -- error before any browser flow starts; OAuth login is paper-only
+        -- (auth.go:48-51). --paper and --live are declared mutually exclusive
+        -- at the Cobra level (auth.go:336-338).
+
+    @guidance
+        -- Command mapping: PlaceOrder = `alpaca order submit` (generated
+        -- command + postOrderHook), RemoveWatchlistAssetByName =
+        -- `alpaca watchlist remove-by-name`, CheckForUpdate = `alpaca update
+        -- --check`, UpgradeCli = `alpaca update` (with or without --yes),
+        -- RunDiagnostics = `alpaca doctor`, the rest = `alpaca profile
+        -- login|logout|list|switch`.
+        -- PlaceOrder's parameters are the flags the hand-authored hook reads,
+        -- not the full flag set of `order submit`: the generated command
+        -- accepts roughly twenty body flags (commands.gen.go:527-542).
+        -- install_method is NOT a party input on UpgradeCli: it is detected
+        -- from the resolved executable path (update_check.go:15-44) and the
+        -- party can neither see nor override it.
+        -- `alpaca profile login|logout|list|switch` bypass credential
+        -- resolution and client construction entirely: PersistentPreRunE
+        -- returns early for any child of `profile` (root.go:142-144).
+        -- `update` and `doctor` are likewise exempt from the auth requirement
+        -- (root.go:236-238), which is why doctor can diagnose a broken setup.
+}
+
+------------------------------------------------------------
+-- Open Questions
+------------------------------------------------------------
+
+open question "Bracket leg objects passed as raw JSON (--take-profit '{...}') are forwarded with no key or type validation, so TakeProfitLeg/StopLossLeg describe only the shorthand shape. Should the CLI validate leg objects client-side, or should the spec model the leg as an opaque object?"
+
+open question "Env credential shadowing is warned about at four call sites (auth.go:109, auth.go:222, doctor.go:68, root.go:115-126) but is modelled here as a single rule triggered by profile creation. Are the doctor and bare-help warnings in scope for this spec, or do they belong to the credential-resolution spec?"
+
+open question "UNVERIFIED: whether the CLI ever populates Order.take_profit or Order.stop_loss without also setting order_class = bracket. Reading order.go alone says no, but --order-class is a generated flag and no test exercises the combination; the previous BracketHasLegs invariant asserted the converse and was removed because the code does not enforce it."

@@ -20,6 +20,9 @@ value RequestError {
     path: String?
     request_id: String?
     hint: String?
+    -- Parsed from the Retry-After header on 429 responses only
+    -- (client.go:53, 285-291); zero/absent everywhere else.
+    retry_after: Duration?
 }
 
 ------------------------------------------------------------
@@ -46,13 +49,21 @@ config {
 -- Entities and Variants
 ------------------------------------------------------------
 
+-- client.Client (client.go:30-43). The four diagnostic flags are set on the
+-- shared client from the persistent CLI flags before each command runs
+-- (root.go:187-190).
 entity HttpClient {
     api_key: String?
     secret: String?
     access_token: String?
     base_url: String
     data_url: String
+    user_agent: String
     timeout: Duration
+    verbose: Boolean
+    debug: Boolean
+    quiet: Boolean
+    trace: Boolean
 }
 
 entity OutboundRequest {
@@ -78,7 +89,7 @@ entity OutboundRequest {
 
 -- Generated typed client methods (internal/api/*_client.gen.go) and the raw
 -- `alpaca api` passthrough all funnel through Client.Do / Client.DoWithHeaders
--- / doWithRetry (client.go:113-154). Operations with OAS header parameters
+-- / doWithRetry (client.go:113-179). Operations with OAS header parameters
 -- pass endpoint-specific headers, added to the request before the auth
 -- headers (factory.go:89-106, client.go:213-217).
 surface TypedClientMethods {
@@ -91,7 +102,7 @@ surface UpstreamResponses {
     provides:
         ReceiveOkResponse(request)
         ReceiveRateLimitResponse(request, retry_after?)
-        ReceiveServerErrorResponse(request)
+        ReceiveServerErrorResponse(request, http_status)
         ReceiveNonRetryableErrorResponse(request, http_status)
         TransportFailure(request, cause)
 
@@ -103,6 +114,11 @@ surface UpstreamResponses {
         -- ReceiveNonRetryableErrorResponse: any other status >= 400.
         -- TransportFailure: DNS/TCP/TLS/timeout errors where no HTTP
         -- response was received.
+        -- Not modelled: failures that never reach an HTTP exchange or that
+        -- occur while draining it — request body marshalling, request
+        -- construction and response body read (client.go:199-211, 259-262).
+        -- These return plain Go errors rather than APIError values, carry no
+        -- status, hint or request id, and are never retried (client.go:165-168).
 }
 
 -- The process clock: the retry backoff timer firing.
@@ -161,6 +177,9 @@ rule AuthWithApiKeyAndSecret {
         -- "APCA-API-SECRET-KEY" headers (client.go:220-222). If neither
         -- credential is set the headers are sent empty; the server rejects
         -- with 401 — the client itself never blocks an unauthenticated send.
+        -- The CLI layer normally stops earlier: commands needing auth run
+        -- Resolved.Validate first (root.go:173-176, config.go:169-174), so an
+        -- empty-header send is reachable only for callers bypassing that gate.
 }
 
 rule SucceedOnOkResponse {
@@ -190,7 +209,7 @@ rule RetryOnRateLimitResponse {
 }
 
 rule RetryOnServerErrorResponse {
-    when: ReceiveServerErrorResponse(request)
+    when: ReceiveServerErrorResponse(request, _)
     requires: request.status = in_flight
     requires: request.attempt < config.max_attempts
     ensures: request.status = awaiting_retry
@@ -209,18 +228,25 @@ rule ResumeAfterRetryDelay {
         request.status = in_flight
 }
 
+-- Exhausting the retry budget surfaces the error parsed from the last
+-- response, not a separate "retries exhausted" error (client.go:157-178:
+-- lastErr is returned unchanged).
 rule FailOnRateLimitMaxAttempts {
     when: ReceiveRateLimitResponse(request, _)
     requires: request.status = in_flight
     requires: request.attempt >= config.max_attempts
-    ensures: request.status = failed
+    ensures:
+        request.status = failed
+        request.error = parse_api_error(429)
 }
 
 rule FailOnServerErrorMaxAttempts {
-    when: ReceiveServerErrorResponse(request)
+    when: ReceiveServerErrorResponse(request, http_status)
     requires: request.status = in_flight
     requires: request.attempt >= config.max_attempts
-    ensures: request.status = failed
+    ensures:
+        request.status = failed
+        request.error = parse_api_error(http_status)
 }
 
 -- 4xx and non-retryable 5xx responses fail immediately, on any attempt.
@@ -255,8 +281,10 @@ rule FailOnTransportError {
 
     @guidance
         -- The message is "could not reach <url>: <cause>" with credentials
-        -- scrubbed from both URL and cause, plus a hint to check the
-        -- connection and run `alpaca doctor` (client.go:243-249, 310-332).
+        -- scrubbed from both URL and cause, plus a hint to check the internet
+        -- connection and base URL and to run `alpaca doctor`
+        -- (client.go:243-249, 310-332). status is 0 and code, request_id,
+        -- method and path are all unset on this path.
 }
 
 rule ScrubCredentialsFromDiagnosticOutput {
@@ -285,4 +313,6 @@ invariant AttemptsNeverExceedMax {
 
 open question "The --debug request BODY is printed without credential scrubbing (client.go:232-234), while the request URL, headers and response body are scrubbed. Credentials normally travel in headers, not bodies — is the unscrubbed body intentional or an oversight?"
 
-open question "After the final failed retryable attempt, doWithRetry sleeps the full backoff delay once more before returning the error (client.go:156-178) — wasted latency of up to ~3s. Intended?"
+open question "After the final failed retryable attempt, doWithRetry sleeps the full backoff delay once more before returning the error (client.go:156-178, sleep at 176 is unguarded by the loop bound) — ~2s plus jitter with the default backoff, or the whole Retry-After value on a 429. Intended?"
+
+open question "HttpClient.verbose, .debug, .quiet, .trace and .user_agent exist on client.Client (client.go:37-41) and are referenced only in rule guidance, so no rule reads them; the checker reports them as unused fields. Should the diagnostic rules be conditioned on them explicitly, or do they stay descriptive?"
