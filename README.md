@@ -1,5 +1,8 @@
 # Alpaca CLI
 
+[![Forum](https://img.shields.io/badge/Forum-Alpaca%20Community-00C805?logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAL0SURBVHgBtVY/T1NRFP+d+1pojAoxRiMuj0WBDj4WEyfALwAmrsbdRVx0cBASTdyERVdI/AD1AxhkMtHBOkDRpU00khgVFCW09d3jube0KbR979Y+fsnt+9Pz//7ueYfgCC4Gg+FeZYZAEyAErMkH8WDtT9omxSUw8gxe9TJ9ORrOb7vYpVjHhcAPuTILqJsNh26GlxTS8zSaL8XIdXAsGety9QEzZtEDiLCg+iWQDhVpG4DJWqO6woCPBCBOSlKNqXbVUIdfVNaCIEnnBsaWsVlZGwvQGlyTYMKZt3HWUokDAYSFbLEb5+rMPXD5A+CdAKkT0N+exurYIDLp8TonUg3nG9knQjgf3SAzAnXqBrj6BZQeAkkwvPMyUsVuh5Bbbu/YJOxLKX03bLfOBmZs5vVne+2/6KRvfBmf5t5WIOTqXHxHgC0zDT0CHb+KXlHrLZglficdLlPdclFS58T5wHSkjP58G/w7ehssCNtef3pYhZnKDBxQK/t0rJwaeggnMGxrV9LHJ50Ujl12EoPZJiGnC0hhQsnPpVjB07egzt6tPegdhB+vQH99jKggnMAUpFjL0YsgYMu+i3HvwmskAXMklTiP/MLx7lscGYQHKlbmZ07WCxwVhISIHRz05n2w2fPyhjz8QmKQo2hIWHKR1T+eIyxel1a7gqRgvwvM+n1XWvttN6EI8sIBetWVjud4xBzAmleVt9eXc+FBAwlWwAyvisbNd5mXnbXUSSQB4d6SmQnsMfRILzhpJZi90uG8vdpoRjdkpqfFOCVKn0ciYF60PtE0lHrl1ByBSzhiGB+psfXG8NMIwHBBQU9FBtFjBYxt46P53YFWbMoSalzrFAT1wAFj09reL33bAAz6suv5jpVQ/9cD6pkb2y0m2ypIlN7o+nALMV23wGs6qkI4ldkdP5y5M7gw4v8tZJdksf7zhp1Q+bQVfl9e4M1nfpx9h1l4P5CiPwi/aObHSVlmivJl1WcJ00lLskyJV2XliMipu/4DGLZL7Y7ZLckAAAAASUVORK5CYII=)](https://forum.alpaca.markets/)
+[![Slack](https://img.shields.io/badge/Slack-Alpaca%20Community-4A154B?logo=slack&logoColor=white)](https://alpaca.markets/slack)
+
 CLI for the [Alpaca](https://alpaca.markets) Trading API. Trade stocks and crypto, access market data, and manage your account from the command line.
 
 > [!WARNING]
@@ -241,6 +244,12 @@ export ALPACA_TEST_SECRET_KEY=...
 export ALPACA_TEST_BASE_URL=https://paper-api.alpaca.markets # optional
 make test-integration
 ```
+
+## Support
+
+- **CLI issues:** Bugs, feature requests, or questions specific to this CLI → [GitHub Issues](https://github.com/alpacahq/cli/issues).
+- **General Alpaca support & API discussion:** Account questions, platform issues, or broader API topics → [Alpaca Community Forum](https://forum.alpaca.markets/).
+- **Slack community:** Chat with other developers and the Alpaca community on Slack ([join here](https://alpaca.markets/slack)).
 
 ## License
 
