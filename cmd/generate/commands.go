@@ -76,15 +76,18 @@ var cmdParents = map[string]parentDef{
 	},
 	"data": {
 		use: "data", short: "Access market data",
-		long: "Historical and real-time market data for stocks, crypto, options, and forex. Includes bars, quotes, trades, snapshots, auctions, screeners, and news.",
+		long: "Historical and real-time market data for stocks, crypto, options, forex, and fixed income. Includes bars, quotes, trades, snapshots, auctions, screeners, and news.",
 	},
 	"dataOption": {
 		use: "option", short: "Options market data", parent: "data",
 		long: "Bars, trades, snapshots, chains, latest quotes, and exchange/condition reference data for options.",
 	},
 	"dataForex": {use: "forex", short: "Foreign exchange rate data", parent: "data"},
-	"dataIndex": {use: "index", short: "Index market data", parent: "data"},
-	"dataMeta":  {use: "meta", short: "Stock exchange and condition reference data", parent: "data"},
+	"dataFixedIncome": {
+		use: "fixed-income", short: "Fixed income market data", parent: "data",
+		long: "Latest prices and quotes for fixed income securities identified by ISIN.",
+	},
+	"dataMeta": {use: "meta", short: "Stock exchange and condition reference data", parent: "data"},
 	"screener": {
 		use: "screener", short: "Stock and crypto screener and market movers", parent: "data",
 		long: "Most active stocks and top market movers by volume, trade count, or price change.",
@@ -536,6 +539,21 @@ var cmdRegistry = map[string]cmdDef{
 		examples: "  alpaca data forex latest --currency-pairs EUR/USD,GBP/USD",
 	},
 
+	// --- data: fixed income ---
+	"FixedIncomeLatestPrices": {
+		parent: "dataFixedIncome",
+		use:    "latest-prices",
+
+		examples: "  alpaca data fixed-income latest-prices --isins US912797KJ59,US912797KS58",
+	},
+	"FixedIncomeLatestQuotes": {
+		parent: "dataFixedIncome",
+		use:    "latest-quotes",
+
+		examples: `  alpaca data fixed-income latest-quotes --isins US912797SX61,US912810SK51
+  alpaca data fixed-income latest-quotes --isins US912797SX61 --trade-size 1000`,
+	},
+
 	// --- data: crypto orderbook ---
 	"CryptoLatestOrderbooks": {
 		parent: "data",
@@ -566,34 +584,6 @@ var cmdRegistry = map[string]cmdDef{
 		use:    "corporate-actions",
 
 		examples: "  alpaca data corporate-actions --symbols AAPL --types forward_split --start 2025-01-01",
-	},
-
-	// --- data: fixed income ---
-	"FixedIncomeLatestPrices": {
-		parent: "data",
-		use:    "fixed-income",
-
-		examples: "  alpaca data fixed-income --isins 912797KR1,912797LB5",
-	},
-	"FixedIncomeLatestQuotes": {
-		parent: "data",
-		use:    "fixed-income-quotes",
-
-		examples: "  alpaca data fixed-income-quotes --isins US912797SX61,US912810SK51 --trade-size 1000",
-	},
-
-	// --- data: index ---
-	"IndexLatestValues": {
-		parent: "dataIndex",
-		use:    "latest-values",
-
-		examples: "  alpaca data index latest-values --symbols SPX,VIX",
-	},
-	"IndexValues": {
-		parent: "dataIndex",
-		use:    "values",
-
-		examples: "  alpaca data index values --symbols SPX,VIX --start 2026-05-18 --limit 100",
 	},
 
 	// --- data: logo ---
@@ -1030,28 +1020,29 @@ func classifyFields(props map[string]map[string]any, skipFields []string, aliase
 			continue
 		}
 
-		switch t, _ := ps["type"].(string); t {
+		t, nullable := schemaType(ps)
+		switch t {
 		case "string":
 			kind := "string"
-			if isNullable(ps) {
+			if nullable {
 				kind = "ptrString"
 			}
 			fields = append(fields, fieldKind{goField, flagName, kind, ""})
 		case "boolean":
 			kind := "bool"
-			if isNullable(ps) {
+			if nullable {
 				kind = "ptrBool"
 			}
 			fields = append(fields, fieldKind{goField, flagName, kind, ""})
 		case "integer":
 			kind := "int"
-			if isNullable(ps) {
+			if nullable {
 				kind = "ptrInt"
 			}
 			fields = append(fields, fieldKind{goField, flagName, kind, ""})
 		case "array":
 			if items, ok := ps["items"].(map[string]any); ok {
-				if itemType, _ := items["type"].(string); itemType == "string" {
+				if itemType, _ := schemaType(items); itemType == "string" {
 					fields = append(fields, fieldKind{goField, flagName, "arrayString", ""})
 					continue
 				}

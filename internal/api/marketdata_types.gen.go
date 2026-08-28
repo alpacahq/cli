@@ -12,6 +12,8 @@ type CryptoHistoricalLoc string
 
 type CryptoLatestLoc string
 
+type DataQuality string
+
 type MarketType string
 
 type OptionFeed string
@@ -37,6 +39,20 @@ type CaEventReorganizationStockMovement struct {
 	NewRate    string `json:"new_rate"`
 	SourceRate string `json:"source_rate"`
 	Symbol     string `json:"symbol"`
+}
+
+type CapitalGainsDistribution struct {
+	Currency      string  `json:"currency,omitempty"`
+	Cusip         string  `json:"cusip"`
+	ExDate        string  `json:"ex_date"`
+	ID            string  `json:"id"`
+	Isin          string  `json:"isin,omitempty"`
+	LongTermRate  float64 `json:"long_term_rate,omitempty"`
+	PayableDate   string  `json:"payable_date,omitempty"`
+	ProcessDate   string  `json:"process_date"`
+	RecordDate    string  `json:"record_date,omitempty"`
+	ShortTermRate float64 `json:"short_term_rate,omitempty"`
+	Symbol        string  `json:"symbol"`
 }
 
 type CashDividend struct {
@@ -80,21 +96,22 @@ type CorporateActionEventBase struct {
 }
 
 type CorporateActions struct {
-	CashDividends       []CashDividend       `json:"cash_dividends,omitempty"`
-	CashMergers         []CashMerger         `json:"cash_mergers,omitempty"`
-	ForwardSplits       []ForwardSplit       `json:"forward_splits,omitempty"`
-	NameChanges         []NameChange         `json:"name_changes,omitempty"`
-	PartialCalls        []PartialCall        `json:"partial_calls,omitempty"`
-	Redemptions         []Redemption         `json:"redemptions,omitempty"`
-	Reorganizations     []Reorganization     `json:"reorganizations,omitempty"`
-	ReverseSplits       []ReverseSplit       `json:"reverse_splits,omitempty"`
-	RightsDistributions []RightsDistribution `json:"rights_distributions,omitempty"`
-	SpinOffs            []SpinOff            `json:"spin_offs,omitempty"`
-	StockAndCashMergers []StockAndCashMerger `json:"stock_and_cash_mergers,omitempty"`
-	StockDividends      []StockDividend      `json:"stock_dividends,omitempty"`
-	StockMergers        []StockMerger        `json:"stock_mergers,omitempty"`
-	UnitSplits          []UnitSplit          `json:"unit_splits,omitempty"`
-	WorthlessRemovals   []WorthlessRemoval   `json:"worthless_removals,omitempty"`
+	CapitalGainsDistributions []CapitalGainsDistribution `json:"capital_gains_distributions,omitempty"`
+	CashDividends             []CashDividend             `json:"cash_dividends,omitempty"`
+	CashMergers               []CashMerger               `json:"cash_mergers,omitempty"`
+	ForwardSplits             []ForwardSplit             `json:"forward_splits,omitempty"`
+	NameChanges               []NameChange               `json:"name_changes,omitempty"`
+	PartialCalls              []PartialCall              `json:"partial_calls,omitempty"`
+	Redemptions               []Redemption               `json:"redemptions,omitempty"`
+	Reorganizations           []Reorganization           `json:"reorganizations,omitempty"`
+	ReverseSplits             []ReverseSplit             `json:"reverse_splits,omitempty"`
+	RightsDistributions       []RightsDistribution       `json:"rights_distributions,omitempty"`
+	SpinOffs                  []SpinOff                  `json:"spin_offs,omitempty"`
+	StockAndCashMergers       []StockAndCashMerger       `json:"stock_and_cash_mergers,omitempty"`
+	StockDividends            []StockDividend            `json:"stock_dividends,omitempty"`
+	StockMergers              []StockMerger              `json:"stock_mergers,omitempty"`
+	UnitSplits                []UnitSplit                `json:"unit_splits,omitempty"`
+	WorthlessRemovals         []WorthlessRemoval         `json:"worthless_removals,omitempty"`
 }
 
 type CorporateActionsResp struct {
@@ -241,20 +258,6 @@ type ForwardSplit struct {
 	ProcessDate           string  `json:"process_date"`
 	RecordDate            string  `json:"record_date,omitempty"`
 	Symbol                string  `json:"symbol"`
-}
-
-type IndexLatestValuesResp struct {
-	Values map[string]IndexValue `json:"values"`
-}
-
-type IndexValue struct {
-	T string  `json:"t"`
-	V float64 `json:"v"`
-}
-
-type IndexValuesResp struct {
-	NextPageToken string                  `json:"next_page_token"`
-	Values        map[string][]IndexValue `json:"values"`
 }
 
 type MostActive struct {

@@ -51,16 +51,6 @@ func (c *MarketDataClient) Rates(params url.Values) (*ForexRatesResp, error) {
 	return unmarshal[ForexRatesResp](c.Raw.Do("GET", c.baseURL, "/v1beta1/forex/rates", params, nil))
 }
 
-// IndexLatestValues — Latest values for indices
-func (c *MarketDataClient) IndexLatestValues(params url.Values) (*IndexLatestValuesResp, error) {
-	return unmarshal[IndexLatestValuesResp](c.Raw.Do("GET", c.baseURL, "/v1beta1/indices/latest/values", params, nil))
-}
-
-// IndexValues — Historical values for indices
-func (c *MarketDataClient) IndexValues(params url.Values) (*IndexValuesResp, error) {
-	return unmarshal[IndexValuesResp](c.Raw.Do("GET", c.baseURL, "/v1beta1/indices/values", params, nil))
-}
-
 // Logos — Logos
 func (c *MarketDataClient) Logos(Symbol string, params url.Values) (json.RawMessage, error) {
 	return c.Raw.Do("GET", c.baseURL, fmt.Sprintf("/v1beta1/logos/%s", url.PathEscape(Symbol)), params, nil)

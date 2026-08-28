@@ -33,6 +33,14 @@
                     "type": "string"
                 }
             },
+            "cas_data_quality": {
+                "description": "Controls which corporate actions are returned based on data quality.\n",
+                "in": "query",
+                "name": "data_quality",
+                "schema": {
+                    "$ref": "#/components/schemas/data_quality"
+                }
+            },
             "cas_end": {
                 "description": "The inclusive end of the interval. The corporate actions are sorted by their `process_date`. Format: YYYY-MM-DD. Default: current day.\n",
                 "examples": {
@@ -127,7 +135,7 @@
                 }
             },
             "cas_ids": {
-                "description": "A comma-separated list of corporate action IDs. This parameter is mutually exclusive with all other filters (symbols, types, start, end).\n",
+                "description": "A comma-separated list of corporate action IDs. This parameter is mutually exclusive with all other filters (symbols, types, start, end, region, data_quality).\n",
                 "example": "1dbc7685-9517-4a77-a236-8527d49cefdc,f8489167-4e4b-431d-a0be-6017ae1cf08a",
                 "in": "query",
                 "name": "ids",
@@ -178,7 +186,7 @@
                 }
             },
             "cas_types": {
-                "description": "A comma-separated list of types. If not provided, search all types.\n\nThe following types are supported:\n  - reverse_split\n  - forward_split\n  - unit_split\n  - cash_dividend\n  - stock_dividend\n  - spin_off\n  - cash_merger\n  - stock_merger\n  - stock_and_cash_merger\n  - redemption\n  - name_change\n  - worthless_removal\n  - rights_distribution\n  - partial_call\n  - reorganization\n",
+                "description": "A comma-separated list of types. If not provided, search all types.\n\nThe following types are supported:\n  - reverse_split\n  - forward_split\n  - unit_split\n  - cash_dividend\n  - stock_dividend\n  - spin_off\n  - cash_merger\n  - stock_merger\n  - stock_and_cash_merger\n  - redemption\n  - name_change\n  - worthless_removal\n  - rights_distribution\n  - partial_call\n  - reorganization\n  - capital_gains_distribution\n",
                 "example": "forward_split,reverse_split",
                 "in": "query",
                 "name": "types",
@@ -247,7 +255,12 @@
                 "name": "currency_pairs",
                 "required": true,
                 "schema": {
-                    "$ref": "#/components/schemas/forex_currency_pairs"
+                    "allOf": [
+                        {
+                            "$ref": "#/components/schemas/forex_currency_pairs"
+                        }
+                    ],
+                    "type": "string"
                 }
             },
             "forex_timeframe": {
@@ -256,16 +269,6 @@
                 "required": false,
                 "schema": {
                     "$ref": "#/components/schemas/forex_timeframe"
-                }
-            },
-            "index_symbols": {
-                "description": "A comma-separated list of index symbols.",
-                "example": "SPX,VIX",
-                "in": "query",
-                "name": "symbols",
-                "required": true,
-                "schema": {
-                    "type": "string"
                 }
             },
             "isins": {
@@ -414,7 +417,12 @@
                 "in": "query",
                 "name": "sort",
                 "schema": {
-                    "$ref": "#/components/schemas/sort"
+                    "allOf": [
+                        {
+                            "$ref": "#/components/schemas/sort"
+                        }
+                    ],
+                    "type": "string"
                 }
             },
             "start": {
@@ -601,6 +609,61 @@
                 ],
                 "type": "object"
             },
+            "ca_event_capital_gains_distribution": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ca_event_base"
+                    },
+                    {
+                        "properties": {
+                            "currency": {
+                                "$ref": "#/components/schemas/currency"
+                            },
+                            "cusip": {
+                                "description": "CUSIP of the security.",
+                                "type": "string"
+                            },
+                            "ex_date": {
+                                "$ref": "#/components/schemas/ex_date"
+                            },
+                            "isin": {
+                                "$ref": "#/components/schemas/isin"
+                            },
+                            "long_term_rate": {
+                                "description": "Long-term capital-gains payment per share, as a decimal string.",
+                                "examples": [
+                                    "1.4372"
+                                ],
+                                "type": "string"
+                            },
+                            "payable_date": {
+                                "$ref": "#/components/schemas/payable_date"
+                            },
+                            "record_date": {
+                                "$ref": "#/components/schemas/record_date"
+                            },
+                            "short_term_rate": {
+                                "description": "Short-term capital-gains payment per share, as a decimal string.",
+                                "examples": [
+                                    "0.1051"
+                                ],
+                                "type": "string"
+                            },
+                            "symbol": {
+                                "description": "Ticker paying the distribution.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "symbol",
+                            "cusip",
+                            "ex_date"
+                        ],
+                        "type": "object"
+                    }
+                ],
+                "description": "Capital-gains distribution payload delivered when\n`event_type == capital_gains_distribution_corporateaction_event`. Every\ndecimal field is emitted as a JSON string to preserve precision on the\nwire. At least one of `long_term_rate` / `short_term_rate` is present;\ncombined distributions carry both.\n"
+            },
             "ca_event_cash_dividend": {
                 "allOf": [
                     {
@@ -640,7 +703,9 @@
                             },
                             "rate": {
                                 "description": "Cash paid per share, as a decimal string.",
-                                "example": "0.24",
+                                "examples": [
+                                    "0.24"
+                                ],
                                 "type": "string"
                             },
                             "record_date": {
@@ -716,7 +781,9 @@
                             },
                             "rate": {
                                 "description": "Cash paid per share of the acquired company, as a decimal string.",
-                                "example": "42.50",
+                                "examples": [
+                                    "42.50"
+                                ],
                                 "type": "string"
                             }
                         },
@@ -747,7 +814,9 @@
                             },
                             "dividend_rate": {
                                 "description": "Dividend rate associated with the called shares, as a decimal string.",
-                                "example": "0.05",
+                                "examples": [
+                                    "0.05"
+                                ],
                                 "type": "string"
                             },
                             "isin": {
@@ -771,7 +840,9 @@
                             },
                             "price": {
                                 "description": "Price paid per called share, as a decimal string.",
-                                "example": "15.00",
+                                "examples": [
+                                    "15.00"
+                                ],
                                 "type": "string"
                             },
                             "record_date": {
@@ -820,12 +891,16 @@
                             },
                             "new_rate": {
                                 "description": "Shares after the split, as a decimal string.",
-                                "example": "4",
+                                "examples": [
+                                    "4"
+                                ],
                                 "type": "string"
                             },
                             "old_rate": {
                                 "description": "Shares before the split, as a decimal string.",
-                                "example": "1",
+                                "examples": [
+                                    "1"
+                                ],
                                 "type": "string"
                             },
                             "payable_date": {
@@ -917,7 +992,9 @@
                             },
                             "rate": {
                                 "description": "Cash paid per share, as a decimal string.",
-                                "example": "25.00",
+                                "examples": [
+                                    "25.00"
+                                ],
                                 "type": "string"
                             },
                             "symbol": {
@@ -944,7 +1021,9 @@
                         "properties": {
                             "cash_rate": {
                                 "description": "Cash paid per source share, as a decimal string.",
-                                "example": "5.00",
+                                "examples": [
+                                    "5.00"
+                                ],
                                 "type": "string"
                             },
                             "currency": {
@@ -998,12 +1077,16 @@
                     },
                     "new_rate": {
                         "description": "Replacement shares delivered per `source_rate`, as a decimal string.",
-                        "example": "1",
+                        "examples": [
+                            "1"
+                        ],
                         "type": "string"
                     },
                     "source_rate": {
                         "description": "Source shares required for each `new_rate`, as a decimal string.",
-                        "example": "10",
+                        "examples": [
+                            "10"
+                        ],
                         "type": "string"
                     },
                     "symbol": {
@@ -1041,7 +1124,9 @@
                             },
                             "new_rate": {
                                 "description": "Shares after the split, as a decimal string.",
-                                "example": "1",
+                                "examples": [
+                                    "1"
+                                ],
                                 "type": "string"
                             },
                             "new_symbol": {
@@ -1057,7 +1142,9 @@
                             },
                             "old_rate": {
                                 "description": "Shares before the split, as a decimal string.",
-                                "example": "10",
+                                "examples": [
+                                    "10"
+                                ],
                                 "type": "string"
                             },
                             "payable_date": {
@@ -1116,7 +1203,9 @@
                             },
                             "rate": {
                                 "description": "Rights given per share you own, as a decimal string.",
-                                "example": "0.25",
+                                "examples": [
+                                    "0.25"
+                                ],
                                 "type": "string"
                             },
                             "record_date": {
@@ -1173,7 +1262,9 @@
                             },
                             "new_rate": {
                                 "description": "New-company shares distributed per `source_rate` parent shares, as a decimal string.",
-                                "example": "0.5",
+                                "examples": [
+                                    "0.5"
+                                ],
                                 "type": "string"
                             },
                             "new_symbol": {
@@ -1195,7 +1286,9 @@
                             },
                             "source_rate": {
                                 "description": "Parent shares required per ratio unit, as a decimal string.",
-                                "example": "1",
+                                "examples": [
+                                    "1"
+                                ],
                                 "type": "string"
                             },
                             "source_symbol": {
@@ -1233,7 +1326,9 @@
                             },
                             "acquiree_rate": {
                                 "description": "Bought-side ratio, as a decimal string.",
-                                "example": "1",
+                                "examples": [
+                                    "1"
+                                ],
                                 "type": "string"
                             },
                             "acquiree_symbol": {
@@ -1249,7 +1344,9 @@
                             },
                             "acquirer_rate": {
                                 "description": "Buyer shares given per unit ratio, as a decimal string.",
-                                "example": "0.5",
+                                "examples": [
+                                    "0.5"
+                                ],
                                 "type": "string"
                             },
                             "acquirer_symbol": {
@@ -1258,7 +1355,9 @@
                             },
                             "cash_rate": {
                                 "description": "Extra cash paid per share of the acquired company, as a decimal string.",
-                                "example": "10.00",
+                                "examples": [
+                                    "10.00"
+                                ],
                                 "type": "string"
                             },
                             "currency": {
@@ -1311,7 +1410,9 @@
                             },
                             "rate": {
                                 "description": "Extra shares received per share held, as a decimal string.",
-                                "example": "0.05",
+                                "examples": [
+                                    "0.05"
+                                ],
                                 "type": "string"
                             },
                             "record_date": {
@@ -1349,7 +1450,9 @@
                             },
                             "acquiree_rate": {
                                 "description": "Bought-side ratio, as a decimal string.",
-                                "example": "1",
+                                "examples": [
+                                    "1"
+                                ],
                                 "type": "string"
                             },
                             "acquiree_symbol": {
@@ -1365,7 +1468,9 @@
                             },
                             "acquirer_rate": {
                                 "description": "Buyer-side ratio, as a decimal string.",
-                                "example": "0.75",
+                                "examples": [
+                                    "0.75"
+                                ],
                                 "type": "string"
                             },
                             "acquirer_symbol": {
@@ -1412,7 +1517,9 @@
                             },
                             "alternate_rate": {
                                 "description": "Secondary-leg shares delivered per unit, as a decimal string.",
-                                "example": "1",
+                                "examples": [
+                                    "1"
+                                ],
                                 "type": "string"
                             },
                             "alternate_symbol": {
@@ -1434,7 +1541,9 @@
                             },
                             "new_rate": {
                                 "description": "Primary-leg shares delivered per unit, as a decimal string.",
-                                "example": "1",
+                                "examples": [
+                                    "1"
+                                ],
                                 "type": "string"
                             },
                             "new_symbol": {
@@ -1450,7 +1559,9 @@
                             },
                             "old_rate": {
                                 "description": "Units per ratio unit, as a decimal string.",
-                                "example": "1",
+                                "examples": [
+                                    "1"
+                                ],
                                 "type": "string"
                             },
                             "old_symbol": {
@@ -1514,20 +1625,87 @@
                 "format": "uuid",
                 "type": "string"
             },
+            "capital_gains_distribution": {
+                "description": "Capital gains distribution paid by a fund. A single event may carry a long-term\nleg (`long_term_rate`), a short-term leg (`short_term_rate`), or both when\ncombined. At least one of the two rates is always present.\n",
+                "examples": [
+                    {
+                        "currency": "USD",
+                        "cusip": "36261K509",
+                        "ex_date": "2025-12-26",
+                        "id": "98c905a1-08c7-450c-8669-b8e7aee8b44d",
+                        "isin": "US36261K5090",
+                        "long_term_rate": 0.45855,
+                        "payable_date": "2026-01-09",
+                        "process_date": "2026-01-08",
+                        "record_date": "2025-12-29",
+                        "short_term_rate": 0.11019,
+                        "symbol": "GCAD"
+                    }
+                ],
+                "properties": {
+                    "currency": {
+                        "$ref": "#/components/schemas/currency"
+                    },
+                    "cusip": {
+                        "type": "string"
+                    },
+                    "ex_date": {
+                        "$ref": "#/components/schemas/ex_date"
+                    },
+                    "id": {
+                        "$ref": "#/components/schemas/ca_id"
+                    },
+                    "isin": {
+                        "$ref": "#/components/schemas/isin"
+                    },
+                    "long_term_rate": {
+                        "description": "Long-term capital-gain payment per share.",
+                        "format": "double",
+                        "type": "number"
+                    },
+                    "payable_date": {
+                        "$ref": "#/components/schemas/payable_date"
+                    },
+                    "process_date": {
+                        "$ref": "#/components/schemas/process_date"
+                    },
+                    "record_date": {
+                        "$ref": "#/components/schemas/record_date"
+                    },
+                    "short_term_rate": {
+                        "description": "Short-term capital-gain payment per share.",
+                        "format": "double",
+                        "type": "number"
+                    },
+                    "symbol": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "symbol",
+                    "cusip",
+                    "process_date",
+                    "ex_date"
+                ],
+                "type": "object"
+            },
             "cash_dividend": {
                 "description": "Cash dividend.",
-                "example": {
-                    "cusip": "319829107",
-                    "ex_date": "2023-05-04",
-                    "foreign": false,
-                    "id": "11cfd108-292e-4cc6-bfbf-5999cdbc4029",
-                    "payable_date": "2023-05-19",
-                    "process_date": "2023-05-19",
-                    "rate": 0.125,
-                    "record_date": "2023-05-05",
-                    "special": false,
-                    "symbol": "FCF"
-                },
+                "examples": [
+                    {
+                        "cusip": "319829107",
+                        "ex_date": "2023-05-04",
+                        "foreign": false,
+                        "id": "11cfd108-292e-4cc6-bfbf-5999cdbc4029",
+                        "payable_date": "2023-05-19",
+                        "process_date": "2023-05-19",
+                        "rate": 0.125,
+                        "record_date": "2023-05-05",
+                        "special": false,
+                        "symbol": "FCF"
+                    }
+                ],
                 "properties": {
                     "currency": {
                         "$ref": "#/components/schemas/currency"
@@ -1597,15 +1775,17 @@
             },
             "cash_merger": {
                 "description": "Cash merger.",
-                "example": {
-                    "acquiree_cusip": "Y2687W108",
-                    "acquiree_symbol": "GLOP",
-                    "effective_date": "2023-07-17",
-                    "id": "3772bbd7-4ad5-44d4-9cc0-f69156a2f8f5",
-                    "payable_date": "2023-07-17",
-                    "process_date": "2023-07-17",
-                    "rate": 5.37
-                },
+                "examples": [
+                    {
+                        "acquiree_cusip": "Y2687W108",
+                        "acquiree_symbol": "GLOP",
+                        "effective_date": "2023-07-17",
+                        "id": "3772bbd7-4ad5-44d4-9cc0-f69156a2f8f5",
+                        "payable_date": "2023-07-17",
+                        "process_date": "2023-07-17",
+                        "rate": 5.37
+                    }
+                ],
                 "properties": {
                     "acquiree_cusip": {
                         "type": "string"
@@ -1659,6 +1839,7 @@
                 "description": "A single corporate-action mutation delivered over the\n[Corporate Actions Events Stream](#operation/SubscribeToCorporateActionsEventsSSE).\n\nEvery event uses the same envelope. The `event_type` field selects which of\nthe 15 per-type schemas populates `ca`; see\n[`corporate_action_event_type`](#/components/schemas/corporate_action_event_type)\nfor the full mapping and follow the link on each row to the per-type `ca`\npayload schema.\n\nOptional fields (including `currency` and, on most CA types, `isin`) are\nomitted from the JSON when empty; `null` is never emitted.\n",
                 "discriminator": {
                     "mapping": {
+                        "capital_gains_distribution_corporateaction_event": "#/components/schemas/corporate_action_event_capital_gains_distribution",
                         "cash_dividend_corporateaction_event": "#/components/schemas/corporate_action_event_cash_dividend",
                         "cash_merger_corporateaction_event": "#/components/schemas/corporate_action_event_cash_merger",
                         "equity_partial_call_corporateaction_event": "#/components/schemas/corporate_action_event_equity_partial_call",
@@ -1678,6 +1859,9 @@
                     "propertyName": "event_type"
                 },
                 "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/corporate_action_event_capital_gains_distribution"
+                    },
                     {
                         "$ref": "#/components/schemas/corporate_action_event_cash_dividend"
                     },
@@ -1742,7 +1926,9 @@
                     },
                     "at": {
                         "description": "RFC-3339 timestamp when the streaming service emitted this event.",
-                        "example": "2026-03-20T12:24:58.807230Z",
+                        "examples": [
+                            "2026-03-20T12:24:58.807230Z"
+                        ],
                         "format": "date-time",
                         "type": "string"
                     },
@@ -1760,6 +1946,32 @@
                     "region"
                 ],
                 "type": "object"
+            },
+            "corporate_action_event_capital_gains_distribution": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/corporate_action_event_base"
+                    },
+                    {
+                        "properties": {
+                            "ca": {
+                                "$ref": "#/components/schemas/ca_event_capital_gains_distribution"
+                            },
+                            "event_type": {
+                                "enum": [
+                                    "capital_gains_distribution_corporateaction_event"
+                                ],
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "event_type",
+                            "ca"
+                        ],
+                        "type": "object"
+                    }
+                ],
+                "description": "`corporate_action_event` envelope specialised to `event_type ==\ncapital_gains_distribution_corporateaction_event`. Emitted through\n[Corporate Actions Events Stream](#operation/SubscribeToCorporateActionsEventsSSE).\n"
             },
             "corporate_action_event_cash_dividend": {
                 "allOf": [
@@ -2108,8 +2320,9 @@
                 "description": "`corporate_action_event` envelope specialised to `event_type ==\nstock_merger_corporateaction_event`. Emitted through\n[Corporate Actions Events Stream](#operation/SubscribeToCorporateActionsEventsSSE).\n"
             },
             "corporate_action_event_type": {
-                "description": "Discriminator that determines the shape of the `ca` field on a\n[`corporate_action_event`](#/components/schemas/corporate_action_event).\n\nEach value corresponds to a per-type payload schema:\n\n| `event_type` | `ca` schema |\n| --- | --- |\n| `cash_dividend_corporateaction_event` | [`ca_event_cash_dividend`](#/components/schemas/ca_event_cash_dividend) |\n| `cash_merger_corporateaction_event` | [`ca_event_cash_merger`](#/components/schemas/ca_event_cash_merger) |\n| `equity_partial_call_corporateaction_event` | [`ca_event_equity_partial_call`](#/components/schemas/ca_event_equity_partial_call) |\n| `forward_split_corporateaction_event` | [`ca_event_forward_split`](#/components/schemas/ca_event_forward_split) |\n| `name_change_corporateaction_event` | [`ca_event_name_change`](#/components/schemas/ca_event_name_change) |\n| `redemption_corporateaction_event` | [`ca_event_redemption`](#/components/schemas/ca_event_redemption) |\n| `reorganization_corporateaction_event` | [`ca_event_reorganization`](#/components/schemas/ca_event_reorganization) |\n| `reverse_split_corporateaction_event` | [`ca_event_reverse_split`](#/components/schemas/ca_event_reverse_split) |\n| `rights_distribution_corporateaction_event` | [`ca_event_rights_distribution`](#/components/schemas/ca_event_rights_distribution) |\n| `spin_off_corporateaction_event` | [`ca_event_spin_off`](#/components/schemas/ca_event_spin_off) |\n| `stock_and_cash_merger_corporateaction_event` | [`ca_event_stock_and_cash_merger`](#/components/schemas/ca_event_stock_and_cash_merger) |\n| `stock_dividend_corporateaction_event` | [`ca_event_stock_dividend`](#/components/schemas/ca_event_stock_dividend) |\n| `stock_merger_corporateaction_event` | [`ca_event_stock_merger`](#/components/schemas/ca_event_stock_merger) |\n| `unit_split_corporateaction_event` | [`ca_event_unit_split`](#/components/schemas/ca_event_unit_split) |\n| `worthless_removal_corporateaction_event` | [`ca_event_worthless_removal`](#/components/schemas/ca_event_worthless_removal) |\n",
+                "description": "Discriminator that determines the shape of the `ca` field on a\n[`corporate_action_event`](#/components/schemas/corporate_action_event).\n\nEach value corresponds to a per-type payload schema:\n\n| `event_type` | `ca` schema |\n| --- | --- |\n| `capital_gains_distribution_corporateaction_event` | [`ca_event_capital_gains_distribution`](#/components/schemas/ca_event_capital_gains_distribution) |\n| `cash_dividend_corporateaction_event` | [`ca_event_cash_dividend`](#/components/schemas/ca_event_cash_dividend) |\n| `cash_merger_corporateaction_event` | [`ca_event_cash_merger`](#/components/schemas/ca_event_cash_merger) |\n| `equity_partial_call_corporateaction_event` | [`ca_event_equity_partial_call`](#/components/schemas/ca_event_equity_partial_call) |\n| `forward_split_corporateaction_event` | [`ca_event_forward_split`](#/components/schemas/ca_event_forward_split) |\n| `name_change_corporateaction_event` | [`ca_event_name_change`](#/components/schemas/ca_event_name_change) |\n| `redemption_corporateaction_event` | [`ca_event_redemption`](#/components/schemas/ca_event_redemption) |\n| `reorganization_corporateaction_event` | [`ca_event_reorganization`](#/components/schemas/ca_event_reorganization) |\n| `reverse_split_corporateaction_event` | [`ca_event_reverse_split`](#/components/schemas/ca_event_reverse_split) |\n| `rights_distribution_corporateaction_event` | [`ca_event_rights_distribution`](#/components/schemas/ca_event_rights_distribution) |\n| `spin_off_corporateaction_event` | [`ca_event_spin_off`](#/components/schemas/ca_event_spin_off) |\n| `stock_and_cash_merger_corporateaction_event` | [`ca_event_stock_and_cash_merger`](#/components/schemas/ca_event_stock_and_cash_merger) |\n| `stock_dividend_corporateaction_event` | [`ca_event_stock_dividend`](#/components/schemas/ca_event_stock_dividend) |\n| `stock_merger_corporateaction_event` | [`ca_event_stock_merger`](#/components/schemas/ca_event_stock_merger) |\n| `unit_split_corporateaction_event` | [`ca_event_unit_split`](#/components/schemas/ca_event_unit_split) |\n| `worthless_removal_corporateaction_event` | [`ca_event_worthless_removal`](#/components/schemas/ca_event_worthless_removal) |\n",
                 "enum": [
+                    "capital_gains_distribution_corporateaction_event",
                     "cash_dividend_corporateaction_event",
                     "cash_merger_corporateaction_event",
                     "equity_partial_call_corporateaction_event",
@@ -2182,6 +2395,12 @@
             },
             "corporate_actions": {
                 "properties": {
+                    "capital_gains_distributions": {
+                        "items": {
+                            "$ref": "#/components/schemas/capital_gains_distribution"
+                        },
+                        "type": "array"
+                    },
                     "cash_dividends": {
                         "items": {
                             "$ref": "#/components/schemas/cash_dividend"
@@ -2292,16 +2511,18 @@
             },
             "crypto_bar": {
                 "description": "OHLC aggregate of all the trades in a given interval.",
-                "example": {
-                    "c": 29003,
-                    "h": 29003,
-                    "l": 28999,
-                    "n": 4,
-                    "o": 28999,
-                    "t": "2022-05-27T10:18:00Z",
-                    "v": 0.01,
-                    "vw": 29001
-                },
+                "examples": [
+                    {
+                        "c": 29003,
+                        "h": 29003,
+                        "l": 28999,
+                        "n": 4,
+                        "o": 28999,
+                        "t": "2022-05-27T10:18:00Z",
+                        "v": 0.01,
+                        "vw": 29001
+                    }
+                ],
                 "properties": {
                     "c": {
                         "description": "Closing price.",
@@ -2455,29 +2676,31 @@
             },
             "crypto_orderbook": {
                 "description": "Snapshot of the orderbook.",
-                "example": {
-                    "a": [
-                        {
-                            "p": 20902,
-                            "s": 0.0097
-                        },
-                        {
-                            "p": 21444,
-                            "s": 0
-                        }
-                    ],
-                    "b": [
-                        {
-                            "p": 20846,
-                            "s": 0.1902
-                        },
-                        {
-                            "p": 20350,
-                            "s": 0
-                        }
-                    ],
-                    "t": "2022-06-24T08:00:14.137774336Z"
-                },
+                "examples": [
+                    {
+                        "a": [
+                            {
+                                "p": 20902,
+                                "s": 0.0097
+                            },
+                            {
+                                "p": 21444,
+                                "s": 0
+                            }
+                        ],
+                        "b": [
+                            {
+                                "p": 20846,
+                                "s": 0.1902
+                            },
+                            {
+                                "p": 20350,
+                                "s": 0
+                            }
+                        ],
+                        "t": "2022-06-24T08:00:14.137774336Z"
+                    }
+                ],
                 "properties": {
                     "a": {
                         "items": {
@@ -2504,10 +2727,12 @@
             },
             "crypto_orderbook_entry": {
                 "description": "A single entry in a crypto orderbook.",
-                "example": {
-                    "p": 20846,
-                    "s": 0.1902
-                },
+                "examples": [
+                    {
+                        "p": 20846,
+                        "s": 0.1902
+                    }
+                ],
                 "properties": {
                     "p": {
                         "description": "Price.",
@@ -2528,13 +2753,15 @@
             },
             "crypto_quote": {
                 "description": "The best bid and ask information for a given security.",
-                "example": {
-                    "ap": 29059,
-                    "as": 3.252,
-                    "bp": 29058,
-                    "bs": 0.3544,
-                    "t": "2022-05-26T11:47:18.44347136Z"
-                },
+                "examples": [
+                    {
+                        "ap": 29059,
+                        "as": 3.252,
+                        "bp": 29058,
+                        "bs": 0.3544,
+                        "t": "2022-05-26T11:47:18.44347136Z"
+                    }
+                ],
                 "properties": {
                     "ap": {
                         "description": "Ask price.",
@@ -2627,13 +2854,15 @@
             },
             "crypto_trade": {
                 "description": "A crypto trade.",
-                "example": {
-                    "i": 31455277,
-                    "p": 29798,
-                    "s": 0.1209,
-                    "t": "2022-05-18T12:00:05.225055Z",
-                    "tks": "S"
-                },
+                "examples": [
+                    {
+                        "i": 31455277,
+                        "p": 29798,
+                        "s": 0.1209,
+                        "t": "2022-05-18T12:00:05.225055Z",
+                        "tks": "S"
+                    }
+                ],
                 "properties": {
                     "i": {
                         "description": "Trade ID.",
@@ -2692,6 +2921,15 @@
                 "description": "The ISO 4217 currency code associated with the corporate action.\nEmpty value can mean USD, non-applicable (e.g. for name changes) or unknown\n(can change later to a valid currency).\n",
                 "type": "string"
             },
+            "data_quality": {
+                "default": "complete",
+                "description": "Controls which corporate actions are returned based on data quality.\n\n- `complete` (default): exclude corporate actions that are still missing required\n  fields (for example, ex-date or CUSIP/ISIN) and have not yet been processed.\n  Already-processed corporate actions are always included, even if they would\n  otherwise be considered incomplete.\n- `all`: return matching corporate actions regardless of field completeness.\n",
+                "enum": [
+                    "complete",
+                    "all"
+                ],
+                "type": "string"
+            },
             "date": {
                 "description": "Date in RFC-3339.",
                 "format": "date",
@@ -2709,7 +2947,9 @@
             },
             "event_id": {
                 "description": "Lexically sortable, monotonically increasing 26-character\n[ULID](https://github.com/ulid/spec) (Crockford Base32, uppercase) that\nidentifies a single SSE emission. Unique per message -- an `update` or\n`delete` for the same underlying corporate action carries a fresh\n`event_id`. Because ULIDs sort in emission order, they can be used as\nresume cursors via `since_id`, `until_id`, or the standard `Last-Event-Id`\nreconnect header.\n",
-                "example": "01J9RPMV5TKB8WX3M4F1KZ7QH2",
+                "examples": [
+                    "01J9RPMV5TKB8WX3M4F1KZ7QH2"
+                ],
                 "format": "ulid",
                 "pattern": "^[0-7][0-9A-HJKMNP-TV-Z]{25}$",
                 "type": "string"
@@ -2753,12 +2993,14 @@
             },
             "fixed_income_price": {
                 "description": "The price of the instrument as a percentage of its par value.",
-                "example": {
-                    "p": 99.6459,
-                    "t": "2025-02-14T20:58:00.648Z",
-                    "ytm": 4.249,
-                    "ytw": 4.249
-                },
+                "examples": [
+                    {
+                        "p": 99.6459,
+                        "t": "2025-02-14T20:58:00.648Z",
+                        "ytm": 4.249,
+                        "ytw": 4.249
+                    }
+                ],
                 "properties": {
                     "p": {
                         "description": "Price",
@@ -2787,19 +3029,21 @@
             },
             "fixed_income_quote": {
                 "description": "The best bid and ask information for a given fixed income security. A value of 0 means there is no active bid or ask for that field.\n",
-                "example": {
-                    "ams": 1000,
-                    "ap": 99.91958333,
-                    "as": 1000000,
-                    "aytm": 2.226923,
-                    "aytw": 2.226923,
-                    "bms": 1000,
-                    "bp": 99.81091667,
-                    "bs": 1000000,
-                    "bytm": 5.236154,
-                    "bytw": 5.236154,
-                    "t": "2026-05-21T06:56:01.882466873Z"
-                },
+                "examples": [
+                    {
+                        "ams": 1000,
+                        "ap": 99.91958333,
+                        "as": 1000000,
+                        "aytm": 2.226923,
+                        "aytw": 2.226923,
+                        "bms": 1000,
+                        "bp": 99.81091667,
+                        "bs": 1000000,
+                        "bytm": 5.236154,
+                        "bytw": 5.236154,
+                        "t": "2026-05-21T06:56:01.882466873Z"
+                    }
+                ],
                 "properties": {
                     "ams": {
                         "description": "Best ask minimum trade size in par value.",
@@ -2872,7 +3116,10 @@
             },
             "forex_currency_pairs": {
                 "description": "A comma-separated string with currency pairs.",
-                "example": "USDJPY,USDMXN",
+                "examples": [
+                    "USDJPY",
+                    "USDMXN"
+                ],
                 "type": "string"
             },
             "forex_latest_rates_resp": {
@@ -2892,12 +3139,14 @@
             },
             "forex_rate": {
                 "description": "A foreign exchange rate between two currencies at a given time.",
-                "example": {
-                    "ap": 127.763,
-                    "bp": 127.702,
-                    "mp": 127.757,
-                    "t": "2022-04-20T18:23:00Z"
-                },
+                "examples": [
+                    {
+                        "ap": 127.763,
+                        "bp": 127.702,
+                        "mp": 127.757,
+                        "t": "2022-04-20T18:23:00Z"
+                    }
+                ],
                 "properties": {
                     "ap": {
                         "description": "The last ask price value of the currency at the end of the timeframe.",
@@ -2956,18 +3205,20 @@
             },
             "forward_split": {
                 "description": "Forward split.",
-                "example": {
-                    "cusip": "816851109",
-                    "due_bill_redemption_date": "2023-08-23",
-                    "ex_date": "2023-08-22",
-                    "id": "189bd849-ab9f-4b4d-aaaa-a6d415fd976d",
-                    "new_rate": 2,
-                    "old_rate": 1,
-                    "payable_date": "2023-08-21",
-                    "process_date": "2023-08-22",
-                    "record_date": "2023-08-14",
-                    "symbol": "SRE"
-                },
+                "examples": [
+                    {
+                        "cusip": "816851109",
+                        "due_bill_redemption_date": "2023-08-23",
+                        "ex_date": "2023-08-22",
+                        "id": "189bd849-ab9f-4b4d-aaaa-a6d415fd976d",
+                        "new_rate": 2,
+                        "old_rate": 1,
+                        "payable_date": "2023-08-21",
+                        "process_date": "2023-08-22",
+                        "record_date": "2023-08-14",
+                        "symbol": "SRE"
+                    }
+                ],
                 "properties": {
                     "currency": {
                         "$ref": "#/components/schemas/currency"
@@ -3019,64 +3270,6 @@
                 ],
                 "type": "object"
             },
-            "index_latest_values_resp": {
-                "description": "The response object of the latest index values.",
-                "properties": {
-                    "values": {
-                        "additionalProperties": {
-                            "$ref": "#/components/schemas/index_value"
-                        },
-                        "type": "object"
-                    }
-                },
-                "required": [
-                    "values"
-                ],
-                "type": "object"
-            },
-            "index_value": {
-                "description": "The value of an index at a given point in time.",
-                "example": {
-                    "t": "2026-05-18T17:00:02.0256Z",
-                    "v": 7383.46
-                },
-                "properties": {
-                    "t": {
-                        "$ref": "#/components/schemas/timestamp"
-                    },
-                    "v": {
-                        "description": "Index value.",
-                        "format": "double",
-                        "type": "number"
-                    }
-                },
-                "required": [
-                    "t",
-                    "v"
-                ],
-                "type": "object"
-            },
-            "index_values_resp": {
-                "properties": {
-                    "next_page_token": {
-                        "$ref": "#/components/schemas/next_page_token"
-                    },
-                    "values": {
-                        "additionalProperties": {
-                            "items": {
-                                "$ref": "#/components/schemas/index_value"
-                            },
-                            "type": "array"
-                        },
-                        "type": "object"
-                    }
-                },
-                "required": [
-                    "values",
-                    "next_page_token"
-                ],
-                "type": "object"
-            },
             "isin": {
                 "description": "International Securities Identification Number (ISIN) as defined by ISO 6166.\nMay be empty for US corporate actions.\n",
                 "type": "string"
@@ -3091,11 +3284,13 @@
             },
             "most_active": {
                 "description": "A stock that is most active by either volume or trade count.",
-                "example": {
-                    "symbol": "AAPL",
-                    "trade_count": 639626,
-                    "volume": 122709184
-                },
+                "examples": [
+                    {
+                        "symbol": "AAPL",
+                        "trade_count": 639626,
+                        "volume": 122709184
+                    }
+                ],
                 "properties": {
                     "symbol": {
                         "type": "string"
@@ -3140,12 +3335,14 @@
             },
             "mover": {
                 "description": "A symbol whose price moved significantly.",
-                "example": {
-                    "change": 2.46,
-                    "percent_change": 145.56,
-                    "price": 4.15,
-                    "symbol": "AGRI"
-                },
+                "examples": [
+                    {
+                        "change": 2.46,
+                        "percent_change": 145.56,
+                        "price": 4.15,
+                        "symbol": "AGRI"
+                    }
+                ],
                 "properties": {
                     "change": {
                         "description": "Difference in change for the day.",
@@ -3211,14 +3408,16 @@
             },
             "name_change": {
                 "description": "Name change.",
-                "example": {
-                    "id": "5a774c35-edec-4532-a812-a56d0bbb623a",
-                    "new_cusip": "Y9390M103",
-                    "new_symbol": "VFS",
-                    "old_cusip": "G11537100",
-                    "old_symbol": "BSAQ",
-                    "process_date": "2023-08-15"
-                },
+                "examples": [
+                    {
+                        "id": "5a774c35-edec-4532-a812-a56d0bbb623a",
+                        "new_cusip": "Y9390M103",
+                        "new_symbol": "VFS",
+                        "old_cusip": "G11537100",
+                        "old_symbol": "BSAQ",
+                        "process_date": "2023-08-15"
+                    }
+                ],
                 "properties": {
                     "currency": {
                         "$ref": "#/components/schemas/currency"
@@ -3319,8 +3518,10 @@
                     "url": {
                         "description": "URL of article (if applicable).",
                         "format": "uri",
-                        "nullable": true,
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     }
                 },
                 "required": [
@@ -3347,7 +3548,9 @@
                             "small",
                             "large"
                         ],
-                        "example": "thumb",
+                        "examples": [
+                            "thumb"
+                        ],
                         "minLength": 1,
                         "type": "string"
                     },
@@ -3384,21 +3587,25 @@
             },
             "next_page_token": {
                 "description": "Pagination token for the next page.",
-                "nullable": true,
-                "type": "string"
+                "type": [
+                    "string",
+                    "null"
+                ]
             },
             "option_bar": {
                 "description": "OHLC aggregate of all the trades in a given interval.",
-                "example": {
-                    "c": 0.23,
-                    "h": 0.28,
-                    "l": 0.23,
-                    "n": 26,
-                    "o": 0.28,
-                    "t": "2024-01-18T05:00:00Z",
-                    "v": 224,
-                    "vw": 0.245045
-                },
+                "examples": [
+                    {
+                        "c": 0.23,
+                        "h": 0.28,
+                        "l": 0.23,
+                        "n": 26,
+                        "o": 0.28,
+                        "t": "2024-01-18T05:00:00Z",
+                        "v": 224,
+                        "vw": 0.245045
+                    }
+                ],
                 "properties": {
                     "c": {
                         "description": "Closing price.",
@@ -3479,21 +3686,25 @@
                 "additionalProperties": {
                     "type": "string"
                 },
-                "example": {
-                    "a": "SLAN - Single Leg Auction Non ISO",
-                    "e": "SLFT - Single Leg Floor Trade",
-                    "g": "MLAT - Multi Leg Auction"
-                },
+                "examples": [
+                    {
+                        "a": "SLAN - Single Leg Auction Non ISO",
+                        "e": "SLFT - Single Leg Floor Trade",
+                        "g": "MLAT - Multi Leg Auction"
+                    }
+                ],
                 "type": "object"
             },
             "option_exchanges": {
                 "additionalProperties": {
                     "type": "string"
                 },
-                "example": {
-                    "A": "NYSE American Options",
-                    "Q": "Nasdaq Options"
-                },
+                "examples": [
+                    {
+                        "A": "NYSE American Options",
+                        "Q": "Nasdaq Options"
+                    }
+                ],
                 "type": "object"
             },
             "option_feed": {
@@ -3567,16 +3778,18 @@
             },
             "option_quote": {
                 "description": "The best bid and ask information for a given option.\n",
-                "example": {
-                    "ap": 0.16,
-                    "as": 669,
-                    "ax": "w",
-                    "bp": 0.15,
-                    "bs": 164,
-                    "bx": "W",
-                    "c": "A",
-                    "t": "2024-02-28T15:30:28.046330624Z"
-                },
+                "examples": [
+                    {
+                        "ap": 0.16,
+                        "as": 669,
+                        "ax": "w",
+                        "bp": 0.15,
+                        "bs": 164,
+                        "bx": "W",
+                        "c": "A",
+                        "t": "2024-02-28T15:30:28.046330624Z"
+                    }
+                ],
                 "properties": {
                     "ap": {
                         "description": "Ask price.",
@@ -3675,13 +3888,15 @@
             },
             "option_trade": {
                 "description": "An option trade.",
-                "example": {
-                    "c": "I",
-                    "p": 0.37,
-                    "s": 1,
-                    "t": "2024-01-18T15:03:44.56339456Z",
-                    "x": "B"
-                },
+                "examples": [
+                    {
+                        "c": "I",
+                        "p": 0.37,
+                        "s": 1,
+                        "t": "2024-01-18T15:03:44.56339456Z",
+                        "x": "B"
+                    }
+                ],
                 "properties": {
                     "c": {
                         "description": "Trade condition.",
@@ -3813,14 +4028,16 @@
             },
             "redemption": {
                 "description": "Redemption.",
-                "example": {
-                    "cusip": "687305102",
-                    "id": "395da031-0e57-4918-a6fb-64a7c713aca4",
-                    "payable_date": "2023-06-13",
-                    "process_date": "2023-06-13",
-                    "rate": 0.141134,
-                    "symbol": "ORPHY"
-                },
+                "examples": [
+                    {
+                        "cusip": "687305102",
+                        "id": "395da031-0e57-4918-a6fb-64a7c713aca4",
+                        "payable_date": "2023-06-13",
+                        "process_date": "2023-06-13",
+                        "rate": 0.141134,
+                        "symbol": "ORPHY"
+                    }
+                ],
                 "properties": {
                     "currency": {
                         "$ref": "#/components/schemas/currency"
@@ -3945,17 +4162,19 @@
             },
             "reverse_split": {
                 "description": "Reverse split.",
-                "example": {
-                    "ex_date": "2023-08-24",
-                    "id": "913de862-c02c-46dc-a89c-fc8779a50d30",
-                    "new_cusip": "60879E200",
-                    "new_rate": 1,
-                    "old_cusip": "60879E101",
-                    "old_rate": 50,
-                    "process_date": "2023-08-24",
-                    "record_date": "2023-08-24",
-                    "symbol": "MNTS"
-                },
+                "examples": [
+                    {
+                        "ex_date": "2023-08-24",
+                        "id": "913de862-c02c-46dc-a89c-fc8779a50d30",
+                        "new_cusip": "60879E200",
+                        "new_rate": 1,
+                        "old_cusip": "60879E101",
+                        "old_rate": 50,
+                        "process_date": "2023-08-24",
+                        "record_date": "2023-08-24",
+                        "symbol": "MNTS"
+                    }
+                ],
                 "properties": {
                     "currency": {
                         "$ref": "#/components/schemas/currency"
@@ -4017,19 +4236,21 @@
             },
             "rights_distribution": {
                 "description": "Rights distribution.",
-                "example": {
-                    "ex_date": "2024-04-17",
-                    "expiration_date": "2024-05-14",
-                    "id": "69794cfd-0adc-4e11-9211-9210a9cf8932",
-                    "new_cusip": "454089111",
-                    "new_symbol": "IFN.RTWI",
-                    "payable_date": "2024-04-19",
-                    "process_date": "2024-04-19",
-                    "rate": 1,
-                    "record_date": "2024-04-18",
-                    "source_cusip": "454089103",
-                    "source_symbol": "IFN"
-                },
+                "examples": [
+                    {
+                        "ex_date": "2024-04-17",
+                        "expiration_date": "2024-05-14",
+                        "id": "69794cfd-0adc-4e11-9211-9210a9cf8932",
+                        "new_cusip": "454089111",
+                        "new_symbol": "IFN.RTWI",
+                        "payable_date": "2024-04-19",
+                        "process_date": "2024-04-19",
+                        "rate": 1,
+                        "record_date": "2024-04-18",
+                        "source_cusip": "454089103",
+                        "source_symbol": "IFN"
+                    }
+                ],
                 "properties": {
                     "currency": {
                         "$ref": "#/components/schemas/currency"
@@ -4099,18 +4320,20 @@
             },
             "spin_off": {
                 "description": "Spin-off.",
-                "example": {
-                    "ex_date": "2023-08-15",
-                    "id": "82e602f6-35bc-4651-a5dd-f6d88ff37c55",
-                    "new_cusip": "85237B101",
-                    "new_rate": 1,
-                    "new_symbol": "SRM",
-                    "process_date": "2023-08-15",
-                    "record_date": "2023-08-15",
-                    "source_cusip": "48208F105",
-                    "source_rate": 19.35,
-                    "source_symbol": "JUPW"
-                },
+                "examples": [
+                    {
+                        "ex_date": "2023-08-15",
+                        "id": "82e602f6-35bc-4651-a5dd-f6d88ff37c55",
+                        "new_cusip": "85237B101",
+                        "new_rate": 1,
+                        "new_symbol": "SRM",
+                        "process_date": "2023-08-15",
+                        "record_date": "2023-08-15",
+                        "source_cusip": "48208F105",
+                        "source_rate": 19.35,
+                        "source_symbol": "JUPW"
+                    }
+                ],
                 "properties": {
                     "currency": {
                         "$ref": "#/components/schemas/currency"
@@ -4175,19 +4398,21 @@
             },
             "stock_and_cash_merger": {
                 "description": "Stock and cash merger.",
-                "example": {
-                    "acquiree_cusip": "561409103",
-                    "acquiree_rate": 1,
-                    "acquiree_symbol": "MLVF",
-                    "acquirer_cusip": "31931U102",
-                    "acquirer_rate": 0.7733,
-                    "acquirer_symbol": "FRBA",
-                    "cash_rate": 7.8,
-                    "effective_date": "2023-07-18",
-                    "id": "e5248356-2c06-42cf-aeb9-1595bd616cdb",
-                    "payable_date": "2023-07-18",
-                    "process_date": "2023-07-18"
-                },
+                "examples": [
+                    {
+                        "acquiree_cusip": "561409103",
+                        "acquiree_rate": 1,
+                        "acquiree_symbol": "MLVF",
+                        "acquirer_cusip": "31931U102",
+                        "acquirer_rate": 0.7733,
+                        "acquirer_symbol": "FRBA",
+                        "cash_rate": 7.8,
+                        "effective_date": "2023-07-18",
+                        "id": "e5248356-2c06-42cf-aeb9-1595bd616cdb",
+                        "payable_date": "2023-07-18",
+                        "process_date": "2023-07-18"
+                    }
+                ],
                 "properties": {
                     "acquiree_cusip": {
                         "type": "string"
@@ -4251,12 +4476,14 @@
             },
             "stock_auction": {
                 "description": "An auction\n",
-                "example": {
-                    "c": "O",
-                    "p": 135,
-                    "t": "2022-10-13T13:30:01.688322951Z",
-                    "x": "Q"
-                },
+                "examples": [
+                    {
+                        "c": "O",
+                        "p": 135,
+                        "t": "2022-10-13T13:30:01.688322951Z",
+                        "x": "Q"
+                    }
+                ],
                 "properties": {
                     "c": {
                         "description": "The condition flag indicating that this is an auction. See `v2/stocks/meta/conditions/trade` for more details.\n",
@@ -4343,16 +4570,18 @@
             },
             "stock_bar": {
                 "description": "OHLC aggregate of all the trades in a given interval.\n",
-                "example": {
-                    "c": 178.08,
-                    "h": 178.34,
-                    "l": 177.76,
-                    "n": 1727,
-                    "o": 178.26,
-                    "t": "2022-01-03T09:00:00Z",
-                    "v": 60937,
-                    "vw": 177.954244
-                },
+                "examples": [
+                    {
+                        "c": 178.08,
+                        "h": 178.34,
+                        "l": 177.76,
+                        "n": 1727,
+                        "o": 178.26,
+                        "t": "2022-01-03T09:00:00Z",
+                        "v": 60937,
+                        "vw": 177.954244
+                    }
+                ],
                 "properties": {
                     "c": {
                         "description": "Closing price.",
@@ -4458,11 +4687,13 @@
                 "additionalProperties": {
                     "type": "string"
                 },
-                "example": {
-                    "@": "Regular Sale",
-                    "A": "Acquisition",
-                    "B": "Bunched Trade"
-                },
+                "examples": [
+                    {
+                        "@": "Regular Sale",
+                        "A": "Acquisition",
+                        "B": "Bunched Trade"
+                    }
+                ],
                 "type": "object"
             },
             "stock_daily_auctions": {
@@ -4495,16 +4726,18 @@
             },
             "stock_dividend": {
                 "description": "Stock dividend.",
-                "example": {
-                    "cusip": "605015106",
-                    "ex_date": "2023-05-19",
-                    "id": "3ae94c30-2d37-473a-bf29-5f7b4ab6d3ca",
-                    "payable_date": "2023-05-05",
-                    "process_date": "2023-05-19",
-                    "rate": 0.05,
-                    "record_date": "2023-05-22",
-                    "symbol": "MSBC"
-                },
+                "examples": [
+                    {
+                        "cusip": "605015106",
+                        "ex_date": "2023-05-19",
+                        "id": "3ae94c30-2d37-473a-bf29-5f7b4ab6d3ca",
+                        "payable_date": "2023-05-05",
+                        "process_date": "2023-05-19",
+                        "rate": 0.05,
+                        "record_date": "2023-05-22",
+                        "symbol": "MSBC"
+                    }
+                ],
                 "properties": {
                     "currency": {
                         "$ref": "#/components/schemas/currency"
@@ -4552,10 +4785,12 @@
                 "additionalProperties": {
                     "type": "string"
                 },
-                "example": {
-                    "N": "New York Stock Exchange",
-                    "V": "IEX"
-                },
+                "examples": [
+                    {
+                        "N": "New York Stock Exchange",
+                        "V": "IEX"
+                    }
+                ],
                 "type": "object"
             },
             "stock_historical_feed": {
@@ -4686,18 +4921,20 @@
             },
             "stock_merger": {
                 "description": "Stock merger.",
-                "example": {
-                    "acquiree_cusip": "53223X107",
-                    "acquiree_rate": 1,
-                    "acquiree_symbol": "LSI",
-                    "acquirer_cusip": "30225T102",
-                    "acquirer_rate": 0.895,
-                    "acquirer_symbol": "EXR",
-                    "effective_date": "2023-07-20",
-                    "id": "728f8cb2-a00e-4bc7-ad14-d15fe82bbcff",
-                    "payable_date": "2023-07-20",
-                    "process_date": "2023-07-20"
-                },
+                "examples": [
+                    {
+                        "acquiree_cusip": "53223X107",
+                        "acquiree_rate": 1,
+                        "acquiree_symbol": "LSI",
+                        "acquirer_cusip": "30225T102",
+                        "acquirer_rate": 0.895,
+                        "acquirer_symbol": "EXR",
+                        "effective_date": "2023-07-20",
+                        "id": "728f8cb2-a00e-4bc7-ad14-d15fe82bbcff",
+                        "payable_date": "2023-07-20",
+                        "process_date": "2023-07-20"
+                    }
+                ],
                 "properties": {
                     "acquiree_cusip": {
                         "type": "string"
@@ -4756,19 +4993,21 @@
             },
             "stock_quote": {
                 "description": "The best bid and ask information for a given security.",
-                "example": {
-                    "ap": 387.7,
-                    "as": 1,
-                    "ax": "C",
-                    "bp": 387.67,
-                    "bs": 1,
-                    "bx": "N",
-                    "c": [
-                        "R"
-                    ],
-                    "t": "2021-02-06T13:35:08.946977536Z",
-                    "z": "C"
-                },
+                "examples": [
+                    {
+                        "ap": 387.7,
+                        "as": 1,
+                        "ax": "C",
+                        "bp": 387.67,
+                        "bs": 1,
+                        "bx": "N",
+                        "c": [
+                            "R"
+                        ],
+                        "t": "2021-02-06T13:35:08.946977536Z",
+                        "z": "C"
+                    }
+                ],
                 "properties": {
                     "ap": {
                         "description": "Ask price. 0 means the security has no active ask.",
@@ -4932,18 +5171,20 @@
             },
             "stock_trade": {
                 "description": "A stock trade.",
-                "example": {
-                    "c": [
-                        "@",
-                        "T"
-                    ],
-                    "i": 1,
-                    "p": 178.26,
-                    "s": 246,
-                    "t": "2022-01-03T09:00:00.086175744Z",
-                    "x": "P",
-                    "z": "C"
-                },
+                "examples": [
+                    {
+                        "c": [
+                            "@",
+                            "T"
+                        ],
+                        "i": 1,
+                        "p": 178.26,
+                        "s": 246,
+                        "t": "2022-01-03T09:00:00.086175744Z",
+                        "x": "P",
+                        "z": "C"
+                    }
+                ],
                 "properties": {
                     "c": {
                         "description": "Condition flags. See `v2/stocks/meta/conditions/trade` for more details.",
@@ -5049,20 +5290,22 @@
             },
             "unit_split": {
                 "description": "Unit split.",
-                "example": {
-                    "alternate_cusip": "G5391L110",
-                    "alternate_rate": 0.3333,
-                    "alternate_symbol": "LVROW",
-                    "effective_date": "2023-03-01",
-                    "id": "3e68e87e-ae95-4d68-91d1-715d52ef143a",
-                    "new_cusip": "G5391L102",
-                    "new_rate": 1,
-                    "new_symbol": "LVRO",
-                    "old_cusip": "G8990L119",
-                    "old_rate": 1,
-                    "old_symbol": "TPBAU",
-                    "process_date": "2023-03-01"
-                },
+                "examples": [
+                    {
+                        "alternate_cusip": "G5391L110",
+                        "alternate_rate": 0.3333,
+                        "alternate_symbol": "LVROW",
+                        "effective_date": "2023-03-01",
+                        "id": "3e68e87e-ae95-4d68-91d1-715d52ef143a",
+                        "new_cusip": "G5391L102",
+                        "new_rate": 1,
+                        "new_symbol": "LVRO",
+                        "old_cusip": "G8990L119",
+                        "old_rate": 1,
+                        "old_symbol": "TPBAU",
+                        "process_date": "2023-03-01"
+                    }
+                ],
                 "properties": {
                     "alternate_cusip": {
                         "type": "string"
@@ -5137,12 +5380,14 @@
             },
             "worthless_removal": {
                 "description": "Worthless removal.",
-                "example": {
-                    "cusip": "078771300",
-                    "id": "106c2149-ee04-4d2e-a943-98dbb4d21a3c",
-                    "process_date": "2024-12-19",
-                    "symbol": "BLPH"
-                },
+                "examples": [
+                    {
+                        "cusip": "078771300",
+                        "id": "106c2149-ee04-4d2e-a943-98dbb4d21a3c",
+                        "process_date": "2024-12-19",
+                        "symbol": "BLPH"
+                    }
+                ],
                 "properties": {
                     "currency": {
                         "$ref": "#/components/schemas/currency"
@@ -5173,6 +5418,10 @@
             }
         },
         "securitySchemes": {
+            "BasicAuth": {
+                "scheme": "basic",
+                "type": "http"
+            },
             "apiKey": {
                 "in": "header",
                 "name": "APCA-API-KEY-ID",
@@ -5200,11 +5449,11 @@
         "title": "Market Data API",
         "version": "1.1"
     },
-    "openapi": "3.0.0",
+    "openapi": "3.1.2",
     "paths": {
         "/v1beta1/events/corporate-actions": {
             "get": {
-                "description": "Server-Sent Events (SSE) stream that delivers every corporate-action mutation (`insert` / `update` / `delete`) across all 15 CA types on a single long-lived `text/event-stream` connection. When `since`, `since_id`, or the `Last-Event-Id` reconnect header is provided, historical events are replayed first; otherwise only live events are pushed.\n\nEach event carries an `event_type` discriminator that selects the shape of the `ca` payload -- see the [`corporate_action_event`](#/components/schemas/corporate_action_event) schema for the mapping to each per-type schema. The same underlying data is available on demand via [`GET /v1/corporate-actions`](#operation/CorporateActions).\n",
+                "description": "Server-Sent Events (SSE) stream that delivers every corporate-action mutation (`insert` / `update` / `delete`) across all supported CA types on a single long-lived `text/event-stream` connection. When `since`, `since_id`, or the `Last-Event-Id` reconnect header is provided, historical events are replayed first; otherwise only live events are pushed.\n\nEach event carries an `event_type` discriminator that selects the shape of the `ca` payload -- see the [`corporate_action_event`](#/components/schemas/corporate_action_event) schema for the mapping to each per-type schema. The same underlying data is available on demand via [`GET /v1/corporate-actions`](#operation/CorporateActions).\n",
                 "operationId": "SubscribeToCorporateActionsEventsSSE",
                 "parameters": [
                     {
@@ -5234,6 +5483,32 @@
                         "content": {
                             "text/event-stream": {
                                 "examples": {
+                                    "CapitalGainsDistribution": {
+                                        "description": "Example SSE payload delivered when\n`event_type == capital_gains_distribution_corporateaction_event`.\nCombined long-term + short-term distribution; single-leg events\ncarry only the applicable `long_term_rate` or `short_term_rate`.\n",
+                                        "summary": "Capital gains distribution inserted (US)",
+                                        "value": [
+                                            {
+                                                "action": "insert",
+                                                "at": "2026-03-20T18:00:00.000000Z",
+                                                "ca": {
+                                                    "currency": "USD",
+                                                    "cusip": "36261K509",
+                                                    "ex_date": "2025-12-26",
+                                                    "id": "98c905a1-08c7-450c-8669-b8e7aee8b44d",
+                                                    "isin": "US36261K5090",
+                                                    "long_term_rate": "0.45855",
+                                                    "payable_date": "2026-01-09",
+                                                    "process_date": "2026-01-08",
+                                                    "record_date": "2025-12-29",
+                                                    "short_term_rate": "0.11019",
+                                                    "symbol": "GCAD"
+                                                },
+                                                "event_id": "01KMAGXP2FCJ4NR1TDX8ZWKR6E",
+                                                "event_type": "capital_gains_distribution_corporateaction_event",
+                                                "region": "us"
+                                            }
+                                        ]
+                                    },
                                     "CashDividend": {
                                         "description": "Example SSE payload delivered when `event_type == cash_dividend_corporateaction_event`.",
                                         "summary": "Cash dividend inserted (US)",
@@ -5657,6 +5932,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "servers": [
                     {
                         "description": "Production",
@@ -5750,6 +6034,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Latest prices",
                 "tags": [
                     "Fixed income"
@@ -5847,6 +6140,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Latest quotes",
                 "tags": [
                     "Fixed income"
@@ -5914,6 +6216,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "BasicAuth": []
+                    },
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    }
+                ],
                 "summary": "Latest rates for currency pairs",
                 "tags": [
                     "Forex"
@@ -6014,183 +6325,18 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "BasicAuth": []
+                    },
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    }
+                ],
                 "summary": "Historical rates for currency pairs",
                 "tags": [
                     "Forex"
-                ]
-            }
-        },
-        "/v1beta1/indices/latest/values": {
-            "get": {
-                "description": "Get the latest values for the given indices.",
-                "operationId": "IndexLatestValues",
-                "parameters": [
-                    {
-                        "$ref": "#/components/parameters/index_symbols"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "examples": {
-                                    "values": {
-                                        "value": {
-                                            "values": {
-                                                "SPX": {
-                                                    "t": "2026-05-18T17:00:02.0256Z",
-                                                    "v": 7383.46
-                                                },
-                                                "VIX": {
-                                                    "t": "2026-05-18T17:00:46.354Z",
-                                                    "v": 18.45
-                                                }
-                                            }
-                                        }
-                                    }
-                                },
-                                "schema": {
-                                    "$ref": "#/components/schemas/index_latest_values_resp"
-                                }
-                            }
-                        },
-                        "description": "OK",
-                        "headers": {
-                            "X-RateLimit-Limit": {
-                                "$ref": "#/components/headers/ratelimit_limit"
-                            },
-                            "X-RateLimit-Remaining": {
-                                "$ref": "#/components/headers/ratelimit_remaining"
-                            },
-                            "X-RateLimit-Reset": {
-                                "$ref": "#/components/headers/ratelimit_reset"
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/400"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/401"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/403"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/500"
-                    }
-                },
-                "summary": "Latest values for indices",
-                "tags": [
-                    "Index"
-                ]
-            }
-        },
-        "/v1beta1/indices/values": {
-            "get": {
-                "description": "Get historical values for the given indices in the given time interval.\n",
-                "operationId": "IndexValues",
-                "parameters": [
-                    {
-                        "$ref": "#/components/parameters/index_symbols"
-                    },
-                    {
-                        "$ref": "#/components/parameters/start"
-                    },
-                    {
-                        "$ref": "#/components/parameters/end"
-                    },
-                    {
-                        "$ref": "#/components/parameters/limit"
-                    },
-                    {
-                        "$ref": "#/components/parameters/page_token"
-                    },
-                    {
-                        "$ref": "#/components/parameters/sort"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "examples": {
-                                    "values": {
-                                        "value": {
-                                            "next_page_token": "U1BYfDIwMjYtMDUtMThUMTc6MDA6MDIuMDI1Nlo",
-                                            "values": {
-                                                "SPX": [
-                                                    {
-                                                        "t": "2026-05-18T17:00:00.0302Z",
-                                                        "v": 7384.41
-                                                    },
-                                                    {
-                                                        "t": "2026-05-18T17:00:01.0918Z",
-                                                        "v": 7384.07
-                                                    },
-                                                    {
-                                                        "t": "2026-05-18T17:00:02.0256Z",
-                                                        "v": 7383.46
-                                                    }
-                                                ],
-                                                "VIX": [
-                                                    {
-                                                        "t": "2026-05-18T17:00:01.3355Z",
-                                                        "v": 18.4
-                                                    },
-                                                    {
-                                                        "t": "2026-05-18T17:00:16.3453Z",
-                                                        "v": 18.41
-                                                    },
-                                                    {
-                                                        "t": "2026-05-18T17:00:46.354Z",
-                                                        "v": 18.45
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    }
-                                },
-                                "schema": {
-                                    "$ref": "#/components/schemas/index_values_resp"
-                                }
-                            }
-                        },
-                        "description": "OK",
-                        "headers": {
-                            "X-RateLimit-Limit": {
-                                "$ref": "#/components/headers/ratelimit_limit"
-                            },
-                            "X-RateLimit-Remaining": {
-                                "$ref": "#/components/headers/ratelimit_remaining"
-                            },
-                            "X-RateLimit-Reset": {
-                                "$ref": "#/components/headers/ratelimit_reset"
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/400"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/401"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/403"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/500"
-                    }
-                },
-                "summary": "Historical values for indices",
-                "tags": [
-                    "Index"
                 ]
             }
         },
@@ -6217,7 +6363,7 @@
                         "content": {
                             "image/png": {
                                 "schema": {
-                                    "format": "binary",
+                                    "contentMediaType": "image/png",
                                     "type": "string"
                                 }
                             }
@@ -6251,6 +6397,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Logos",
                 "tags": [
                     "Logos"
@@ -6362,6 +6517,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "News articles",
                 "tags": [
                     "News"
@@ -6454,6 +6618,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Historical bars",
                 "tags": [
                     "Option"
@@ -6517,6 +6690,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Condition codes",
                 "tags": [
                     "Option"
@@ -6565,6 +6747,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Exchange codes",
                 "tags": [
                     "Option"
@@ -6649,6 +6840,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Latest quotes",
                 "tags": [
                     "Option"
@@ -6750,6 +6950,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Snapshots",
                 "tags": [
                     "Option"
@@ -6917,6 +7126,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Option chain",
                 "tags": [
                     "Option"
@@ -7010,6 +7228,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Historical trades",
                 "tags": [
                     "Option"
@@ -7081,6 +7308,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Latest trades",
                 "tags": [
                     "Option"
@@ -7173,6 +7409,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Top market movers",
                 "tags": [
                     "Screener"
@@ -7229,6 +7474,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Most active stocks",
                 "tags": [
                     "Screener"
@@ -7324,7 +7578,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
-                "security": [],
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Historical bars",
                 "tags": [
                     "Crypto"
@@ -7399,7 +7661,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
-                "security": [],
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Latest bars",
                 "tags": [
                     "Crypto"
@@ -7487,7 +7757,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
-                "security": [],
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Latest orderbook",
                 "tags": [
                     "Crypto"
@@ -7566,7 +7844,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
-                "security": [],
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Latest quotes",
                 "tags": [
                     "Crypto"
@@ -7645,7 +7931,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
-                "security": [],
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Latest trades",
                 "tags": [
                     "Crypto"
@@ -7744,7 +8038,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
-                "security": [],
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Historical quotes",
                 "tags": [
                     "Crypto"
@@ -7855,7 +8157,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
-                "security": [],
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Snapshots",
                 "tags": [
                     "Crypto"
@@ -7961,7 +8271,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
-                "security": [],
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Historical trades",
                 "tags": [
                     "Crypto"
@@ -7970,7 +8288,7 @@
         },
         "/v1/corporate-actions": {
             "get": {
-                "description": "This endpoint provides data about the corporate actions for each given symbol over a specified time period.\n\n> \u26a0\ufe0f Warning\n>\n> Currently Alpaca has no guarantees on the creation time of corporate actions. There may be delays in receiving corporate actions from our data providers, and there may be delays in processing and making them available via this API. As a result, corporate actions may not be available immediately after they are announced.\n",
+                "description": "This endpoint provides data about the corporate actions for each given symbol over a specified time period.\n\nBy default (`data_quality=complete`), corporate actions that are still incomplete (for example, missing required fields such as ex-date or CUSIP/ISIN) and have not yet been processed are excluded from the response. Pass `data_quality=all` to also receive those early, incomplete records. Already-processed corporate actions are always returned when `data_quality=complete`, even if they would otherwise be considered incomplete.\n\n> \u26a0\ufe0f Warning\n>\n> Currently Alpaca has no guarantees on the creation time of corporate actions. There may be delays in receiving corporate actions from our data providers, and there may be delays in processing and making them available via this API. As a result, corporate actions may not be available immediately after they are announced.\n",
                 "operationId": "CorporateActions",
                 "parameters": [
                     {
@@ -7996,6 +8314,9 @@
                     },
                     {
                         "$ref": "#/components/parameters/cas_limit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/cas_data_quality"
                     },
                     {
                         "$ref": "#/components/parameters/page_token"
@@ -8042,6 +8363,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Corporate actions",
                 "tags": [
                     "Corporate actions"
@@ -8160,6 +8490,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Historical auctions (single)",
                 "tags": [
                     "Stock"
@@ -8263,6 +8602,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Historical bars (single symbol)",
                 "tags": [
                     "Stock"
@@ -8339,6 +8687,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Latest bar (single symbol)",
                 "tags": [
                     "Stock"
@@ -8452,6 +8809,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Historical quotes (single symbol)",
                 "tags": [
                     "Stock"
@@ -8531,6 +8897,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Latest quote (single symbol)",
                 "tags": [
                     "Stock"
@@ -8652,6 +9027,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Snapshot (single symbol)",
                 "tags": [
                     "Stock"
@@ -8763,6 +9147,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Historical trades (single symbol)",
                 "tags": [
                     "Stock"
@@ -8841,6 +9234,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Latest trade (single symbol)",
                 "tags": [
                     "Stock"
@@ -9085,6 +9487,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Historical auctions",
                 "tags": [
                     "Stock"
@@ -9189,6 +9600,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Historical bars",
                 "tags": [
                     "Stock"
@@ -9276,6 +9696,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Latest bars",
                 "tags": [
                     "Stock"
@@ -9353,6 +9782,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Condition codes",
                 "tags": [
                     "Stock"
@@ -9401,6 +9839,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Exchange codes",
                 "tags": [
                     "Stock"
@@ -9515,6 +9962,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Historical quotes",
                 "tags": [
                     "Stock"
@@ -9608,6 +10064,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Latest quotes",
                 "tags": [
                     "Stock"
@@ -9787,6 +10252,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Snapshots",
                 "tags": [
                     "Stock"
@@ -9901,6 +10375,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Historical trades",
                 "tags": [
                     "Stock"
@@ -9981,6 +10464,15 @@
                         "$ref": "#/components/responses/500"
                     }
                 },
+                "security": [
+                    {
+                        "apiKey": [],
+                        "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "summary": "Latest trades",
                 "tags": [
                     "Stock"
@@ -9988,12 +10480,6 @@
             }
         }
     },
-    "security": [
-        {
-            "apiKey": [],
-            "apiSecret": []
-        }
-    ],
     "servers": [
         {
             "description": "Production",
