@@ -589,7 +589,7 @@ var StockTradesOp = Op{
 
 var SubscribeToCorporateActionsEventsSSEOp = Op{
 	Name: "SubscribeToCorporateActionsEventsSSE", Summary: "Get subscribe to corporate actions events (SSE)",
-	Long: "Server-Sent Events (SSE) stream that delivers every corporate-action mutation (`insert` / `update` / `delete`) across all 15 CA types on a single long-lived `text/event-stream` connection",
+	Long: "Server-Sent Events (SSE) stream that delivers every corporate-action mutation (`insert` / `update` / `delete`) across all supported CA types on a single long-lived `text/event-stream` connection",
 	Flags: []FlagDef{
 		{Name: "last-event-id", OASName: "Last-Event-Id", Type: "string", Description: "standard SSE reconnect header", Source: "header"},
 		{Name: "region", OASName: "region", Type: "string", Default: "all", Description: "which markets to receive events for", Completions: []string{"all", "non_us", "us"}, Source: "query"},
@@ -978,7 +978,7 @@ var GetTokenizationRequestsOp = Op{
 	Flags: []FlagDef{
 		{Name: "after", OASName: "after", Type: "string", Description: "response will include only requests created after this timestamp (exclusive)", Source: "query"},
 		{Name: "before", OASName: "before", Type: "string", Description: "response will include only requests created before this timestamp (exclusive)", Source: "query"},
-		{Name: "issuer", OASName: "issuer", Type: "string", Description: "issuer of the tokenization requests to be queried", Completions: []string{"xstocks"}, Source: "query"},
+		{Name: "issuer", OASName: "issuer", Type: "string", Description: "issuer of the tokenization requests to be queried", Completions: []string{"binance", "coinbase", "st0x", "xstocks"}, Source: "query"},
 		{Name: "network", OASName: "network", Type: "string", Description: "network of the tokenization requests to be queried", Completions: []string{"arbitrum", "base", "binance", "cronos", "ethereum", "hyperevm", "mantle", "solana", "ton", "tron"}, Source: "query"},
 		{Name: "status", OASName: "status", Type: "string", Description: "tokenization request status to be queried", Completions: []string{"completed", "pending", "rejected"}, Source: "query"},
 		{Name: "type", OASName: "type", Type: "string", Description: "tokenization request type to be queried", Completions: []string{"mint", "redeem"}, Source: "query"},
@@ -1159,7 +1159,7 @@ var PostTokenizationMintOp = Op{
 	Long: "This endpoint is used by an Authorized Participant to request the minting of a tokenized asset",
 	Flags: []FlagDef{
 		{Name: "idempotency-key", OASName: "Idempotency-Key", Type: "string", Description: "unique key for idempotent create", Source: "header"},
-		{Name: "issuer", OASName: "issuer", Type: "string", Description: "tokenized asset's issuer", Completions: []string{"st0x", "xstocks"}, Source: "body"},
+		{Name: "issuer", OASName: "issuer", Type: "string", Description: "tokenized asset's issuer", Completions: []string{"binance", "coinbase", "st0x", "xstocks"}, Source: "body"},
 		{Name: "network", OASName: "network", Type: "string", Description: "token's blockchain network", Completions: []string{"arbitrum", "base", "binance", "cronos", "ethereum", "hyperevm", "mantle", "solana", "ton", "tron"}, Source: "body"},
 		{Name: "qty", OASName: "qty", Type: "string", Description: "underlying quantity to convert into the tokenized asset. It can be fractional", Source: "body"},
 		{Name: "underlying-symbol", OASName: "underlying_symbol", Type: "string", Description: "underlying asset symbol", Source: "body"},
@@ -1240,8 +1240,8 @@ var assetsResponseFields = []ResponseField{
 	{Name: "fractionable", Type: "boolean", Description: "asset is fractionable or not"},
 	{Name: "id", Type: "string", Description: "asset ID"},
 	{Name: "maintenance_margin_requirement", Type: "number", Description: "**deprecated**: Please use margin_requirement_long or margin_requirement_short instead"},
-	{Name: "margin_requirement_long", Type: "string", Description: "margin requirement percentage for the asset's long positions (equities only)"},
-	{Name: "margin_requirement_short", Type: "string", Description: "margin requirement percentage for the asset's short positions (equities only)"},
+	{Name: "margin_requirement_long", Type: "string", Description: "margin requirement percentage for the asset's long positions (equities only), encoded as a decimal string"},
+	{Name: "margin_requirement_short", Type: "string", Description: "margin requirement percentage for the asset's short positions (equities only), encoded as a decimal string"},
 	{Name: "marginable", Type: "boolean", Description: "asset is marginable or not"},
 	{Name: "min_order_size", Type: "string", Description: "minimum order size. Field available for crypto only"},
 	{Name: "min_trade_increment", Type: "string", Description: "amount a trade quantity can be incremented by. Field available for crypto only"},
@@ -1378,7 +1378,7 @@ var tokenizationRequestResponseFields = []ResponseField{
 	{Name: "client_request_id", Type: "string", Description: "authorized Participant-supplied label associated with this tokenization request"},
 	{Name: "created_at", Type: "string", Description: "created at"},
 	{Name: "fees", Type: "string", Description: "fees charged for this tokenization request"},
-	{Name: "issuer", Type: "enum", Description: "tokenized asset's issuer", EnumValues: []string{"st0x", "xstocks"}},
+	{Name: "issuer", Type: "enum", Description: "tokenized asset's issuer", EnumValues: []string{"binance", "coinbase", "st0x", "xstocks"}},
 	{Name: "issuer_account", Type: "string", Description: "issuer's account ID associated with this tokenization request. Use client_external_account_id instead"},
 	{Name: "issuer_request_id", Type: "string", Description: "unique identifier of the tokenization request set by the issuer"},
 	{Name: "network", Type: "enum", Description: "token's blockchain network", EnumValues: []string{"arbitrum", "base", "binance", "cronos", "ethereum", "hyperevm", "mantle", "solana", "ton", "tron"}},
@@ -1714,7 +1714,7 @@ func ResponseSchema(opName string) ([]ResponseField, bool) {
 			"PostOrder":           orderResponseFields,
 			"PostTokenizationMint": {
 				{Name: "created_at", Type: "string", Description: "created at"},
-				{Name: "issuer", Type: "enum", Description: "tokenized asset's issuer", EnumValues: []string{"st0x", "xstocks"}},
+				{Name: "issuer", Type: "enum", Description: "tokenized asset's issuer", EnumValues: []string{"binance", "coinbase", "st0x", "xstocks"}},
 				{Name: "network", Type: "enum", Description: "token's blockchain network", EnumValues: []string{"arbitrum", "base", "binance", "cronos", "ethereum", "hyperevm", "mantle", "solana", "ton", "tron"}},
 				{Name: "qty", Type: "string", Description: "quantity to convert for this tokenization request. It can be fractional"},
 				{Name: "status", Type: "enum", Description: "status of the tokenization request", EnumValues: []string{"completed", "pending", "rejected"}},

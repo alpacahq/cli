@@ -186,7 +186,7 @@
                 }
             },
             "cas_types": {
-                "description": "A comma-separated list of types. If not provided, search all types.\n\nThe following types are supported:\n  - reverse_split\n  - forward_split\n  - unit_split\n  - cash_dividend\n  - stock_dividend\n  - spin_off\n  - cash_merger\n  - stock_merger\n  - stock_and_cash_merger\n  - redemption\n  - name_change\n  - worthless_removal\n  - rights_distribution\n  - partial_call\n  - reorganization\n",
+                "description": "A comma-separated list of types. If not provided, search all types.\n\nThe following types are supported:\n  - reverse_split\n  - forward_split\n  - unit_split\n  - cash_dividend\n  - stock_dividend\n  - spin_off\n  - cash_merger\n  - stock_merger\n  - stock_and_cash_merger\n  - redemption\n  - name_change\n  - worthless_removal\n  - rights_distribution\n  - partial_call\n  - reorganization\n  - capital_gains_distribution\n",
                 "example": "forward_split,reverse_split",
                 "in": "query",
                 "name": "types",
@@ -608,6 +608,61 @@
                     "process_date"
                 ],
                 "type": "object"
+            },
+            "ca_event_capital_gains_distribution": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ca_event_base"
+                    },
+                    {
+                        "properties": {
+                            "currency": {
+                                "$ref": "#/components/schemas/currency"
+                            },
+                            "cusip": {
+                                "description": "CUSIP of the security.",
+                                "type": "string"
+                            },
+                            "ex_date": {
+                                "$ref": "#/components/schemas/ex_date"
+                            },
+                            "isin": {
+                                "$ref": "#/components/schemas/isin"
+                            },
+                            "long_term_rate": {
+                                "description": "Long-term capital-gains payment per share, as a decimal string.",
+                                "examples": [
+                                    "1.4372"
+                                ],
+                                "type": "string"
+                            },
+                            "payable_date": {
+                                "$ref": "#/components/schemas/payable_date"
+                            },
+                            "record_date": {
+                                "$ref": "#/components/schemas/record_date"
+                            },
+                            "short_term_rate": {
+                                "description": "Short-term capital-gains payment per share, as a decimal string.",
+                                "examples": [
+                                    "0.1051"
+                                ],
+                                "type": "string"
+                            },
+                            "symbol": {
+                                "description": "Ticker paying the distribution.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "symbol",
+                            "cusip",
+                            "ex_date"
+                        ],
+                        "type": "object"
+                    }
+                ],
+                "description": "Capital-gains distribution payload delivered when\n`event_type == capital_gains_distribution_corporateaction_event`. Every\ndecimal field is emitted as a JSON string to preserve precision on the\nwire. At least one of `long_term_rate` / `short_term_rate` is present;\ncombined distributions carry both.\n"
             },
             "ca_event_cash_dividend": {
                 "allOf": [
@@ -1570,6 +1625,71 @@
                 "format": "uuid",
                 "type": "string"
             },
+            "capital_gains_distribution": {
+                "description": "Capital gains distribution paid by a fund. A single event may carry a long-term\nleg (`long_term_rate`), a short-term leg (`short_term_rate`), or both when\ncombined. At least one of the two rates is always present.\n",
+                "examples": [
+                    {
+                        "currency": "USD",
+                        "cusip": "36261K509",
+                        "ex_date": "2025-12-26",
+                        "id": "98c905a1-08c7-450c-8669-b8e7aee8b44d",
+                        "isin": "US36261K5090",
+                        "long_term_rate": 0.45855,
+                        "payable_date": "2026-01-09",
+                        "process_date": "2026-01-08",
+                        "record_date": "2025-12-29",
+                        "short_term_rate": 0.11019,
+                        "symbol": "GCAD"
+                    }
+                ],
+                "properties": {
+                    "currency": {
+                        "$ref": "#/components/schemas/currency"
+                    },
+                    "cusip": {
+                        "type": "string"
+                    },
+                    "ex_date": {
+                        "$ref": "#/components/schemas/ex_date"
+                    },
+                    "id": {
+                        "$ref": "#/components/schemas/ca_id"
+                    },
+                    "isin": {
+                        "$ref": "#/components/schemas/isin"
+                    },
+                    "long_term_rate": {
+                        "description": "Long-term capital-gain payment per share.",
+                        "format": "double",
+                        "type": "number"
+                    },
+                    "payable_date": {
+                        "$ref": "#/components/schemas/payable_date"
+                    },
+                    "process_date": {
+                        "$ref": "#/components/schemas/process_date"
+                    },
+                    "record_date": {
+                        "$ref": "#/components/schemas/record_date"
+                    },
+                    "short_term_rate": {
+                        "description": "Short-term capital-gain payment per share.",
+                        "format": "double",
+                        "type": "number"
+                    },
+                    "symbol": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "symbol",
+                    "cusip",
+                    "process_date",
+                    "ex_date"
+                ],
+                "type": "object"
+            },
             "cash_dividend": {
                 "description": "Cash dividend.",
                 "examples": [
@@ -1719,6 +1839,7 @@
                 "description": "A single corporate-action mutation delivered over the\n[Corporate Actions Events Stream](#operation/SubscribeToCorporateActionsEventsSSE).\n\nEvery event uses the same envelope. The `event_type` field selects which of\nthe 15 per-type schemas populates `ca`; see\n[`corporate_action_event_type`](#/components/schemas/corporate_action_event_type)\nfor the full mapping and follow the link on each row to the per-type `ca`\npayload schema.\n\nOptional fields (including `currency` and, on most CA types, `isin`) are\nomitted from the JSON when empty; `null` is never emitted.\n",
                 "discriminator": {
                     "mapping": {
+                        "capital_gains_distribution_corporateaction_event": "#/components/schemas/corporate_action_event_capital_gains_distribution",
                         "cash_dividend_corporateaction_event": "#/components/schemas/corporate_action_event_cash_dividend",
                         "cash_merger_corporateaction_event": "#/components/schemas/corporate_action_event_cash_merger",
                         "equity_partial_call_corporateaction_event": "#/components/schemas/corporate_action_event_equity_partial_call",
@@ -1738,6 +1859,9 @@
                     "propertyName": "event_type"
                 },
                 "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/corporate_action_event_capital_gains_distribution"
+                    },
                     {
                         "$ref": "#/components/schemas/corporate_action_event_cash_dividend"
                     },
@@ -1822,6 +1946,32 @@
                     "region"
                 ],
                 "type": "object"
+            },
+            "corporate_action_event_capital_gains_distribution": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/corporate_action_event_base"
+                    },
+                    {
+                        "properties": {
+                            "ca": {
+                                "$ref": "#/components/schemas/ca_event_capital_gains_distribution"
+                            },
+                            "event_type": {
+                                "enum": [
+                                    "capital_gains_distribution_corporateaction_event"
+                                ],
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "event_type",
+                            "ca"
+                        ],
+                        "type": "object"
+                    }
+                ],
+                "description": "`corporate_action_event` envelope specialised to `event_type ==\ncapital_gains_distribution_corporateaction_event`. Emitted through\n[Corporate Actions Events Stream](#operation/SubscribeToCorporateActionsEventsSSE).\n"
             },
             "corporate_action_event_cash_dividend": {
                 "allOf": [
@@ -2170,8 +2320,9 @@
                 "description": "`corporate_action_event` envelope specialised to `event_type ==\nstock_merger_corporateaction_event`. Emitted through\n[Corporate Actions Events Stream](#operation/SubscribeToCorporateActionsEventsSSE).\n"
             },
             "corporate_action_event_type": {
-                "description": "Discriminator that determines the shape of the `ca` field on a\n[`corporate_action_event`](#/components/schemas/corporate_action_event).\n\nEach value corresponds to a per-type payload schema:\n\n| `event_type` | `ca` schema |\n| --- | --- |\n| `cash_dividend_corporateaction_event` | [`ca_event_cash_dividend`](#/components/schemas/ca_event_cash_dividend) |\n| `cash_merger_corporateaction_event` | [`ca_event_cash_merger`](#/components/schemas/ca_event_cash_merger) |\n| `equity_partial_call_corporateaction_event` | [`ca_event_equity_partial_call`](#/components/schemas/ca_event_equity_partial_call) |\n| `forward_split_corporateaction_event` | [`ca_event_forward_split`](#/components/schemas/ca_event_forward_split) |\n| `name_change_corporateaction_event` | [`ca_event_name_change`](#/components/schemas/ca_event_name_change) |\n| `redemption_corporateaction_event` | [`ca_event_redemption`](#/components/schemas/ca_event_redemption) |\n| `reorganization_corporateaction_event` | [`ca_event_reorganization`](#/components/schemas/ca_event_reorganization) |\n| `reverse_split_corporateaction_event` | [`ca_event_reverse_split`](#/components/schemas/ca_event_reverse_split) |\n| `rights_distribution_corporateaction_event` | [`ca_event_rights_distribution`](#/components/schemas/ca_event_rights_distribution) |\n| `spin_off_corporateaction_event` | [`ca_event_spin_off`](#/components/schemas/ca_event_spin_off) |\n| `stock_and_cash_merger_corporateaction_event` | [`ca_event_stock_and_cash_merger`](#/components/schemas/ca_event_stock_and_cash_merger) |\n| `stock_dividend_corporateaction_event` | [`ca_event_stock_dividend`](#/components/schemas/ca_event_stock_dividend) |\n| `stock_merger_corporateaction_event` | [`ca_event_stock_merger`](#/components/schemas/ca_event_stock_merger) |\n| `unit_split_corporateaction_event` | [`ca_event_unit_split`](#/components/schemas/ca_event_unit_split) |\n| `worthless_removal_corporateaction_event` | [`ca_event_worthless_removal`](#/components/schemas/ca_event_worthless_removal) |\n",
+                "description": "Discriminator that determines the shape of the `ca` field on a\n[`corporate_action_event`](#/components/schemas/corporate_action_event).\n\nEach value corresponds to a per-type payload schema:\n\n| `event_type` | `ca` schema |\n| --- | --- |\n| `capital_gains_distribution_corporateaction_event` | [`ca_event_capital_gains_distribution`](#/components/schemas/ca_event_capital_gains_distribution) |\n| `cash_dividend_corporateaction_event` | [`ca_event_cash_dividend`](#/components/schemas/ca_event_cash_dividend) |\n| `cash_merger_corporateaction_event` | [`ca_event_cash_merger`](#/components/schemas/ca_event_cash_merger) |\n| `equity_partial_call_corporateaction_event` | [`ca_event_equity_partial_call`](#/components/schemas/ca_event_equity_partial_call) |\n| `forward_split_corporateaction_event` | [`ca_event_forward_split`](#/components/schemas/ca_event_forward_split) |\n| `name_change_corporateaction_event` | [`ca_event_name_change`](#/components/schemas/ca_event_name_change) |\n| `redemption_corporateaction_event` | [`ca_event_redemption`](#/components/schemas/ca_event_redemption) |\n| `reorganization_corporateaction_event` | [`ca_event_reorganization`](#/components/schemas/ca_event_reorganization) |\n| `reverse_split_corporateaction_event` | [`ca_event_reverse_split`](#/components/schemas/ca_event_reverse_split) |\n| `rights_distribution_corporateaction_event` | [`ca_event_rights_distribution`](#/components/schemas/ca_event_rights_distribution) |\n| `spin_off_corporateaction_event` | [`ca_event_spin_off`](#/components/schemas/ca_event_spin_off) |\n| `stock_and_cash_merger_corporateaction_event` | [`ca_event_stock_and_cash_merger`](#/components/schemas/ca_event_stock_and_cash_merger) |\n| `stock_dividend_corporateaction_event` | [`ca_event_stock_dividend`](#/components/schemas/ca_event_stock_dividend) |\n| `stock_merger_corporateaction_event` | [`ca_event_stock_merger`](#/components/schemas/ca_event_stock_merger) |\n| `unit_split_corporateaction_event` | [`ca_event_unit_split`](#/components/schemas/ca_event_unit_split) |\n| `worthless_removal_corporateaction_event` | [`ca_event_worthless_removal`](#/components/schemas/ca_event_worthless_removal) |\n",
                 "enum": [
+                    "capital_gains_distribution_corporateaction_event",
                     "cash_dividend_corporateaction_event",
                     "cash_merger_corporateaction_event",
                     "equity_partial_call_corporateaction_event",
@@ -2244,6 +2395,12 @@
             },
             "corporate_actions": {
                 "properties": {
+                    "capital_gains_distributions": {
+                        "items": {
+                            "$ref": "#/components/schemas/capital_gains_distribution"
+                        },
+                        "type": "array"
+                    },
                     "cash_dividends": {
                         "items": {
                             "$ref": "#/components/schemas/cash_dividend"
@@ -5296,7 +5453,7 @@
     "paths": {
         "/v1beta1/events/corporate-actions": {
             "get": {
-                "description": "Server-Sent Events (SSE) stream that delivers every corporate-action mutation (`insert` / `update` / `delete`) across all 15 CA types on a single long-lived `text/event-stream` connection. When `since`, `since_id`, or the `Last-Event-Id` reconnect header is provided, historical events are replayed first; otherwise only live events are pushed.\n\nEach event carries an `event_type` discriminator that selects the shape of the `ca` payload -- see the [`corporate_action_event`](#/components/schemas/corporate_action_event) schema for the mapping to each per-type schema. The same underlying data is available on demand via [`GET /v1/corporate-actions`](#operation/CorporateActions).\n",
+                "description": "Server-Sent Events (SSE) stream that delivers every corporate-action mutation (`insert` / `update` / `delete`) across all supported CA types on a single long-lived `text/event-stream` connection. When `since`, `since_id`, or the `Last-Event-Id` reconnect header is provided, historical events are replayed first; otherwise only live events are pushed.\n\nEach event carries an `event_type` discriminator that selects the shape of the `ca` payload -- see the [`corporate_action_event`](#/components/schemas/corporate_action_event) schema for the mapping to each per-type schema. The same underlying data is available on demand via [`GET /v1/corporate-actions`](#operation/CorporateActions).\n",
                 "operationId": "SubscribeToCorporateActionsEventsSSE",
                 "parameters": [
                     {
@@ -5326,6 +5483,32 @@
                         "content": {
                             "text/event-stream": {
                                 "examples": {
+                                    "CapitalGainsDistribution": {
+                                        "description": "Example SSE payload delivered when\n`event_type == capital_gains_distribution_corporateaction_event`.\nCombined long-term + short-term distribution; single-leg events\ncarry only the applicable `long_term_rate` or `short_term_rate`.\n",
+                                        "summary": "Capital gains distribution inserted (US)",
+                                        "value": [
+                                            {
+                                                "action": "insert",
+                                                "at": "2026-03-20T18:00:00.000000Z",
+                                                "ca": {
+                                                    "currency": "USD",
+                                                    "cusip": "36261K509",
+                                                    "ex_date": "2025-12-26",
+                                                    "id": "98c905a1-08c7-450c-8669-b8e7aee8b44d",
+                                                    "isin": "US36261K5090",
+                                                    "long_term_rate": "0.45855",
+                                                    "payable_date": "2026-01-09",
+                                                    "process_date": "2026-01-08",
+                                                    "record_date": "2025-12-29",
+                                                    "short_term_rate": "0.11019",
+                                                    "symbol": "GCAD"
+                                                },
+                                                "event_id": "01KMAGXP2FCJ4NR1TDX8ZWKR6E",
+                                                "event_type": "capital_gains_distribution_corporateaction_event",
+                                                "region": "us"
+                                            }
+                                        ]
+                                    },
                                     "CashDividend": {
                                         "description": "Example SSE payload delivered when `event_type == cash_dividend_corporateaction_event`.",
                                         "summary": "Cash dividend inserted (US)",
@@ -5751,11 +5934,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "servers": [
@@ -5853,11 +6036,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Latest prices",
@@ -5959,11 +6142,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Latest quotes",
@@ -6216,11 +6399,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Logos",
@@ -6336,11 +6519,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "News articles",
@@ -6437,11 +6620,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Historical bars",
@@ -6509,11 +6692,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Condition codes",
@@ -6566,11 +6749,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Exchange codes",
@@ -6659,11 +6842,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Latest quotes",
@@ -6769,11 +6952,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Snapshots",
@@ -6945,11 +7128,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Option chain",
@@ -7047,11 +7230,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Historical trades",
@@ -7127,11 +7310,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Latest trades",
@@ -7228,11 +7411,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Top market movers",
@@ -7293,11 +7476,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Most active stocks",
@@ -7397,11 +7580,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Historical bars",
@@ -7480,11 +7663,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Latest bars",
@@ -7576,11 +7759,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Latest orderbook",
@@ -7663,11 +7846,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Latest quotes",
@@ -7750,11 +7933,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Latest trades",
@@ -7857,11 +8040,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Historical quotes",
@@ -7976,11 +8159,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Snapshots",
@@ -8090,11 +8273,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Historical trades",
@@ -8182,11 +8365,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Corporate actions",
@@ -8309,11 +8492,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Historical auctions (single)",
@@ -8421,11 +8604,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Historical bars (single symbol)",
@@ -8506,11 +8689,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Latest bar (single symbol)",
@@ -8628,11 +8811,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Historical quotes (single symbol)",
@@ -8716,11 +8899,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Latest quote (single symbol)",
@@ -8846,11 +9029,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Snapshot (single symbol)",
@@ -8966,11 +9149,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Historical trades (single symbol)",
@@ -9053,11 +9236,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Latest trade (single symbol)",
@@ -9306,11 +9489,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Historical auctions",
@@ -9419,11 +9602,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Historical bars",
@@ -9515,11 +9698,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Latest bars",
@@ -9601,11 +9784,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Condition codes",
@@ -9658,11 +9841,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Exchange codes",
@@ -9781,11 +9964,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Historical quotes",
@@ -9883,11 +10066,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Latest quotes",
@@ -10071,11 +10254,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Snapshots",
@@ -10194,11 +10377,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Historical trades",
@@ -10283,11 +10466,11 @@
                 },
                 "security": [
                     {
-                        "BasicAuth": []
-                    },
-                    {
                         "apiKey": [],
                         "apiSecret": []
+                    },
+                    {
+                        "BasicAuth": []
                     }
                 ],
                 "summary": "Latest trades",
