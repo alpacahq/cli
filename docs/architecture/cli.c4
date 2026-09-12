@@ -1,0 +1,144 @@
+// docs/architecture/cli.c4 — alpacahq/cli (repo_id: cli)
+// generated_by: claude-opus-5 / layered-docs 2026-09
+// source_commit: 53606273aa230a40c64b783425dcb3f4423ede30   source_branch: docs/layered-2026-09   generated_at: 2026-09-12T00:00:00+00:00
+// confidence: medium   review_status: draft-needs-review
+// Pending external-id reservations (org dictionary has no ext_alpaca_* row): Alpaca Trading API,
+// Alpaca Market Data API, Alpaca OAuth authorization service, published OpenAPI documents
+// (development time only). Outbound dependencies are evidenced and recorded in
+// docs/okf/system.md (Interfaces, Dependencies, Open questions) but are not modelled here
+// because canonical ext_* ids must be minted by the org pass, not by a repository pass.
+model {
+  cli = system 'Alpaca CLI' {
+    #generated
+    description '
+      Single-binary command-line client for the Alpaca Trading API and Market Data API.
+      Trading, market data, account and watchlist commands are generated from Alpaca OpenAPI
+      specifications; the stated primary consumer is AI agents, scripts and automation pipelines
+      rather than an interactive terminal. Alpha preview. Evidence: README.md, AGENTS.md, go.mod
+    '
+    technology 'Go 1.24 / cobra'
+    link https://github.com/alpacahq/cli 'Repository'
+    metadata {
+      okf 'docs/okf/system.md'
+      allium 'none: no accepted spec'
+      evidence 'go.mod, Makefile, README.md, AGENTS.md, .goreleaser.yaml, .github/workflows/ci.yml'
+    }
+
+    alpaca = container 'alpaca binary' {
+      #generated #entrypoint
+      description 'The distributed CLI executable. Cobra root command with trading, account, market-data and utility command groups; resolves credentials, calls the Alpaca HTTP APIs and renders JSON/CSV on stdout. Evidence: cmd/alpaca/main.go, internal/cmd/root.go'
+      technology 'Go / spf13/cobra'
+      link https://github.com/alpacahq/cli 'Repository'
+      metadata {
+        okf 'docs/okf/system.md'
+        allium 'none: no accepted spec'
+        evidence 'cmd/alpaca/main.go, internal/cmd/root.go, internal/cmd/commands.gen.go, internal/cmd/help_all.go'
+      }
+
+      commands = component 'Command layer' {
+        #generated #internal
+        description 'Hand-written and generated cobra commands, flag definitions, help, schema printing and the raw api escape hatch. Evidence: internal/cmd/, internal/cmdutil/flags.go'
+        technology 'Go'
+      }
+      api_layer = component 'Generated API layer' {
+        #generated #internal
+        description 'Typed trading and market-data clients plus operation and response-schema metadata compiled in from the OpenAPI specifications at generate time. Nothing is read from api/specs at runtime: there is no go:embed anywhere in the module and api/specs is opened only by cmd/generate and a test helper, so --schema output and enum completions come from generated Go source. Evidence: internal/api/trading_client.gen.go, internal/api/marketdata_client.gen.go, internal/api/descriptions.gen.go, cmd/generate/main.go, internal/cmd/spec_test.go'
+        technology 'Go (generated)'
+      }
+      http_client = component 'HTTP client' {
+        #generated #internal
+        description 'Shared HTTP transport: API-key or bearer auth headers, retry with exponential backoff on 429 and 5xx, Retry-After handling, credential scrubbing and verbose/debug/trace diagnostics. Evidence: internal/client/client.go'
+        technology 'Go net/http'
+      }
+      auth = component 'Credential resolution and OAuth login' {
+        #generated #internal
+        description 'Resolves an atomic credential bundle from environment variables or a named profile, decides paper vs live routing, and runs the browser OAuth authorization-code flow with a localhost callback server. The OAuth token exchange builds its own short-timeout net/http client rather than the shared transport: internal/oauth does not import internal/client, so retry, credential scrubbing and the debug/trace modes do not apply to it. Evidence: internal/config/config.go, internal/oauth/oauth.go, internal/cmd/auth.go'
+        technology 'Go'
+      }
+      renderer = component 'Output renderer' {
+        #generated #internal
+        description 'Renders responses as JSON or CSV, applies inline jq filters and writes JSON errors with hints to stderr. Evidence: internal/output/output.go, internal/output/jq.go, internal/cmd/root.go'
+        technology 'Go / itchyny/gojq'
+      }
+
+      commands -[uses]-> api_layer 'invokes generated operations'
+      commands -[uses]-> renderer 'renders JSON/CSV output'
+      commands -[uses]-> auth 'resolves profile and credentials'
+      api_layer -[uses]-> http_client 'issues requests'
+      commands -[uses]-> http_client 'the root command and doctor construct the shared client. Evidence: internal/cmd/root.go, internal/cmd/doctor.go'
+      http_client -[uses]-> auth 'reads the resolved credential bundle and base URL. Evidence: internal/client/client.go imports internal/config'
+    }
+
+    generator = container 'Spec-driven code generator' {
+      #generated
+      description 'Build-time generator invoked by make generate. Reads the OpenAPI specifications and emits the typed API clients and command metadata; CI fails when the committed generated files drift. Evidence: cmd/generate/main.go, cmd/generate/commands.go, Makefile, .github/workflows/ci.yml'
+      technology 'Go'
+      link https://github.com/alpacahq/cli 'Repository'
+      metadata {
+        okf 'docs/okf/system.md'
+        allium 'none: no accepted spec'
+        evidence 'cmd/generate/main.go, cmd/generate/commands.go, Makefile, .github/workflows/ci.yml'
+      }
+    }
+
+    specs = datastore 'Vendored OpenAPI specifications' {
+      #generated
+      description 'Trading API and Market Data API OpenAPI documents committed in the repository and treated as read-only inputs. Evidence: api/specs/trading-api.json, api/specs/market-data-api.json, AGENTS.md'
+      technology 'JSON (OpenAPI)'
+      link https://github.com/alpacahq/cli 'Repository'
+      metadata {
+        okf 'docs/okf/system.md'
+        allium 'none: no accepted spec'
+        evidence 'api/specs/trading-api.json, api/specs/market-data-api.json, Makefile'
+      }
+    }
+
+    profile_store = datastore 'Local profile and config store' {
+      #generated
+      description 'Per-user configuration directory holding config.yaml and named profile files with API keys or OAuth access tokens, written with restricted permissions. Defaults to ~/.config/alpaca on all platforms (os.UserHomeDir joined with .config/alpaca, not the OS user-config directory) and is overridden by ALPACA_CONFIG_DIR. Evidence: internal/config/config.go, README.md'
+      technology 'YAML files on local disk'
+      link https://github.com/alpacahq/cli 'Repository'
+      metadata {
+        okf 'docs/okf/system.md'
+        allium 'none: no accepted spec'
+        evidence 'internal/config/config.go, internal/cmd/auth.go, README.md'
+      }
+    }
+
+    generator -[reads]-> specs 'reads operation and schema definitions'
+    generator -[writes]-> alpaca 'build time: emits the generated API clients and command metadata into internal/api and internal/cmd; CI fails on drift. Evidence: cmd/generate/main.go, .github/workflows/ci.yml'
+    alpaca -[reads]-> profile_store 'loads active profile and credentials'
+    alpaca -[writes]-> profile_store 'stores profiles on login and profile switch'
+  }
+
+  ext_github = external 'GitHub' {
+    #generated #external
+    description 'Release hosting and API. The CLI queries the latest release to report available updates; the release workflow publishes archives and a Homebrew tap formula. Evidence: internal/cmd/update.go, .github/workflows/release.yml, .goreleaser.yaml'
+  }
+
+  cli.alpaca -[calls]-> ext_github 'checks the latest release for update notices'
+  cli -[publishes]-> ext_github 'CI: the tag-triggered release workflow runs GoReleaser, which publishes archives, checksums and a Homebrew tap formula. Evidence: .github/workflows/release.yml, .goreleaser.yaml'
+
+  agent_operator = person 'AI agent or automation pipeline' {
+    description 'Stated primary consumer: agents and scripts that run commands non-interactively and parse JSON output. Evidence: README.md, AGENTS.md, .agents/skills/alpaca-cli/SKILL.md'
+  }
+  cli_developer = person 'CLI maintainer' {
+    description 'Developer who updates the OpenAPI specs or the generator and regenerates the CLI. Evidence: AGENTS.md, Makefile, .agents/skills/alpaca-cli-regenerate/SKILL.md'
+  }
+
+  agent_operator -[uses]-> cli.alpaca 'runs commands, reads JSON on stdout and exit codes'
+  cli_developer -[uses]-> cli.generator 'runs make generate after changing specs or generator'
+}
+
+views {
+  view cli_context {
+    title 'Alpaca CLI — context'
+    include cli, ext_github, agent_operator, cli_developer
+    autoLayout TopBottom
+  }
+  view cli_containers of cli {
+    title 'Alpaca CLI — containers'
+    include *
+    autoLayout LeftRight
+  }
+}
