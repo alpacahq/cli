@@ -141,15 +141,7 @@ func debugRequest(t *testing.T, stderr []byte, method string) (rawURL, body stri
 
 func cliErrorObject(t *testing.T, stderr []byte) map[string]any {
 	t.Helper()
-	var b strings.Builder
-	for _, line := range strings.Split(string(stderr), "\n") {
-		if strings.HasPrefix(line, "→ ") || strings.HasPrefix(line, "← ") {
-			continue
-		}
-		b.WriteString(line)
-		b.WriteByte('\n')
-	}
-	return parseJSONMap(t, []byte(b.String()))
+	return parseJSONMap(t, []byte(stripCLIStderr(string(stderr))))
 }
 
 func allowWalletUnavailable(t *testing.T, stderr []byte) {
