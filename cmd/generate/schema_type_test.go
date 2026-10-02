@@ -1,6 +1,10 @@
 package main
 
-import "testing"
+import (
+	"bytes"
+	"strings"
+	"testing"
+)
 
 func TestSchemaType(t *testing.T) {
 	tests := []struct {
@@ -55,6 +59,42 @@ func TestSchemaType(t *testing.T) {
 				t.Fatalf("isNullable() = %v, want %v", isNullable(tt.schema), tt.wantNullable)
 			}
 		})
+	}
+}
+
+func TestGenStructOmitsUnsetNestedObject(t *testing.T) {
+	prev := schemaByOASName
+	t.Cleanup(func() { schemaByOASName = prev })
+	schemaByOASName = map[string]*schemaInfo{
+		"TravelRuleManualEntry": {goName: "TravelRuleManualEntry", kind: "struct"},
+		"OrderSide":             {goName: "OrderSide", kind: "enum"},
+	}
+
+	info := &schemaInfo{
+		goName: "TravelRuleInfo",
+		kind:   "struct",
+		props: map[string]map[string]any{
+			"beneficiary_is_self_hosted": {"type": "boolean"},
+			"beneficiary_manual_entry":   {"$ref": "#/components/schemas/TravelRuleManualEntry"},
+			"side":                       {"$ref": "#/components/schemas/OrderSide"},
+			"symbol":                     {"type": "string"},
+		},
+		required: map[string]bool{"symbol": true},
+	}
+	var buf bytes.Buffer
+	genStruct(&buf, info)
+	got := buf.String()
+
+	if !strings.Contains(got, "`json:\"beneficiary_manual_entry,omitempty,omitzero\"`") {
+		t.Fatalf("optional nested object missing omitzero:\n%s", got)
+	}
+	if strings.Contains(got, "BeneficiaryManualEntry *") {
+		t.Fatalf("optional nested object should stay a value with omitzero:\n%s", got)
+	}
+	if strings.Contains(got, "beneficiary_is_self_hosted,omitempty,omitzero") ||
+		strings.Contains(got, "side,omitempty,omitzero") ||
+		strings.Contains(got, "symbol,omitempty,omitzero") {
+		t.Fatalf("omitzero applied to a non-struct field:\n%s", got)
 	}
 }
 

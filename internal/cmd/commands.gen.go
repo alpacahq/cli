@@ -119,12 +119,17 @@ var screenerCmd = &cobra.Command{
 var walletCmd = &cobra.Command{
 	Use:   "wallet",
 	Short: "Crypto funding wallets and transfers",
-	Long:  "View crypto funding wallets, create and track transfers, and manage whitelisted withdrawal addresses.",
+	Long:  "View crypto funding wallets, create and track transfers, and manage whitelisted withdrawal addresses and travel rule information.",
 }
 
 var walletTransferCmd = &cobra.Command{
 	Use:   "transfer",
 	Short: "Manage crypto transfers",
+}
+
+var walletVASPCmd = &cobra.Command{
+	Use:   "vasp",
+	Short: "Search virtual asset service providers",
 }
 
 var walletWhitelistCmd = &cobra.Command{
@@ -192,6 +197,11 @@ var createWhitelistedAddressCmd = fetchCmd("add", api.CreateWhitelistedAddressOp
 		Address: cmdutil.Str(cmd, "address"),
 		Asset:   cmdutil.Str(cmd, "asset"),
 		Chain:   api.CryptoChain(cmdutil.Str(cmd, "chain")),
+	}
+	if cmdutil.Changed(cmd, "travel-rule-info") {
+		if err := json.Unmarshal([]byte(cmdutil.Str(cmd, "travel-rule-info")), &body.TravelRuleInfo); err != nil {
+			return nil, fmt.Errorf("--travel-rule-info: %w", err)
+		}
 	}
 	return tradingClient.CreateWhitelistedAddress(body)
 })
@@ -569,6 +579,10 @@ var removeAssetFromWatchlistCmd = fetchCmd("remove", api.RemoveAssetFromWatchlis
 	return tradingClient.RemoveAssetFromWatchlist(cmdutil.Str(cmd, "watchlist-id"), cmdutil.Str(cmd, "symbol"))
 })
 
+var searchVASPsCmd = fetchCmd("search", api.SearchVASPsOp, func(cmd *cobra.Command, args []string) (any, error) {
+	return tradingClient.SearchVASPs(queryFromFlags(cmd, api.SearchVASPsOp))
+})
+
 var stockAuctionSingleCmd = fetchCmd("auction", api.StockAuctionSingleOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.StockAuctionSingle(cmdutil.Str(cmd, "symbol"), queryFromFlags(cmd, api.StockAuctionSingleOp))
 })
@@ -681,6 +695,21 @@ var updateWatchlistByNameCmd = fetchCmd("update-by-name", api.UpdateWatchlistByN
 	c.Flags().String("new-name", "", "The new watchlist name.")
 })
 
+var updateWhitelistedAddressTravelRuleInfoCmd = fetchCmd("update-travel-rule", api.UpdateWhitelistedAddressTravelRuleInfoOp, func(cmd *cobra.Command, args []string) (any, error) {
+	body := &api.UpdateWhitelistedAddressTravelRuleInfoRequest{}
+	var changed bool
+	if cmdutil.Changed(cmd, "travel-rule-info") {
+		if err := json.Unmarshal([]byte(cmdutil.Str(cmd, "travel-rule-info")), &body.TravelRuleInfo); err != nil {
+			return nil, fmt.Errorf("--travel-rule-info: %w", err)
+		}
+		changed = true
+	}
+	if !changed {
+		return nil, fmt.Errorf("specify at least one flag to change (see '%s --help')", cmd.CommandPath())
+	}
+	return voidResponse(tradingClient.UpdateWhitelistedAddressTravelRuleInfo(cmdutil.Str(cmd, "whitelisted-address-id"), body))
+})
+
 func init() {
 	attachCmd(calendarCmd, api.LegacyCalendarOp, func(cmd *cobra.Command, args []string) (any, error) {
 		return voidResponse(tradingClient.LegacyCalendar(queryFromFlags(cmd, api.LegacyCalendarOp)))
@@ -698,6 +727,7 @@ func init() {
 	dataCmd.AddCommand(dataOptionCmd)
 	dataCmd.AddCommand(screenerCmd)
 	walletCmd.AddCommand(walletTransferCmd)
+	walletCmd.AddCommand(walletVASPCmd)
 	walletCmd.AddCommand(walletWhitelistCmd)
 
 	watchlistCmd.AddCommand(addAssetToWatchlistCmd)
@@ -773,6 +803,7 @@ func init() {
 	watchlistCmd.AddCommand(postWatchlistCmd)
 	dataForexCmd.AddCommand(ratesCmd)
 	watchlistCmd.AddCommand(removeAssetFromWatchlistCmd)
+	walletVASPCmd.AddCommand(searchVASPsCmd)
 	dataCmd.AddCommand(stockAuctionSingleCmd)
 	dataCmd.AddCommand(stockAuctionsCmd)
 	dataCmd.AddCommand(stockBarSingleCmd)
@@ -793,4 +824,5 @@ func init() {
 	dataCmd.AddCommand(stockTradesCmd)
 	watchlistCmd.AddCommand(updateWatchlistByIDCmd)
 	watchlistCmd.AddCommand(updateWatchlistByNameCmd)
+	walletWhitelistCmd.AddCommand(updateWhitelistedAddressTravelRuleInfoCmd)
 }

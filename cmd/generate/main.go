@@ -419,6 +419,11 @@ func genStruct(buf *bytes.Buffer, s *schemaInfo) {
 		tag := fieldName
 		if !s.required[fieldName] {
 			tag += ",omitempty"
+			// omitempty does not treat a zero struct as empty, so an unset
+			// nested object would still be sent. omitzero drops that zero value.
+			if isStructSchema(fieldSchema) {
+				tag += ",omitzero"
+			}
 		}
 		fmt.Fprintf(buf, "\t%s %s `json:%q`\n", goField, goType, tag)
 	}
@@ -454,6 +459,31 @@ func schemaType(schema map[string]any) (typ string, nullable bool) {
 func isNullable(schema map[string]any) bool {
 	_, nullable := schemaType(schema)
 	return nullable
+}
+
+// isStructSchema reports whether schema is a named object schema.
+// Inline objects and maps are excluded: their Go types are nilable, so
+// omitempty already drops an unset value.
+func isStructSchema(schema map[string]any) bool {
+	ref, ok := schema["$ref"].(string)
+	if !ok {
+		return false
+	}
+	s := schemaByOASName[refBaseName(ref)]
+	if s == nil {
+		return false
+	}
+	switch s.kind {
+	case "struct":
+		return true
+	case "alias":
+		if s.raw == nil {
+			return false
+		}
+		return isStructSchema(s.raw)
+	default:
+		return false
+	}
 }
 
 func isScalarType(goType string) bool {
@@ -764,6 +794,26 @@ func splitIdent(s string) []string {
 	return parts
 }
 
+func toFlagName(s string) string {
+	var result strings.Builder
+	var previous rune
+	for i, r := range s {
+		switch {
+		case r == '_' || r == '-':
+			if result.Len() > 0 && previous != '-' {
+				result.WriteByte('-')
+			}
+			previous = '-'
+			continue
+		case unicode.IsUpper(r) && i > 0 && (unicode.IsLower(previous) || unicode.IsDigit(previous)):
+			result.WriteByte('-')
+		}
+		result.WriteRune(unicode.ToLower(r))
+		previous = r
+	}
+	return strings.Trim(result.String(), "-")
+}
+
 func refBaseName(ref string) string {
 	parts := strings.Split(ref, "/")
 	return parts[len(parts)-1]
@@ -826,7 +876,7 @@ func paramToFlag(p paramInfo, source string) *flagDesc {
 	fd := &flagDesc{
 		oasName:     p.name,
 		goFieldName: toGoName(p.name),
-		flagName:    strings.ToLower(strings.ReplaceAll(p.name, "_", "-")),
+		flagName:    toFlagName(p.name),
 		flagType:    p.goType,
 		description: normalizeDesc(desc),
 		enumValues:  p.enumValues,
@@ -874,7 +924,7 @@ func collectDescriptions(endpoints []*endpointInfo, spec map[string]any) []*opDe
 			op.params = append(op.params, &flagDesc{
 				oasName:     propName,
 				goFieldName: toGoName(propName),
-				flagName:    strings.ReplaceAll(propName, "_", "-"),
+				flagName:    toFlagName(propName),
 				flagType:    bodyPropFlagType(propSchema, compSchemas),
 				description: normalizeDesc(desc),
 				enumValues:  enums,
@@ -1088,7 +1138,7 @@ var imperativeVerbs = map[string]bool{
 	"replace": true, "remove": true, "add": true, "set": true,
 	"retrieve": true, "fetch": true, "request": true, "do": true,
 	"exercise": true, "return": true, "returns": true, "check": true,
-	"show": true, "estimate": true, "mark": true,
+	"show": true, "estimate": true, "mark": true, "search": true,
 }
 
 func normalizeSummary(method, summary string, returnsArray bool) string {

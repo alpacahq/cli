@@ -2,6 +2,27 @@ package main
 
 import "testing"
 
+func TestToFlagName(t *testing.T) {
+	tests := map[string]string{
+		"page_token":             "page-token",
+		"emailDomain":            "email-domain",
+		"chainalysisName":        "chainalysis-name",
+		"includeSubsidiaryVASPs": "include-subsidiary-vasps",
+		"Last-Event-Id":          "last-event-id",
+	}
+	for input, want := range tests {
+		if got := toFlagName(input); got != want {
+			t.Errorf("toFlagName(%q) = %q, want %q", input, got, want)
+		}
+	}
+}
+
+func TestNormalizeSummaryPreservesSearchVerb(t *testing.T) {
+	if got := normalizeSummary("GET", "Search for VASPs", false); got != "Search for vasps" {
+		t.Fatalf("normalizeSummary() = %q, want %q", got, "Search for vasps")
+	}
+}
+
 func TestNormalizeOASDescription(t *testing.T) {
 	tests := []struct {
 		name string

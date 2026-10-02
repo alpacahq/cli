@@ -623,7 +623,7 @@ var AddAssetToWatchlistByNameOp = Op{
 
 var CreateCryptoTransferForAccountOp = Op{
 	Name: "CreateCryptoTransferForAccount", Summary: "Request a new withdrawal",
-	Long:    "Creates a withdrawal request. Note that outgoing withdrawals must be sent to a whitelisted address and you must whitelist addresses at least 24 hours in advance. If you attempt to withdraw funds to a non-whitelisted address then the transfer will be rejected",
+	Long:    "**Deprecation notice:** This endpoint is deprecated. Use the Alpaca web application to initiate withdrawals",
 	Example: `  alpaca wallet transfer create --amount 0.5 --address 0xabc... --asset BTC`,
 	Flags: []FlagDef{
 		{Name: "address", OASName: "address", Type: "string", Description: "destination wallet address", Source: "body"},
@@ -635,11 +635,11 @@ var CreateCryptoTransferForAccountOp = Op{
 
 var CreateLocatesOp = Op{
 	Name: "CreateLocates", Summary: "Create locate",
-	Long: "Creates a locate request for a short sale",
+	Long: "Creates a locate request for a short sale. This endpoint is not available in paper trading",
 	Example: `  alpaca locate create --symbol TSLA --qty 100
   alpaca locate create --symbol TSLA --qty 100 --limit-price 0.05 --all-or-none true`,
 	Flags: []FlagDef{
-		{Name: "idempotency-key", OASName: "Idempotency-Key", Type: "string", Description: "optional idempotency key for safe retries", Source: "header"},
+		{Name: "idempotency-key", OASName: "Idempotency-Key", Type: "string", Description: "optional client-generated key for safe retries and duplicate request detection.\nThis endpoint currently accepts keys ...", Source: "header"},
 		{Name: "all-or-none", OASName: "all_or_none", Type: "bool", Description: "reject the locate unless the full requested quantity is available", Source: "body"},
 		{Name: "limit-price", OASName: "limit_price", Type: "string", Description: "maximum acceptable locate fee per share, as a decimal string in USD.\nIf omitted, any quoted fee is accepted", Source: "body"},
 		{Name: "qty", OASName: "qty", Type: "int", Description: "number of shares to locate. Must be positive and in round lots of 100; invalid quantities return HTTP 400", Source: "body"},
@@ -655,6 +655,7 @@ var CreateWhitelistedAddressOp = Op{
 		{Name: "address", OASName: "address", Type: "string", Description: "address to be whitelisted", Source: "body"},
 		{Name: "asset", OASName: "asset", Type: "string", Description: "symbol of underlying asset for the whitelisted address", Source: "body"},
 		{Name: "chain", OASName: "chain", Type: "string", Description: "chain identifier for multi-chain crypto assets", Completions: []string{"ARB", "BTC", "ETH", "SOL", "XRP"}, Source: "body"},
+		{Name: "travel-rule-info", OASName: "travel_rule_info", Type: "string", Description: "travel rule information pertaining to the wallet being whitelisted", Source: "body"},
 	},
 }
 
@@ -743,7 +744,7 @@ var GetOptionsContractsOp = Op{
 		{Name: "expiration-date-lte", OASName: "expiration_date_lte", Type: "string", Description: "filter contracts with expiration date less than or equal to the specified date", Source: "query"},
 		{Name: "limit", OASName: "limit", Type: "int", Description: "number of contracts to limit per page (default=100, max=10000)", Source: "query"},
 		{Name: "page-token", OASName: "page_token", Type: "string", Description: "used for pagination, this token retrieves the next page of results", Source: "query"},
-		{Name: "ppind", OASName: "ppind", Type: "bool", Description: "ppind(Penny Program Indicator) field indicates whether an option contract is eligible for penny price increments,", Source: "query"},
+		{Name: "ppind", OASName: "ppind", Type: "bool", Description: "ppind (Penny Program Indicator) field indicates whether an option contract is eligible for penny price increments,", Source: "query"},
 		{Name: "root-symbol", OASName: "root_symbol", Type: "string", Description: "filter contracts by the root symbol", Source: "query"},
 		{Name: "show-deliverables", OASName: "show_deliverables", Type: "bool", Description: "include deliverables array in the response", Source: "query"},
 		{Name: "status", OASName: "status", Type: "string", Description: "filter contracts by status (active/inactive). By default only active contracts are returned", Completions: []string{"active", "inactive"}, Source: "query"},
@@ -920,7 +921,7 @@ var GetCryptoTransferEstimateOp = Op{
 
 var GetLocateOp = Op{
 	Name: "GetLocate", Summary: "Get locate",
-	Long:    "Returns a locate by ID",
+	Long:    "Returns a locate by ID. This endpoint is not available in paper trading",
 	Example: `  alpaca locate get --locate-id <id>`,
 	Flags: []FlagDef{
 		{Name: "locate-id", OASName: "locate_id", Type: "string", Description: "locate ID", Required: true, Source: "path"},
@@ -978,8 +979,8 @@ var GetTokenizationRequestsOp = Op{
 	Flags: []FlagDef{
 		{Name: "after", OASName: "after", Type: "string", Description: "response will include only requests created after this timestamp (exclusive)", Source: "query"},
 		{Name: "before", OASName: "before", Type: "string", Description: "response will include only requests created before this timestamp (exclusive)", Source: "query"},
-		{Name: "issuer", OASName: "issuer", Type: "string", Description: "issuer of the tokenization requests to be queried", Completions: []string{"binance", "coinbase", "st0x", "xstocks"}, Source: "query"},
-		{Name: "network", OASName: "network", Type: "string", Description: "network of the tokenization requests to be queried", Completions: []string{"arbitrum", "base", "binance", "cronos", "ethereum", "hyperevm", "mantle", "solana", "ton", "tron"}, Source: "query"},
+		{Name: "issuer", OASName: "issuer", Type: "string", Description: "issuer of the tokenization requests to be queried", Completions: []string{"binance", "coinbase", "ondo", "st0x", "xstocks"}, Source: "query"},
+		{Name: "network", OASName: "network", Type: "string", Description: "network of the tokenization requests to be queried", Completions: []string{"arbitrum", "base", "binance", "cronos", "ethereum", "hypercore", "hyperevm", "mantle", "robinhood", "solana", "ton", "tron"}, Source: "query"},
 		{Name: "status", OASName: "status", Type: "string", Description: "tokenization request status to be queried", Completions: []string{"completed", "pending", "rejected"}, Source: "query"},
 		{Name: "type", OASName: "type", Type: "string", Description: "tokenization request type to be queried", Completions: []string{"mint", "redeem"}, Source: "query"},
 		{Name: "underlying-symbol", OASName: "underlying_symbol", Type: "string", Description: "underlying symbol of the tokenization requests to be queried", Source: "query"},
@@ -1029,7 +1030,7 @@ var ListCryptoFundingWalletsOp = Op{
 
 var ListLocateQuotesOp = Op{
 	Name: "ListLocateQuotes", Summary: "Get locate quotes",
-	Long:    "Returns locate availability and pricing for one or more symbols",
+	Long:    "Returns locate availability and pricing for one or more symbols. This endpoint is not available in paper trading",
 	Example: `  alpaca locate quotes --symbols TSLA,AAPL`,
 	Flags: []FlagDef{
 		{Name: "symbols", OASName: "symbols", Type: "string", Description: "comma-separated list of stock symbols. Maximum 100 unique symbols", Required: true, Source: "query"},
@@ -1038,7 +1039,7 @@ var ListLocateQuotesOp = Op{
 
 var ListLocatesOp = Op{
 	Name: "ListLocates", Summary: "List locates",
-	Long: "Returns locates filtered by status, symbol, or date range. Results are sorted by `created_at` descending, with `id` descending as the tie-breaker",
+	Long: "Returns locates filtered by status, symbol, or date range. Results are sorted by `created_at` descending, with `id` descending as the tie-breaker. This endpoint is not available in paper trading",
 	Example: `  alpaca locate list
   alpaca locate list --symbol TSLA --status active --limit 100`,
 	Flags: []FlagDef{
@@ -1158,9 +1159,9 @@ var PostTokenizationMintOp = Op{
 	Name: "PostTokenizationMint", Summary: "Create mint a tokenized asset",
 	Long: "This endpoint is used by an Authorized Participant to request the minting of a tokenized asset",
 	Flags: []FlagDef{
-		{Name: "idempotency-key", OASName: "Idempotency-Key", Type: "string", Description: "unique key for idempotent create", Source: "header"},
-		{Name: "issuer", OASName: "issuer", Type: "string", Description: "tokenized asset's issuer", Completions: []string{"binance", "coinbase", "st0x", "xstocks"}, Source: "body"},
-		{Name: "network", OASName: "network", Type: "string", Description: "token's blockchain network", Completions: []string{"arbitrum", "base", "binance", "cronos", "ethereum", "hyperevm", "mantle", "solana", "ton", "tron"}, Source: "body"},
+		{Name: "idempotency-key", OASName: "Idempotency-Key", Type: "string", Description: "optional client-generated key for safe retries and duplicate request detection.\nThis endpoint currently accepts keys ...", Source: "header"},
+		{Name: "issuer", OASName: "issuer", Type: "string", Description: "tokenized asset's issuer", Completions: []string{"binance", "coinbase", "ondo", "st0x", "xstocks"}, Source: "body"},
+		{Name: "network", OASName: "network", Type: "string", Description: "token's blockchain network", Completions: []string{"arbitrum", "base", "binance", "cronos", "ethereum", "hypercore", "hyperevm", "mantle", "robinhood", "solana", "ton", "tron"}, Source: "body"},
 		{Name: "qty", OASName: "qty", Type: "string", Description: "underlying quantity to convert into the tokenized asset. It can be fractional", Source: "body"},
 		{Name: "underlying-symbol", OASName: "underlying_symbol", Type: "string", Description: "underlying asset symbol", Source: "body"},
 		{Name: "wallet-address", OASName: "wallet_address", Type: "string", Description: "wallet address to receive the tokenized asset", Source: "body"},
@@ -1184,6 +1185,22 @@ var RemoveAssetFromWatchlistOp = Op{
 	Flags: []FlagDef{
 		{Name: "symbol", OASName: "symbol", Type: "string", Description: "symbol name to remove from the watchlist content", Required: true, Source: "path"},
 		{Name: "watchlist-id", OASName: "watchlist_id", Type: "string", Description: "watchlist ID", Required: true, Source: "path"},
+	},
+}
+
+var SearchVASPsOp = Op{
+	Name: "SearchVASPs", Summary: "Search for vasps",
+	Long:    "Search for Virtual Asset Service Providers, or crypto exchanges, on Notabene's network. This endpoint can be used to find the VASP DID for your beneficiary's exchange when submitting travel rule information for your whitelisted wallets. Use the `q` parameter to search for exchanges",
+	Example: `  alpaca wallet vasp search --q Coinbase`,
+	Flags: []FlagDef{
+		{Name: "chainalysis-name", OASName: "chainalysisName", Type: "string", Description: "filter by Chainalysis-specific VASP name", Source: "query"},
+		{Name: "email-domain", OASName: "emailDomain", Type: "string", Description: "filter by VASP email domain", Source: "query"},
+		{Name: "fields", OASName: "fields", Type: "string", Description: "specify which fields to return (comma-separated)", Source: "query"},
+		{Name: "include-subsidiary-vasps", OASName: "includeSubsidiaryVASPs", Type: "bool", Default: "false", Description: "whether to include child/subsidiary entities", Source: "query"},
+		{Name: "order", OASName: "order", Type: "string", Default: "name:ASC", Description: "field-based sort expression, such as name:ASC. Multiple expressions may be comma-separated. Defaults to name:ASC", Source: "query"},
+		{Name: "page", OASName: "page", Type: "int", Default: "0", Description: "zero-based page number to retrieve", Source: "query"},
+		{Name: "per-page", OASName: "per_page", Type: "int", Default: "10", Description: "number of items per page", Source: "query"},
+		{Name: "q", OASName: "q", Type: "string", Description: "general search query string", Source: "query"},
 	},
 }
 
@@ -1219,6 +1236,18 @@ var UpdateWatchlistByNameOp = Op{
 	},
 }
 
+var UpdateWhitelistedAddressTravelRuleInfoOp = Op{
+	Name: "UpdateWhitelistedAddressTravelRuleInfo", Summary: "Update travel rule information for a whitelisted wallet",
+	Long: "You are required to supply travel rule information for the crypto wallets you're withdrawing to",
+	Example: `  alpaca wallet whitelist update-travel-rule \
+    --whitelisted-address-id <id> \
+    --travel-rule-info '{"beneficiary_is_self_hosted":true}'`,
+	Flags: []FlagDef{
+		{Name: "travel-rule-info", OASName: "travel_rule_info", Type: "string", Description: "travel rule information pertaining to the wallet being whitelisted", Source: "body"},
+		{Name: "whitelisted-address-id", OASName: "whitelisted_address_id", Type: "string", Description: "whitelisted address update travel rule information for", Required: true, Source: "path"},
+	},
+}
+
 var accountConfigurationsResponseFields = []ResponseField{
 	{Name: "disable_overnight_trading", Type: "boolean", Description: "if true, overnight trading is disabled"},
 	{Name: "fractional_trading", Type: "boolean", Description: "if true, account is able to participate in fractional trading"},
@@ -1235,7 +1264,6 @@ var assetsResponseFields = []ResponseField{
 	{Name: "borrow_status", Type: "enum", Description: "borrow status for US equity assets. This field is omitted for non-US-equity assets", EnumValues: []string{"easy_to_borrow", "hard_to_borrow"}},
 	{Name: "class", Type: "enum", Description: "this represents the category to which the asset belongs to", EnumValues: []string{"corporate", "crypto", "crypto_perp", "global_equity", "ipo", "treasury", "us_equity", "us_equity_chain", "us_index", "us_option"}},
 	{Name: "cusip", Type: "string", Description: "CUSIP identifier for the asset (US Equities only).\nTo request a specific CUSIP, please reach out to Alpaca support"},
-	{Name: "easy_to_borrow", Type: "boolean", Description: "**deprecated**: Please use borrow_status instead."},
 	{Name: "exchange", Type: "enum", Description: "represents the current exchanges Alpaca supports", EnumValues: []string{"AMEX", "ARCA", "BATS", "CRYPTO", "NASDAQ", "NYSE", "NYSEARCA", "OTC"}},
 	{Name: "fractionable", Type: "boolean", Description: "asset is fractionable or not"},
 	{Name: "id", Type: "string", Description: "asset ID"},
@@ -1372,16 +1400,16 @@ var positionResponseFields = []ResponseField{
 }
 
 var tokenizationRequestResponseFields = []ResponseField{
-	{Name: "account", Type: "string", Description: "alpaca account ID associated with this tokenization request. Use client_account_id instead"},
+	{Name: "account", Type: "string", Description: "**Deprecation notice:**"},
 	{Name: "client_account_id", Type: "string", Description: "alpaca account UUID of the Authorized Participant associated with this tokenization request"},
 	{Name: "client_external_account_id", Type: "string", Description: "issuer-side account identifier of the Authorized Participant associated with this tokenization request"},
 	{Name: "client_request_id", Type: "string", Description: "authorized Participant-supplied label associated with this tokenization request"},
 	{Name: "created_at", Type: "string", Description: "created at"},
 	{Name: "fees", Type: "string", Description: "fees charged for this tokenization request"},
-	{Name: "issuer", Type: "enum", Description: "tokenized asset's issuer", EnumValues: []string{"binance", "coinbase", "st0x", "xstocks"}},
-	{Name: "issuer_account", Type: "string", Description: "issuer's account ID associated with this tokenization request. Use client_external_account_id instead"},
+	{Name: "issuer", Type: "enum", Description: "tokenized asset's issuer", EnumValues: []string{"binance", "coinbase", "ondo", "st0x", "xstocks"}},
+	{Name: "issuer_account", Type: "string", Description: "**Deprecation notice:**"},
 	{Name: "issuer_request_id", Type: "string", Description: "unique identifier of the tokenization request set by the issuer"},
-	{Name: "network", Type: "enum", Description: "token's blockchain network", EnumValues: []string{"arbitrum", "base", "binance", "cronos", "ethereum", "hyperevm", "mantle", "solana", "ton", "tron"}},
+	{Name: "network", Type: "enum", Description: "token's blockchain network", EnumValues: []string{"arbitrum", "base", "binance", "cronos", "ethereum", "hypercore", "hyperevm", "mantle", "robinhood", "solana", "ton", "tron"}},
 	{Name: "qty", Type: "string", Description: "quantity to convert for this tokenization request. It can be fractional"},
 	{Name: "status", Type: "enum", Description: "status of the tokenization request", EnumValues: []string{"completed", "pending", "rejected"}},
 	{Name: "token_symbol", Type: "string", Description: "tokenized asset symbol"},
@@ -1409,6 +1437,7 @@ var whitelistedAddressResponseFields = []ResponseField{
 	{Name: "created_at", Type: "string", Description: "timestamp (RFC3339) of account creation"},
 	{Name: "id", Type: "string", Description: "unique ID for whitelisted address"},
 	{Name: "status", Type: "enum", Description: "status of whitelisted address which is either APPROVED or PENDING", EnumValues: []string{"APPROVED", "PENDING"}},
+	{Name: "travel_rule_info", Type: "any", Description: "travel rule information associated with the whitelisted address"},
 }
 
 var (
@@ -1600,6 +1629,7 @@ func ResponseSchema(opName string) ([]ResponseField, bool) {
 				{Name: "name", Type: "string", Description: "name of the option contract"},
 				{Name: "open_interest", Type: "string", Description: "open interest of the option contract"},
 				{Name: "open_interest_date", Type: "string", Description: "date of the open interest data"},
+				{Name: "ppind", Type: "boolean", Description: "ppind (Penny Program Indicator) field indicates whether an option contract is eligible for penny price increments,"},
 				{Name: "root_symbol", Type: "string", Description: "root symbol of the option contract"},
 				{Name: "size", Type: "string", Description: "represents the number of underlying shares to be delivered in case the contract is exercised/assigned"},
 				{Name: "status", Type: "enum", Description: "status of the option contract", EnumValues: []string{"active", "inactive"}},
@@ -1714,8 +1744,8 @@ func ResponseSchema(opName string) ([]ResponseField, bool) {
 			"PostOrder":           orderResponseFields,
 			"PostTokenizationMint": {
 				{Name: "created_at", Type: "string", Description: "created at"},
-				{Name: "issuer", Type: "enum", Description: "tokenized asset's issuer", EnumValues: []string{"binance", "coinbase", "st0x", "xstocks"}},
-				{Name: "network", Type: "enum", Description: "token's blockchain network", EnumValues: []string{"arbitrum", "base", "binance", "cronos", "ethereum", "hyperevm", "mantle", "solana", "ton", "tron"}},
+				{Name: "issuer", Type: "enum", Description: "tokenized asset's issuer", EnumValues: []string{"binance", "coinbase", "ondo", "st0x", "xstocks"}},
+				{Name: "network", Type: "enum", Description: "token's blockchain network", EnumValues: []string{"arbitrum", "base", "binance", "cronos", "ethereum", "hypercore", "hyperevm", "mantle", "robinhood", "solana", "ton", "tron"}},
 				{Name: "qty", Type: "string", Description: "quantity to convert for this tokenization request. It can be fractional"},
 				{Name: "status", Type: "enum", Description: "status of the tokenization request", EnumValues: []string{"completed", "pending", "rejected"}},
 				{Name: "token_symbol", Type: "string", Description: "tokenized asset symbol"},
@@ -1724,8 +1754,14 @@ func ResponseSchema(opName string) ([]ResponseField, bool) {
 			},
 			"PostWatchlist":            watchlistResponseFields,
 			"RemoveAssetFromWatchlist": watchlistResponseFields,
-			"UpdateWatchlistByID":      watchlistResponseFields,
-			"UpdateWatchlistByName":    watchlistResponseFields,
+			"SearchVASPs": {
+				{Name: "page", Type: "integer", Description: "page"},
+				{Name: "pages", Type: "integer", Description: "pages"},
+				{Name: "total", Type: "integer", Description: "total count of matching records"},
+				{Name: "vasps", Type: "[]object", Description: "vasps"},
+			},
+			"UpdateWatchlistByID":   watchlistResponseFields,
+			"UpdateWatchlistByName": watchlistResponseFields,
 		}
 	})
 	fields, ok := responseSchemas[opName]
@@ -1832,9 +1868,11 @@ var AllOps = []Op{
 	PostTokenizationMintOp,
 	PostWatchlistOp,
 	RemoveAssetFromWatchlistOp,
+	SearchVASPsOp,
 	SubscribeToActivitiesSSEOp,
 	UpdateWatchlistByIDOp,
 	UpdateWatchlistByNameOp,
+	UpdateWhitelistedAddressTravelRuleInfoOp,
 }
 
 var opByName map[string]Op
