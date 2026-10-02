@@ -70,11 +70,23 @@ func Execute() error {
 }
 
 func printJSONError(apiErr *client.APIError) {
+	enc := json.NewEncoder(os.Stderr)
+	enc.SetIndent("", "  ")
+	_ = enc.Encode(apiErrorJSON(apiErr))
+}
+
+func apiErrorJSON(apiErr *client.APIError) map[string]any {
 	m := map[string]any{
 		"error":  apiErr.Message,
 		"code":   apiErr.Code,
 		"status": apiErr.StatusCode,
 		"hint":   apiErr.Hint(),
+	}
+	if apiErr.ErrorCode != "" {
+		m["error_code"] = apiErr.ErrorCode
+	}
+	if len(apiErr.NextActions) > 0 && string(apiErr.NextActions) != "null" {
+		m["next_actions"] = json.RawMessage(apiErr.NextActions)
 	}
 	if apiErr.Method != "" {
 		m["method"] = apiErr.Method
@@ -85,9 +97,7 @@ func printJSONError(apiErr *client.APIError) {
 	if apiErr.RequestID != "" {
 		m["request_id"] = apiErr.RequestID
 	}
-	enc := json.NewEncoder(os.Stderr)
-	enc.SetIndent("", "  ")
-	_ = enc.Encode(m)
+	return m
 }
 
 var versionCmd = &cobra.Command{

@@ -419,6 +419,11 @@ func genStruct(buf *bytes.Buffer, s *schemaInfo) {
 		tag := fieldName
 		if !s.required[fieldName] {
 			tag += ",omitempty"
+			// omitempty does not treat a zero struct as empty, so an unset
+			// nested object would still be sent. omitzero drops that zero value.
+			if isStructSchema(fieldSchema) {
+				tag += ",omitzero"
+			}
 		}
 		fmt.Fprintf(buf, "\t%s %s `json:%q`\n", goField, goType, tag)
 	}
@@ -454,6 +459,31 @@ func schemaType(schema map[string]any) (typ string, nullable bool) {
 func isNullable(schema map[string]any) bool {
 	_, nullable := schemaType(schema)
 	return nullable
+}
+
+// isStructSchema reports whether schema is a named object schema.
+// Inline objects and maps are excluded: their Go types are nilable, so
+// omitempty already drops an unset value.
+func isStructSchema(schema map[string]any) bool {
+	ref, ok := schema["$ref"].(string)
+	if !ok {
+		return false
+	}
+	s := schemaByOASName[refBaseName(ref)]
+	if s == nil {
+		return false
+	}
+	switch s.kind {
+	case "struct":
+		return true
+	case "alias":
+		if s.raw == nil {
+			return false
+		}
+		return isStructSchema(s.raw)
+	default:
+		return false
+	}
 }
 
 func isScalarType(goType string) bool {

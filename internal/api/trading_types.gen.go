@@ -332,7 +332,7 @@ type CreateLocateRequest struct {
 }
 
 type CreateOrderRequest struct {
-	AdvancedInstructions AdvancedInstructions `json:"advanced_instructions,omitempty"`
+	AdvancedInstructions AdvancedInstructions `json:"advanced_instructions,omitempty,omitzero"`
 	ClientOrderID        string               `json:"client_order_id,omitempty"`
 	ExtendedHours        bool                 `json:"extended_hours,omitempty"`
 	Legs                 []MLegOrderLeg       `json:"legs,omitempty"`
@@ -361,7 +361,7 @@ type CreateWhitelistedAddressRequest struct {
 	Address        string         `json:"address,omitempty"`
 	Asset          string         `json:"asset,omitempty"`
 	Chain          CryptoChain    `json:"chain,omitempty"`
-	TravelRuleInfo TravelRuleInfo `json:"travel_rule_info,omitempty"`
+	TravelRuleInfo TravelRuleInfo `json:"travel_rule_info,omitempty,omitzero"`
 }
 
 type CryptoTransfer struct {
@@ -575,7 +575,7 @@ type OrderLeg struct {
 }
 
 type PatchOrderRequest struct {
-	AdvancedInstructions AdvancedInstructions `json:"advanced_instructions,omitempty"`
+	AdvancedInstructions AdvancedInstructions `json:"advanced_instructions,omitempty,omitzero"`
 	ClientOrderID        string               `json:"client_order_id,omitempty"`
 	LimitPrice           string               `json:"limit_price,omitempty"`
 	Notional             string               `json:"notional,omitempty"`
@@ -618,11 +618,11 @@ type Position struct {
 	UnrealizedIntradayPlpc string              `json:"unrealized_intraday_plpc"`
 	UnrealizedPL           string              `json:"unrealized_pl"`
 	UnrealizedPlpc         string              `json:"unrealized_plpc"`
-	Usd                    USDPositionValues   `json:"usd,omitempty"`
+	Usd                    USDPositionValues   `json:"usd,omitempty,omitzero"`
 }
 
 type PositionClosedResponse struct {
-	Body   Order  `json:"body,omitempty"`
+	Body   Order  `json:"body,omitempty,omitzero"`
 	Status int    `json:"status"`
 	Symbol string `json:"symbol"`
 }
@@ -706,7 +706,7 @@ type TravelRuleInfo struct {
 	BeneficiaryGeographicAddressTownName       string                `json:"beneficiary_geographic_address_town_name,omitempty"`
 	BeneficiaryGivenName                       string                `json:"beneficiary_given_name,omitempty"`
 	BeneficiaryIsSelfHosted                    bool                  `json:"beneficiary_is_self_hosted,omitempty"`
-	BeneficiaryManualEntry                     TravelRuleManualEntry `json:"beneficiary_manual_entry,omitempty"`
+	BeneficiaryManualEntry                     TravelRuleManualEntry `json:"beneficiary_manual_entry,omitempty,omitzero"`
 	BeneficiaryVaspID                          string                `json:"beneficiary_vasp_id,omitempty"`
 }
 
