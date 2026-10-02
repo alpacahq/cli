@@ -331,6 +331,7 @@ CreateWhitelistedAddress: "Request a new whitelisted address"
   address (body, string) -> address
   asset (body, string) -> asset
   chain (body, string) -> chain
+  travel-rule-info (body, string) -> travel_rule_info
 
 DeleteAllOpenPositions: "Close all positions"
   cancel-orders (query, bool) -> cancel_orders
@@ -580,6 +581,16 @@ RemoveAssetFromWatchlist: "Delete symbol from watchlist"
   symbol (path, string, required) -> symbol
   watchlist-id (path, string, required) -> watchlist_id
 
+SearchVASPs: "Search for vasps"
+  chainalysis-name (query, string) -> chainalysisName
+  email-domain (query, string) -> emailDomain
+  fields (query, string) -> fields
+  include-subsidiary-vasps (query, bool, default=false) -> includeSubsidiaryVASPs
+  order (query, string, default=name:ASC) -> order
+  page (query, int, default=0) -> page
+  per-page (query, int, default=10) -> per_page
+  q (query, string) -> q
+
 SubscribeToActivitiesSSE: "Get subscribe to activity events (SSE)"
   since (query, string) -> since
   since-id (query, string) -> since_id
@@ -594,4 +605,8 @@ UpdateWatchlistByID: "Update watchlist by id"
 UpdateWatchlistByName: "Update watchlist by name"
   name (query, string, required) -> name
   symbols (body, string) -> symbols
+
+UpdateWhitelistedAddressTravelRuleInfo: "Update travel rule information for a whitelisted wallet"
+  travel-rule-info (body, string) -> travel_rule_info
+  whitelisted-address-id (path, string, required) -> whitelisted_address_id
 

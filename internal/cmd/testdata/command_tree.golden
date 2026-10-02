@@ -461,13 +461,26 @@ alpaca wallet transfer estimate
 alpaca wallet transfer get
   --transfer-id (string)
 alpaca wallet transfer list
+alpaca wallet vasp search
+  --chainalysis-name (string)
+  --email-domain (string)
+  --fields (string)
+  --include-subsidiary-vasps (bool)
+  --order (string, default=name:ASC)
+  --page (int)
+  --per-page (int, default=10)
+  --q (string)
 alpaca wallet whitelist add
   --address (string)
   --asset (string)
   --chain (string)
+  --travel-rule-info (string)
 alpaca wallet whitelist delete
   --whitelisted-address-id (string)
 alpaca wallet whitelist list
+alpaca wallet whitelist update-travel-rule
+  --travel-rule-info (string)
+  --whitelisted-address-id (string)
 alpaca watchlist add
   --symbol (string)
   --watchlist-id (string)

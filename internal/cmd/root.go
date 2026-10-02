@@ -18,7 +18,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const exitAPIError = 1
+const (
+	exitAPIError    = 1
+	helpCommandName = "help"
+	httpMethodGet   = "GET"
+	oasTypeNumber   = "number"
+	oasTypeString   = "string"
+)
 
 var (
 	version       = "dev"
@@ -128,7 +134,7 @@ To update:  alpaca update`,
 		return nil
 	},
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		if cmd.Name() == "help" {
+		if cmd.Name() == helpCommandName {
 			return nil
 		}
 		if ha, _ := cmd.Flags().GetBool("help-all"); ha {
@@ -233,7 +239,7 @@ func needsAuth(cmd *cobra.Command) bool {
 	for c := cmd; c != nil; c = c.Parent() {
 		if c.Parent() != nil && c.Parent().Parent() == nil {
 			switch c.Name() {
-			case "version", "help", "completion", "update", "doctor":
+			case "version", helpCommandName, "completion", "update", "doctor":
 				return false
 			}
 		}
@@ -327,19 +333,19 @@ func printCommandSchema(cmd *cobra.Command) error {
 }
 
 var oasToTS = map[string]string{
-	"string":    "string",
-	"boolean":   "boolean",
-	"integer":   "number",
-	"number":    "number",
-	"enum":      "string",
-	"object":    "object",
-	"any":       "unknown",
-	"[]string":  "string[]",
-	"[]integer": "number[]",
-	"[]number":  "number[]",
-	"[]boolean": "boolean[]",
-	"[]object":  "object[]",
-	"[]enum":    "string[]",
+	oasTypeString: oasTypeString,
+	"boolean":     "boolean",
+	"integer":     oasTypeNumber,
+	oasTypeNumber: oasTypeNumber,
+	"enum":        oasTypeString,
+	"object":      "object",
+	"any":         "unknown",
+	"[]string":    "string[]",
+	"[]integer":   "number[]",
+	"[]number":    "number[]",
+	"[]boolean":   "boolean[]",
+	"[]object":    "object[]",
+	"[]enum":      "string[]",
 }
 
 func tsTypeColorized(f api.ResponseField) string {

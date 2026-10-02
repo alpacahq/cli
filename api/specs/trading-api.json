@@ -269,6 +269,45 @@
                     "type": "limit",
                     "updated_at": "2023-12-12T21:35:49.102504673Z"
                 }
+            },
+            "TravelRuleValidationError": {
+                "description": "The request requires the beneficiary's name before the transfer can proceed.",
+                "summary": "Missing beneficiary name",
+                "value": {
+                    "error_code": "BENEFICIARY_NAME_REQUIRED",
+                    "message": "Please provide the beneficiary's name. Select one of the following options.",
+                    "next_actions": [
+                        {
+                            "description": "Provide the recipient's first and last name.",
+                            "name": "supply_beneficiaryName_naturalPerson",
+                            "required_fields": [
+                                {
+                                    "description": "The recipient's first name.",
+                                    "field": "beneficiary_given_name",
+                                    "value_type": "string"
+                                },
+                                {
+                                    "description": "The recipient's last name.",
+                                    "field": "beneficiary_family_name",
+                                    "value_type": "string"
+                                }
+                            ],
+                            "type": "ONE_OF"
+                        },
+                        {
+                            "description": "Provide the entity's legal name.",
+                            "name": "supply_beneficiaryName_legalEntity",
+                            "required_fields": [
+                                {
+                                    "description": "The legal name of the receiving entity.",
+                                    "field": "beneficiary_entity_name",
+                                    "value_type": "string"
+                                }
+                            ],
+                            "type": "ONE_OF"
+                        }
+                    ]
+                }
             }
         },
         "headers": {
@@ -295,6 +334,16 @@
             }
         },
         "parameters": {
+            "LegacyIdempotencyKey": {
+                "description": "Optional client-generated key for safe retries and duplicate request detection.\nThis endpoint currently accepts keys up to 128 characters. Alpaca is moving toward\na 36-character maximum; new implementations should generate a unique UUIDv7 or\nUUIDv4 value (36 characters including hyphens) for each logical operation. Do not\nreuse a key across operations.\n",
+                "in": "header",
+                "name": "Idempotency-Key",
+                "required": false,
+                "schema": {
+                    "maxLength": 128,
+                    "type": "string"
+                }
+            },
             "PageToken": {
                 "description": "Used for pagination, this token retrieves the next page of results. It is obtained from the response of the preceding page when additional pages are available.",
                 "in": "query",
@@ -864,7 +913,7 @@
                 "type": "object"
             },
             "ActivitySubType": {
-                "description": "Represents a more specific classification to the `activity_type`.\nThis field is optional and may not always be populated, depending on the activity type and the available data.\nEach `activity_type` has a set of valid `activity_sub_type` values.\n\nFull mapping of `activity_type` to `activity_sub_type`:\n\n- **CGD**: Capital Gains Distribution activity sub-types:\n  - **LTCG**: Long-Term Capital Gain\n  - **STCG**: Short-Term Capital Gain\n\n- **DIV**: Dividend activity sub-types:\n  - **CDIV**: Cash Dividend\n  - **ROC**: Return of Capital\n  - **SDIV**: Stock Dividend\n  - **SPD**: Substitute Payment In Lieu Of Dividend\n\n- **FEE**: Fee-related activity sub-types:\n  - **REG**: Regulatory Fee\n  - **TAF**: Trading Activity Fee\n  - **LCT**: Local Currency Trading Fee\n  - **ORF**: Options Regulatory Fee\n  - **OCC**: Options Clearing Corporation Fee\n  - **NRC**: Non-Retail Commission Fee\n  - **NRV**: Non-Retail Venue Fee\n  - **COM**: Commission\n  - **CAT**: Consolidated Audit Trail Fee\n\n- **INT**: Interest-related activity sub-types:\n  - **MGN**: Margin Interest\n  - **CDT**: Credit Interest\n  - **SWP**: Sweep Interest\n  - **QII**: Qualified Interest\n  - **FI**: Fixed Income Interest (coupon payment or accrued interest on call)\n\n- **MA**: Merger and Acquisition activity sub-types:\n  - **CMA**: Cash Merger\n  - **SMA**: Stock Merger\n  - **SCMA**: Stock & Cash Merger\n\n- **NC**: Name Change activity sub types\n  - **SNC**: Symbol Name Change\n  - **CNC**: CUSIP Name Change\n  - **SCNC**: Symbol & CUSIP Name Change\n\n- **OPCA**: Option Corporate Action activity sub-types:\n  - **DIV.CDIV**: Cash Dividend\n  - **DIV.SDIV**: Stock Dividend\n  - **MA.CMA**: Cash Merger\n  - **MA.SMA**: Stock Merger\n  - **MA.SCMA**: Stock & Cash Merger\n  - **NC.CNC**: CUSIP Name Change\n  - **NC.SNC**: Symbol Name Change\n  - **NC.SCNC**: Symbol & CUSIP Name Change\n  - **SPIN**: Spin-off\n  - **SPLIT.FSPLIT**: Forward Stock Split\n  - **SPLIT.RSPLIT**: Reverse Stock Split\n  - **SPLIT.USPLIT**: Unit Split\n\n- **REO**: Reorganization activity sub-types\n  - **REOS**: Stock only (1 or more stock legs)\n  - **REOC**: Cash only (1 cash leg)\n  - **REOSC**: Stock and cash\n\n- **REORG**: Activity sub-types:\n  - **WRM**: Worthless Removal\n\n- **SPLIT**: Stock Split activity sub-types:\n  - **FSPLIT**: Forward Stock Split\n  - **RSPLIT**: Reverse Stock Split\n  - **USPLIT**: Unit Split\n\n- **VOF**: Voluntary Offering activity sub-types:\n  - **VTND**: Tender Offer\n  - **VWRT**: Warrant Exercise\n  - **VRGT**: Rights Offer\n  - **VEXH**: Exchange Offer\n\n- **WH**: Withholding activity sub-types:\n  - **SWH**: State Withholding\n  - **FWH**: Federal Withholding\n  - **SLWH**: Sales Withholding",
+                "description": "Represents a more specific classification to the `activity_type`.\nThis field is optional and may not always be populated, depending on the activity type and the available data.\nEach `activity_type` has a set of valid `activity_sub_type` values.\n\nFull mapping of `activity_type` to `activity_sub_type`:\n\n- **CGD**: Capital Gains Distribution activity sub-types:\n  - **LTCG**: Long-Term Capital Gain\n  - **STCG**: Short-Term Capital Gain\n\n- **DIV**: Dividend activity sub-types:\n  - **CDIV**: Cash Dividend\n  - **ROC**: Return of Capital\n  - **SDIV**: Stock Dividend\n  - **SPD**: Substitute Payment In Lieu Of Dividend\n\n- **FEE**: Fee-related activity sub-types:\n  - **REG**: Regulatory Fee\n  - **TAF**: Trading Activity Fee\n  - **LCT**: Local Currency Trading Fee\n  - **ORF**: Options Regulatory Fee\n  - **OCC**: Options Clearing Corporation Fee\n  - **NRC**: Non-Retail Commission Fee\n  - **NRV**: Non-Retail Venue Fee\n  - **COM**: Commission\n  - **CAT**: Consolidated Audit Trail Fee\n\n- **INT**: Interest-related activity sub-types:\n  - **MGN**: Margin Interest\n  - **CDT**: Credit Interest\n  - **SWP**: Sweep Interest\n  - **QII**: Qualified Interest\n  - **FI**: Fixed Income Interest (coupon or accrued)\n\n- **MA**: Merger and Acquisition activity sub-types:\n  - **CMA**: Cash Merger\n  - **SMA**: Stock Merger\n  - **SCMA**: Stock & Cash Merger\n\n- **NC**: Name Change activity sub types\n  - **SNC**: Symbol Name Change\n  - **CNC**: CUSIP Name Change\n  - **SCNC**: Symbol & CUSIP Name Change\n\n- **OPCA**: Option Corporate Action activity sub-types:\n  - **DIV.CDIV**: Cash Dividend\n  - **DIV.ROC**: Return of Capital\n  - **DIV.SDIV**: Stock Dividend\n  - **MA.CMA**: Cash Merger\n  - **MA.SMA**: Stock Merger\n  - **MA.SCMA**: Stock & Cash Merger\n  - **NC.CNC**: CUSIP Name Change\n  - **NC.SNC**: Symbol Name Change\n  - **NC.SCNC**: Symbol & CUSIP Name Change\n  - **SPIN**: Spin-off\n  - **SPLIT.FSPLIT**: Forward Stock Split\n  - **SPLIT.RSPLIT**: Reverse Stock Split\n  - **SPLIT.USPLIT**: Unit Split\n\n- **REO**: Reorganization activity sub-types\n  - **REOS**: Stock only (1 or more stock legs)\n  - **REOC**: Cash only (1 cash leg)\n  - **REOSC**: Stock and cash\n\n- **REORG**: Activity sub-types:\n  - **WRM**: Worthless Removal\n\n- **SPLIT**: Stock Split activity sub-types:\n  - **FSPLIT**: Forward Stock Split\n  - **RSPLIT**: Reverse Stock Split\n  - **USPLIT**: Unit Split\n\n- **VOF**: Voluntary Offering activity sub-types:\n  - **VTND**: Tender Offer\n  - **VWRT**: Warrant Exercise\n  - **VRGT**: Rights Offer\n  - **VEXH**: Exchange Offer\n\n- **WH**: Withholding activity sub-types:\n  - **SWH**: State Withholding\n  - **FWH**: Federal Withholding\n  - **SLWH**: Sales Withholding",
                 "title": "ActivitySubType",
                 "type": "string"
             },
@@ -920,139 +969,135 @@
                 "type": "string"
             },
             "ActivityV2DetailNTA": {
-                "allOf": [
+                "oneOf": [
                     {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/DIVSPDActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/CDIVActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/SDIVActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/CGDActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ForwardSplitActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ReverseSplitActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/UnitSplitActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/SpinoffActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/MAActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/NCActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/FixedIncomeRedemptionActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/FixedIncomeInterestActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/REOActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/RightsDistributionActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/RightsSubscriptionElectionActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/TenderOfferActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/ExchangeOfferActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/WarrantExerciseElectionActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/WRMActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/OpcaCDIVActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/OpcaSDIVActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/OpcaMAActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/OpcaNCActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/OpcaSPINActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/OpcaFSPLITActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/OpcaUSPLITActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/OpcaRSPLITActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/OPASNActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/OPEXCActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/OPEXPActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/OPTRDActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/OPCSHActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/AcatsActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/AcatcActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/FOPTActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/DIVNRAActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/DIVWHActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/JNLSActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/JNLCActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/CSWActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/FEEActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/MEMActivityV2"
-                            },
-                            {
-                                "$ref": "#/components/schemas/OCTActivityV2"
-                            }
-                        ]
+                        "$ref": "#/components/schemas/DIVSPDActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CDIVActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/SDIVActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CGDActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/ForwardSplitActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/ReverseSplitActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/UnitSplitActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/SpinoffActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/MAActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/NCActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/FixedIncomeRedemptionActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/FixedIncomeInterestActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/REOActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/RightsDistributionActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/RightsSubscriptionElectionActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/TenderOfferActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/ExchangeOfferActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/WarrantExerciseElectionActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/WRMActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpcaCDIVActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpcaSDIVActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpcaMAActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpcaNCActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpcaSPINActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpcaFSPLITActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpcaUSPLITActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpcaRSPLITActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OPASNActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OPEXCActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OPEXPActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OPTRDActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OPCSHActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/AcatsActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/AcatcActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/FOPTActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/DIVNRAActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/DIVWHActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/JNLSActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/JNLCActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/CSWActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/FEEActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/MEMActivityV2"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OCTActivityV2"
                     }
                 ],
                 "type": "object"
@@ -1136,6 +1181,7 @@
                 "properties": {
                     "symbol": {
                         "description": "the symbol name to add to the watchlist",
+                        "example": "AAPL",
                         "type": "string"
                     }
                 },
@@ -1298,16 +1344,6 @@
                             "string",
                             "null"
                         ]
-                    },
-                    "easy_to_borrow": {
-                        "deprecated": true,
-                        "description": "**deprecated**: Please use borrow_status instead.\nAsset is easy-to-borrow or not (filtering for easy_to_borrow = True is the best way to check whether the name is currently available to short at Alpaca).\n",
-                        "type": "boolean",
-                        "x-deprecation": {
-                            "reason": "Use borrow_status instead.",
-                            "since": "2026-06-22",
-                            "sunset": "2026-09-22"
-                        }
                     },
                     "exchange": {
                         "$ref": "#/components/schemas/Exchange"
@@ -1674,7 +1710,7 @@
                 "type": "object"
             },
             "CommonFixedIncomeInterestActivityV2": {
-                "description": "Fixed income interest fields (INT/FI). Two variants from the same activity type,\ndistinguished by which fields are present:\n- Regular coupon: includes `rate` (no `price` / `accrued_interest_rate`)\n- Accrued interest on call: includes `price` and `accrued_interest_rate` (no `rate`)",
+                "description": "Fixed income interest fields (INT/FI). Variants from the same activity type:\n\n- Coupon: `interest_type` is `coupon`. Includes `rate` (no `price` / `accrued_interest_rate`). No `order_id`.\n- Accrued interest on call: `interest_type` is `accrued`. Includes `price` and `accrued_interest_rate` (no `rate`). No `order_id`.\n- Trade accrued: `interest_type` is `accrued`. Includes `order_id` so the interest NTA can be linked to the fill. `parent_id` is set when a parent trade `ref_id` is available.",
                 "properties": {
                     "accrued_interest_rate": {
                         "description": "Accrued interest rate (present for accrued-interest-on-call variants)",
@@ -1695,8 +1731,23 @@
                         "example": "1000",
                         "type": "string"
                     },
+                    "interest_type": {
+                        "$ref": "#/components/schemas/FixedIncomeInterestType"
+                    },
                     "isin": {
                         "description": "The ISIN of the security involved with the activity",
+                        "type": "string"
+                    },
+                    "order_id": {
+                        "description": "The order that generated this accrued interest. Present for trade-accrued INT/FI.",
+                        "example": "257bf308-a6b7-4777-8cf6-00dc441dc4d3",
+                        "format": "uuid",
+                        "type": "string"
+                    },
+                    "parent_id": {
+                        "description": "The ref_id of the parent trade this interest is attached to. Present for trade-accrued INT/FI when a parent trade `ref_id` is available.",
+                        "example": "46aecae1-4629-4bcf-b441-0d8c847a1787",
+                        "format": "uuid",
                         "type": "string"
                     },
                     "payment_date": {
@@ -1723,7 +1774,8 @@
                 "required": [
                     "entitled_qty",
                     "cash_payout",
-                    "cusip"
+                    "cusip",
+                    "interest_type"
                 ],
                 "type": "object"
             },
@@ -1743,6 +1795,7 @@
                         "type": "object"
                     }
                 ],
+                "description": "Shared fields for journal non-trade activity records.",
                 "type": "object"
             },
             "CommonMAActivityV2": {
@@ -1828,6 +1881,7 @@
                 "type": "object"
             },
             "CommonNTAActivityV2": {
+                "description": "Shared fields for non-trade (NTA) activity records.",
                 "properties": {
                     "group_id": {
                         "description": "Optional group ID which can help grouping together related activities",
@@ -1886,27 +1940,30 @@
             "CommonOptionsActivityV2": {
                 "allOf": [
                     {
+                        "description": "Shared fields for option-related non-trade activity records.",
+                        "properties": {
+                            "contract_symbol": {
+                                "description": "The contract symbol of the security involved with the activity",
+                                "type": "string"
+                            },
+                            "cusip": {
+                                "description": "The CUSIP of the security involved with the activity",
+                                "type": "string"
+                            },
+                            "symbol": {
+                                "description": "The symbol of the security involved with the activity",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "group_id"
+                        ],
+                        "type": "object"
+                    },
+                    {
                         "$ref": "#/components/schemas/CommonNTAActivityV2"
                     }
-                ],
-                "properties": {
-                    "contract_symbol": {
-                        "description": "The contract symbol of the security involved with the activity",
-                        "type": "string"
-                    },
-                    "cusip": {
-                        "description": "The CUSIP of the security involved with the activity",
-                        "type": "string"
-                    },
-                    "symbol": {
-                        "description": "The symbol of the security involved with the activity",
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "group_id"
-                ],
-                "type": "object"
+                ]
             },
             "CommonREOActivityV2": {
                 "description": "Reorganization (REO) activity sub-types:\n- **REOS**: Stock only (1 or more stock legs)\n- **REOC**: Cash only (one cash leg)\n- **REOSC**: Stock and cash",
@@ -2379,15 +2436,25 @@
                     },
                     "client_order_id": {
                         "description": "A unique identifier for the order. Automatically generated if not sent. (<= 128 characters)",
+                        "example": "5680c4bc-9ac1-4a12-a44c-df427ba53032",
                         "maxLength": 128,
                         "type": "string"
                     },
                     "extended_hours": {
                         "description": "(default) false. If true, order will be eligible for execution in the pre-market, after-hours, and overnight sessions. Only works with type `limit` and time_in_force set to either `day` or `gtc`",
+                        "example": false,
                         "type": "boolean"
                     },
                     "legs": {
                         "description": "list of order legs (<= 4)",
+                        "example": [
+                            {
+                                "position_intent": "buy_to_open",
+                                "ratio_qty": "3",
+                                "side": "buy",
+                                "symbol": "AAPL241213C00250000"
+                            }
+                        ],
                         "items": {
                             "$ref": "#/components/schemas/MLegOrderLeg"
                         },
@@ -2396,10 +2463,12 @@
                     },
                     "limit_price": {
                         "description": "Required if type is `limit` or `stop_limit`.\nIn case of `mleg`, the limit_price parameter is expressed with the following notation:\n- A positive value indicates a debit, representing a cost or payment to be made.\n- A negative value signifies a credit, reflecting an amount to be received.",
+                        "example": "150",
                         "type": "string"
                     },
                     "notional": {
                         "description": "dollar amount to trade. Cannot work with `qty`. Can only work for market order types and day for time in force.",
+                        "example": "500",
                         "type": "string"
                     },
                     "order_class": {
@@ -2410,6 +2479,7 @@
                     },
                     "qty": {
                         "description": "number of shares to trade. Can be fractionable for only market and day order types. Required for `mleg` order class, represents the number of units to trade of this strategy.",
+                        "example": "2",
                         "type": "string"
                     },
                     "side": {
@@ -2433,10 +2503,12 @@
                     },
                     "stop_price": {
                         "description": "required if type is `stop` or `stop_limit`",
+                        "example": "140",
                         "type": "string"
                     },
                     "symbol": {
                         "description": "symbol, asset ID, or currency pair to identify the asset to trade, required for all order classes except for `mleg`.",
+                        "example": "AAPL",
                         "type": "string"
                     },
                     "take_profit": {
@@ -2455,10 +2527,12 @@
                     },
                     "trail_percent": {
                         "description": "this or `trail_price` is required if type is `trailing_stop`",
+                        "example": "1.5",
                         "type": "string"
                     },
                     "trail_price": {
                         "description": "this or `trail_percent` is required if type is `trailing_stop`",
+                        "example": "1.00",
                         "type": "string"
                     },
                     "type": {
@@ -2477,10 +2551,15 @@
                 "properties": {
                     "name": {
                         "description": "The watchlist name.",
+                        "example": "Tech Stocks",
                         "type": "string"
                     },
                     "symbols": {
                         "description": "List of asset symbols to include in the watchlist.",
+                        "example": [
+                            "AAPL",
+                            "TSLA"
+                        ],
                         "items": {
                             "type": [
                                 "string",
@@ -2501,14 +2580,19 @@
                 "properties": {
                     "address": {
                         "description": "The address to be whitelisted",
+                        "example": "5dXY1aH2tQpV3wXmJg6Z7c8B4nKvF9bA1pQrSt2uVwYxXz",
                         "type": "string"
                     },
                     "asset": {
                         "description": "Symbol of underlying asset for the whitelisted address",
+                        "example": "USDT",
                         "type": "string"
                     },
                     "chain": {
                         "$ref": "#/components/schemas/CryptoChain"
+                    },
+                    "travel_rule_info": {
+                        "$ref": "#/components/schemas/TravelRuleInfo"
                     }
                 },
                 "title": "CreateWhitelistedAddressRequest",
@@ -2625,6 +2709,17 @@
                             },
                             "symbol": {
                                 "description": "The symbol of the security involved with the activity",
+                                "type": "string"
+                            },
+                            "tax_country": {
+                                "description": "Tax country used as the primary jurisdiction when determining withholding treatment for the dividend. Other factors may affect the final withholding rate.\nThe value is an [ISO 3166-1 alpha-3](https://www.iso.org/iso-3166-country-codes.html) country code.\n",
+                                "example": "THA",
+                                "type": "string"
+                            },
+                            "tax_rate": {
+                                "description": "The tax withholding rate applied to the dividend, represented as a value between 0 and 1",
+                                "example": "0.15",
+                                "format": "decimal",
                                 "type": "string"
                             }
                         },
@@ -2905,6 +3000,16 @@
                 "description": "Fixed income interest (INT/FI)",
                 "type": "object"
             },
+            "FixedIncomeInterestType": {
+                "description": "Distinguishes coupon payments from accrued interest on INT/FI activities.",
+                "enum": [
+                    "coupon",
+                    "accrued"
+                ],
+                "example": "accrued",
+                "title": "FixedIncomeInterestType",
+                "type": "string"
+            },
             "FixedIncomeRedemptionActivityV2": {
                 "allOf": [
                     {
@@ -2992,6 +3097,9 @@
                 "allOf": [
                     {
                         "$ref": "#/components/schemas/CommonJournalActivityV2"
+                    },
+                    {
+                        "type": "object"
                     }
                 ],
                 "description": "Journal entry (cash)",
@@ -3466,7 +3574,7 @@
                         "$ref": "#/components/schemas/ActivityType"
                     },
                     "created_at": {
-                        "description": "Valid only for non-trading activity types. Null for trading activites.",
+                        "description": "Valid only for non-trading activity types. Null for trading activities.",
                         "format": "date-time",
                         "type": "string"
                     },
@@ -3557,6 +3665,9 @@
                 "allOf": [
                     {
                         "$ref": "#/components/schemas/CommonOptionsActivityV2"
+                    },
+                    {
+                        "type": "object"
                     }
                 ],
                 "description": "Option assignment",
@@ -3566,6 +3677,9 @@
                 "allOf": [
                     {
                         "$ref": "#/components/schemas/CommonOptionsActivityV2"
+                    },
+                    {
+                        "type": "object"
                     }
                 ],
                 "description": "Option cash deliverable for non-standard contracts",
@@ -3575,6 +3689,9 @@
                 "allOf": [
                     {
                         "$ref": "#/components/schemas/CommonOptionsActivityV2"
+                    },
+                    {
+                        "type": "object"
                     }
                 ],
                 "description": "Option exercise",
@@ -3584,6 +3701,9 @@
                 "allOf": [
                     {
                         "$ref": "#/components/schemas/CommonOptionsActivityV2"
+                    },
+                    {
+                        "type": "object"
                     }
                 ],
                 "description": "Option expiry",
@@ -3593,6 +3713,9 @@
                 "allOf": [
                     {
                         "$ref": "#/components/schemas/CommonOptionsActivityV2"
+                    },
+                    {
+                        "type": "object"
                     }
                 ],
                 "description": "Trading activity that is paired with the assignment/exercise",
@@ -3607,7 +3730,7 @@
                         "$ref": "#/components/schemas/CommonCDIVActivityV2"
                     }
                 ],
-                "description": "Options corporate action of Cash dividend",
+                "description": "Options corporate action of cash dividend or return of capital",
                 "type": "object"
             },
             "OpcaFSPLITActivityV2": {
@@ -3845,6 +3968,11 @@
                         "format": "date",
                         "type": "string"
                     },
+                    "ppind": {
+                        "description": "The ppind (Penny Program Indicator) field indicates whether an option contract is eligible for penny price increments,\nwith `true` meaning it is part of the Penny Program and `false` meaning it is not.",
+                        "example": true,
+                        "type": "boolean"
+                    },
                     "root_symbol": {
                         "description": "The root symbol of the option contract.",
                         "example": "AAPL",
@@ -3911,7 +4039,8 @@
                     "style",
                     "strike_price",
                     "multiplier",
-                    "size"
+                    "size",
+                    "ppind"
                 ],
                 "type": "object"
             },
@@ -3940,6 +4069,25 @@
                         "$ref": "#/components/schemas/NextPageToken"
                     },
                     "option_contracts": {
+                        "example": [
+                            {
+                                "expiration_date": "2025-06-20",
+                                "id": "98359ef7-5124-49f3-85ea-5cf02df6defa",
+                                "multiplier": "100",
+                                "name": "AAPL Jun 20 2025 100 Call",
+                                "ppind": true,
+                                "root_symbol": "AAPL",
+                                "size": "100",
+                                "status": "active",
+                                "strike_price": "100",
+                                "style": "american",
+                                "symbol": "AAPL250620C00100000",
+                                "tradable": true,
+                                "type": "call",
+                                "underlying_asset_id": "b0b6dd9d-8b9b-48a9-ba46-b9d54906e415",
+                                "underlying_symbol": "AAPL"
+                            }
+                        ],
                         "items": {
                             "$ref": "#/components/schemas/OptionContract"
                         },
@@ -4107,6 +4255,7 @@
                     },
                     "legs": {
                         "description": "When querying non-simple order_class orders in a nested style, an array of Order entities associated with this order. Otherwise, null. Required if order class is `mleg`.",
+                        "example": null,
                         "items": {
                             "$ref": "#/components/schemas/OrderLeg"
                         },
@@ -4812,7 +4961,7 @@
                 "title": "Position",
                 "type": "object"
             },
-            "PositionClosedReponse": {
+            "PositionClosedResponse": {
                 "description": "Represents the result of asking the api to close a position. ",
                 "examples": [
                     {
@@ -4871,7 +5020,7 @@
                     "symbol",
                     "status"
                 ],
-                "title": "PositionClosedReponse",
+                "title": "PositionClosedResponse",
                 "type": "object"
             },
             "PositionIntent": {
@@ -5054,6 +5203,37 @@
                 "description": "Stock dividend",
                 "type": "object"
             },
+            "SearchVASPsResponse": {
+                "description": "Paginated VASP directory search results.",
+                "properties": {
+                    "page": {
+                        "example": 1,
+                        "type": "integer"
+                    },
+                    "pages": {
+                        "example": 1,
+                        "type": "integer"
+                    },
+                    "total": {
+                        "description": "Total count of matching records.",
+                        "example": 1,
+                        "type": "integer"
+                    },
+                    "vasps": {
+                        "example": [
+                            {
+                                "id": "vasp-1",
+                                "name": "Example Exchange"
+                            }
+                        ],
+                        "items": {
+                            "$ref": "#/components/schemas/VASP"
+                        },
+                        "type": "array"
+                    }
+                },
+                "type": "object"
+            },
             "SpinoffActivityV2": {
                 "allOf": [
                     {
@@ -5095,7 +5275,7 @@
                 "type": "object"
             },
             "TimeInForce": {
-                "description": "The Time-In-Force values supported by Alpaca vary based on the order's security type. Here is a breakdown of the supported TIFs for each specific security type:\n- Equity trading: day, gtc, opg, cls, ioc, fok.\n- Options trading: day.\n- Crypto trading: gtc, ioc.\n\nBelow are the descriptions of each TIF:\n- day:\n  A day order is eligible for execution only on the day it is live. By default, the order is only valid during Regular Trading Hours (9:30am - 4:00pm ET). If unfilled after the closing auction, it is automatically canceled. If submitted after the close, it is queued and submitted the following trading day. However, if marked as eligible for extended hours, the order can also execute during supported extended hours.\n\n- gtc:\n  The order is good until canceled. Non-marketable GTC limit orders are subject to price adjustments to offset corporate actions affecting the issue. We do not currently support Do Not Reduce (DNR) orders to opt out of such price adjustments.\n\n- opg:\n  Use this TIF with a market/limit order type to submit \"market on open\" (MOO) and \"limit on open\" (LOO) orders. This order is eligible to execute only in the market opening auction. Any unfilled orders after the open will be cancelled. OPG orders submitted after 9:28am but before 7:00pm ET will be rejected. OPG orders submitted after 7:00pm will be queued and routed to the following day's opening auction. On open/on close orders are routed to the primary exchange. Such orders do not necessarily execute exactly at 9:30am / 4:00pm ET but execute per the exchange's auction rules.\n\n- cls:\n  Use this TIF with a market/limit order type to submit \"market on close\" (MOC) and \"limit on close\" (LOC) orders. This order is eligible to execute only in the market closing auction. Any unfilled orders after the close will be cancelled. CLS orders submitted after 3:50pm but before 7:00pm ET will be rejected. CLS orders submitted after 7:00pm will be queued and routed to the following day's closing auction. Only available with API v2.\n\n- ioc:\n  An Immediate Or Cancel (IOC) order requires all or part of the order to be executed immediately. Any unfilled portion of the order is canceled. Only available with API v2. Most market makers who receive IOC orders will attempt to fill the order on a principal basis only, and cancel any unfilled balance. On occasion, this can result in the entire order being cancelled if the market maker does not have any existing inventory of the security in question.\n\n- fok:\n  A Fill or Kill (FOK) order is only executed if the entire order quantity can be filled, otherwise the order is canceled. Only available with API v2.",
+                "description": "The Time-In-Force values supported by Alpaca vary based on the order's security type. Here is a breakdown of the supported TIFs for each specific security type:\n- Equity trading: day, gtc, opg, cls, ioc, fok.\n- Options trading: day, gtc.\n- Crypto trading: gtc, ioc.\n\nBelow are the descriptions of each TIF:\n- day:\n  A day order is eligible for execution only on the day it is live. By default, the order is only valid during Regular Trading Hours (9:30am - 4:00pm ET). If unfilled after the closing auction, it is automatically canceled. If submitted after the close, it is queued and submitted the following trading day. However, if marked as eligible for extended hours, the order can also execute during supported extended hours.\n\n- gtc:\n  The order is good until canceled. Non-marketable GTC limit orders are subject to price adjustments to offset corporate actions affecting the issue. We do not currently support Do Not Reduce (DNR) orders to opt out of such price adjustments.\n\n- opg:\n  Use this TIF with a market/limit order type to submit \"market on open\" (MOO) and \"limit on open\" (LOO) orders. This order is eligible to execute only in the market opening auction. Any unfilled orders after the open will be cancelled. OPG orders submitted after 9:28am but before 7:00pm ET will be rejected. OPG orders submitted after 7:00pm will be queued and routed to the following day's opening auction. On open/on close orders are routed to the primary exchange. Such orders do not necessarily execute exactly at 9:30am / 4:00pm ET but execute per the exchange's auction rules.\n\n- cls:\n  Use this TIF with a market/limit order type to submit \"market on close\" (MOC) and \"limit on close\" (LOC) orders. This order is eligible to execute only in the market closing auction. Any unfilled orders after the close will be cancelled. CLS orders submitted after 3:50pm but before 7:00pm ET will be rejected. CLS orders submitted after 7:00pm will be queued and routed to the following day's closing auction. Only available with API v2.\n\n- ioc:\n  An Immediate Or Cancel (IOC) order requires all or part of the order to be executed immediately. Any unfilled portion of the order is canceled. Only available with API v2. Most market makers who receive IOC orders will attempt to fill the order on a principal basis only, and cancel any unfilled balance. On occasion, this can result in the entire order being cancelled if the market maker does not have any existing inventory of the security in question.\n\n- fok:\n  A Fill or Kill (FOK) order is only executed if the entire order quantity can be filled, otherwise the order is canceled. Only available with API v2.",
                 "enum": [
                     "day",
                     "gtc",
@@ -5111,10 +5291,11 @@
             "TokenizationIssuer": {
                 "description": "The tokenized asset's issuer",
                 "enum": [
-                    "xstocks",
-                    "st0x",
                     "binance",
-                    "coinbase"
+                    "coinbase",
+                    "ondo",
+                    "st0x",
+                    "xstocks"
                 ],
                 "example": "xstocks",
                 "title": "TokenizationIssuer",
@@ -5199,16 +5380,18 @@
             "TokenizationNetwork": {
                 "description": "The token's blockchain network",
                 "enum": [
-                    "solana",
                     "arbitrum",
-                    "ethereum",
-                    "binance",
                     "base",
-                    "ton",
-                    "tron",
-                    "mantle",
+                    "binance",
                     "cronos",
-                    "hyperevm"
+                    "ethereum",
+                    "hypercore",
+                    "hyperevm",
+                    "mantle",
+                    "robinhood",
+                    "solana",
+                    "ton",
+                    "tron"
                 ],
                 "example": "solana",
                 "title": "TokenizationNetwork",
@@ -5218,33 +5401,39 @@
                 "properties": {
                     "account": {
                         "deprecated": true,
-                        "description": "Alpaca account ID associated with this tokenization request. Use `client_account_id` instead.",
+                        "description": "**Deprecation notice:**\nUse `client_account_id` instead.\n\nSince: 2026-07-15\nSunset: 2026-10-15\n\n---\n\nAlpaca account ID associated with this tokenization request.",
+                        "example": "06b9d76e-1733-460c-844e-48d1ae0f10c3",
                         "type": "string",
                         "x-deprecation": {
-                            "reason": "Use client_account_id instead.",
+                            "reason": "Use `client_account_id` instead.",
                             "since": "2026-07-15",
                             "sunset": "2026-10-15"
                         }
                     },
                     "client_account_id": {
                         "description": "Alpaca account UUID of the Authorized Participant associated with this tokenization request",
+                        "example": "06b9d76e-1733-460c-844e-48d1ae0f10c3",
                         "format": "uuid",
                         "type": "string"
                     },
                     "client_external_account_id": {
                         "description": "Issuer-side account identifier of the Authorized Participant associated with this tokenization request",
+                        "example": "AP-EXT-001",
                         "type": "string"
                     },
                     "client_request_id": {
                         "description": "Authorized Participant-supplied label associated with this tokenization request",
+                        "example": "ap-mint-2026-01-05-001",
                         "type": "string"
                     },
                     "created_at": {
+                        "example": "2026-01-02T15:04:05Z",
                         "format": "date-time",
                         "type": "string"
                     },
                     "fees": {
                         "description": "Fees charged for this tokenization request",
+                        "example": null,
                         "type": [
                             "string",
                             "null"
@@ -5255,16 +5444,18 @@
                     },
                     "issuer_account": {
                         "deprecated": true,
-                        "description": "Issuer's account ID associated with this tokenization request. Use `client_external_account_id` instead.",
+                        "description": "**Deprecation notice:**\nUse `client_external_account_id` instead.\n\nSince: 2026-07-15\nSunset: 2026-10-15\n\n---\n\nIssuer's account ID associated with this tokenization request.",
+                        "example": "AP-EXT-001",
                         "type": "string",
                         "x-deprecation": {
-                            "reason": "Use client_external_account_id instead.",
+                            "reason": "Use `client_external_account_id` instead.",
                             "since": "2026-07-15",
                             "sunset": "2026-10-15"
                         }
                     },
                     "issuer_request_id": {
                         "description": "Unique identifier of the tokenization request set by the issuer",
+                        "example": null,
                         "type": [
                             "string",
                             "null"
@@ -5275,6 +5466,7 @@
                     },
                     "qty": {
                         "description": "The quantity to convert for this tokenization request. It can be fractional.",
+                        "example": "10",
                         "type": "string"
                     },
                     "status": {
@@ -5282,14 +5474,17 @@
                     },
                     "token_symbol": {
                         "description": "The tokenized asset symbol",
+                        "example": "AAPLx",
                         "type": "string"
                     },
                     "tokenization_request_id": {
                         "description": "Unique identifier of the tokenization request set by Alpaca",
+                        "example": "5b1d6a3e-7f0a-4d2c-b8e1-9e6f1c0d2c4a",
                         "type": "string"
                     },
                     "tx_hash": {
                         "description": "Transaction hash of the completed request on the blockchain",
+                        "example": null,
                         "type": [
                             "string",
                             "null"
@@ -5300,9 +5495,11 @@
                     },
                     "underlying_symbol": {
                         "description": "The underlying asset symbol",
+                        "example": "AAPL",
                         "type": "string"
                     },
                     "updated_at": {
+                        "example": null,
                         "format": "date-time",
                         "type": [
                             "string",
@@ -5311,6 +5508,7 @@
                     },
                     "wallet_address": {
                         "description": "The wallet address associated with this tokenization request",
+                        "example": "5dXY1aH2tQpV3wXmJg6Z7c8B4nKvF9bA1pQrSt2uVwYxXz",
                         "type": "string"
                     }
                 },
@@ -5432,6 +5630,255 @@
                     "OUTGOING"
                 ],
                 "example": "INCOMING",
+                "type": "string"
+            },
+            "TravelRuleErrorResponse": {
+                "description": "A wallet or travel rule validation error.",
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/TravelRuleValidationError"
+                    },
+                    {
+                        "$ref": "#/components/schemas/WalletError"
+                    }
+                ]
+            },
+            "TravelRuleFieldOption": {
+                "description": "Allowed value for a travel rule field that accepts a fixed set of choices.",
+                "properties": {
+                    "description": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "value",
+                    "description"
+                ],
+                "type": "object"
+            },
+            "TravelRuleInfo": {
+                "description": "Travel rule information pertaining to the wallet being whitelisted. Identify the destination by providing beneficiary_vasp_id, setting beneficiary_is_self_hosted to true, or providing beneficiary_manual_entry. Either beneficiary_entity_name (for legal entities) or beneficiary_given_name and beneficiary_family_name (for natural persons) must be provided.",
+                "properties": {
+                    "beneficiary_country_of_residence": {
+                        "description": "ISO 3166-1 country code for the beneficiary's country of residence.",
+                        "example": "US",
+                        "type": "string"
+                    },
+                    "beneficiary_entity_name": {
+                        "description": "The beneficiary's legal entity name (required for legal entities)",
+                        "example": "Alpaca Crypto LLC",
+                        "minLength": 1,
+                        "type": "string"
+                    },
+                    "beneficiary_family_name": {
+                        "description": "The beneficiary's last name (required for natural persons)",
+                        "example": "Doe",
+                        "minLength": 1,
+                        "type": "string"
+                    },
+                    "beneficiary_geographic_address_building_number": {
+                        "description": "Building number in the beneficiary's geographic address.",
+                        "example": "1",
+                        "type": "string"
+                    },
+                    "beneficiary_geographic_address_country": {
+                        "description": "ISO 3166-1 alpha-2 or alpha-3 country code in the beneficiary's geographic address.",
+                        "example": "US",
+                        "type": "string"
+                    },
+                    "beneficiary_geographic_address_post_code": {
+                        "description": "Postal code in the beneficiary's geographic address.",
+                        "example": "10001",
+                        "type": "string"
+                    },
+                    "beneficiary_geographic_address_street_name": {
+                        "description": "Street name in the beneficiary's geographic address.",
+                        "example": "Main Street",
+                        "type": "string"
+                    },
+                    "beneficiary_geographic_address_town_name": {
+                        "description": "Town or city in the beneficiary's geographic address.",
+                        "example": "New York",
+                        "type": "string"
+                    },
+                    "beneficiary_given_name": {
+                        "description": "The beneficiary's first name (required for natural persons)",
+                        "example": "John",
+                        "minLength": 1,
+                        "type": "string"
+                    },
+                    "beneficiary_is_self_hosted": {
+                        "description": "Beneficiary is receiving funds to a self-hosted / non-custodial wallet",
+                        "example": true,
+                        "type": "boolean"
+                    },
+                    "beneficiary_manual_entry": {
+                        "$ref": "#/components/schemas/TravelRuleManualEntry"
+                    },
+                    "beneficiary_vasp_id": {
+                        "description": "The W3C Decentralized Identifier (DID) representing the beneficiary's VASP.",
+                        "example": "did:ethr:0xf1c002f9e7ca88018d6dcf1e86403fb2f5f055f4",
+                        "pattern": "^did:[a-zA-Z0-9]*:.*$",
+                        "type": "string"
+                    }
+                },
+                "title": "TravelRuleInfo",
+                "type": "object"
+            },
+            "TravelRuleManualEntry": {
+                "description": "Information about a beneficiary VASP that is not available in the VASP directory.",
+                "properties": {
+                    "vasp_name": {
+                        "description": "The name of the receiving exchange.",
+                        "example": "Alpaca",
+                        "type": "string"
+                    },
+                    "vasp_website": {
+                        "description": "The receiving exchange's website.",
+                        "example": "https://alpaca.markets",
+                        "format": "uri",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "vasp_name",
+                    "vasp_website"
+                ],
+                "type": "object"
+            },
+            "TravelRuleNextAction": {
+                "description": "Action the client must take to satisfy travel rule requirements.",
+                "properties": {
+                    "description": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "required_fields": {
+                        "items": {
+                            "$ref": "#/components/schemas/TravelRuleRequiredField"
+                        },
+                        "type": "array"
+                    },
+                    "type": {
+                        "enum": [
+                            "REQUIRED",
+                            "ONE_OF"
+                        ],
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "name",
+                    "description",
+                    "type"
+                ],
+                "type": "object"
+            },
+            "TravelRuleRequiredField": {
+                "description": "Request field required to complete a travel rule action.",
+                "properties": {
+                    "description": {
+                        "type": "string"
+                    },
+                    "field": {
+                        "type": "string"
+                    },
+                    "options": {
+                        "description": "List of valid choices for 'enum' types. Null for simple strings or booleans.",
+                        "items": {
+                            "$ref": "#/components/schemas/TravelRuleFieldOption"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "value_type": {
+                        "enum": [
+                            "string",
+                            "bool"
+                        ],
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "field",
+                    "value_type",
+                    "description"
+                ],
+                "type": "object"
+            },
+            "TravelRuleValidationError": {
+                "description": "Travel rule validation failure and the actions required to correct it.",
+                "properties": {
+                    "error_code": {
+                        "$ref": "#/components/schemas/TravelRuleValidationErrorCode"
+                    },
+                    "message": {
+                        "example": "Please provide the beneficiary's name. Select one of the following options.",
+                        "type": "string"
+                    },
+                    "next_actions": {
+                        "description": "A list of actions to be taken to fulfill information requirements.",
+                        "example": [
+                            {
+                                "description": "Provide the recipient's first and last name.",
+                                "name": "supply_beneficiaryName_naturalPerson",
+                                "required_fields": [
+                                    {
+                                        "description": "The recipient's first name.",
+                                        "field": "beneficiary_given_name",
+                                        "value_type": "string"
+                                    },
+                                    {
+                                        "description": "The recipient's last name.",
+                                        "field": "beneficiary_family_name",
+                                        "value_type": "string"
+                                    }
+                                ],
+                                "type": "ONE_OF"
+                            },
+                            {
+                                "description": "Provide the entity's legal name.",
+                                "name": "supply_beneficiaryName_legalEntity",
+                                "required_fields": [
+                                    {
+                                        "description": "The legal name of the receiving entity.",
+                                        "field": "beneficiary_entity_name",
+                                        "value_type": "string"
+                                    }
+                                ],
+                                "type": "ONE_OF"
+                            }
+                        ],
+                        "items": {
+                            "$ref": "#/components/schemas/TravelRuleNextAction"
+                        },
+                        "type": "array"
+                    }
+                },
+                "required": [
+                    "error_code",
+                    "message",
+                    "next_actions"
+                ],
+                "type": "object"
+            },
+            "TravelRuleValidationErrorCode": {
+                "description": "Machine-readable code identifying the travel rule validation failure.",
+                "enum": [
+                    "INVALID_DATA",
+                    "UNKNOWN_VASP",
+                    "ADDRESS_BELONGS_TO_VASP",
+                    "TRAVEL_RULE_ACTION_REQUIRED",
+                    "BENEFICIARY_NAME_REQUIRED"
+                ],
+                "example": "BENEFICIARY_NAME_REQUIRED",
                 "type": "string"
             },
             "USDPositionValues": {
@@ -5595,6 +6042,66 @@
                 "title": "PutWatchlistRequest",
                 "type": "object"
             },
+            "UpdateWhitelistedAddressTravelRuleInfoRequest": {
+                "description": "Travel rule information to associate with a whitelisted address.",
+                "properties": {
+                    "travel_rule_info": {
+                        "$ref": "#/components/schemas/TravelRuleInfo"
+                    }
+                },
+                "required": [
+                    "travel_rule_info"
+                ],
+                "type": "object"
+            },
+            "VASP": {
+                "description": "Virtual Asset Service Provider returned by the directory search.",
+                "properties": {
+                    "address": {
+                        "type": "string"
+                    },
+                    "city": {
+                        "type": "string"
+                    },
+                    "country": {
+                        "description": "ISO 3166-1 alpha-2 country code for the VASP.",
+                        "example": "US",
+                        "type": "string"
+                    },
+                    "did": {
+                        "description": "The W3C Decentralized Identifier (DID) representing the VASP.",
+                        "example": "did:ethr:0xf1c002f9e7ca88018d6dcf1e86403fb2f5f055f4",
+                        "pattern": "^did:[a-zA-Z0-9]*:.*$",
+                        "type": "string"
+                    },
+                    "emailDomain": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "description": "Opaque identifier for the VASP directory record.",
+                        "example": "vasp-1",
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "postalCode": {
+                        "type": "string"
+                    },
+                    "state": {
+                        "type": "string"
+                    },
+                    "website": {
+                        "format": "uri",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "type": "object"
+            },
             "WRMActivityV2": {
                 "allOf": [
                     {
@@ -5628,6 +6135,20 @@
                     }
                 ],
                 "description": "Worthless Removal",
+                "type": "object"
+            },
+            "WalletError": {
+                "additionalProperties": false,
+                "description": "A wallet error response.",
+                "properties": {
+                    "message": {
+                        "example": "travel_rule_info is missing",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "message"
+                ],
                 "type": "object"
             },
             "WalletFeeEstimateResponse": {
@@ -5801,6 +6322,14 @@
                             "PENDING"
                         ],
                         "type": "string"
+                    },
+                    "travel_rule_info": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/TravelRuleInfo"
+                            }
+                        ],
+                        "description": "Travel rule information associated with the whitelisted address."
                     }
                 },
                 "type": "object"
@@ -6178,7 +6707,7 @@
     "paths": {
         "/v1/locates": {
             "get": {
-                "description": "Returns locates filtered by status, symbol, or date range. Results are sorted by `created_at` descending, with `id` descending as the tie-breaker.",
+                "description": "Returns locates filtered by status, symbol, or date range. Results are sorted by `created_at` descending, with `id` descending as the tie-breaker. This endpoint is not available in paper trading.",
                 "operationId": "listLocates",
                 "parameters": [
                     {
@@ -6312,18 +6841,11 @@
                 ]
             },
             "post": {
-                "description": "Creates a locate request for a short sale.",
+                "description": "Creates a locate request for a short sale. This endpoint is not available in paper trading.\n\n**Idempotency**: Reusing the same key with the same request returns the original\nlocate response. Reusing the same key with a different request returns HTTP 422.\n",
                 "operationId": "createLocates",
                 "parameters": [
                     {
-                        "description": "Optional idempotency key for safe retries. Reusing the same key with\nthe same request returns the original locate response. Reusing the same\nkey with a different request returns HTTP 422.\nWe recommend always providing this header in production so timeouts,\nnetwork errors, and 5xx responses can be safely retried without creating\nduplicate locates. Use a client-generated unique value, such as a UUID,\nfor each logical locate.\n",
-                        "in": "header",
-                        "name": "Idempotency-Key",
-                        "required": false,
-                        "schema": {
-                            "maxLength": 128,
-                            "type": "string"
-                        }
+                        "$ref": "#/components/parameters/LegacyIdempotencyKey"
                     }
                 ],
                 "requestBody": {
@@ -6474,7 +6996,7 @@
         },
         "/v1/locates/{locate_id}": {
             "get": {
-                "description": "Returns a locate by ID.",
+                "description": "Returns a locate by ID. This endpoint is not available in paper trading.",
                 "operationId": "getLocate",
                 "parameters": [
                     {
@@ -6579,7 +7101,7 @@
         },
         "/v1/locates/quotes": {
             "get": {
-                "description": "Returns locate availability and pricing for one or more symbols.",
+                "description": "Returns locate availability and pricing for one or more symbols. This endpoint is not available in paper trading.",
                 "operationId": "listLocateQuotes",
                 "parameters": [
                     {
@@ -7123,7 +7645,7 @@
                         }
                     },
                     {
-                        "description": "The timestamp the data is returned starting from in RFC3339 format (including timezone specification). Defaults to `end` minus `period`\n\nIf provided, the `start` value is always normalized to the `America/New_York` timezone and adjusted to the nearest `timeframe` interval, e.g. seconds are always truncated and the time is rounded backwards to the nearest interval of `1Min`, `5Min`, `15Min`, or `1H`.\n\nIf `timeframe=1D` and `start` is not a valid trading date, find the next available trading date. For example, if `start` occurs on Saturday or Sunday after converting to the America/New_York timezone, `start` is adjusted to the first weekday that is not a market holiday (e.g. Monday).\n\nIf `timeframe` is less than `1D` and `intraday_reporting` is not `continuous`, `start` always reflects the beginning of a market session. If `start` is between midnight and the end (inclusive) of an active trading day, `start` is set to the beginning of the session on the specified day. Otherwise, if `start` occurs outside of the market session, the next available market date is used.\n\nFor example, when `intraday_reporting=market_hours` and `start=2023-10-19T23:59:59-04:00`, the provided `start` date occurs outside of the regular market session. The effective `start` timestamp is adjusted to the beginning of the next session: `2023-10-20T09:30:00-04:00`\n\n`start` may be be combined with one of `end` or `period`.\n\nProviding all of `start`, `end`, and `period` is invalid.\n",
+                        "description": "The timestamp the data is returned starting from in RFC3339 format (including timezone specification). Defaults to `end` minus `period`\n\nIf provided, the `start` value is always normalized to the `America/New_York` timezone and adjusted to the nearest `timeframe` interval, e.g. seconds are always truncated and the time is rounded backwards to the nearest interval of `1Min`, `5Min`, `15Min`, or `1H`.\n\nIf `timeframe=1D` and `start` is not a valid trading date, find the next available trading date. For example, if `start` occurs on Saturday or Sunday after converting to the America/New_York timezone, `start` is adjusted to the first weekday that is not a market holiday (e.g. Monday).\n\nIf `timeframe` is less than `1D` and `intraday_reporting` is not `continuous`, `start` always reflects the beginning of a market session. If `start` is between midnight and the end (inclusive) of an active trading day, `start` is set to the beginning of the session on the specified day. Otherwise, if `start` occurs outside of the market session, the next available market date is used.\n\nFor example, when `intraday_reporting=market_hours` and `start=2023-10-19T23:59:59-04:00`, the provided `start` date occurs outside of the regular market session. The effective `start` timestamp is adjusted to the beginning of the next session: `2023-10-20T09:30:00-04:00`\n\n`start` may be combined with one of `end` or `period`.\n\nProviding all of `start`, `end`, and `period` is invalid.\n",
                         "in": "query",
                         "name": "start",
                         "schema": {
@@ -7923,7 +8445,7 @@
                         }
                     },
                     {
-                        "description": "The ppind(Penny Program Indicator) field indicates whether an option contract is eligible for penny price increments,\nwith `true` meaning it is part of the Penny Program and `false` meaning it is not.",
+                        "description": "The ppind (Penny Program Indicator) field indicates whether an option contract is eligible for penny price increments,\nwith `true` meaning it is part of the Penny Program and `false` meaning it is not.",
                         "example": true,
                         "in": "query",
                         "name": "ppind",
@@ -8502,7 +9024,7 @@
                             "application/json": {
                                 "schema": {
                                     "items": {
-                                        "$ref": "#/components/schemas/PositionClosedReponse"
+                                        "$ref": "#/components/schemas/PositionClosedResponse"
                                     },
                                     "type": "array"
                                 }
@@ -8758,13 +9280,7 @@
                 "operationId": "postTokenizationMint",
                 "parameters": [
                     {
-                        "description": "Unique key for idempotent create. When supplied, duplicate requests (same key\nand body) return the original mint request instead of creating a new one. Use a\nclient-generated value (e.g. UUID) per logical request. Strongly recommended\nfor production to prevent duplicate requests on retries.\n",
-                        "in": "header",
-                        "name": "Idempotency-Key",
-                        "schema": {
-                            "maxLength": 128,
-                            "type": "string"
-                        }
+                        "$ref": "#/components/parameters/LegacyIdempotencyKey"
                     }
                 ],
                 "requestBody": {
@@ -9324,7 +9840,7 @@
             },
             "post": {
                 "deprecated": true,
-                "description": "Creates a withdrawal request. Note that outgoing withdrawals must be sent to a whitelisted address and you must whitelist addresses at least 24 hours in advance. If you attempt to withdraw funds to a non-whitelisted address then the transfer will be rejected.",
+                "description": "**Deprecation notice:**\nThis endpoint is deprecated. Use the Alpaca web application to initiate withdrawals.\n\nSince: 2026-07-09\nSunset: 2026-10-09\n\n---\n\nCreates a withdrawal request. Note that outgoing withdrawals must be sent to a whitelisted address and you must whitelist addresses at least 24 hours in advance. If you attempt to withdraw funds to a non-whitelisted address then the transfer will be rejected.",
                 "operationId": "createCryptoTransferForAccount",
                 "requestBody": {
                     "content": {
@@ -9346,6 +9862,26 @@
                             }
                         },
                         "description": "Successfully requested a transfer."
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "TravelRuleValidationError": {
+                                        "$ref": "#/components/examples/TravelRuleValidationError"
+                                    },
+                                    "WalletError": {
+                                        "value": {
+                                            "message": "asset cannot be empty"
+                                        }
+                                    }
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/TravelRuleErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "The request or travel rule information is invalid."
                     }
                 },
                 "summary": "Request a New Withdrawal",
@@ -9392,6 +9928,116 @@
                 }
             ]
         },
+        "/v2/wallets/travel-rule/vasps": {
+            "get": {
+                "description": "Search for Virtual Asset Service Providers, or crypto exchanges, on Notabene's network.\nThis endpoint can be used to find the VASP DID for your beneficiary's exchange when submitting\ntravel rule information for your whitelisted wallets. Use the `q` parameter to search for exchanges.",
+                "operationId": "searchVASPs",
+                "parameters": [
+                    {
+                        "description": "General search query string.",
+                        "in": "query",
+                        "name": "q",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Filter by VASP email domain.",
+                        "in": "query",
+                        "name": "emailDomain",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Filter by Chainalysis-specific VASP name.",
+                        "in": "query",
+                        "name": "chainalysisName",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Specify which fields to return (comma-separated).",
+                        "in": "query",
+                        "name": "fields",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "The zero-based page number to retrieve.",
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "default": 0,
+                            "minimum": 0,
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "Number of items per page.",
+                        "in": "query",
+                        "name": "per_page",
+                        "schema": {
+                            "default": 10,
+                            "maximum": 100,
+                            "minimum": 1,
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "Field-based sort expression, such as name:ASC. Multiple expressions may be comma-separated. Defaults to name:ASC.",
+                        "in": "query",
+                        "name": "order",
+                        "schema": {
+                            "default": "name:ASC",
+                            "example": "name:ASC",
+                            "pattern": "^([ A-Za-z]+(:(ASC|DESC))?(:NULLS (FIRST|LAST))?(,?))+$",
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Whether to include child/subsidiary entities.",
+                        "in": "query",
+                        "name": "includeSubsidiaryVASPs",
+                        "schema": {
+                            "default": false,
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "page": 1,
+                                    "pages": 1,
+                                    "total": 1,
+                                    "vasps": [
+                                        {
+                                            "country": "US",
+                                            "did": "did:ethr:0xf1c002f9e7ca88018d6dcf1e86403fb2f5f055f4",
+                                            "id": "vasp-1",
+                                            "name": "Example Exchange"
+                                        }
+                                    ]
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/SearchVASPsResponse"
+                                }
+                            }
+                        },
+                        "description": "Successful request. Returns an array of VASPs or an empty list if no matches found."
+                    }
+                },
+                "summary": "Search for VASPs",
+                "tags": [
+                    "Crypto Funding"
+                ]
+            }
+        },
         "/v2/wallets/whitelists": {
             "get": {
                 "description": "Returns the list of whitelisted withdrawal addresses for your account.",
@@ -9414,7 +10060,7 @@
                 ]
             },
             "post": {
-                "description": "Submits a new whitelisted withdrawal address for your account. The chain is derived from the supplied asset symbol and address, and the same address cannot be whitelisted twice on the same chain.\n\nWhere travel rule reporting applies to your account, address details are validated against the travel rule provider before being persisted.\n\nNote that whitelisted addresses must wait at least 24 hours before they can be used as a withdrawal destination.",
+                "description": "Submits a new whitelisted withdrawal address for your account. The chain is derived from the supplied asset symbol and address, and the same address cannot be whitelisted twice on the same chain.\n\nWhere travel rule reporting applies to your account, supply travel rule information for the destination wallet. Use the `Search VASPs` endpoint to find the VASP DID for the destination exchange. For a self-hosted wallet, set `beneficiary_is_self_hosted` to true. If the exchange is not in the directory, provide its information in `beneficiary_manual_entry`.\n\nNote that whitelisted addresses must wait at least 24 hours before they can be used as a withdrawal destination.",
                 "operationId": "createWhitelistedAddress",
                 "requestBody": {
                     "content": {
@@ -9436,6 +10082,26 @@
                             }
                         },
                         "description": "Successfully requested a whitelisted address"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "TravelRuleValidationError": {
+                                        "$ref": "#/components/examples/TravelRuleValidationError"
+                                    },
+                                    "WalletError": {
+                                        "value": {
+                                            "message": "asset cannot be empty"
+                                        }
+                                    }
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/TravelRuleErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "The request or travel rule information is invalid."
                     }
                 },
                 "summary": "Request a new whitelisted address",
@@ -9469,6 +10135,64 @@
                     }
                 }
             ]
+        },
+        "/v2/wallets/whitelists/{whitelisted_address_id}/travel-rule-info": {
+            "parameters": [
+                {
+                    "description": "The whitelisted address update travel rule information for",
+                    "in": "path",
+                    "name": "whitelisted_address_id",
+                    "required": true,
+                    "schema": {
+                        "format": "uuid",
+                        "type": "string"
+                    }
+                }
+            ],
+            "patch": {
+                "description": "You are required to supply travel rule information for the crypto wallets you're withdrawing to.\n\nIt is preferred that you use the `Search VASPs` endpoint to find the VASP DID for the exchange you are withdrawing to,\notherwise, if it's a self-hosted wallet, please set `beneficiary_is_self_hosted` to true.\n\nIf the exchange cannot be found in our directory, please supply the information manually using the `beneficiary_manual_entry` object.",
+                "operationId": "updateWhitelistedAddressTravelRuleInfo",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateWhitelistedAddressTravelRuleInfoRequest"
+                            }
+                        }
+                    },
+                    "description": "Travel rule information to associate with the whitelisted address.",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated travel rule information"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "TravelRuleValidationError": {
+                                        "$ref": "#/components/examples/TravelRuleValidationError"
+                                    },
+                                    "WalletError": {
+                                        "value": {
+                                            "message": "travel_rule_info is missing"
+                                        }
+                                    }
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/TravelRuleErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "The request or travel rule information is invalid."
+                    }
+                },
+                "summary": "Update travel rule information for a whitelisted wallet",
+                "tags": [
+                    "Crypto Funding"
+                ]
+            }
         },
         "/v2/watchlists": {
             "get": {
