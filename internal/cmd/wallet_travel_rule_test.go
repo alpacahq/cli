@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/alpacahq/cli/internal/client"
@@ -109,5 +110,46 @@ func TestUpdateTravelRuleOmitsUnsetManualEntry(t *testing.T) {
 	}
 	if len(decoded) != 1 || decoded[0]["name"] != "supply_beneficiaryName_naturalPerson" {
 		t.Fatalf("next_actions = %#v", decoded)
+	}
+}
+
+func TestTravelRuleInfoRejectsUnknownField(t *testing.T) {
+	tests := []struct {
+		name string
+		args []string
+		json string
+	}{
+		{
+			name: "update unknown key",
+			args: []string{"wallet", "whitelist", "update-travel-rule", "--whitelisted-address-id", "00000000-0000-0000-0000-000000000000"},
+			json: `{"beneficiary_country_of_residnce":"US"}`,
+		},
+		{
+			name: "update unknown nested key",
+			args: []string{"wallet", "whitelist", "update-travel-rule", "--whitelisted-address-id", "00000000-0000-0000-0000-000000000000"},
+			json: `{"beneficiary_manual_entry":{"vasp_name":"Alpaca","vasp_website":"https://alpaca.markets","extra":true}}`,
+		},
+		{
+			name: "add unknown key",
+			args: []string{"wallet", "whitelist", "add", "--address", "0xabc", "--asset", "USDC", "--chain", "ETH"},
+			json: `{"beneficiary_country_of_residnce":"US"}`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cleanup := setupMockClients(t, func(w http.ResponseWriter, r *http.Request) {
+				t.Errorf("request was sent: %s %s", r.Method, r.URL.Path)
+			})
+			defer cleanup()
+
+			root := Root()
+			root.SetOut(new(bytes.Buffer))
+			root.SetErr(new(bytes.Buffer))
+			root.SetArgs(append(tt.args, "--travel-rule-info", tt.json))
+			err := root.Execute()
+			if err == nil || !strings.Contains(err.Error(), "unknown field") {
+				t.Fatalf("error = %v", err)
+			}
+		})
 	}
 }

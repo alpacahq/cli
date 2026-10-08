@@ -1145,7 +1145,7 @@ func buildPostBody(typeName string, props map[string]map[string]any, skipFields 
 	for _, f := range fields {
 		if f.kind == "json" {
 			fmt.Fprintf(&b, "\n\tif cmdutil.Changed(cmd, %q) {\n", f.flagName)
-			fmt.Fprintf(&b, "\t\tif err := json.Unmarshal([]byte(cmdutil.Str(cmd, %q)), &body.%s); err != nil {\n", f.flagName, f.goField)
+			fmt.Fprintf(&b, "\t\tif err := cmdutil.UnmarshalJSON(cmdutil.Str(cmd, %q), &body.%s); err != nil {\n", f.flagName, f.goField)
 			fmt.Fprintf(&b, "\t\t\treturn nil, fmt.Errorf(\"--%s: %%w\", err)\n", f.flagName)
 			b.WriteString("\t\t}\n")
 			b.WriteString("\t}")
@@ -1195,7 +1195,7 @@ func buildPatchBody(typeName string, props map[string]map[string]any, aliases ma
 			fmt.Fprintf(&b, "\t\t\tbody.%s = strings.Split(s, \",\")\n", f.goField)
 			b.WriteString("\t\t}\n")
 		case "json":
-			fmt.Fprintf(&b, "\t\tif err := json.Unmarshal([]byte(cmdutil.Str(cmd, %q)), &body.%s); err != nil {\n", f.flagName, f.goField)
+			fmt.Fprintf(&b, "\t\tif err := cmdutil.UnmarshalJSON(cmdutil.Str(cmd, %q), &body.%s); err != nil {\n", f.flagName, f.goField)
 			fmt.Fprintf(&b, "\t\t\treturn nil, fmt.Errorf(\"--%s: %%w\", err)\n", f.flagName)
 			b.WriteString("\t\t}\n")
 		}

@@ -3,7 +3,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -199,7 +198,7 @@ var createWhitelistedAddressCmd = fetchCmd("add", api.CreateWhitelistedAddressOp
 		Chain:   api.CryptoChain(cmdutil.Str(cmd, "chain")),
 	}
 	if cmdutil.Changed(cmd, "travel-rule-info") {
-		if err := json.Unmarshal([]byte(cmdutil.Str(cmd, "travel-rule-info")), &body.TravelRuleInfo); err != nil {
+		if err := cmdutil.UnmarshalJSON(cmdutil.Str(cmd, "travel-rule-info"), &body.TravelRuleInfo); err != nil {
 			return nil, fmt.Errorf("--travel-rule-info: %w", err)
 		}
 	}
@@ -487,7 +486,7 @@ var patchOrderByOrderIDCmd = fetchCmd("replace", api.PatchOrderByOrderIDOp, func
 	body := &api.PatchOrderRequest{}
 	var changed bool
 	if cmdutil.Changed(cmd, "advanced-instructions") {
-		if err := json.Unmarshal([]byte(cmdutil.Str(cmd, "advanced-instructions")), &body.AdvancedInstructions); err != nil {
+		if err := cmdutil.UnmarshalJSON(cmdutil.Str(cmd, "advanced-instructions"), &body.AdvancedInstructions); err != nil {
 			return nil, fmt.Errorf("--advanced-instructions: %w", err)
 		}
 		changed = true
@@ -544,12 +543,12 @@ var postOrderCmd = fetchCmd("submit", api.PostOrderOp, func(cmd *cobra.Command, 
 		Type:           api.OrderType(cmdutil.Str(cmd, "type")),
 	}
 	if cmdutil.Changed(cmd, "advanced-instructions") {
-		if err := json.Unmarshal([]byte(cmdutil.Str(cmd, "advanced-instructions")), &body.AdvancedInstructions); err != nil {
+		if err := cmdutil.UnmarshalJSON(cmdutil.Str(cmd, "advanced-instructions"), &body.AdvancedInstructions); err != nil {
 			return nil, fmt.Errorf("--advanced-instructions: %w", err)
 		}
 	}
 	if cmdutil.Changed(cmd, "legs") {
-		if err := json.Unmarshal([]byte(cmdutil.Str(cmd, "legs")), &body.Legs); err != nil {
+		if err := cmdutil.UnmarshalJSON(cmdutil.Str(cmd, "legs"), &body.Legs); err != nil {
 			return nil, fmt.Errorf("--legs: %w", err)
 		}
 	}
@@ -699,7 +698,7 @@ var updateWhitelistedAddressTravelRuleInfoCmd = fetchCmd("update-travel-rule", a
 	body := &api.UpdateWhitelistedAddressTravelRuleInfoRequest{}
 	var changed bool
 	if cmdutil.Changed(cmd, "travel-rule-info") {
-		if err := json.Unmarshal([]byte(cmdutil.Str(cmd, "travel-rule-info")), &body.TravelRuleInfo); err != nil {
+		if err := cmdutil.UnmarshalJSON(cmdutil.Str(cmd, "travel-rule-info"), &body.TravelRuleInfo); err != nil {
 			return nil, fmt.Errorf("--travel-rule-info: %w", err)
 		}
 		changed = true
