@@ -420,9 +420,10 @@ func genStruct(buf *bytes.Buffer, s *schemaInfo) {
 		if !s.required[fieldName] {
 			tag += ",omitempty"
 			// omitempty does not treat a zero struct as empty, so an unset
-			// nested object would still be sent. omitzero drops that zero value.
-			if isStructSchema(fieldSchema) {
-				tag += ",omitzero"
+			// nested object would still be sent. A nil pointer is empty, and
+			// it stays nil until the caller unmarshals a value into it.
+			if isStructSchema(fieldSchema) && !strings.HasPrefix(goType, "*") {
+				goType = "*" + goType
 			}
 		}
 		fmt.Fprintf(buf, "\t%s %s `json:%q`\n", goField, goType, tag)

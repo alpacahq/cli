@@ -85,16 +85,16 @@ func TestGenStructOmitsUnsetNestedObject(t *testing.T) {
 	genStruct(&buf, info)
 	got := buf.String()
 
-	if !strings.Contains(got, "`json:\"beneficiary_manual_entry,omitempty,omitzero\"`") {
-		t.Fatalf("optional nested object missing omitzero:\n%s", got)
-	}
-	if strings.Contains(got, "BeneficiaryManualEntry *") {
-		t.Fatalf("optional nested object should stay a value with omitzero:\n%s", got)
+	if !strings.Contains(got, "BeneficiaryManualEntry *TravelRuleManualEntry `json:\"beneficiary_manual_entry,omitempty\"`") {
+		t.Fatalf("optional nested object should be a nilable pointer:\n%s", got)
 	}
 	if strings.Contains(got, "beneficiary_is_self_hosted,omitempty,omitzero") ||
 		strings.Contains(got, "side,omitempty,omitzero") ||
-		strings.Contains(got, "symbol,omitempty,omitzero") {
-		t.Fatalf("omitzero applied to a non-struct field:\n%s", got)
+		strings.Contains(got, "symbol,omitempty,omitzero") ||
+		strings.Contains(got, "*bool") ||
+		strings.Contains(got, "*OrderSide") ||
+		strings.Contains(got, "*string") {
+		t.Fatalf("pointer applied to a non-struct field:\n%s", got)
 	}
 }
 
