@@ -149,6 +149,42 @@ func TestError400(t *testing.T) {
 	}
 }
 
+func TestTravelRuleValidationErrorFields(t *testing.T) {
+	body := `{
+		"error_code":"BENEFICIARY_NAME_REQUIRED",
+		"message":"Please provide the beneficiary's name.",
+		"next_actions":[{"name":"supply_beneficiaryName_naturalPerson","type":"ONE_OF","description":"Provide the recipient's first and last name.","required_fields":[{"field":"beneficiary_given_name","value_type":"string","description":"The recipient's first name."}]}]
+	}`
+	c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(400)
+		_, _ = w.Write([]byte(body))
+	})
+
+	_, err := c.Patch("/v2/wallets/whitelists/abc/travel-rule-info", nil, map[string]any{
+		"travel_rule_info": map[string]any{"beneficiary_is_self_hosted": true},
+	})
+	apiErr, ok := err.(*APIError)
+	if !ok {
+		t.Fatalf("expected *APIError, got %v", err)
+	}
+	if apiErr.Code != 0 {
+		t.Errorf("numeric code = %d, want 0", apiErr.Code)
+	}
+	if apiErr.ErrorCode != "BENEFICIARY_NAME_REQUIRED" {
+		t.Errorf("error_code = %q", apiErr.ErrorCode)
+	}
+	if apiErr.Message != "Please provide the beneficiary's name." {
+		t.Errorf("message = %q", apiErr.Message)
+	}
+	var actions []map[string]any
+	if err := json.Unmarshal(apiErr.NextActions, &actions); err != nil {
+		t.Fatalf("next_actions: %v", err)
+	}
+	if len(actions) != 1 || actions[0]["name"] != "supply_beneficiaryName_naturalPerson" {
+		t.Fatalf("next_actions = %#v", actions)
+	}
+}
+
 func TestError401(t *testing.T) {
 	c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(401)
@@ -386,6 +422,7 @@ func TestErrorString(t *testing.T) {
 	}{
 		{"empty message", APIError{StatusCode: 500}, "API error (HTTP 500)"},
 		{"with code", APIError{StatusCode: 400, Code: 40010001, Message: "qty required"}, "qty required [40010001] (HTTP 400)"},
+		{"travel rule code", APIError{StatusCode: 400, ErrorCode: "BENEFICIARY_NAME_REQUIRED", Message: "name required"}, "name required [BENEFICIARY_NAME_REQUIRED] (HTTP 400)"},
 		{"message only", APIError{StatusCode: 422, Message: "invalid"}, "invalid (HTTP 422)"},
 		{"no status", APIError{Message: "something"}, "something"},
 	}

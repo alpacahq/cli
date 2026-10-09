@@ -46,11 +46,16 @@ type APIError struct {
 	StatusCode int    `json:"status"`
 	Code       int    `json:"code"`
 	Message    string `json:"message"`
-	Method     string `json:"method,omitempty"`
-	Path       string `json:"path,omitempty"`
-	RequestID  string `json:"request_id,omitempty"`
-	hint       string
-	retryAfter time.Duration
+	// ErrorCode and NextActions come from travel-rule validation responses.
+	// Those responses use a string error_code rather than the numeric code
+	// field shared by other Alpaca errors.
+	ErrorCode   string          `json:"error_code,omitempty"`
+	NextActions json.RawMessage `json:"next_actions,omitempty"`
+	Method      string          `json:"method,omitempty"`
+	Path        string          `json:"path,omitempty"`
+	RequestID   string          `json:"request_id,omitempty"`
+	hint        string
+	retryAfter  time.Duration
 }
 
 func (e *APIError) Error() string {
@@ -59,6 +64,9 @@ func (e *APIError) Error() string {
 	}
 	if e.Code > 0 {
 		return fmt.Sprintf("%s [%d] (HTTP %d)", e.Message, e.Code, e.StatusCode)
+	}
+	if e.ErrorCode != "" {
+		return fmt.Sprintf("%s [%s] (HTTP %d)", e.Message, e.ErrorCode, e.StatusCode)
 	}
 	if e.StatusCode > 0 {
 		return fmt.Sprintf("%s (HTTP %d)", e.Message, e.StatusCode)

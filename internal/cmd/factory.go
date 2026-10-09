@@ -73,7 +73,7 @@ func queryFromFlags(cmd *cobra.Command, op api.Op) url.Values {
 			continue
 		}
 		switch f.Type {
-		case "string":
+		case oasTypeString:
 			v.Set(f.OASName, cmdutil.Str(cmd, f.Name))
 		case "int":
 			v.Set(f.OASName, fmt.Sprint(cmdutil.Int(cmd, f.Name)))
@@ -94,7 +94,7 @@ func headersFromFlags(cmd *cobra.Command, op api.Op) http.Header {
 			continue
 		}
 		switch f.Type {
-		case "string":
+		case oasTypeString:
 			headers.Set(f.OASName, cmdutil.Str(cmd, f.Name))
 		case "int":
 			headers.Set(f.OASName, fmt.Sprint(cmdutil.Int(cmd, f.Name)))

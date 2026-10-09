@@ -108,7 +108,7 @@ func TestBuildPostBody(t *testing.T) {
 			wantOK: true,
 			wantSnips: []string{
 				`cmdutil.Changed(cmd, "advanced-instructions")`,
-				`json.Unmarshal`,
+				`cmdutil.UnmarshalJSON`,
 				`&body.AdvancedInstructions`,
 				`"--advanced-instructions:`,
 			},
@@ -124,7 +124,7 @@ func TestBuildPostBody(t *testing.T) {
 			wantOK: true,
 			wantSnips: []string{
 				`cmdutil.Changed(cmd, "take-profit")`,
-				`json.Unmarshal`,
+				`cmdutil.UnmarshalJSON`,
 				`&body.TakeProfit`,
 			},
 		},
@@ -139,7 +139,7 @@ func TestBuildPostBody(t *testing.T) {
 			wantOK: true,
 			wantSnips: []string{
 				`cmdutil.Changed(cmd, "legs")`,
-				`json.Unmarshal`,
+				`cmdutil.UnmarshalJSON`,
 				`&body.Legs`,
 			},
 		},
@@ -178,7 +178,7 @@ func TestBuildPostBody(t *testing.T) {
 				`ExtendedHours: cmdutil.Bool(cmd, "extended-hours")`,
 				`Side: api.OrderSide(cmdutil.Str(cmd, "side"))`,
 				`TimeInForce: api.TimeInForce(cmdutil.Str(cmd, "time-in-force"))`,
-				`json.Unmarshal`,
+				`cmdutil.UnmarshalJSON`,
 				`&body.AdvancedInstructions`,
 			},
 		},

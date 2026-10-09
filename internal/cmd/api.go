@@ -75,18 +75,18 @@ METHOD defaults to GET if omitted.`,
 }
 
 var validMethods = map[string]bool{
-	"GET": true, "POST": true, "PUT": true, "PATCH": true, "DELETE": true,
+	httpMethodGet: true, "POST": true, "PUT": true, "PATCH": true, "DELETE": true,
 }
 
 func parseMethodPath(args []string) (method, path string) {
 	if len(args) == 1 {
-		return "GET", args[0]
+		return httpMethodGet, args[0]
 	}
 	upper := strings.ToUpper(args[0])
 	if validMethods[upper] {
 		return upper, args[1]
 	}
-	return "GET", args[0]
+	return httpMethodGet, args[0]
 }
 
 func stdinHasData() bool {

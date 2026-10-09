@@ -1,7 +1,9 @@
 package cmdutil
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"strconv"
 	"strings"
@@ -105,4 +107,21 @@ func Int(cmd *cobra.Command, name string) int {
 
 func Changed(cmd *cobra.Command, name string) bool {
 	return cmd.Flags().Changed(name)
+}
+
+// UnmarshalJSON decodes a JSON flag and rejects keys that are not in dest,
+// including keys nested inside objects.
+func UnmarshalJSON(data string, dest any) error {
+	dec := json.NewDecoder(strings.NewReader(data))
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(dest); err != nil {
+		return err
+	}
+	if _, err := dec.Token(); err != io.EOF {
+		if err == nil {
+			return fmt.Errorf("unexpected trailing JSON")
+		}
+		return err
+	}
+	return nil
 }

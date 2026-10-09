@@ -10,8 +10,8 @@ import (
 )
 
 var skipCommands = map[string]bool{
-	"help":       true,
-	"completion": true,
+	helpCommandName: true,
+	"completion":    true,
 }
 
 func printCommandTree(w io.Writer, root *cobra.Command, depth int) {

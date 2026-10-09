@@ -20,6 +20,8 @@ type Exchange string
 
 type ExchangeForPosition string
 
+type FixedIncomeInterestType string
+
 type LocateStatus string
 
 type OptionContractStyle string
@@ -27,6 +29,8 @@ type OptionContractStyle string
 type OptionContractType string
 
 type OrderClass string
+
+type OrderGroupRole string
 
 type OrderSide string
 
@@ -47,6 +51,8 @@ type TokenizationRequestStatus string
 type TokenizationRequestType string
 
 type TransferDirection string
+
+type TravelRuleValidationErrorCode string
 
 type Market string
 
@@ -150,7 +156,6 @@ type Assets struct {
 	BorrowStatus                 string           `json:"borrow_status,omitempty"`
 	Class                        AssetClass       `json:"class"`
 	Cusip                        *string          `json:"cusip,omitempty"`
-	EasyToBorrow                 bool             `json:"easy_to_borrow,omitempty"`
 	Exchange                     Exchange         `json:"exchange"`
 	Fractionable                 bool             `json:"fractionable"`
 	ID                           string           `json:"id"`
@@ -194,15 +199,18 @@ type CommonCDIVActivityV2 struct {
 }
 
 type CommonFixedIncomeInterestActivityV2 struct {
-	AccruedInterestRate string `json:"accrued_interest_rate,omitempty"`
-	CashPayout          string `json:"cash_payout"`
-	Cusip               string `json:"cusip"`
-	EntitledQty         string `json:"entitled_qty"`
-	Isin                string `json:"isin,omitempty"`
-	PaymentDate         string `json:"payment_date,omitempty"`
-	Price               string `json:"price,omitempty"`
-	Rate                string `json:"rate,omitempty"`
-	RecordDate          string `json:"record_date,omitempty"`
+	AccruedInterestRate string                  `json:"accrued_interest_rate,omitempty"`
+	CashPayout          string                  `json:"cash_payout"`
+	Cusip               string                  `json:"cusip"`
+	EntitledQty         string                  `json:"entitled_qty"`
+	InterestType        FixedIncomeInterestType `json:"interest_type"`
+	Isin                string                  `json:"isin,omitempty"`
+	OrderID             string                  `json:"order_id,omitempty"`
+	ParentID            string                  `json:"parent_id,omitempty"`
+	PaymentDate         string                  `json:"payment_date,omitempty"`
+	Price               string                  `json:"price,omitempty"`
+	Rate                string                  `json:"rate,omitempty"`
+	RecordDate          string                  `json:"record_date,omitempty"`
 }
 
 type CommonMAActivityV2 struct {
@@ -228,12 +236,6 @@ type CommonNCActivityV2 struct {
 type CommonNTAActivityV2 struct {
 	GroupID    string `json:"group_id,omitempty"`
 	SystemDate string `json:"system_date"`
-}
-
-type CommonOptionsActivityV2 struct {
-	ContractSymbol string `json:"contract_symbol,omitempty"`
-	Cusip          string `json:"cusip,omitempty"`
-	Symbol         string `json:"symbol,omitempty"`
 }
 
 type CommonREOActivityV2 struct {
@@ -332,24 +334,24 @@ type CreateLocateRequest struct {
 }
 
 type CreateOrderRequest struct {
-	AdvancedInstructions AdvancedInstructions `json:"advanced_instructions,omitempty"`
-	ClientOrderID        string               `json:"client_order_id,omitempty"`
-	ExtendedHours        bool                 `json:"extended_hours,omitempty"`
-	Legs                 []MLegOrderLeg       `json:"legs,omitempty"`
-	LimitPrice           string               `json:"limit_price,omitempty"`
-	Notional             string               `json:"notional,omitempty"`
-	OrderClass           OrderClass           `json:"order_class,omitempty"`
-	PositionIntent       PositionIntent       `json:"position_intent,omitempty"`
-	Qty                  string               `json:"qty,omitempty"`
-	Side                 OrderSide            `json:"side,omitempty"`
-	StopLoss             map[string]any       `json:"stop_loss,omitempty"`
-	StopPrice            string               `json:"stop_price,omitempty"`
-	Symbol               string               `json:"symbol,omitempty"`
-	TakeProfit           map[string]any       `json:"take_profit,omitempty"`
-	TimeInForce          TimeInForce          `json:"time_in_force"`
-	TrailPercent         string               `json:"trail_percent,omitempty"`
-	TrailPrice           string               `json:"trail_price,omitempty"`
-	Type                 OrderType            `json:"type"`
+	AdvancedInstructions *AdvancedInstructions `json:"advanced_instructions,omitempty"`
+	ClientOrderID        string                `json:"client_order_id,omitempty"`
+	ExtendedHours        bool                  `json:"extended_hours,omitempty"`
+	Legs                 []MLegOrderLeg        `json:"legs,omitempty"`
+	LimitPrice           string                `json:"limit_price,omitempty"`
+	Notional             string                `json:"notional,omitempty"`
+	OrderClass           OrderClass            `json:"order_class,omitempty"`
+	PositionIntent       PositionIntent        `json:"position_intent,omitempty"`
+	Qty                  string                `json:"qty,omitempty"`
+	Side                 OrderSide             `json:"side,omitempty"`
+	StopLoss             map[string]any        `json:"stop_loss,omitempty"`
+	StopPrice            string                `json:"stop_price,omitempty"`
+	Symbol               string                `json:"symbol,omitempty"`
+	TakeProfit           map[string]any        `json:"take_profit,omitempty"`
+	TimeInForce          TimeInForce           `json:"time_in_force"`
+	TrailPercent         string                `json:"trail_percent,omitempty"`
+	TrailPrice           string                `json:"trail_price,omitempty"`
+	Type                 OrderType             `json:"type"`
 }
 
 type CreateWatchlistRequest struct {
@@ -358,9 +360,10 @@ type CreateWatchlistRequest struct {
 }
 
 type CreateWhitelistedAddressRequest struct {
-	Address string      `json:"address,omitempty"`
-	Asset   string      `json:"asset,omitempty"`
-	Chain   CryptoChain `json:"chain,omitempty"`
+	Address        string          `json:"address,omitempty"`
+	Asset          string          `json:"asset,omitempty"`
+	Chain          CryptoChain     `json:"chain,omitempty"`
+	TravelRuleInfo *TravelRuleInfo `json:"travel_rule_info,omitempty"`
 }
 
 type CryptoTransfer struct {
@@ -470,6 +473,7 @@ type OptionContract struct {
 	Name              string              `json:"name"`
 	OpenInterest      string              `json:"open_interest,omitempty"`
 	OpenInterestDate  string              `json:"open_interest_date,omitempty"`
+	Ppind             bool                `json:"ppind"`
 	RootSymbol        string              `json:"root_symbol,omitempty"`
 	Size              string              `json:"size"`
 	Status            string              `json:"status"`
@@ -511,6 +515,8 @@ type Order struct {
 	FilledAt       *string        `json:"filled_at,omitempty"`
 	FilledAvgPrice *string        `json:"filled_avg_price,omitempty"`
 	FilledQty      string         `json:"filled_qty,omitempty"`
+	GroupID        string         `json:"group_id,omitempty"`
+	GroupRole      OrderGroupRole `json:"group_role,omitempty"`
 	Hwm            *string        `json:"hwm,omitempty"`
 	ID             string         `json:"id,omitempty"`
 	Legs           []OrderLeg     `json:"legs,omitempty"`
@@ -548,6 +554,8 @@ type OrderLeg struct {
 	FilledAt       *string          `json:"filled_at,omitempty"`
 	FilledAvgPrice *string          `json:"filled_avg_price,omitempty"`
 	FilledQty      string           `json:"filled_qty,omitempty"`
+	GroupID        string           `json:"group_id,omitempty"`
+	GroupRole      OrderGroupRole   `json:"group_role,omitempty"`
 	Hwm            *string          `json:"hwm,omitempty"`
 	ID             string           `json:"id,omitempty"`
 	Legs           []map[string]any `json:"legs,omitempty"`
@@ -573,14 +581,14 @@ type OrderLeg struct {
 }
 
 type PatchOrderRequest struct {
-	AdvancedInstructions AdvancedInstructions `json:"advanced_instructions,omitempty"`
-	ClientOrderID        string               `json:"client_order_id,omitempty"`
-	LimitPrice           string               `json:"limit_price,omitempty"`
-	Notional             string               `json:"notional,omitempty"`
-	Qty                  string               `json:"qty,omitempty"`
-	StopPrice            string               `json:"stop_price,omitempty"`
-	TimeInForce          TimeInForce          `json:"time_in_force,omitempty"`
-	Trail                string               `json:"trail,omitempty"`
+	AdvancedInstructions *AdvancedInstructions `json:"advanced_instructions,omitempty"`
+	ClientOrderID        string                `json:"client_order_id,omitempty"`
+	LimitPrice           string                `json:"limit_price,omitempty"`
+	Notional             string                `json:"notional,omitempty"`
+	Qty                  string                `json:"qty,omitempty"`
+	StopPrice            string                `json:"stop_price,omitempty"`
+	TimeInForce          TimeInForce           `json:"time_in_force,omitempty"`
+	Trail                string                `json:"trail,omitempty"`
 }
 
 type PortfolioHistory struct {
@@ -616,13 +624,20 @@ type Position struct {
 	UnrealizedIntradayPlpc string              `json:"unrealized_intraday_plpc"`
 	UnrealizedPL           string              `json:"unrealized_pl"`
 	UnrealizedPlpc         string              `json:"unrealized_plpc"`
-	Usd                    USDPositionValues   `json:"usd,omitempty"`
+	Usd                    *USDPositionValues  `json:"usd,omitempty"`
 }
 
-type PositionClosedReponse struct {
-	Body   Order  `json:"body,omitempty"`
+type PositionClosedResponse struct {
+	Body   *Order `json:"body,omitempty"`
 	Status int    `json:"status"`
 	Symbol string `json:"symbol"`
+}
+
+type SearchVASPsResponse struct {
+	Page  int    `json:"page,omitempty"`
+	Pages int    `json:"pages,omitempty"`
+	Total int    `json:"total,omitempty"`
+	Vasps []VASP `json:"vasps"`
 }
 
 type TokenizationMintRequest struct {
@@ -681,6 +696,51 @@ type TradingActivities struct {
 	Type            string       `json:"type,omitempty"`
 }
 
+type TravelRuleFieldOption struct {
+	Description string `json:"description"`
+	Value       string `json:"value"`
+}
+
+type TravelRuleInfo struct {
+	BeneficiaryCountryOfResidence              string                 `json:"beneficiary_country_of_residence,omitempty"`
+	BeneficiaryEntityName                      string                 `json:"beneficiary_entity_name,omitempty"`
+	BeneficiaryFamilyName                      string                 `json:"beneficiary_family_name,omitempty"`
+	BeneficiaryGeographicAddressBuildingNumber string                 `json:"beneficiary_geographic_address_building_number,omitempty"`
+	BeneficiaryGeographicAddressCountry        string                 `json:"beneficiary_geographic_address_country,omitempty"`
+	BeneficiaryGeographicAddressPostCode       string                 `json:"beneficiary_geographic_address_post_code,omitempty"`
+	BeneficiaryGeographicAddressStreetName     string                 `json:"beneficiary_geographic_address_street_name,omitempty"`
+	BeneficiaryGeographicAddressTownName       string                 `json:"beneficiary_geographic_address_town_name,omitempty"`
+	BeneficiaryGivenName                       string                 `json:"beneficiary_given_name,omitempty"`
+	BeneficiaryIsSelfHosted                    bool                   `json:"beneficiary_is_self_hosted,omitempty"`
+	BeneficiaryManualEntry                     *TravelRuleManualEntry `json:"beneficiary_manual_entry,omitempty"`
+	BeneficiaryVaspID                          string                 `json:"beneficiary_vasp_id,omitempty"`
+}
+
+type TravelRuleManualEntry struct {
+	VaspName    string `json:"vasp_name"`
+	VaspWebsite string `json:"vasp_website"`
+}
+
+type TravelRuleNextAction struct {
+	Description    string                    `json:"description"`
+	Name           string                    `json:"name"`
+	RequiredFields []TravelRuleRequiredField `json:"required_fields,omitempty"`
+	Type           string                    `json:"type"`
+}
+
+type TravelRuleRequiredField struct {
+	Description string                  `json:"description"`
+	Field       string                  `json:"field"`
+	Options     []TravelRuleFieldOption `json:"options,omitempty"`
+	ValueType   string                  `json:"value_type"`
+}
+
+type TravelRuleValidationError struct {
+	ErrorCode   TravelRuleValidationErrorCode `json:"error_code"`
+	Message     string                        `json:"message"`
+	NextActions []TravelRuleNextAction        `json:"next_actions"`
+}
+
 type USDPositionValues struct {
 	AvgEntryPrice          string `json:"avg_entry_price"`
 	ChangeToday            string `json:"change_today,omitempty"`
@@ -697,6 +757,27 @@ type USDPositionValues struct {
 type UpdateWatchlistRequest struct {
 	Name    string   `json:"name,omitempty"`
 	Symbols []string `json:"symbols,omitempty"`
+}
+
+type UpdateWhitelistedAddressTravelRuleInfoRequest struct {
+	TravelRuleInfo TravelRuleInfo `json:"travel_rule_info"`
+}
+
+type VASP struct {
+	Address     string `json:"address,omitempty"`
+	City        string `json:"city,omitempty"`
+	Country     string `json:"country,omitempty"`
+	Did         string `json:"did,omitempty"`
+	EmailDomain string `json:"emailDomain,omitempty"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	PostalCode  string `json:"postalCode,omitempty"`
+	State       string `json:"state,omitempty"`
+	Website     string `json:"website,omitempty"`
+}
+
+type WalletError struct {
+	Message string `json:"message"`
 }
 
 type WalletFeeEstimateResponse struct {
@@ -722,12 +803,13 @@ type WatchlistWithoutAsset struct {
 }
 
 type WhitelistedAddress struct {
-	Address   string `json:"address,omitempty"`
-	Asset     string `json:"asset,omitempty"`
-	Chain     string `json:"chain,omitempty"`
-	CreatedAt string `json:"created_at,omitempty"`
-	ID        string `json:"id,omitempty"`
-	Status    string `json:"status,omitempty"`
+	Address        string `json:"address,omitempty"`
+	Asset          string `json:"asset,omitempty"`
+	Chain          string `json:"chain,omitempty"`
+	CreatedAt      string `json:"created_at,omitempty"`
+	ID             string `json:"id,omitempty"`
+	Status         string `json:"status,omitempty"`
+	TravelRuleInfo any    `json:"travel_rule_info,omitempty"`
 }
 
 type CalendarDay struct {

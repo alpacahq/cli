@@ -188,3 +188,31 @@ func TestRequireAll_AllPresent(t *testing.T) {
 		t.Errorf("expected no error, got: %v", err)
 	}
 }
+
+func TestUnmarshalJSONRejectsUnknownFields(t *testing.T) {
+	type entry struct {
+		VaspName string `json:"vasp_name"`
+	}
+	type info struct {
+		Name  string `json:"name,omitempty"`
+		Entry *entry `json:"entry,omitempty"`
+	}
+
+	var dest info
+	if err := UnmarshalJSON(`{"name":"ok"}`, &dest); err != nil {
+		t.Fatal(err)
+	}
+	if dest.Name != "ok" {
+		t.Fatalf("name = %q", dest.Name)
+	}
+
+	if err := UnmarshalJSON(`{"name":"ok","nope":1}`, &info{}); err == nil || !strings.Contains(err.Error(), "unknown field") {
+		t.Fatalf("top-level unknown key error = %v", err)
+	}
+	if err := UnmarshalJSON(`{"entry":{"vasp_name":"x","extra":true}}`, &info{}); err == nil || !strings.Contains(err.Error(), "unknown field") {
+		t.Fatalf("nested unknown key error = %v", err)
+	}
+	if err := UnmarshalJSON(`{"name":"ok"}{"name":"again"}`, &info{}); err == nil {
+		t.Fatal("expected trailing JSON to fail")
+	}
+}

@@ -176,11 +176,11 @@ type CryptoQuotesResp struct {
 }
 
 type CryptoSnapshot struct {
-	DailyBar     CryptoBar   `json:"dailyBar,omitempty"`
-	LatestQuote  CryptoQuote `json:"latestQuote,omitempty"`
-	LatestTrade  CryptoTrade `json:"latestTrade,omitempty"`
-	MinuteBar    CryptoBar   `json:"minuteBar,omitempty"`
-	PrevDailyBar CryptoBar   `json:"prevDailyBar,omitempty"`
+	DailyBar     *CryptoBar   `json:"dailyBar,omitempty"`
+	LatestQuote  *CryptoQuote `json:"latestQuote,omitempty"`
+	LatestTrade  *CryptoTrade `json:"latestTrade,omitempty"`
+	MinuteBar    *CryptoBar   `json:"minuteBar,omitempty"`
+	PrevDailyBar *CryptoBar   `json:"prevDailyBar,omitempty"`
 }
 
 type CryptoSnapshotsResp struct {
@@ -366,13 +366,13 @@ type OptionQuote struct {
 }
 
 type OptionSnapshot struct {
-	DailyBar          OptionBar    `json:"dailyBar,omitempty"`
-	Greeks            OptionGreeks `json:"greeks,omitempty"`
-	ImpliedVolatility float64      `json:"impliedVolatility,omitempty"`
-	LatestQuote       OptionQuote  `json:"latestQuote,omitempty"`
-	LatestTrade       OptionTrade  `json:"latestTrade,omitempty"`
-	MinuteBar         OptionBar    `json:"minuteBar,omitempty"`
-	PrevDailyBar      OptionBar    `json:"prevDailyBar,omitempty"`
+	DailyBar          *OptionBar    `json:"dailyBar,omitempty"`
+	Greeks            *OptionGreeks `json:"greeks,omitempty"`
+	ImpliedVolatility float64       `json:"impliedVolatility,omitempty"`
+	LatestQuote       *OptionQuote  `json:"latestQuote,omitempty"`
+	LatestTrade       *OptionTrade  `json:"latestTrade,omitempty"`
+	MinuteBar         *OptionBar    `json:"minuteBar,omitempty"`
+	PrevDailyBar      *OptionBar    `json:"prevDailyBar,omitempty"`
 }
 
 type OptionSnapshotsResp struct {
@@ -650,11 +650,11 @@ type StockQuotesRespSingle struct {
 }
 
 type StockSnapshot struct {
-	DailyBar     StockBar   `json:"dailyBar,omitempty"`
-	LatestQuote  StockQuote `json:"latestQuote,omitempty"`
-	LatestTrade  StockTrade `json:"latestTrade,omitempty"`
-	MinuteBar    StockBar   `json:"minuteBar,omitempty"`
-	PrevDailyBar StockBar   `json:"prevDailyBar,omitempty"`
+	DailyBar     *StockBar   `json:"dailyBar,omitempty"`
+	LatestQuote  *StockQuote `json:"latestQuote,omitempty"`
+	LatestTrade  *StockTrade `json:"latestTrade,omitempty"`
+	MinuteBar    *StockBar   `json:"minuteBar,omitempty"`
+	PrevDailyBar *StockBar   `json:"prevDailyBar,omitempty"`
 }
 
 type StockTrade struct {

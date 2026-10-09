@@ -62,10 +62,11 @@ var cmdParents = map[string]parentDef{
 	},
 	"wallet": {
 		use: "wallet", short: "Crypto funding wallets and transfers",
-		long: "View crypto funding wallets, create and track transfers, and manage whitelisted withdrawal addresses.",
+		long: "View crypto funding wallets, create and track transfers, and manage whitelisted withdrawal addresses and travel rule information.",
 	},
 	"walletTransfer":  {use: "transfer", short: "Manage crypto transfers", parent: "wallet"},
 	"walletWhitelist": {use: "whitelist", short: "Manage whitelisted crypto addresses", parent: "wallet"},
+	"walletVASP":      {use: "vasp", short: "Search virtual asset service providers", parent: "wallet"},
 	"clock": {
 		use: "clock", short: "Market clock",
 		long: "Check whether markets are currently open and when they next open or close.",
@@ -345,6 +346,11 @@ var cmdRegistry = map[string]cmdDef{
 		examples: `  alpaca wallet transfer estimate --asset BTC --amount 0.5 \
     --from-address 0xabc... --to-address 0xdef...`,
 	},
+	"SearchVASPs": {
+		parent:   "walletVASP",
+		use:      "search",
+		examples: "  alpaca wallet vasp search --q Coinbase",
+	},
 	"ListWhitelistedAddress": {
 		parent:   "walletWhitelist",
 		use:      "list",
@@ -359,6 +365,13 @@ var cmdRegistry = map[string]cmdDef{
 		parent:   "walletWhitelist",
 		use:      "delete",
 		examples: "  alpaca wallet whitelist delete --whitelisted-address-id <id>",
+	},
+	"UpdateWhitelistedAddressTravelRuleInfo": {
+		parent: "walletWhitelist",
+		use:    "update-travel-rule",
+		examples: `  alpaca wallet whitelist update-travel-rule \
+    --whitelisted-address-id <id> \
+    --travel-rule-info '{"beneficiary_is_self_hosted":true}'`,
 	},
 
 	// --- watchlist ---
@@ -755,16 +768,16 @@ func checkExhaustive(epByOp map[string]*endpointInfo) {
 		}
 		nonBodyNames := map[string]bool{}
 		for _, p := range ep.pathParams {
-			nonBodyNames[strings.ToLower(strings.ReplaceAll(p.name, "_", "-"))] = true
+			nonBodyNames[toFlagName(p.name)] = true
 		}
 		for _, p := range ep.queryParams {
-			nonBodyNames[strings.ToLower(strings.ReplaceAll(p.name, "_", "-"))] = true
+			nonBodyNames[toFlagName(p.name)] = true
 		}
 		for _, p := range ep.headerParams {
-			nonBodyNames[strings.ToLower(strings.ReplaceAll(p.name, "_", "-"))] = true
+			nonBodyNames[toFlagName(p.name)] = true
 		}
 		for _, fieldName := range sortedKeys(bodySchema.props) {
-			flagName := strings.ReplaceAll(fieldName, "_", "-")
+			flagName := toFlagName(fieldName)
 			if !nonBodyNames[flagName] {
 				continue
 			}
@@ -993,7 +1006,7 @@ func classifyFields(props map[string]map[string]any, skipFields []string, aliase
 	propNames := sortedKeys(props)
 	var fields []fieldKind
 	for _, name := range propNames {
-		flagName := strings.ReplaceAll(name, "_", "-")
+		flagName := toFlagName(name)
 		if skip[flagName] {
 			continue
 		}
@@ -1132,7 +1145,7 @@ func buildPostBody(typeName string, props map[string]map[string]any, skipFields 
 	for _, f := range fields {
 		if f.kind == "json" {
 			fmt.Fprintf(&b, "\n\tif cmdutil.Changed(cmd, %q) {\n", f.flagName)
-			fmt.Fprintf(&b, "\t\tif err := json.Unmarshal([]byte(cmdutil.Str(cmd, %q)), &body.%s); err != nil {\n", f.flagName, f.goField)
+			fmt.Fprintf(&b, "\t\tif err := cmdutil.UnmarshalJSON(cmdutil.Str(cmd, %q), &body.%s); err != nil {\n", f.flagName, f.goField)
 			fmt.Fprintf(&b, "\t\t\treturn nil, fmt.Errorf(\"--%s: %%w\", err)\n", f.flagName)
 			b.WriteString("\t\t}\n")
 			b.WriteString("\t}")
@@ -1182,7 +1195,7 @@ func buildPatchBody(typeName string, props map[string]map[string]any, aliases ma
 			fmt.Fprintf(&b, "\t\t\tbody.%s = strings.Split(s, \",\")\n", f.goField)
 			b.WriteString("\t\t}\n")
 		case "json":
-			fmt.Fprintf(&b, "\t\tif err := json.Unmarshal([]byte(cmdutil.Str(cmd, %q)), &body.%s); err != nil {\n", f.flagName, f.goField)
+			fmt.Fprintf(&b, "\t\tif err := cmdutil.UnmarshalJSON(cmdutil.Str(cmd, %q), &body.%s); err != nil {\n", f.flagName, f.goField)
 			fmt.Fprintf(&b, "\t\t\treturn nil, fmt.Errorf(\"--%s: %%w\", err)\n", f.flagName)
 			b.WriteString("\t\t}\n")
 		}
@@ -1206,7 +1219,7 @@ func headersFromFlagsExpr(ep *endpointInfo) string {
 }
 
 func pathParamExpr(pp paramInfo, def cmdDef) string {
-	flagName := strings.ToLower(strings.ReplaceAll(pp.name, "_", "-"))
+	flagName := toFlagName(pp.name)
 	expr := fmt.Sprintf("cmdutil.Str(cmd, %q)", flagName)
 	for _, n := range def.normalize {
 		if n == flagName {

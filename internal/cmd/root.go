@@ -18,7 +18,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const exitAPIError = 1
+const (
+	exitAPIError    = 1
+	helpCommandName = "help"
+	httpMethodGet   = "GET"
+	oasTypeNumber   = "number"
+	oasTypeString   = "string"
+)
 
 var (
 	version       = "dev"
@@ -64,11 +70,23 @@ func Execute() error {
 }
 
 func printJSONError(apiErr *client.APIError) {
+	enc := json.NewEncoder(os.Stderr)
+	enc.SetIndent("", "  ")
+	_ = enc.Encode(apiErrorJSON(apiErr))
+}
+
+func apiErrorJSON(apiErr *client.APIError) map[string]any {
 	m := map[string]any{
 		"error":  apiErr.Message,
 		"code":   apiErr.Code,
 		"status": apiErr.StatusCode,
 		"hint":   apiErr.Hint(),
+	}
+	if apiErr.ErrorCode != "" {
+		m["error_code"] = apiErr.ErrorCode
+	}
+	if len(apiErr.NextActions) > 0 && string(apiErr.NextActions) != "null" {
+		m["next_actions"] = json.RawMessage(apiErr.NextActions)
 	}
 	if apiErr.Method != "" {
 		m["method"] = apiErr.Method
@@ -79,9 +97,7 @@ func printJSONError(apiErr *client.APIError) {
 	if apiErr.RequestID != "" {
 		m["request_id"] = apiErr.RequestID
 	}
-	enc := json.NewEncoder(os.Stderr)
-	enc.SetIndent("", "  ")
-	_ = enc.Encode(m)
+	return m
 }
 
 var versionCmd = &cobra.Command{
@@ -128,7 +144,7 @@ To update:  alpaca update`,
 		return nil
 	},
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		if cmd.Name() == "help" {
+		if cmd.Name() == helpCommandName {
 			return nil
 		}
 		if ha, _ := cmd.Flags().GetBool("help-all"); ha {
@@ -233,7 +249,7 @@ func needsAuth(cmd *cobra.Command) bool {
 	for c := cmd; c != nil; c = c.Parent() {
 		if c.Parent() != nil && c.Parent().Parent() == nil {
 			switch c.Name() {
-			case "version", "help", "completion", "update", "doctor":
+			case "version", helpCommandName, "completion", "update", "doctor":
 				return false
 			}
 		}
@@ -327,19 +343,19 @@ func printCommandSchema(cmd *cobra.Command) error {
 }
 
 var oasToTS = map[string]string{
-	"string":    "string",
-	"boolean":   "boolean",
-	"integer":   "number",
-	"number":    "number",
-	"enum":      "string",
-	"object":    "object",
-	"any":       "unknown",
-	"[]string":  "string[]",
-	"[]integer": "number[]",
-	"[]number":  "number[]",
-	"[]boolean": "boolean[]",
-	"[]object":  "object[]",
-	"[]enum":    "string[]",
+	oasTypeString: oasTypeString,
+	"boolean":     "boolean",
+	"integer":     oasTypeNumber,
+	oasTypeNumber: oasTypeNumber,
+	"enum":        oasTypeString,
+	"object":      "object",
+	"any":         "unknown",
+	"[]string":    "string[]",
+	"[]integer":   "number[]",
+	"[]number":    "number[]",
+	"[]boolean":   "boolean[]",
+	"[]object":    "object[]",
+	"[]enum":      "string[]",
 }
 
 func tsTypeColorized(f api.ResponseField) string {

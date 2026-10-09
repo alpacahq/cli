@@ -153,8 +153,8 @@ func (c *TradingClient) GetAllOpenPositions() ([]Position, error) {
 }
 
 // DeleteAllOpenPositions — Close All Positions
-func (c *TradingClient) DeleteAllOpenPositions(params url.Values) ([]PositionClosedReponse, error) {
-	return unmarshalSlice[PositionClosedReponse](c.Raw.Do("DELETE", c.baseURL, "/v2/positions", params, nil))
+func (c *TradingClient) DeleteAllOpenPositions(params url.Values) ([]PositionClosedResponse, error) {
+	return unmarshalSlice[PositionClosedResponse](c.Raw.Do("DELETE", c.baseURL, "/v2/positions", params, nil))
 }
 
 // GetOpenPosition — Get an Open Position
@@ -222,6 +222,11 @@ func (c *TradingClient) GetCryptoFundingTransfer(TransferID string) (*CryptoTran
 	return unmarshal[CryptoTransfer](c.Raw.Do("GET", c.baseURL, fmt.Sprintf("/v2/wallets/transfers/%s", url.PathEscape(TransferID)), nil, nil))
 }
 
+// SearchVASPs — Search for VASPs
+func (c *TradingClient) SearchVASPs(params url.Values) (*SearchVASPsResponse, error) {
+	return unmarshal[SearchVASPsResponse](c.Raw.Do("GET", c.baseURL, "/v2/wallets/travel-rule/vasps", params, nil))
+}
+
 // ListWhitelistedAddress — An array of whitelisted addresses
 func (c *TradingClient) ListWhitelistedAddress() (*WhitelistedAddress, error) {
 	return unmarshal[WhitelistedAddress](c.Raw.Do("GET", c.baseURL, "/v2/wallets/whitelists", nil, nil))
@@ -235,6 +240,11 @@ func (c *TradingClient) CreateWhitelistedAddress(body *CreateWhitelistedAddressR
 // DeleteWhitelistedAddress — Delete a whitelisted address
 func (c *TradingClient) DeleteWhitelistedAddress(WhitelistedAddressID string) (json.RawMessage, error) {
 	return c.Raw.Do("DELETE", c.baseURL, fmt.Sprintf("/v2/wallets/whitelists/%s", url.PathEscape(WhitelistedAddressID)), nil, nil)
+}
+
+// UpdateWhitelistedAddressTravelRuleInfo — Update travel rule information for a whitelisted wallet
+func (c *TradingClient) UpdateWhitelistedAddressTravelRuleInfo(WhitelistedAddressID string, body *UpdateWhitelistedAddressTravelRuleInfoRequest) (json.RawMessage, error) {
+	return c.Raw.Do("PATCH", c.baseURL, fmt.Sprintf("/v2/wallets/whitelists/%s/travel-rule-info", url.PathEscape(WhitelistedAddressID)), nil, body)
 }
 
 // GetWatchlists — Get All Watchlists
