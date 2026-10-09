@@ -30,6 +30,8 @@ type OptionContractType string
 
 type OrderClass string
 
+type OrderGroupRole string
+
 type OrderSide string
 
 type OrderStatus string
@@ -513,6 +515,8 @@ type Order struct {
 	FilledAt       *string        `json:"filled_at,omitempty"`
 	FilledAvgPrice *string        `json:"filled_avg_price,omitempty"`
 	FilledQty      string         `json:"filled_qty,omitempty"`
+	GroupID        string         `json:"group_id,omitempty"`
+	GroupRole      OrderGroupRole `json:"group_role,omitempty"`
 	Hwm            *string        `json:"hwm,omitempty"`
 	ID             string         `json:"id,omitempty"`
 	Legs           []OrderLeg     `json:"legs,omitempty"`
@@ -550,6 +554,8 @@ type OrderLeg struct {
 	FilledAt       *string          `json:"filled_at,omitempty"`
 	FilledAvgPrice *string          `json:"filled_avg_price,omitempty"`
 	FilledQty      string           `json:"filled_qty,omitempty"`
+	GroupID        string           `json:"group_id,omitempty"`
+	GroupRole      OrderGroupRole   `json:"group_role,omitempty"`
 	Hwm            *string          `json:"hwm,omitempty"`
 	ID             string           `json:"id,omitempty"`
 	Legs           []map[string]any `json:"legs,omitempty"`
@@ -631,7 +637,7 @@ type SearchVASPsResponse struct {
 	Page  int    `json:"page,omitempty"`
 	Pages int    `json:"pages,omitempty"`
 	Total int    `json:"total,omitempty"`
-	Vasps []VASP `json:"vasps,omitempty"`
+	Vasps []VASP `json:"vasps"`
 }
 
 type TokenizationMintRequest struct {

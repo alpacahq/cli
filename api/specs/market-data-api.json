@@ -10537,10 +10537,6 @@
             "name": "Option"
         },
         {
-            "description": "Endpoints for indices.",
-            "name": "Index"
-        },
-        {
             "description": "Endpoints for cryptocurrencies.",
             "name": "Crypto"
         },
@@ -10567,10 +10563,6 @@
         {
             "description": "Corporate actions (splits, dividends, etc.).",
             "name": "Corporate actions"
-        },
-        {
-            "description": "Endpoints for event contract (prediction market) assets metadata.",
-            "name": "Event contracts"
         }
     ]
 }

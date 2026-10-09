@@ -1349,6 +1349,8 @@ var orderResponseFields = []ResponseField{
 	{Name: "filled_at", Type: "string", Description: "filled at"},
 	{Name: "filled_avg_price", Type: "string", Description: "filled average price"},
 	{Name: "filled_qty", Type: "string", Description: "filled quantity"},
+	{Name: "group_id", Type: "string", Description: "opaque identifier shared by every order in the same bracket, oto, or oco order, including its legs and any replacemen..."},
+	{Name: "group_role", Type: "enum", Description: "role of this order within its bracket, oto, or oco order, identified by group_id.\n- entry: The entry order of a brack...", EnumValues: []string{"entry", "stop_loss", "take_profit"}},
 	{Name: "hwm", Type: "string", Description: "highest (lowest) market price seen since the trailing stop order was submitted"},
 	{Name: "id", Type: "string", Description: "order ID"},
 	{Name: "legs", Type: "[]object", Description: "when querying non-simple order_class orders in a nested style, an array of Order entities associated with this order"},
