@@ -649,8 +649,10 @@ var CreateLocatesOp = Op{
 
 var CreateWhitelistedAddressOp = Op{
 	Name: "CreateWhitelistedAddress", Summary: "Request a new whitelisted address",
-	Long:    "Submits a new whitelisted withdrawal address for your account. The chain is derived from the supplied asset symbol and address, and the same address cannot be whitelisted twice on the same chain",
-	Example: `  alpaca wallet whitelist add --address 0xabc... --asset ETH`,
+	Long: "Submits a new whitelisted withdrawal address for your account. The chain is derived from the supplied asset symbol and address, and the same address cannot be whitelisted twice on the same chain. Where travel rule reporting applies, --travel-rule-info must include beneficiary_entity_name, or both beneficiary_given_name and beneficiary_family_name, and one destination: beneficiary_vasp_id, beneficiary_is_self_hosted set to true, or beneficiary_manual_entry.",
+	Example: `  alpaca wallet whitelist add --address 0xabc... --asset ETH
+  alpaca wallet whitelist add --address 0xabc... --asset ETH --chain ETH \
+    --travel-rule-info '{"beneficiary_is_self_hosted":true,"beneficiary_given_name":"Jane","beneficiary_family_name":"Doe"}'`,
 	Flags: []FlagDef{
 		{Name: "address", OASName: "address", Type: "string", Description: "address to be whitelisted", Source: "body"},
 		{Name: "asset", OASName: "asset", Type: "string", Description: "symbol of underlying asset for the whitelisted address", Source: "body"},
@@ -1238,10 +1240,10 @@ var UpdateWatchlistByNameOp = Op{
 
 var UpdateWhitelistedAddressTravelRuleInfoOp = Op{
 	Name: "UpdateWhitelistedAddressTravelRuleInfo", Summary: "Update travel rule information for a whitelisted wallet",
-	Long: "You are required to supply travel rule information for the crypto wallets you're withdrawing to",
+	Long: "Updates travel rule information for a whitelisted withdrawal address. The travel rule object must include beneficiary_entity_name, or both beneficiary_given_name and beneficiary_family_name, and one destination: beneficiary_vasp_id, beneficiary_is_self_hosted set to true, or beneficiary_manual_entry.",
 	Example: `  alpaca wallet whitelist update-travel-rule \
     --whitelisted-address-id <id> \
-    --travel-rule-info '{"beneficiary_is_self_hosted":true}'`,
+    --travel-rule-info '{"beneficiary_is_self_hosted":true,"beneficiary_given_name":"Jane","beneficiary_family_name":"Doe"}'`,
 	Flags: []FlagDef{
 		{Name: "travel-rule-info", OASName: "travel_rule_info", Type: "string", Description: "travel rule information pertaining to the wallet being whitelisted", Source: "body"},
 		{Name: "whitelisted-address-id", OASName: "whitelisted_address_id", Type: "string", Description: "whitelisted address update travel rule information for", Required: true, Source: "path"},
@@ -1439,7 +1441,7 @@ var whitelistedAddressResponseFields = []ResponseField{
 	{Name: "created_at", Type: "string", Description: "timestamp (RFC3339) of account creation"},
 	{Name: "id", Type: "string", Description: "unique ID for whitelisted address"},
 	{Name: "status", Type: "enum", Description: "status of whitelisted address which is either APPROVED or PENDING", EnumValues: []string{"APPROVED", "PENDING"}},
-	{Name: "travel_rule_info", Type: "any", Description: "travel rule information associated with the whitelisted address"},
+	{Name: "travel_rule_info", Type: "object", Description: "travel rule information associated with the whitelisted address"},
 }
 
 var (

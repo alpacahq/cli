@@ -41,7 +41,8 @@ func TestWalletVASPSearch(t *testing.T) {
 
 	if code == 0 {
 		data := parseJSONMap(t, stdout)
-		requireFields(t, data, "vasps", "page", "pages", "total")
+		// page, pages, and total are optional and omitted when zero.
+		requireFields(t, data, "vasps")
 		if _, ok := data["vasps"].([]any); !ok {
 			t.Fatalf("vasps = %#v, want an array", data["vasps"])
 		}

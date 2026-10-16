@@ -98,6 +98,40 @@ func TestGenStructOmitsUnsetNestedObject(t *testing.T) {
 	}
 }
 
+func TestResolveGoTypeUnwrapsSingleAllOf(t *testing.T) {
+	prev := schemaByOASName
+	t.Cleanup(func() { schemaByOASName = prev })
+	schemaByOASName = map[string]*schemaInfo{
+		"TravelRuleInfo": {goName: "TravelRuleInfo", kind: "struct"},
+	}
+	schema := map[string]any{
+		"allOf": []any{
+			map[string]any{"$ref": "#/components/schemas/TravelRuleInfo"},
+		},
+		"description": "Travel rule information associated with the whitelisted address.",
+	}
+	if got := resolveGoType(schema); got != "TravelRuleInfo" {
+		t.Fatalf("resolveGoType() = %q, want TravelRuleInfo", got)
+	}
+	if !isStructSchema(schema) {
+		t.Fatal("single allOf $ref to a struct should be a struct schema")
+	}
+	comp := map[string]any{
+		"TravelRuleInfo": map[string]any{"type": "object"},
+	}
+	if got := oasFieldType(schema, comp); got != "object" {
+		t.Fatalf("oasFieldType() = %q, want object", got)
+	}
+
+	multi := map[string]any{"allOf": []any{
+		map[string]any{"$ref": "#/components/schemas/A"},
+		map[string]any{"$ref": "#/components/schemas/B"},
+	}}
+	if got := resolveGoType(multi); got != "any" {
+		t.Fatalf("multi allOf resolveGoType() = %q, want any", got)
+	}
+}
+
 func TestResolveGoTypeOAS31Nullable(t *testing.T) {
 	got := resolveGoType(map[string]any{"type": []any{"string", "null"}})
 	if got != "string" {

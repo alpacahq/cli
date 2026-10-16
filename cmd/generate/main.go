@@ -462,10 +462,28 @@ func isNullable(schema map[string]any) bool {
 	return nullable
 }
 
+// unwrapAllOf returns the schema inside a single-member allOf wrapper.
+// Multi-member allOf is composition and stays unchanged.
+func unwrapAllOf(schema map[string]any) map[string]any {
+	for schema != nil {
+		branches, ok := schema["allOf"].([]any)
+		if !ok || len(branches) != 1 {
+			return schema
+		}
+		inner, ok := branches[0].(map[string]any)
+		if !ok {
+			return schema
+		}
+		schema = inner
+	}
+	return schema
+}
+
 // isStructSchema reports whether schema is a named object schema.
 // Inline objects and maps are excluded: their Go types are nilable, so
 // omitempty already drops an unset value.
 func isStructSchema(schema map[string]any) bool {
+	schema = unwrapAllOf(schema)
 	ref, ok := schema["$ref"].(string)
 	if !ok {
 		return false
@@ -496,6 +514,7 @@ func isScalarType(goType string) bool {
 }
 
 func resolveGoType(schema map[string]any) string {
+	schema = unwrapAllOf(schema)
 	if ref, ok := schema["$ref"].(string); ok {
 		rn := refBaseName(ref)
 		if s, ok := schemaByOASName[rn]; ok {
@@ -1064,6 +1083,7 @@ func extractEnumValues(schema map[string]any) []string {
 }
 
 func oasFieldType(schema map[string]any, compSchemas map[string]any) string {
+	schema = unwrapAllOf(schema)
 	if ref, ok := schema["$ref"].(string); ok {
 		name := refBaseName(ref)
 		if compSchemas != nil {

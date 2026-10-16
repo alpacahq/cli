@@ -357,9 +357,12 @@ var cmdRegistry = map[string]cmdDef{
 		examples: "  alpaca wallet whitelist list",
 	},
 	"CreateWhitelistedAddress": {
-		parent:   "walletWhitelist",
-		use:      "add",
-		examples: "  alpaca wallet whitelist add --address 0xabc... --asset ETH",
+		parent: "walletWhitelist",
+		use:    "add",
+		long:   "Submits a new whitelisted withdrawal address for your account. The chain is derived from the supplied asset symbol and address, and the same address cannot be whitelisted twice on the same chain. Where travel rule reporting applies, --travel-rule-info must include beneficiary_entity_name, or both beneficiary_given_name and beneficiary_family_name, and one destination: beneficiary_vasp_id, beneficiary_is_self_hosted set to true, or beneficiary_manual_entry.",
+		examples: `  alpaca wallet whitelist add --address 0xabc... --asset ETH
+  alpaca wallet whitelist add --address 0xabc... --asset ETH --chain ETH \
+    --travel-rule-info '{"beneficiary_is_self_hosted":true,"beneficiary_given_name":"Jane","beneficiary_family_name":"Doe"}'`,
 	},
 	"DeleteWhitelistedAddress": {
 		parent:   "walletWhitelist",
@@ -369,9 +372,10 @@ var cmdRegistry = map[string]cmdDef{
 	"UpdateWhitelistedAddressTravelRuleInfo": {
 		parent: "walletWhitelist",
 		use:    "update-travel-rule",
+		long:   "Updates travel rule information for a whitelisted withdrawal address. The travel rule object must include beneficiary_entity_name, or both beneficiary_given_name and beneficiary_family_name, and one destination: beneficiary_vasp_id, beneficiary_is_self_hosted set to true, or beneficiary_manual_entry.",
 		examples: `  alpaca wallet whitelist update-travel-rule \
     --whitelisted-address-id <id> \
-    --travel-rule-info '{"beneficiary_is_self_hosted":true}'`,
+    --travel-rule-info '{"beneficiary_is_self_hosted":true,"beneficiary_given_name":"Jane","beneficiary_family_name":"Doe"}'`,
 	},
 
 	// --- watchlist ---

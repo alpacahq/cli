@@ -803,13 +803,13 @@ type WatchlistWithoutAsset struct {
 }
 
 type WhitelistedAddress struct {
-	Address        string `json:"address,omitempty"`
-	Asset          string `json:"asset,omitempty"`
-	Chain          string `json:"chain,omitempty"`
-	CreatedAt      string `json:"created_at,omitempty"`
-	ID             string `json:"id,omitempty"`
-	Status         string `json:"status,omitempty"`
-	TravelRuleInfo any    `json:"travel_rule_info,omitempty"`
+	Address        string          `json:"address,omitempty"`
+	Asset          string          `json:"asset,omitempty"`
+	Chain          string          `json:"chain,omitempty"`
+	CreatedAt      string          `json:"created_at,omitempty"`
+	ID             string          `json:"id,omitempty"`
+	Status         string          `json:"status,omitempty"`
+	TravelRuleInfo *TravelRuleInfo `json:"travel_rule_info,omitempty"`
 }
 
 type CalendarDay struct {
