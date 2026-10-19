@@ -212,11 +212,6 @@ func (c *TradingClient) ListCryptoFundingTransfers() (*CryptoTransfer, error) {
 	return unmarshal[CryptoTransfer](c.Raw.Do("GET", c.baseURL, "/v2/wallets/transfers", nil, nil))
 }
 
-// CreateCryptoTransferForAccount — Request a New Withdrawal
-func (c *TradingClient) CreateCryptoTransferForAccount(body *CreateCryptoTransferRequest) (*CryptoTransfer, error) {
-	return unmarshal[CryptoTransfer](c.Raw.Do("POST", c.baseURL, "/v2/wallets/transfers", nil, body))
-}
-
 // GetCryptoFundingTransfer — Retrieve a Crypto Funding Transfer
 func (c *TradingClient) GetCryptoFundingTransfer(TransferID string) (*CryptoTransfer, error) {
 	return unmarshal[CryptoTransfer](c.Raw.Do("GET", c.baseURL, fmt.Sprintf("/v2/wallets/transfers/%s", url.PathEscape(TransferID)), nil, nil))
@@ -338,23 +333,6 @@ func (r *TokenizationMintRequest) Validate() error {
 	}
 	if r.WalletAddress == "" {
 		missing = append(missing, "wallet_address")
-	}
-	if len(missing) > 0 {
-		return fmt.Errorf("missing required fields: %s", strings.Join(missing, ", "))
-	}
-	return nil
-}
-
-func (r *CreateCryptoTransferRequest) Validate() error {
-	var missing []string
-	if r.Address == "" {
-		missing = append(missing, "address")
-	}
-	if r.Amount == "" {
-		missing = append(missing, "amount")
-	}
-	if r.Asset == "" {
-		missing = append(missing, "asset")
 	}
 	if len(missing) > 0 {
 		return fmt.Errorf("missing required fields: %s", strings.Join(missing, ", "))

@@ -60,7 +60,7 @@ type Phase string
 
 type Account struct {
 	AccountBlocked           bool          `json:"account_blocked,omitempty"`
-	AccountNumber            string        `json:"account_number,omitempty"`
+	AccountNumber            *string       `json:"account_number,omitempty"`
 	AccruedFees              string        `json:"accrued_fees,omitempty"`
 	BalanceAsof              string        `json:"balance_asof,omitempty"`
 	BuyingPower              string        `json:"buying_power,omitempty"`
@@ -319,13 +319,6 @@ type CorporateAnnouncement struct {
 	TargetSymbol            string                `json:"target_symbol,omitempty"`
 }
 
-type CreateCryptoTransferRequest struct {
-	Address string      `json:"address"`
-	Amount  string      `json:"amount"`
-	Asset   string      `json:"asset"`
-	Chain   CryptoChain `json:"chain,omitempty"`
-}
-
 type CreateLocateRequest struct {
 	AllOrNone  bool    `json:"all_or_none,omitempty"`
 	LimitPrice *string `json:"limit_price,omitempty"`
@@ -533,13 +526,13 @@ type Order struct {
 	Side           OrderSide      `json:"side,omitempty"`
 	Status         OrderStatus    `json:"status,omitempty"`
 	StopPrice      *string        `json:"stop_price,omitempty"`
-	SubmittedAt    *string        `json:"submitted_at,omitempty"`
+	SubmittedAt    string         `json:"submitted_at,omitempty"`
 	Symbol         string         `json:"symbol,omitempty"`
 	TimeInForce    TimeInForce    `json:"time_in_force"`
 	TrailPercent   *string        `json:"trail_percent,omitempty"`
 	TrailPrice     *string        `json:"trail_price,omitempty"`
 	Type           OrderType      `json:"type"`
-	UpdatedAt      *string        `json:"updated_at,omitempty"`
+	UpdatedAt      string         `json:"updated_at,omitempty"`
 }
 
 type OrderLeg struct {
@@ -571,13 +564,13 @@ type OrderLeg struct {
 	Side           OrderSide        `json:"side"`
 	Status         OrderStatus      `json:"status,omitempty"`
 	StopPrice      *string          `json:"stop_price,omitempty"`
-	SubmittedAt    *string          `json:"submitted_at,omitempty"`
+	SubmittedAt    string           `json:"submitted_at,omitempty"`
 	Symbol         string           `json:"symbol"`
 	TimeInForce    TimeInForce      `json:"time_in_force"`
 	TrailPercent   *string          `json:"trail_percent,omitempty"`
 	TrailPrice     *string          `json:"trail_price,omitempty"`
 	Type           OrderType        `json:"type"`
-	UpdatedAt      *string          `json:"updated_at,omitempty"`
+	UpdatedAt      string           `json:"updated_at,omitempty"`
 }
 
 type PatchOrderRequest struct {
@@ -600,6 +593,11 @@ type PortfolioHistory struct {
 	ProfitLossPct []float64            `json:"profit_loss_pct"`
 	Timeframe     string               `json:"timeframe"`
 	Timestamp     []int                `json:"timestamp"`
+}
+
+type PortfolioHistoryError struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
 }
 
 type Position struct {
@@ -660,14 +658,12 @@ type TokenizationMintResponse struct {
 }
 
 type TokenizationRequest struct {
-	Account                 string                    `json:"account,omitempty"`
 	ClientAccountID         string                    `json:"client_account_id,omitempty"`
 	ClientExternalAccountID string                    `json:"client_external_account_id,omitempty"`
 	ClientRequestID         string                    `json:"client_request_id,omitempty"`
 	CreatedAt               string                    `json:"created_at"`
 	Fees                    *string                   `json:"fees,omitempty"`
 	Issuer                  TokenizationIssuer        `json:"issuer"`
-	IssuerAccount           string                    `json:"issuer_account,omitempty"`
 	IssuerRequestID         *string                   `json:"issuer_request_id,omitempty"`
 	Network                 TokenizationNetwork       `json:"network"`
 	Qty                     string                    `json:"qty"`

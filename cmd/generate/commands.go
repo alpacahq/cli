@@ -62,7 +62,7 @@ var cmdParents = map[string]parentDef{
 	},
 	"wallet": {
 		use: "wallet", short: "Crypto funding wallets and transfers",
-		long: "View crypto funding wallets, create and track transfers, and manage whitelisted withdrawal addresses and travel rule information.",
+		long: "View crypto funding wallets, track transfers, and manage whitelisted withdrawal addresses and travel rule information.",
 	},
 	"walletTransfer":  {use: "transfer", short: "Manage crypto transfers", parent: "wallet"},
 	"walletWhitelist": {use: "whitelist", short: "Manage whitelisted crypto addresses", parent: "wallet"},
@@ -334,11 +334,6 @@ var cmdRegistry = map[string]cmdDef{
 		parent:   "walletTransfer",
 		use:      "get",
 		examples: "  alpaca wallet transfer get --transfer-id <id>",
-	},
-	"CreateCryptoTransferForAccount": {
-		parent:   "walletTransfer",
-		use:      "create",
-		examples: "  alpaca wallet transfer create --amount 0.5 --address 0xabc... --asset BTC",
 	},
 	"GetCryptoTransferEstimate": {
 		parent: "walletTransfer",

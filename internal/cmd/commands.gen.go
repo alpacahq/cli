@@ -118,7 +118,7 @@ var screenerCmd = &cobra.Command{
 var walletCmd = &cobra.Command{
 	Use:   "wallet",
 	Short: "Crypto funding wallets and transfers",
-	Long:  "View crypto funding wallets, create and track transfers, and manage whitelisted withdrawal addresses and travel rule information.",
+	Long:  "View crypto funding wallets, track transfers, and manage whitelisted withdrawal addresses and travel rule information.",
 }
 
 var walletTransferCmd = &cobra.Command{
@@ -166,16 +166,6 @@ var clockMarketsCmd = fetchCmd("markets", api.ClockOp, func(cmd *cobra.Command, 
 
 var corporateActionsCmd = fetchCmd("corporate-actions", api.CorporateActionsOp, func(cmd *cobra.Command, args []string) (any, error) {
 	return dataClient.CorporateActions(queryFromFlags(cmd, api.CorporateActionsOp))
-})
-
-var createCryptoTransferForAccountCmd = fetchCmd("create", api.CreateCryptoTransferForAccountOp, func(cmd *cobra.Command, args []string) (any, error) {
-	body := &api.CreateCryptoTransferRequest{
-		Address: cmdutil.Str(cmd, "address"),
-		Amount:  cmdutil.Str(cmd, "amount"),
-		Asset:   cmdutil.Str(cmd, "asset"),
-		Chain:   api.CryptoChain(cmdutil.Str(cmd, "chain")),
-	}
-	return tradingClient.CreateCryptoTransferForAccount(body)
 })
 
 var createLocatesCmd = fetchCmd("create", api.CreateLocatesOp, func(cmd *cobra.Command, args []string) (any, error) {
@@ -734,7 +724,6 @@ func init() {
 	calendarCmd.AddCommand(calendarMarketCmd)
 	clockCmd.AddCommand(clockMarketsCmd)
 	dataCmd.AddCommand(corporateActionsCmd)
-	walletTransferCmd.AddCommand(createCryptoTransferForAccountCmd)
 	locateCmd.AddCommand(createLocatesCmd)
 	walletWhitelistCmd.AddCommand(createWhitelistedAddressCmd)
 	dataCryptoCmd.AddCommand(cryptoBarsCmd)

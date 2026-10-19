@@ -621,18 +621,6 @@ var AddAssetToWatchlistByNameOp = Op{
 	},
 }
 
-var CreateCryptoTransferForAccountOp = Op{
-	Name: "CreateCryptoTransferForAccount", Summary: "Request a new withdrawal",
-	Long:    "**Deprecation notice:** This endpoint is deprecated. Use the Alpaca web application to initiate withdrawals",
-	Example: `  alpaca wallet transfer create --amount 0.5 --address 0xabc... --asset BTC`,
-	Flags: []FlagDef{
-		{Name: "address", OASName: "address", Type: "string", Description: "destination wallet address", Source: "body"},
-		{Name: "amount", OASName: "amount", Type: "string", Description: "amount, denoted in the specified asset, to be withdrawn from the user's wallet", Source: "body"},
-		{Name: "asset", OASName: "asset", Type: "string", Description: "crypto asset symbol, e.g. BTC, ETH, USDT", Source: "body"},
-		{Name: "chain", OASName: "chain", Type: "string", Description: "chain identifier for multi-chain crypto assets", Completions: []string{"ARB", "BTC", "ETH", "SOL", "XRP"}, Source: "body"},
-	},
-}
-
 var CreateLocatesOp = Op{
 	Name: "CreateLocates", Summary: "Create locate",
 	Long: "Creates a locate request for a short sale. This endpoint is not available in paper trading",
@@ -861,12 +849,12 @@ var GetAccountPortfolioHistoryOp = Op{
   alpaca account portfolio --period 1M --timeframe 1D`,
 	Flags: []FlagDef{
 		{Name: "cashflow-types", OASName: "cashflow_types", Type: "string", Description: "cashflow activities to include in the report. One of 'ALL', 'NONE', or a comma-separated list of activity types", Source: "query"},
-		{Name: "end", OASName: "end", Type: "string", Description: "timestamp the data is returned up to in RFC3339 format (including timezone specification)", Source: "query"},
+		{Name: "end", OASName: "end", Type: "string", Description: "last timestamp of the timeseries.", Source: "query"},
 		{Name: "extended-hours", OASName: "extended_hours", Type: "string", Description: "**deprecated**: Users are strongly advised to **rely on the intraday_reporting query parameter** for better control\no...", Source: "query"},
 		{Name: "intraday-reporting", OASName: "intraday_reporting", Type: "string", Default: "market_hours", Description: "for intraday resolutions (<1D) this specifies which timestamps to return data points for:\n\nAllowed values are:\n- **ma...", Completions: []string{"continuous", "extended_hours", "market_hours"}, Source: "query"},
-		{Name: "period", OASName: "period", Type: "string", Description: "duration of the data in number + unit format, such as 1D, where unit can be D for day, W for week, M for month and A ...", Source: "query"},
+		{Name: "period", OASName: "period", Type: "string", Description: "total duration of history being requested defined as number + unit.", Source: "query"},
 		{Name: "pnl-reset", OASName: "pnl_reset", Type: "string", Default: "per_day", Description: "pnl_reset defines how we are calculating the baseline values for Profit And Loss (pnl) for queries with timeframe les...", Completions: []string{"no_reset", "per_day"}, Source: "query"},
-		{Name: "start", OASName: "start", Type: "string", Description: "timestamp the data is returned starting from in RFC3339 format (including timezone specification)", Source: "query"},
+		{Name: "start", OASName: "start", Type: "string", Description: "first timestamp of the timeseries.\n\nDefaults to end - period.\n\nWhen timeframe=1D, if start occurs any time on a tradi...", Source: "query"},
 		{Name: "timeframe", OASName: "timeframe", Type: "string", Description: "resolution of time window", Source: "query"},
 	},
 }
@@ -1404,14 +1392,12 @@ var positionResponseFields = []ResponseField{
 }
 
 var tokenizationRequestResponseFields = []ResponseField{
-	{Name: "account", Type: "string", Description: "**Deprecation notice:**"},
 	{Name: "client_account_id", Type: "string", Description: "alpaca account UUID of the Authorized Participant associated with this tokenization request"},
 	{Name: "client_external_account_id", Type: "string", Description: "issuer-side account identifier of the Authorized Participant associated with this tokenization request"},
 	{Name: "client_request_id", Type: "string", Description: "authorized Participant-supplied label associated with this tokenization request"},
 	{Name: "created_at", Type: "string", Description: "created at"},
 	{Name: "fees", Type: "string", Description: "fees charged for this tokenization request"},
 	{Name: "issuer", Type: "enum", Description: "tokenized asset's issuer", EnumValues: []string{"binance", "coinbase", "ondo", "st0x", "xstocks"}},
-	{Name: "issuer_account", Type: "string", Description: "**Deprecation notice:**"},
 	{Name: "issuer_request_id", Type: "string", Description: "unique identifier of the tokenization request set by the issuer"},
 	{Name: "network", Type: "enum", Description: "token's blockchain network", EnumValues: []string{"arbitrum", "base", "binance", "cronos", "ethereum", "hypercore", "hyperevm", "mantle", "robinhood", "solana", "ton", "tron"}},
 	{Name: "qty", Type: "string", Description: "quantity to convert for this tokenization request. It can be fractional"},
@@ -1608,11 +1594,10 @@ func ResponseSchema(opName string) ([]ResponseField, bool) {
 				{Name: "next_page_token", Type: "string", Description: "pagination token for the next page"},
 				{Name: "trades", Type: "map[string][]object", Description: "trades"},
 			},
-			"AddAssetToWatchlist":            watchlistResponseFields,
-			"AddAssetToWatchlistByName":      watchlistResponseFields,
-			"CreateCryptoTransferForAccount": cryptoTransferResponseFields,
-			"CreateLocates":                  locateResponseFields,
-			"CreateWhitelistedAddress":       whitelistedAddressResponseFields,
+			"AddAssetToWatchlist":       watchlistResponseFields,
+			"AddAssetToWatchlistByName": watchlistResponseFields,
+			"CreateLocates":             locateResponseFields,
+			"CreateWhitelistedAddress":  whitelistedAddressResponseFields,
 			"DeleteAllOpenPositions": {
 				{Name: "body", Type: "object", Description: "orders API allows a user to monitor, place and cancel their orders with Alpaca.\n\nEach order has a unique identifier p..."},
 				{Name: "status", Type: "integer", Description: "HTTP status code for the attempt to close this position"},
@@ -1697,7 +1682,7 @@ func ResponseSchema(opName string) ([]ResponseField, bool) {
 				{Name: "equity", Type: "[]number", Description: "equity value of the account in dollar amount as of the end of each time window"},
 				{Name: "profit_loss", Type: "[]number", Description: "profit/loss in dollar from the base value"},
 				{Name: "profit_loss_pct", Type: "[]number", Description: "profit/loss in percentage from the base value"},
-				{Name: "timeframe", Type: "string", Description: "time window size of each data element"},
+				{Name: "timeframe", Type: "enum", Description: "an interval, duration, or window of time", EnumValues: []string{"15Min", "1D", "1H", "1Min", "5Min"}},
 				{Name: "timestamp", Type: "[]integer", Description: "time of each data element, left-labeled (the beginning of time window)."},
 			},
 			"GetAllOpenPositions":      positionResponseFields,
@@ -1823,7 +1808,6 @@ var AllOps = []Op{
 	SubscribeToCorporateActionsEventsSSEOp,
 	AddAssetToWatchlistOp,
 	AddAssetToWatchlistByNameOp,
-	CreateCryptoTransferForAccountOp,
 	CreateLocatesOp,
 	CreateWhitelistedAddressOp,
 	DeleteAllOpenPositionsOp,
