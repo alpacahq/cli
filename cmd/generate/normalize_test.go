@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestToFlagName(t *testing.T) {
 	tests := map[string]string{
@@ -120,6 +123,74 @@ func TestNormalizeOASDescription(t *testing.T) {
 				t.Errorf("normalizeOASDescription(%q)\n  got:  %q\n  want: %q", tt.raw, got, tt.want)
 			}
 		})
+	}
+}
+
+func TestFlagDescriptionKeepsFormatGuidance(t *testing.T) {
+	period := "The total duration of history being requested defined as `number` + `unit`.\nValid units are: `D`, `W`, `M`, and `A` (annum).\n\nThe following restrictions apply:\n- MUST NOT be included if both `start` and `end` are provided.\n"
+	got := flagDescription(period, []string{"7D", "4W", "1M", "1A"})
+	for _, want := range []string{
+		"number + unit",
+		"Valid units are: D, W, M, and A (annum)",
+		"e.g. 7D, 4W, 1M, 1A",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("period help %q missing %q", got, want)
+		}
+	}
+	if strings.Contains(got, "MUST NOT") {
+		t.Errorf("period help included restrictions: %q", got)
+	}
+
+	start := "The first timestamp of the timeseries.\n\nDefaults to `end - period`.\n\nWhen `timeframe=1D`, if `start` occurs any time on a trading day (including outside of market hours), `start` is set to the closing time of the current trading day. Otherwise, `start` is rolled forward.\n"
+	got = flagDescription(start, []string{
+		"2021-03-16T18:38:01Z",
+		"2021-03-16T18:38:01-04:00",
+		"2021-03-16",
+		"2021-03-16T14:38:01-04:00",
+		"1615919881",
+	})
+	want := "first timestamp of the timeseries. e.g. 2021-03-16T18:38:01Z, 2021-03-16T18:38:01-04:00, 2021-03-16, 1615919881"
+	if got != want {
+		t.Errorf("start help\n got: %q\nwant: %q", got, want)
+	}
+
+	dated := "The inclusive start of the interval. Format: RFC-3339 or YYYY-MM-DD.\nDefault: the beginning of the current day, but at least 15 minutes ago if the user doesn't have real-time access for the feed.\n"
+	got = flagDescription(dated, []string{"2024-01-03T01:02:03.123456789Z", "2024-01-03"})
+	want = "inclusive start of the interval. Format: RFC-3339 or YYYY-MM-DD"
+	if got != want {
+		t.Errorf("format sentence should replace the example list\n got: %q\nwant: %q", got, want)
+	}
+
+	long := "Filter to snapshots that were updated since this timestamp, meaning that the timestamp of the trade or the quote is greater than or equal to this value.\nFormat: RFC-3339 or YYYY-MM-DD. If missing, all values are returned.\n"
+	got = flagDescription(long, nil)
+	want = "filter to snapshots that were updated since this timestamp. Format: RFC-3339 or YYYY-MM-DD"
+	if got != want {
+		t.Errorf("truncated help\n got: %q\nwant: %q", got, want)
+	}
+
+	locate := "Filter locates with locate trading date on or after this date. Format: YYYY-MM-DD. The locate trading date uses America/New_York and rolls at 8pm ET."
+	got = flagDescription(locate, nil)
+	want = "filter locates with locate trading date on or after this date. Format: YYYY-MM-DD"
+	if got != want {
+		t.Errorf("locate help\n got: %q\nwant: %q", got, want)
+	}
+
+	already := "Get activities created after this date. Both formats YYYY-MM-DD and YYYY-MM-DDTHH:MM:SSZ are supported."
+	if got, want := flagDescription(already, nil), normalizeDesc(already); got != want {
+		t.Errorf("inlined format was rewritten\n got: %q\nwant: %q", got, want)
+	}
+
+	sampled := "One of 'ALL', 'NONE', or a comma-separated list of activity types."
+	got = flagDescription(sampled, []string{"ALL", "NONE", "JNLC,CSD,CSW"})
+	if strings.Contains(got, "e.g.") {
+		t.Errorf("examples already described were appended: %q", got)
+	}
+	if got = flagDescription("Filter by stock symbol.", []string{"TSLA"}); strings.Contains(got, "e.g.") || strings.Contains(got, "TSLA") {
+		t.Errorf("single sample value was appended: %q", got)
+	}
+	if got = flagDescription("Tokenization request status to be queried.", []string{"completed", "pending"}); strings.Contains(got, "e.g.") {
+		t.Errorf("enum samples were appended: %q", got)
 	}
 }
 

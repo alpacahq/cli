@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -59,6 +60,27 @@ func TestSchemaType(t *testing.T) {
 				t.Fatalf("isNullable() = %v, want %v", isNullable(tt.schema), tt.wantNullable)
 			}
 		})
+	}
+}
+
+func TestGenValidateMethodReportsEveryRequiredField(t *testing.T) {
+	var buf bytes.Buffer
+	fields := []string{"qty", "underlying_symbol", "wallet_address"}
+	genValidateMethod(&buf, "TokenizationMintRequest", fields)
+	got := buf.String()
+
+	joinAt := strings.Index(got, "strings.Join(missing")
+	if joinAt < 0 {
+		t.Fatalf("Validate() does not join every missing field:\n%s", got)
+	}
+	for _, field := range fields {
+		needle := fmt.Sprintf("missing = append(missing, %q)", field)
+		if idx := strings.Index(got, needle); idx < 0 || idx > joinAt {
+			t.Errorf("Validate() drops %q before reporting the full set:\n%s", field, got)
+		}
+	}
+	if strings.Count(got, "return fmt.Errorf") != 1 {
+		t.Errorf("expected one aggregated error, got:\n%s", got)
 	}
 }
 
