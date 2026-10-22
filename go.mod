@@ -2,6 +2,8 @@ module github.com/alpacahq/cli
 
 go 1.24.0
 
+toolchain go1.26.10
+
 require (
 	github.com/fatih/color v1.18.0
 	github.com/itchyny/gojq v0.12.18
