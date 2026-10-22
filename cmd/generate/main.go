@@ -211,6 +211,7 @@ type paramInfo struct {
 	enumValues  []string
 	defaultVal  string
 	description string
+	examples    []string
 }
 
 func extractEndpoints(spec map[string]any) []*endpointInfo {
@@ -296,6 +297,7 @@ func extractEndpoints(spec map[string]any) []*endpointInfo {
 					pi.enumValues = extractEnumValues(pSchema)
 					pi.defaultVal = extractDefault(pSchema)
 				}
+				pi.examples = extractStringExamples(p, pSchema)
 				switch in {
 				case "path":
 					ep.pathParams = append(ep.pathParams, pi)
@@ -898,7 +900,7 @@ func paramToFlag(p paramInfo, source string) *flagDesc {
 		goFieldName: toGoName(p.name),
 		flagName:    toFlagName(p.name),
 		flagType:    p.goType,
-		description: normalizeDesc(desc),
+		description: flagDescription(desc, p.examples),
 		enumValues:  p.enumValues,
 		source:      source,
 	}
@@ -946,7 +948,7 @@ func collectDescriptions(endpoints []*endpointInfo, spec map[string]any) []*opDe
 				goFieldName: toGoName(propName),
 				flagName:    toFlagName(propName),
 				flagType:    bodyPropFlagType(propSchema, compSchemas),
-				description: normalizeDesc(desc),
+				description: flagDescription(desc, extractStringExamples(nil, propSchema)),
 				enumValues:  enums,
 				source:      "body",
 			})
@@ -1119,6 +1121,306 @@ func oasFieldType(schema map[string]any, compSchemas map[string]any) string {
 	default:
 		return "any"
 	}
+}
+
+// extractStringExamples collects sample values from a parameter or schema.
+// Schema examples stay in spec order; named parameter examples follow.
+func extractStringExamples(param, schema map[string]any) []string {
+	var vals []string
+	seen := map[string]bool{}
+	add := func(v any) {
+		s, ok := v.(string)
+		if !ok || s == "" || seen[s] {
+			return
+		}
+		seen[s] = true
+		vals = append(vals, s)
+	}
+	if schema != nil {
+		if list, ok := schema["examples"].([]any); ok {
+			for _, v := range list {
+				add(v)
+			}
+		}
+		add(schema["example"])
+	}
+	if param != nil {
+		if named, ok := param["examples"].(map[string]any); ok {
+			for _, key := range sortedKeys(named) {
+				if item, ok := named[key].(map[string]any); ok {
+					add(item["value"])
+				}
+			}
+		}
+		add(param["example"])
+	}
+	return vals
+}
+
+// flagDescription builds CLI flag help. The 120-character summary stays, and
+// a short format example or unit list from later in the spec is kept with it
+// so truncation does not drop the only hint for a valid value.
+func flagDescription(raw string, examples []string) string {
+	prose := normalizeDesc(raw)
+	extra := formatExtras(raw, examples, prose)
+	if extra == "" {
+		return prose
+	}
+	if strings.HasSuffix(prose, "...") || strings.Contains(prose, "\n") {
+		prose = shortenForFormat(raw)
+		extra = formatExtras(raw, examples, prose)
+		if extra == "" {
+			return prose
+		}
+	}
+	if prose == "" {
+		return extra
+	}
+	if strings.HasSuffix(prose, ".") {
+		return prose + " " + extra
+	}
+	return prose + ". " + extra
+}
+
+func formatExtras(raw string, examples []string, shown string) string {
+	var parts []string
+	for _, clause := range formatClauses(raw) {
+		if clauseCovered(shown, clause) {
+			continue
+		}
+		parts = append(parts, clause)
+		shown += " " + clause
+	}
+	if hint := exampleHint(examples); hint != "" && !examplesShown(shown, examples) && !formatAlreadyStated(shown) {
+		parts = append(parts, hint)
+	}
+	return strings.Join(parts, ". ")
+}
+
+// shortenForFormat keeps a readable lead when the summary was truncated.
+// A long first sentence is cut at the first comma so format guidance is not
+// glued onto an ellipsis.
+func shortenForFormat(raw string) string {
+	lead := normalizeDesc(firstClause(raw))
+	if !strings.HasSuffix(lead, "...") && !strings.Contains(lead, "\n") {
+		return lead
+	}
+	clause := firstClause(raw)
+	if i := strings.Index(clause, ","); i > 40 {
+		clause = clause[:i]
+	}
+	lead = normalizeDesc(clause)
+	if !strings.HasSuffix(lead, "...") {
+		return lead
+	}
+	lead = strings.TrimSuffix(lead, "...")
+	lead = strings.TrimRight(lead, " .,")
+	if i := strings.LastIndex(lead, " "); i > 0 {
+		lead = strings.TrimRight(lead[:i], " .,")
+	}
+	return lead
+}
+
+func formatAlreadyStated(shown string) bool {
+	lower := strings.ToLower(shown)
+	return strings.Contains(lower, "yyyy-mm-dd") ||
+		strings.Contains(lower, "rfc3339") ||
+		strings.Contains(lower, "rfc-3339") ||
+		strings.Contains(lower, "both formats")
+}
+
+func formatClauses(raw string) []string {
+	var clauses []string
+	for _, clause := range splitClauses(raw) {
+		if isFormatClause(clause) {
+			clauses = append(clauses, clause)
+		}
+	}
+	return clauses
+}
+
+func isFormatClause(clause string) bool {
+	lower := strings.ToLower(clause)
+	return strings.Contains(lower, "valid units") ||
+		strings.Contains(lower, "unit can be") ||
+		strings.Contains(lower, "both formats") ||
+		strings.Contains(lower, "yyyy-mm-dd") ||
+		strings.Contains(lower, "rfc3339") ||
+		strings.Contains(lower, "rfc-3339") ||
+		strings.Contains(lower, "format:")
+}
+
+func clauseCovered(shown, clause string) bool {
+	shown = strings.ToLower(shown)
+	clause = strings.ToLower(clause)
+	if strings.Contains(shown, clause) {
+		return true
+	}
+	for _, token := range []string{"valid units", "unit can be", "both formats", "yyyy-mm-dd", "rfc3339", "rfc-3339", "format:"} {
+		if strings.Contains(clause, token) && strings.Contains(shown, token) {
+			return true
+		}
+	}
+	return false
+}
+
+func examplesShown(shown string, examples []string) bool {
+	if len(examples) < 2 {
+		return true
+	}
+	shown = strings.ToLower(shown)
+	for _, ex := range examples {
+		if strings.Contains(shown, strings.ToLower(ex)) {
+			return true
+		}
+	}
+	return false
+}
+
+func exampleHint(examples []string) string {
+	var durations []string
+	var picked []string
+	seen := map[string]bool{}
+	for _, ex := range examples {
+		shape := exampleShape(ex)
+		switch shape {
+		case "other":
+			continue
+		case "duration":
+			if len(durations) < 4 {
+				durations = append(durations, ex)
+			}
+		default:
+			if seen[shape] {
+				continue
+			}
+			seen[shape] = true
+			picked = append(picked, ex)
+		}
+	}
+	chosen := picked
+	if len(durations) > 0 {
+		chosen = durations
+	}
+	if len(chosen) == 0 {
+		return ""
+	}
+	if len(chosen) > 4 {
+		chosen = chosen[:4]
+	}
+	return "e.g. " + strings.Join(chosen, ", ")
+}
+
+func exampleShape(s string) string {
+	switch {
+	case isDurationExample(s):
+		return "duration"
+	case isDateExample(s):
+		return "date"
+	case isUnixExample(s):
+		return "unix"
+	case isDateTimeExample(s):
+		if strings.HasSuffix(strings.ToUpper(s), "Z") {
+			return "datetime-z"
+		}
+		return "datetime-offset"
+	default:
+		return "other"
+	}
+}
+
+func isDurationExample(s string) bool {
+	if s == "" || s[0] < '0' || s[0] > '9' {
+		return false
+	}
+	i := 0
+	for i < len(s) && s[i] >= '0' && s[i] <= '9' {
+		i++
+	}
+	if i == 0 || i == len(s) {
+		return false
+	}
+	for _, c := range s[i:] {
+		if (c < 'A' || c > 'Z') && (c < 'a' || c > 'z') {
+			return false
+		}
+	}
+	return true
+}
+
+func isDateExample(s string) bool {
+	if len(s) != 10 || s[4] != '-' || s[7] != '-' {
+		return false
+	}
+	for i := 0; i < len(s); i++ {
+		if i == 4 || i == 7 {
+			continue
+		}
+		if s[i] < '0' || s[i] > '9' {
+			return false
+		}
+	}
+	return true
+}
+
+func isUnixExample(s string) bool {
+	if len(s) < 9 || len(s) > 13 {
+		return false
+	}
+	for i := 0; i < len(s); i++ {
+		if s[i] < '0' || s[i] > '9' {
+			return false
+		}
+	}
+	return true
+}
+
+func isDateTimeExample(s string) bool {
+	return strings.Contains(s, "T") && strings.Contains(s, "-") && strings.Contains(s, ":")
+}
+
+// splitClauses breaks description text on sentence boundaries and blank lines.
+func splitClauses(s string) []string {
+	s = strings.ReplaceAll(s, "`", "")
+	s = strings.ReplaceAll(s, "\r\n", "\n")
+	var clauses []string
+	var b strings.Builder
+	flush := func() {
+		clause := strings.Join(strings.Fields(b.String()), " ")
+		clause = strings.Trim(clause, ".")
+		clause = strings.TrimSpace(clause)
+		if clause != "" {
+			clauses = append(clauses, clause)
+		}
+		b.Reset()
+	}
+	for i := 0; i < len(s); i++ {
+		if s[i] == '.' && (i+1 == len(s) || s[i+1] == ' ' || s[i+1] == '\n' || s[i+1] == '\r') {
+			flush()
+			continue
+		}
+		if s[i] == '\n' && i+1 < len(s) && s[i+1] == '\n' {
+			flush()
+			continue
+		}
+		b.WriteByte(s[i])
+	}
+	flush()
+	return clauses
+}
+
+// firstClause returns the opening sentence without its trailing period.
+func firstClause(s string) string {
+	s = strings.TrimSpace(strings.ReplaceAll(s, "`", ""))
+	for i := 0; i < len(s); i++ {
+		if s[i] == '.' && (i+1 == len(s) || s[i+1] == ' ' || s[i+1] == '\n' || s[i+1] == '\r') {
+			return strings.TrimSpace(s[:i])
+		}
+	}
+	if i := strings.IndexByte(s, '\n'); i > 0 {
+		return strings.TrimSpace(strings.TrimRight(s[:i], "."))
+	}
+	return strings.TrimRight(s, ".")
 }
 
 func normalizeDesc(s string) string {

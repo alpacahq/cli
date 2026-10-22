@@ -227,25 +227,94 @@ func isParamOrPropMatch(enumKey, flagName string) bool {
 
 // TestValidateMethods verifies generated required-field validation works correctly.
 func TestValidateMethods(t *testing.T) {
-	t.Run("CreateCryptoTransferRequest/empty", func(t *testing.T) {
-		r := &api.CreateCryptoTransferRequest{}
+	t.Run("CreateWatchlistRequest/empty", func(t *testing.T) {
+		r := &api.CreateWatchlistRequest{}
 		err := r.Validate()
 		if err == nil {
 			t.Fatal("expected validation error for empty request")
 		}
-		for _, field := range []string{"address", "amount", "asset"} {
+		if !strings.Contains(err.Error(), "name") {
+			t.Errorf("expected %q in error, got: %s", "name", err)
+		}
+	})
+
+	t.Run("CreateWatchlistRequest/valid", func(t *testing.T) {
+		r := &api.CreateWatchlistRequest{Name: "Tech Stocks"}
+		if err := r.Validate(); err != nil {
+			t.Errorf("unexpected error: %s", err)
+		}
+	})
+
+	t.Run("TokenizationMintRequest/empty", func(t *testing.T) {
+		err := (&api.TokenizationMintRequest{}).Validate()
+		if err == nil {
+			t.Fatal("expected validation error for empty request")
+		}
+		for _, field := range []string{"qty", "underlying_symbol", "wallet_address"} {
 			if !strings.Contains(err.Error(), field) {
 				t.Errorf("expected %q in error, got: %s", field, err)
 			}
 		}
 	})
 
-	t.Run("CreateCryptoTransferRequest/valid", func(t *testing.T) {
-		r := &api.CreateCryptoTransferRequest{Address: "0x1", Amount: "100", Asset: "BTC"}
+	t.Run("TokenizationMintRequest/partial", func(t *testing.T) {
+		err := (&api.TokenizationMintRequest{Qty: "1"}).Validate()
+		if err == nil {
+			t.Fatal("expected validation error when fields are still missing")
+		}
+		if strings.Contains(err.Error(), "qty") {
+			t.Errorf("qty was provided and should not be reported, got: %s", err)
+		}
+		for _, field := range []string{"underlying_symbol", "wallet_address"} {
+			if !strings.Contains(err.Error(), field) {
+				t.Errorf("expected %q in error, got: %s", field, err)
+			}
+		}
+	})
+
+	t.Run("TokenizationMintRequest/valid", func(t *testing.T) {
+		r := &api.TokenizationMintRequest{
+			Qty:              "1",
+			UnderlyingSymbol: "AAPL",
+			WalletAddress:    "0xabc",
+		}
 		if err := r.Validate(); err != nil {
 			t.Errorf("unexpected error: %s", err)
 		}
 	})
+}
+
+func TestPortfolioHistoryFlagHelpKeepsFormats(t *testing.T) {
+	var period, start, end string
+	for _, f := range api.GetAccountPortfolioHistoryOp.Flags {
+		switch f.Name {
+		case "period":
+			period = f.Description
+		case "start":
+			start = f.Description
+		case "end":
+			end = f.Description
+		}
+	}
+	for _, want := range []string{"Valid units are: D, W, M, and A (annum)", "e.g. 7D, 4W, 1M, 1A"} {
+		if !strings.Contains(period, want) {
+			t.Errorf("period help %q missing %q", period, want)
+		}
+	}
+	for _, name := range []string{"start", "end"} {
+		desc := start
+		if name == "end" {
+			desc = end
+		}
+		if strings.Contains(desc, "...") {
+			t.Errorf("%s help is still truncated: %q", name, desc)
+		}
+		for _, want := range []string{"2021-03-16", "2021-03-16T18:38:01Z", "1615919881"} {
+			if !strings.Contains(desc, want) {
+				t.Errorf("%s help %q missing %q", name, desc, want)
+			}
+		}
+	}
 }
 
 // TestAllOpsValid iterates every generated Op via api.AllOps and validates

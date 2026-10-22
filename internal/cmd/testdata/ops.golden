@@ -314,12 +314,6 @@ AddAssetToWatchlistByName: "Add asset to watchlist by name"
   name (query, string, required) -> name
   symbol (body, string) -> symbol
 
-CreateCryptoTransferForAccount: "Request a new withdrawal"
-  address (body, string) -> address
-  amount (body, string) -> amount
-  asset (body, string) -> asset
-  chain (body, string) -> chain
-
 CreateLocates: "Create locate"
   idempotency-key (header, string) -> Idempotency-Key
   all-or-none (body, bool) -> all_or_none

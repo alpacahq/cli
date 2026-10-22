@@ -448,11 +448,6 @@ alpaca wallet list
   --asset (string)
   --chain (string)
   --network (string)
-alpaca wallet transfer create
-  --address (string)
-  --amount (string)
-  --asset (string)
-  --chain (string)
 alpaca wallet transfer estimate
   --amount (string)
   --asset (string)
