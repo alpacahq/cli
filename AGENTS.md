@@ -2,61 +2,20 @@
 
 A single-binary CLI for the Alpaca Trading API. Think `gh` for GitHub, `stripe` for Stripe — but for trading.
 
-## Core Principle: Generate Everything
+[`CONTRIBUTING.md`](CONTRIBUTING.md) is the canonical engineering guide. Read it before changing code. It covers generated versus handwritten code, command design, the output contract, integration test rules, financial safety, and which docs to keep in sync.
 
-The CLI is driven by OpenAPI specs. Maximize what's generated, minimize what's hand-written. **Do not edit generated files directly.** Change the specs or the generator, then `make generate`.
+## Rules you must not miss
 
-## Design Philosophy
-
-- **Agent-first**: the primary consumer is an AI agent. All parameters are explicit `--flag value` — no positional arguments. Exception: `alpaca api [METHOD] <path>` uses positional args because it's a raw escape hatch, not a generated command.
-- **OAS specs are read-only inputs**: never edit the specs in this repo. Fix bugs upstream and re-import.
-- **No backward compatibility**: pre-1.0. No aliases, shims, or deprecation wrappers. Just make the change.
+- **Generate everything**: do not edit generated files (`*.gen.go`) or the OpenAPI specs in `api/specs/`. Change the generator, or fix the spec upstream and re-import, then `make generate`.
+- **Agent-first**: all parameters are explicit `--flag value`, with no positional arguments (except `alpaca api [METHOD] <path>`).
+- **No backward compatibility**: pre-1.0. No aliases, shims, or deprecation wrappers.
+- **Output contract**: API commands emit JSON. Operational commands emit text, and their signal is the exit code. Details are in `CONTRIBUTING.md`.
 
 ## After every change
 
 ```
-make check     # lint + test + build
+make check             # lint + test + build
+make test-integration  # live paper API; `make check` does not run these
 ```
 
-Fix any failures you introduce before moving on.
-
-When a refactor changes command names, flags, or output shape, review `test/integration/` and update any affected tests so they stay in sync.
-
-## Output contract
-
-Commands fall into two categories with different output rules:
-
-**API commands** (trading, data, account, watchlist, etc.) — call Alpaca endpoints and return structured JSON on stdout. These are the agent pipeline. They support `--csv`, `--jq`, `--quiet`, and `--schema`. Errors go to stderr as JSON.
-
-**Operational commands** (`version`, `doctor`, `profile *`, `update`, `completion`, `--help`, `--help-all`, `--schema`) — manage the CLI itself. These emit human-readable text on stdout. The machine-readable signal is the **exit code** (0 = success, non-zero = failure), not the output format. Do not convert these to JSON — an agent that needs to verify connectivity runs `alpaca account get --quiet`, not `alpaca doctor`.
-
-The one exception is `update --check`, which emits JSON because agents need to programmatically decide whether to upgrade.
-
-**Rule of thumb:** if a command hits the Alpaca API and returns API data, it emits JSON. If it manages the CLI's own state or helps a human troubleshoot, it emits text.
-
-## Design Notes
-
-- **`FlagDef.OASName` must stay**: Flag names are kebab-case (`page-token`), OAS names are snake_case (`page_token`). The mapping `_ → -` is lossy — if an upstream OAS param ever uses a hyphen, runtime reversal (`- → _`) would silently send the wrong query key. Keep both fields.
-
-## Integration tests (`test/integration/`)
-
-Gated by `//go:build integration` and require `ALPACA_TEST_API_KEY`+`ALPACA_TEST_SECRET_KEY` or `ALPACA_TEST_ACCESS_TOKEN`. Default target is `paper-api.alpaca.markets`.
-
-Rules:
-- **Always run `make test-integration` after editing** - `make check` only runs unit tests. Integration tests hit the live paper API and are the only way to verify your changes work. Never skip this step.
-- **Read-only tests must call `t.Parallel()`** - every test that only fetches data should run concurrently.
-- **Write tests must clean up** - use `t.Cleanup()` to cancel orders, delete watchlists, close positions. Never leave side-effects.
-- **Flat tests for independent calls, sub-tests for sequential chains** - don't use `t.Run` unless steps depend on prior state (e.g., create -> get -> delete).
-- **Use the helpers** - `alpaca()`, `alpacaFail()`, `parseJSONMap()`, `requireFields()`, `daysAgo()`, `pollFor()`. Don't reinvent them.
-- **Each parallel test must use a unique symbol** - the Alpaca API rejects orders as "potential wash trade" when buy and sell orders coexist on the same symbol. Bracket orders create sell-side child legs (take-profit, stop-loss), so a bracket on TSLA plus a plain buy on TSLA from another parallel test will fail. Use `submitTestOrder(t, "SYMBOL")` and pick a symbol no other parallel test uses. Check existing tests before choosing.
-- **Some endpoints are unavailable on paper** - wallet, forex, logo, and tokenization return 403/404. Don't write tests that require these unless you have a compatible test account.
-- **One file per feature area** - `order_test.go`, `data_option_test.go`, `data_stock_test.go`, etc. Cross-cutting E2E flows go in `e2e_test.go`.
-
-## Keep docs in sync
-
-When a change affects CLI behavior, update any stale docs:
-
-- `README.md` — user-facing documentation
-- `skills/alpaca-cli/SKILL.md` — agent-facing skill
-
-Code is the source of truth. If a doc contradicts the code, update the doc.
+Fix any failures you introduce. When a change renames commands or flags, or changes output shape, update `test/integration/` and any stale docs (`README.md`, `.agents/skills/alpaca-cli/SKILL.md`). Code is the source of truth.

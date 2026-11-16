@@ -236,20 +236,27 @@ make generate         # Regenerate API clients and command metadata
 make spec-update      # Fetch latest OpenAPI specs
 ```
 
-Integration tests require paper trading credentials:
+Integration tests always target the paper trading API and require paper trading credentials, either an API key and secret or an OAuth access token:
 
 ```bash
 export ALPACA_TEST_API_KEY=PK...
 export ALPACA_TEST_SECRET_KEY=...
-export ALPACA_TEST_BASE_URL=https://paper-api.alpaca.markets # optional
+# or: export ALPACA_TEST_ACCESS_TOKEN=...
 make test-integration
 ```
 
+## Contributing
+
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, contribution scope, quality checks, and the pull-request workflow. Participation is governed by our [Code of Conduct](CODE_OF_CONDUCT.md).
+
 ## Support
 
-- **CLI issues:** Bugs, feature requests, or questions specific to this CLI → [GitHub Issues](https://github.com/alpacahq/cli/issues).
-- **General Alpaca support & API discussion:** Account questions, platform issues, or broader API topics → [Alpaca Community Forum](https://forum.alpaca.markets/).
-- **Slack community:** Chat with other developers and the Alpaca community on Slack ([join here](https://alpaca.markets/slack)).
+- **CLI issues:** Bugs, feature requests, or questions specific to this CLI → [GitHub Issues](https://github.com/alpacahq/cli/issues/new/choose).
+- **Security vulnerabilities:** Do not report them publicly. Follow our [Security Policy](SECURITY.md).
+- **Alpaca API bugs:** Bugs in the Alpaca API itself, its OpenAPI specs, or its documentation → [alpacahq/alpaca-api](https://github.com/alpacahq/alpaca-api/issues/new/choose).
+- **Community:** API feature requests, general questions, and dashboard bugs → [Alpaca Community Forum](https://forum.alpaca.markets/) or [Slack](https://alpaca.markets/slack).
+- **Account help:** Questions about your account, funding, or orders → [Support request](https://alpaca.markets/support/request).
+- **Outages:** Service status and incident updates → [Status page](https://status.alpaca.markets/).
 
 ## License
 
