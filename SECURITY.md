@@ -4,4 +4,4 @@ Do not report suspected security vulnerabilities through public GitHub issues, d
 
 Follow Alpaca's official vulnerability-disclosure and bug-bounty process at [Security at Alpaca](https://alpaca.markets/security).
 
-Never include API keys, credentials, OAuth tokens, account data, or other sensitive information in this repository.
+Never include API keys, credentials, account data, or other sensitive information in this repository.
