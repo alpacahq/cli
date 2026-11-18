@@ -60,7 +60,7 @@ Unless you explicitly state otherwise, a contribution intentionally submitted fo
 3. Fork the repository and create a focused branch.
 4. Make the change in hand-written source files. For generated code, change the generator or re-import upstream specs with `make spec-update`, then run `make generate`.
 5. Add focused tests for new or changed behavior and update relevant documentation.
-6. Run the relevant checks listed below.
+6. Run the required checks listed below.
 7. Open a focused pull request, explain why the change is needed, and respond to review feedback.
 
 Use clear, descriptive commit messages and pull request titles. Conventional Commits are not required, and contributors do not need to squash commits before opening a pull request. Maintainers use GitHub's squash-merge workflow for the final merge.
@@ -75,19 +75,19 @@ Use clear, descriptive commit messages and pull request titles. Conventional Com
 
 ## Setup and checks
 
-Run the standard checks from the repository root:
+Run the required checks from the repository root after every change:
 
 ```bash
 make check
+make test-integration
 ```
 
-`make check` runs the linter, the unit tests with the race detector, and builds the binary to `bin/alpaca`.
+`make check` runs the linter, the unit tests with the race detector, and builds the binary to `bin/alpaca`. `make test-integration` verifies live paper API behavior and requires paper trading credentials.
 
-Run additional checks when they apply to your change:
+Regenerate generated API clients and command metadata when specs or the generator change:
 
 ```bash
-make generate           # regenerate API clients and command metadata after spec or generator changes
-make test-integration   # live paper API behavior; requires paper credentials
+make generate
 ```
 
 Integration tests are gated by the `integration` build tag and always target the paper trading API. They require paper trading credentials, supplied as either an API key and secret or an OAuth access token:
@@ -98,8 +98,6 @@ export ALPACA_TEST_SECRET_KEY=...
 # or: export ALPACA_TEST_ACCESS_TOKEN=...
 make test-integration
 ```
-
-Integration tests need repository secrets, which GitHub does not pass to workflows triggered by pull requests from forks. CI therefore skips the integration job for fork pull requests, and maintainers run `make test-integration` for them before merging. Contributors who have paper credentials should run it locally and report the result in the pull request.
 
 CI also verifies that generated code is up to date by running `make generate` and failing on any diff in `internal/api/` and `internal/cmd/commands.gen.go`.
 
@@ -160,6 +158,6 @@ Before requesting review, confirm that:
 - new or changed behavior has focused tests when applicable;
 - default tests are deterministic and credential-free and cannot place live orders; integration tests target paper trading, use unique symbols, and clean up after themselves; and fixtures use synthetic data;
 - `README.md` and `.agents/skills/alpaca-cli/SKILL.md` are updated when CLI behavior changes;
-- `make check` passes, and `make test-integration` was run when CLI behavior changed;
+- `make check` and `make test-integration` pass;
 - no credentials, account data, request or trace IDs, or other secrets are included; and
 - any provider-specific integration or promotional contribution has written Alpaca approval confirmed by repository maintainers.
