@@ -6,7 +6,7 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the public contributor workflow, su
 
 ## Core Principle: Generate Everything
 
-The CLI is driven by OpenAPI specs. Maximize what's generated, minimize what's hand-written. **Do not edit generated files directly.** Change the specs or the generator, then `make generate`.
+The CLI is driven by OpenAPI specs. Maximize what's generated, minimize what's hand-written. **Do not edit generated files directly.** Change the generator, or fix specs upstream and re-import them, then run `make generate`.
 
 ## Design Philosophy
 

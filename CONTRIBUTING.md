@@ -116,7 +116,7 @@ There is no numeric coverage threshold, but changed behavior must have focused t
 
 The CLI is driven by the OpenAPI specs in `api/specs/*.json`. Maximize what is generated and minimize what is hand-written.
 
-Never hand-edit generated files, including `internal/api/*.gen.go` and `internal/cmd/commands.gen.go`. Other files in `internal/api/` (such as `api.go` and `types.go`) are handwritten. Change the specs or the generator in `cmd/generate`, then run `make generate`. Command help text for generated commands comes from the OpenAPI descriptions, so fix wording problems there upstream. Do not edit the specs under `api/specs/` by hand: fix bugs upstream in [alpacahq/alpaca-api](https://github.com/alpacahq/alpaca-api/issues/new/choose) and re-import with `make spec-update && make generate`.
+Never hand-edit generated files, including `internal/api/*.gen.go` and `internal/cmd/commands.gen.go`. Other files in `internal/api/` (such as `api.go` and `types.go`) are handwritten. Change the generator in `cmd/generate`, or fix specification bugs upstream in [alpacahq/alpaca-api](https://github.com/alpacahq/alpaca-api/issues/new/choose) and re-import with `make spec-update`; then run `make generate`. Command help text for generated commands comes from the OpenAPI descriptions, so fix wording problems there upstream. Do not edit the specs under `api/specs/` by hand.
 
 Handwritten code lives in `cmd/alpaca`, the generator in `cmd/generate`, and the packages under `internal/` (for example `internal/cmd`, `internal/client`, `internal/config`, `internal/oauth`, and `internal/output`).
 

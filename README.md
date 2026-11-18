@@ -224,7 +224,7 @@ Upgrade commands are tailored to the detected install method:
 
 ## Development
 
-The CLI is driven by OpenAPI specs in `api/specs/*.json`. Do not edit generated files directly. Change the specs or generator, then run `make generate`.
+The CLI is driven by OpenAPI specs in `api/specs/*.json`. Do not edit generated files or the specs in this repository directly. Change the generator, or fix specification bugs upstream and re-import with `make spec-update`, then run `make generate`.
 
 ```bash
 make build            # Build binary to bin/alpaca
