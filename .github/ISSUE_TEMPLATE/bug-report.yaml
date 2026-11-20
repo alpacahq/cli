@@ -1,0 +1,108 @@
+name: 🐞 Bug report
+description: Report reproducible behavior in Alpaca CLI
+title: "[Bug]: "
+labels: [bug]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Report CLI behavior here in English. Bugs in the Alpaca API itself, its OpenAPI specs, or its documentation go to [alpacahq/alpaca-api](https://github.com/alpacahq/alpaca-api/issues/new/choose). API feature requests, general questions, and dashboard bugs go to the [Community Forum](https://forum.alpaca.markets/) or [Slack](https://alpaca.markets/slack). Questions about your account, funding, or orders go to a [support request](https://alpaca.markets/support/request). Service status and incident updates are on the [status page](https://status.alpaca.markets/).
+
+        Do not disclose suspected security vulnerabilities publicly. Follow the private reporting process in our [Security Policy](https://github.com/alpacahq/cli/blob/main/SECURITY.md).
+
+        Never include API keys, OAuth tokens, account details, request or trace IDs, or other secrets.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Preflight
+      options:
+        - label: I searched existing issues and tested the latest applicable CLI release.
+          required: true
+        - label: This report concerns CLI behavior. Bugs in the Alpaca API, its OpenAPI specs, or docs.alpaca.markets go to alpacahq/alpaca-api.
+          required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: CLI area
+      description: Which CLI surface is affected?
+      options:
+        - Trading commands (order, position, option, locate, clock, calendar)
+        - Account and asset commands (account, asset, watchlist, wallet, corporate-action)
+        - Market data commands (data)
+        - Raw API requests (api)
+        - Output handling (--csv, --jq, --quiet, --schema, errors)
+        - Authentication, profiles, or configuration
+        - Installation, update, or shell completion
+        - Code generation or OpenAPI handling
+        - Developer experience
+        - Documentation or Agent Skill
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: cli_version
+    attributes:
+      label: CLI version
+      description: Provide the output of `alpaca version`.
+      placeholder: v0.0.x
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: OS, architecture, and install method
+      description: Include your operating system, architecture, and how you installed the CLI (Go, Homebrew, or other) because behavior can differ by environment.
+      placeholder: macOS arm64, installed with Homebrew
+    validations:
+      required: true
+
+  - type: input
+    id: command
+    attributes:
+      label: Command
+      description: State which command or flags are affected.
+      placeholder: alpaca account get --quiet
+
+  - type: textarea
+    id: current_behavior
+    attributes:
+      label: Current behavior
+      description: Describe what happens, including safe error output.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected behavior
+      description: Describe what you expected instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Provide the exact commands and steps. Use paper trading and synthetic inputs where possible.
+      render: bash
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional context
+      description: Add sanitized logs or other non-sensitive context. Review `--verbose`, `--debug`, and `--trace` output before posting it. Do not post request IDs, trace IDs, account identifiers, or private diagnostics; share those privately through a [support request](https://alpaca.markets/support/request) or the [Security Policy](https://github.com/alpacahq/cli/blob/main/SECURITY.md) when appropriate.
+
+  - type: checkboxes
+    id: sensitive_data
+    attributes:
+      label: Sensitive-data check
+      options:
+        - label: I removed API keys, credentials, OAuth tokens, account details, request or trace IDs, and other sensitive information.
+          required: true

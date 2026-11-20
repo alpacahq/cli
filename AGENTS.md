@@ -2,9 +2,11 @@
 
 A single-binary CLI for the Alpaca Trading API. Think `gh` for GitHub, `stripe` for Stripe — but for trading.
 
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the public contributor workflow, support routing, and local setup. This file remains the authoritative engineering guidance for agents.
+
 ## Core Principle: Generate Everything
 
-The CLI is driven by OpenAPI specs. Maximize what's generated, minimize what's hand-written. **Do not edit generated files directly.** Change the specs or the generator, then `make generate`.
+The CLI is driven by OpenAPI specs. Maximize what's generated, minimize what's hand-written. **Do not edit generated files directly.** Change the generator, or fix specs upstream and re-import them, then run `make generate`.
 
 ## Design Philosophy
 
@@ -43,7 +45,7 @@ The one exception is `update --check`, which emits JSON because agents need to p
 Gated by `//go:build integration` and require `ALPACA_TEST_API_KEY`+`ALPACA_TEST_SECRET_KEY` or `ALPACA_TEST_ACCESS_TOKEN`. Default target is `paper-api.alpaca.markets`.
 
 Rules:
-- **Always run `make test-integration` after editing** - `make check` only runs unit tests. Integration tests hit the live paper API and are the only way to verify your changes work. Never skip this step.
+- **Run `make test-integration` when CLI behavior changes** - `make check` only runs unit tests. Integration tests hit the live paper API and require paper credentials. If credentials are unavailable, report that and rely on a trusted CI or maintainer run before merging.
 - **Read-only tests must call `t.Parallel()`** - every test that only fetches data should run concurrently.
 - **Write tests must clean up** - use `t.Cleanup()` to cancel orders, delete watchlists, close positions. Never leave side-effects.
 - **Flat tests for independent calls, sub-tests for sequential chains** - don't use `t.Run` unless steps depend on prior state (e.g., create -> get -> delete).
@@ -57,6 +59,6 @@ Rules:
 When a change affects CLI behavior, update any stale docs:
 
 - `README.md` — user-facing documentation
-- `skills/alpaca-cli/SKILL.md` — agent-facing skill
+- `.agents/skills/alpaca-cli/SKILL.md` - agent-facing skill
 
 Code is the source of truth. If a doc contradicts the code, update the doc.
