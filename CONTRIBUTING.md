@@ -71,6 +71,7 @@ Use clear, descriptive commit messages and pull request titles. Conventional Com
 - `make` for the repository's documented convenience targets.
 - [`golangci-lint`](https://golangci-lint.run/) v2.11.4 for `make lint`, matching the version pinned in CI.
 - Alpaca paper trading credentials when running the integration tests.
+- `curl` and `python3` when running `make spec-update`.
 - Optionally, [`oasdiff`](https://github.com/oasdiff/oasdiff) for `make spec-check`.
 
 ## Setup and checks

@@ -59,6 +59,6 @@ Rules:
 When a change affects CLI behavior, update any stale docs:
 
 - `README.md` — user-facing documentation
-- `skills/alpaca-cli/SKILL.md` — agent-facing skill
+- `.agents/skills/alpaca-cli/SKILL.md` - agent-facing skill
 
 Code is the source of truth. If a doc contradicts the code, update the doc.

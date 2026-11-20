@@ -28,7 +28,7 @@ body:
     attributes:
       label: CLI version
       description: Provide the output of `alpaca version` when the question concerns observed behavior.
-      placeholder: alpaca v0.0.x, or Not applicable
+      placeholder: v0.0.x, or Not applicable
 
   - type: input
     id: environment

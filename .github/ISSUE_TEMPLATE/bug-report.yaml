@@ -48,7 +48,7 @@ body:
     attributes:
       label: CLI version
       description: Provide the output of `alpaca version`.
-      placeholder: alpaca v0.0.x
+      placeholder: v0.0.x
     validations:
       required: true
 
