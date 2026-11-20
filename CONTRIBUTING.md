@@ -76,14 +76,19 @@ Use clear, descriptive commit messages and pull request titles. Conventional Com
 
 ## Setup and checks
 
-Run the required checks from the repository root after every change:
+Run the standard checks from the repository root after every change:
 
 ```bash
 make check
-make test-integration
 ```
 
-`make check` runs the linter, the unit tests with the race detector, and builds the binary to `bin/alpaca`. `make test-integration` verifies live paper API behavior and requires paper trading credentials.
+`make check` runs the linter, the unit tests with the race detector, and builds the binary to `bin/alpaca`.
+
+When CLI behavior changes and you have paper trading credentials, run the live paper API integration tests:
+
+```bash
+make test-integration
+```
 
 Regenerate generated API clients and command metadata when specs or the generator change:
 
@@ -99,6 +104,8 @@ export ALPACA_TEST_SECRET_KEY=...
 # or: export ALPACA_TEST_ACCESS_TOKEN=...
 make test-integration
 ```
+
+GitHub does not provide repository secrets to workflows triggered by pull requests from forks, so CI skips the integration job for those pull requests. Maintainers run `make test-integration` from a trusted branch before merging.
 
 CI also verifies that generated code is up to date by running `make generate` and failing on any diff in `internal/api/` and `internal/cmd/commands.gen.go`.
 
@@ -159,6 +166,6 @@ Before requesting review, confirm that:
 - new or changed behavior has focused tests when applicable;
 - default tests are deterministic and credential-free and cannot place live orders; integration tests target paper trading, use unique symbols, and clean up after themselves; and fixtures use synthetic data;
 - `README.md` and `.agents/skills/alpaca-cli/SKILL.md` are updated when CLI behavior changes;
-- `make check` and `make test-integration` pass;
+- `make check` passes, and `make test-integration` was run when CLI behavior changed and paper credentials were available;
 - no credentials, account data, request or trace IDs, or other secrets are included; and
 - any provider-specific integration or promotional contribution has written Alpaca approval confirmed by repository maintainers.
